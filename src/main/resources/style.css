@@ -1,0 +1,130 @@
+/* ================== RESET & BASE ================== */
+.root {
+    -fx-background-color: #F2F4F8;   /* gris clair très visible */
+    -fx-font-family: "Segoe UI", Arial, sans-serif;
+}
+
+/* ================== HEADER ================== */
+.header {
+    -fx-background-color: white;
+    -fx-border-color: #E67E22;
+    -fx-border-width: 0 0 3 0;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 12, 0, 0, 4);
+}
+
+/* ================== NAVIGATION ================== */
+.label-nav {
+    -fx-text-fill: #2C3E50;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+
+.label-nav-muted {
+    -fx-text-fill: #95A5A6;
+    -fx-font-size: 16px;
+}
+
+/* ================== TITRE ================== */
+.title-main {
+    -fx-text-fill: #E67E22;
+    -fx-font-size: 38px;
+    -fx-font-weight: bold;
+}
+
+/* ================== BOUTON RETOUR ================== */
+.btn-retour {
+    -fx-background-color: transparent;
+    -fx-text-fill: #E67E22;
+    -fx-font-size: 26px;
+    -fx-font-weight: bold;
+}
+
+.btn-retour:hover {
+    -fx-scale-x: 1.2;
+    -fx-scale-y: 1.2;
+}
+
+/* ================== BOUTONS ================== */
+.btn-primary {
+    -fx-background-color: #E67E22;
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 10;
+    -fx-padding: 12 26;
+}
+
+.btn-primary:hover {
+    -fx-background-color: #D35400;
+}
+
+.btn-secondary {
+    -fx-background-color: white;
+    -fx-text-fill: #E74C3C;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-border-color: #E74C3C;
+    -fx-border-width: 2;
+    -fx-border-radius: 10;
+    -fx-padding: 10 24;
+}
+
+.btn-secondary:hover {
+    -fx-background-color: #FDEDEC;
+}
+
+/* ================== BOUTON OUTLINE ================== */
+.btn-outline {
+    -fx-background-color: transparent;
+    -fx-text-fill: #E67E22;
+    -fx-border-color: #E67E22;
+    -fx-border-width: 2;
+    -fx-border-radius: 20;
+    -fx-padding: 8 22;
+}
+
+.btn-outline:hover {
+    -fx-background-color: #FEF5E7;
+}
+
+/* ================== CARD ================== */
+.card {
+    -fx-background-color: white;
+    -fx-background-radius: 18;
+    -fx-border-color: #E67E22;
+    -fx-border-width: 2;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.12), 18, 0, 0, 6);
+}
+
+/* ================== STEPPER ================== */
+.line-separator {
+    -fx-stroke: #E67E22;
+    -fx-stroke-width: 4;
+}
+
+.step-circle {
+    -fx-fill: white;
+    -fx-stroke: #E67E22;
+    -fx-stroke-width: 3;
+}
+
+.step-circle.active {
+    -fx-fill: #E67E22;
+}
+
+/* ================== LABEL STEP ================== */
+.label-step {
+    -fx-text-fill: #2C3E50;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+/* Cercle / étape cliquable (ouvre la page étape) */
+.step-clickable {
+    -fx-cursor: hand;
+}
+
+/* ================== CONTENT ================== */
+.content-area {
+    -fx-spacing: 60;
+}
