@@ -7,7 +7,7 @@ import java.sql.*;
 
 public class MyBD {
     private Connection conn;
-    final private String URL="jdbc:mysql://localhost:3306/pi_dev_sp0";
+    final private String URL="jdbc:mysql://localhost:3306/travelmate";
     final private String USER="root";
     final private String PASS="";
     private static MyBD instance;

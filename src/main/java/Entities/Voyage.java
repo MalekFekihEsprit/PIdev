@@ -7,26 +7,32 @@ public class Voyage {
     private String titre_voyage;
     private Date date_debut;
     private Date date_fin;
-    private float budget_total;
     private String statut;
     private int id_destination;
 
+
     public Voyage() {}
-    public Voyage(String titre_voyage,Date date_debut,Date date_fin,float budget_total,String statut,int id_destination){
+    public Voyage(String titre_voyage,Date date_debut,Date date_fin,String statut,int id_destination){
         this.titre_voyage=titre_voyage;
         this.date_debut=date_debut;
         this.date_fin=date_fin;
-        this.budget_total=budget_total;
         this.statut=statut;
         this.id_destination=id_destination;
     }
-    public Voyage(int id_voyage,String titre_voyage,Date date_debut,Date date_fin,float budget_total,String statut,int id_destination) {
+    public Voyage(int id_voyage,String titre_voyage,Date date_debut,Date date_fin,String statut,int id_destination) {
         this.id_voyage = id_voyage;
         this.titre_voyage = titre_voyage;
         this.date_debut = date_debut;
         this.date_fin = date_fin;
-        this.budget_total = budget_total;
         this.statut = statut;
+        this.id_destination = id_destination;
+
+    }
+    public Voyage(int id_voyage,String titre_voyage,Date date_debut,Date date_fin,int id_destination) {
+        this.id_voyage = id_voyage;
+        this.titre_voyage = titre_voyage;
+        this.date_debut = date_debut;
+        this.date_fin = date_fin;
         this.id_destination = id_destination;
 
     }
@@ -45,10 +51,6 @@ public class Voyage {
 
     public Date getDate_fin() {
         return date_fin;
-    }
-
-    public float getBudget_total() {
-        return budget_total;
     }
 
     public String getStatut() {
@@ -79,10 +81,6 @@ public class Voyage {
         this.statut = statut;
     }
 
-    public void setBudget_total(float budget_total) {
-        this.budget_total = budget_total;
-    }
-
     public void setId_destination(int id_destination) {
         this.id_destination = id_destination;
     }
@@ -94,7 +92,6 @@ public class Voyage {
                 ", titre_voyage='" + titre_voyage + '\'' +
                 ", date_debut=" + date_debut +
                 ", date_fin=" + date_fin +
-                ", budget_total=" + budget_total +
                 ", statut='" + statut + '\'' +
                 ", id_destination=" + id_destination +
                 '}';

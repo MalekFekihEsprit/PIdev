@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox style="-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 18; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.02), 10, 0, 0, 2); -fx-border-color: #e2e8f0; -fx-border-width: 1; -fx-border-radius: 20;" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="Controllers.CarteVoyageController">
+    <HBox spacing="18">
+        <!-- Image/Icon -->
+        <VBox alignment="CENTER" style="-fx-background-color: #fff7ed; -fx-background-radius: 16; -fx-min-width: 80; -fx-min-height: 80;">
+            <Label fx:id="iconLabel" style="-fx-font-size: 40;" text="🏖️" />
+        </VBox>
+
+        <!-- Détails Voyage -->
+        <VBox spacing="8" HBox.hgrow="ALWAYS">
+            <HBox alignment="CENTER_LEFT" spacing="8">
+                <Label fx:id="titreVoyage" style="-fx-font-family: 'System'; -fx-font-size: 18; -fx-font-weight: bold; -fx-text-fill: #0f172a;" />
+                <Label fx:id="statutVoyage" style="-fx-text-fill: white; -fx-background-radius: 20; -fx-padding: 3 10; -fx-font-size: 10; -fx-font-weight: 600;" />
+            </HBox>
+
+            <GridPane hgap="18" vgap="6">
+                <columnConstraints>
+                    <ColumnConstraints percentWidth="33" />
+                    <ColumnConstraints percentWidth="33" />
+                    <ColumnConstraints percentWidth="33" />
+                </columnConstraints>
+
+                <!-- DATES -->
+                <HBox alignment="CENTER_LEFT" spacing="6" GridPane.columnIndex="0">
+                    <Label style="-fx-font-size: 12;" text="📅" />
+                    <VBox spacing="1">
+                        <Label style="-fx-text-fill: #64748b; -fx-font-size: 10;" text="DATES" />
+                        <Label fx:id="datesVoyage" style="-fx-text-fill: #0f172a; -fx-font-weight: 600; -fx-font-size: 11;" />
+                    </VBox>
+                </HBox>
+
+                <!-- DESTINATION -->
+                <HBox alignment="CENTER_LEFT" spacing="6" GridPane.columnIndex="1">
+                    <Label style="-fx-font-size: 12;" text="📍" />
+                    <VBox spacing="1">
+                        <Label style="-fx-text-fill: #64748b; -fx-font-size: 10;" text="DESTINATION" />
+                        <Label fx:id="destinationVoyage" style="-fx-text-fill: #0f172a; -fx-font-weight: 600; -fx-font-size: 11;" />
+                    </VBox>
+                </HBox>
+
+                <!-- PARTICIPANTS -->
+                <HBox alignment="CENTER_LEFT" spacing="6" GridPane.columnIndex="2">
+                    <Label style="-fx-font-size: 12;" text="👥" />
+                    <VBox spacing="1">
+                        <Label style="-fx-text-fill: #64748b; -fx-font-size: 10;" text="PARTICIPANTS" />
+                        <Label fx:id="participantsVoyage" style="-fx-text-fill: #0f172a; -fx-font-weight: 600; -fx-font-size: 11;" text="4 personnes" />
+                    </VBox>
+                </HBox>
+
+                <!-- ACTIVITÉS -->
+                <HBox alignment="CENTER_LEFT" spacing="6" GridPane.columnIndex="2" GridPane.rowIndex="1">
+                    <Label style="-fx-font-size: 12;" text="🎫" />
+                    <VBox spacing="1">
+                        <Label style="-fx-text-fill: #64748b; -fx-font-size: 10;" text="ACTIVITÉS" />
+                        <Label fx:id="activitesVoyage" style="-fx-text-fill: #0f172a; -fx-font-weight: 600; -fx-font-size: 11;" text="8 planifiées" />
+                    </VBox>
+                </HBox>
+            </GridPane>
+        </VBox>
+
+        <!-- Actions -->
+        <VBox alignment="CENTER" spacing="8">
+            <Label fx:id="btnModifier" style="-fx-background-color: #10b981; -fx-text-fill: white; -fx-background-radius: 16; -fx-padding: 6 16; -fx-font-size: 11; -fx-font-weight: 600; -fx-cursor: hand;" text="✏️ Modifier" />
+            <Label fx:id="btnParticipants" style="-fx-background-color: #ff8c42; -fx-text-fill: white; -fx-background-radius: 16; -fx-padding: 6 16; -fx-font-size: 11; -fx-font-weight: 600; -fx-cursor: hand;" text="👥 Participants" />
+            <Label fx:id="btnSupprimer" style="-fx-background-color: #ec4899; -fx-text-fill: white; -fx-background-radius: 16; -fx-padding: 6 16; -fx-font-size: 11; -fx-font-weight: 600; -fx-cursor: hand;" text="🗑️ Supprimer" />
+        </VBox>
+    </HBox>
+</VBox>
