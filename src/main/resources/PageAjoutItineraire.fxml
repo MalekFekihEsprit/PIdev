@@ -1,14 +1,50 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
 
-<AnchorPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
+<DialogPane xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="Controlles.PageAjoutItineraire"
-            prefHeight="400.0" prefWidth="600.0">
+            prefWidth="500">
 
-</AnchorPane>
+    <header>
+        <VBox spacing="10" style="-fx-padding: 10;">
+            <Label text="➕ Nouvel itinéraire" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+            <Label text="Créez un nouvel itinéraire de voyage" style="-fx-text-fill: #7f8c8d;"/>
+        </VBox>
+    </header>
+
+    <content>
+        <GridPane hgap="15" vgap="15" style="-fx-padding: 10;">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+
+            <Label text="Nom de l'itinéraire:" GridPane.columnIndex="0" GridPane.rowIndex="0" style="-fx-font-weight: bold;"/>
+            <TextField fx:id="nomField" promptText="Ex: Découverte de Paris" GridPane.columnIndex="1" GridPane.rowIndex="0" GridPane.hgrow="ALWAYS"/>
+
+            <Label text="Description:" GridPane.columnIndex="0" GridPane.rowIndex="1" style="-fx-font-weight: bold;"/>
+            <TextArea fx:id="descriptionField" promptText="Décrivez votre itinéraire..." prefRowCount="3" GridPane.columnIndex="1" GridPane.rowIndex="1" GridPane.hgrow="ALWAYS"/>
+
+            <Label text="Destination:" GridPane.columnIndex="0" GridPane.rowIndex="2" style="-fx-font-weight: bold;"/>
+            <ComboBox fx:id="destinationCombo" promptText="Sélectionner une destination" GridPane.columnIndex="1" GridPane.rowIndex="2" GridPane.hgrow="ALWAYS"/>
+
+            <Label text="Nombre de jours:" GridPane.columnIndex="0" GridPane.rowIndex="3" style="-fx-font-weight: bold;"/>
+            <Spinner fx:id="nbJoursSpinner" initialValue="1" min="1" max="30" GridPane.columnIndex="1" GridPane.rowIndex="3" prefWidth="100"/>
+
+            <Label text="Date de début:" GridPane.columnIndex="0" GridPane.rowIndex="4" style="-fx-font-weight: bold;"/>
+            <DatePicker fx:id="dateDebutPicker" GridPane.columnIndex="1" GridPane.rowIndex="4" GridPane.hgrow="ALWAYS"/>
+
+            <Label text="Emoji:" GridPane.columnIndex="0" GridPane.rowIndex="5" style="-fx-font-weight: bold;"/>
+            <ComboBox fx:id="emojiCombo" value="🏖️" GridPane.columnIndex="1" GridPane.rowIndex="5" prefWidth="100"/>
+
+        </GridPane>
+    </content>
+
+    <buttonTypes>
+        <ButtonType text="Créer" buttonData="OK_DONE"/>
+        <ButtonType text="Annuler" buttonData="CANCEL_CLOSE"/>
+    </buttonTypes>
+</DialogPane>

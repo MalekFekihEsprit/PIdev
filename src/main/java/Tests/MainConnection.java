@@ -1,4 +1,4 @@
-package Tests;
+/*package Tests;
 
 import Entites.Itineraire;
 import Entites.etape;
@@ -46,7 +46,7 @@ public class MainConnection {
         } catch (SQLException e) {
             e.printStackTrace();
         }*/
-
+/*
         try {
             Itineraire updatedItin = new Itineraire();
             updatedItin.setId(2);
@@ -81,7 +81,7 @@ public class MainConnection {
         } catch (SQLException e) {
             e.printStackTrace();
         } */
-
+/*
         try {
             etape updatedEtape = new etape();
             updatedEtape.setId_etape(2);
@@ -105,4 +105,4 @@ public class MainConnection {
             e.printStackTrace();
         }
     }
-}
+}*/

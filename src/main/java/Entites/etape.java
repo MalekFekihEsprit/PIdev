@@ -1,19 +1,18 @@
 package Entites;
 
-import java.sql.Date;
+import java.sql.Time;
 
 public class etape {
     private int id_etape;
-    private int jour;
-    private Date heure;
+    private Time heure;        // time en base de données
     private String lieu;
     private String description_etape;
     private int id_activite;
     private int id_itineraire;
 
     public etape() {}
-    public etape(int jour, Date heure, String lieu, String description_etape, int id_activite, int id_itineraire) {
-        this.jour = jour;
+
+    public etape(Time heure, String lieu, String description_etape, int id_activite, int id_itineraire) {
         this.heure = heure;
         this.lieu = lieu;
         this.description_etape = description_etape;
@@ -25,11 +24,7 @@ public class etape {
         return id_etape;
     }
 
-    public int getJour() {
-        return jour;
-    }
-
-    public Date getHeure() {
+    public Time getHeure() {
         return heure;
     }
 
@@ -53,11 +48,7 @@ public class etape {
         this.id_etape = id_etape;
     }
 
-    public void setJour(int jour) {
-        this.jour = jour;
-    }
-
-    public void setHeure(Date heure) {
+    public void setHeure(Time heure) {
         this.heure = heure;
     }
 
@@ -81,7 +72,6 @@ public class etape {
     public String toString() {
         return "etape{" +
                 "id_etape=" + id_etape +
-                ", jour=" + jour +
                 ", heure=" + heure +
                 ", lieu='" + lieu + '\'' +
                 ", description_etape='" + description_etape + '\'' +

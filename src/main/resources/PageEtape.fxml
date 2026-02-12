@@ -1,122 +1,166 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.Cursor?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Pane?>
-<?import javafx.scene.layout.Region?>
-<?import javafx.scene.layout.VBox?>
-<?import javafx.scene.shape.Circle?>
 
-<AnchorPane prefHeight="750.0" prefWidth="950.0" style="-fx-background-color: #F4F7F6;"
-            xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="Controlles.PageEtape">
-    <children>
-        <HBox alignment="CENTER_LEFT" prefHeight="65.0" spacing="30.0"
-              style="-fx-background-color: white; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);"
-              AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-            <padding>
-                <Insets top="15.0" right="20.0" bottom="15.0" left="20.0"/>
-            </padding>
-            <children>
-                <Button fx:id="btnRetour" mnemonicParsing="false" text="←"
-                        style="-fx-background-color: transparent; -fx-text-fill: #e74c3c; -fx-font-size: 24px; -fx-font-weight: bold; -fx-cursor: hand;"/>
-                <Label text="Accueil" style="-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: #2d3436;"/>
-                <Label text="Mes Voyages" style="-fx-font-size: 16px; -fx-text-fill: #636e72;"/>
+<BorderPane stylesheets="@style.css"
+            xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="Controlles.PageEtape"
+            style="-fx-background-color: linear-gradient(to bottom right, #f0f4f8, #e6eef5);">
+
+    <!-- Header -->
+    <top>
+        <VBox styleClass="main-header" spacing="15">
+            <HBox alignment="CENTER_LEFT" spacing="15">
+                <Label text="📋" style="-fx-font-size: 32px;"/>
+                <VBox spacing="5">
+                    <Label text="Gestion des Étapes" styleClass="header-title"/>
+                    <Label text="Planifiez et organisez vos activités étape par étape" styleClass="header-subtitle"/>
+                </VBox>
                 <Region HBox.hgrow="ALWAYS"/>
-                <Circle fill="#dfe6e9" radius="20.0" stroke="#bdc3c7" strokeType="INSIDE"/>
-            </children>
-        </HBox>
+                <Button text="+ Nouvelle étape" styleClass="btn-success"/>
+            </HBox>
 
-        <VBox spacing="20.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="65.0">
-            <padding>
-                <Insets bottom="20.0" left="25.0" right="25.0" top="20.0"/>
-            </padding>
-            <children>
-                <VBox spacing="10.0">
-                    <children>
-                        <AnchorPane prefHeight="250.0"
-                                   style="-fx-border-color: #e67e22; -fx-border-width: 2; -fx-border-radius: 10; -fx-background-radius: 10; -fx-background-color: #ecf0f1;">
-                            <children>
-                                <Label layoutX="320.0" layoutY="110.0" text="ZONE CARTE INTERACTIVE"
-                                       style="-fx-font-size: 18px; -fx-font-style: italic; -fx-text-fill: #95a5a6;"/>
-                                <Button fx:id="btnAjouterEtape" mnemonicParsing="false" text="+ Ajouter étape"
-                                        style="-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-background-radius: 15; -fx-cursor: hand; -fx-font-weight: bold;"
-                                        AnchorPane.bottomAnchor="15.0" AnchorPane.rightAnchor="15.0">
-                                    <cursor>
-                                        <Cursor fx:constant="HAND"/>
-                                    </cursor>
-                                </Button>
-                            </children>
-                        </AnchorPane>
-                        <Label text="Les étapes du jour sélectionné :"
-                               style="-fx-font-size: 15px; -fx-font-style: italic; -fx-text-fill: #2980b9;"/>
-                    </children>
+            <HBox spacing="15" alignment="CENTER_LEFT">
+                <Label text="Filtrer par :" style="-fx-font-weight: bold; -fx-text-fill: #34495e;"/>
+                <ChoiceBox prefWidth="180" style="-fx-background-color: white; -fx-border-color: #bdc3c7; -fx-border-radius: 3;"/>
+                <DatePicker promptText="Date" style="-fx-background-color: white;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <TextField promptText="Rechercher une étape..." prefWidth="250" styleClass="search-field"/>
+            </HBox>
+        </VBox>
+    </top>
+
+    <!-- Contenu principal -->
+    <center>
+        <ScrollPane fitToWidth="true" styleClass="scroll-pane">
+            <VBox spacing="20" style="-fx-background-color: transparent; -fx-padding: 30;">
+
+                <!-- Jour 1 -->
+                <VBox styleClass="jour-container">
+                    <HBox alignment="CENTER_LEFT" spacing="15">
+                        <Label text="1" styleClass="jour-number"/>
+                        <VBox>
+                            <Label text="Jour 1" styleClass="jour-title"/>
+                            <Label text="Découverte du centre historique" styleClass="jour-description"/>
+                        </VBox>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Label text="Mère du jour" styleClass="status-badge, status-warning"/>
+                    </HBox>
+
+                    <Separator styleClass="separator"/>
+
+                    <VBox spacing="15">
+                        <!-- Étape 1 -->
+                        <HBox alignment="CENTER_LEFT" spacing="15" styleClass="etape-item">
+                            <Label text="08:00" styleClass="etape-time"/>
+                            <VBox HBox.hgrow="ALWAYS" spacing="5">
+                                <Label text="Petit-déjeuner à la place principale" styleClass="etape-title"/>
+                                <Label text="Café traditionnel et pâtisseries locales" style="-fx-text-fill: #7f8c8d; -fx-font-size: 12px;"/>
+                                <HBox styleClass="etape-meta">
+                                    <Label text="⏱️ 1h" styleClass="etape-duree"/>
+                                    <Label text="💰 15€" styleClass="etape-budget"/>
+                                    <Label text="📍 Centre ville" styleClass="etape-lieu"/>
+                                </HBox>
+                            </VBox>
+                            <HBox spacing="10">
+                                <Button text="Modifier" styleClass="btn-gray, btn-small"/>
+                                <Button text="Supprimer" styleClass="btn-danger, btn-small"/>
+                            </HBox>
+                        </HBox>
+
+                        <!-- Étape 2 -->
+                        <HBox alignment="CENTER_LEFT" spacing="15" styleClass="etape-item">
+                            <Label text="10:30" styleClass="etape-time"/>
+                            <VBox HBox.hgrow="ALWAYS" spacing="5">
+                                <Label text="Visite du musée d'art moderne" styleClass="etape-title"/>
+                                <Label text="Collection permanente et exposition temporaire" style="-fx-text-fill: #7f8c8d; -fx-font-size: 12px;"/>
+                                <HBox styleClass="etape-meta">
+                                    <Label text="⏱️ 2h" styleClass="etape-duree"/>
+                                    <Label text="💰 12€" styleClass="etape-budget"/>
+                                    <Label text="📍 Rue du Musée" styleClass="etape-lieu"/>
+                                    <Label text="⭐ Difficulté: Facile" styleClass="etape-difficulte"/>
+                                </HBox>
+                            </VBox>
+                            <HBox spacing="10">
+                                <Button text="Modifier" styleClass="btn-gray, btn-small"/>
+                                <Button text="Supprimer" styleClass="btn-danger, btn-small"/>
+                            </HBox>
+                        </HBox>
+
+                        <!-- Étape 3 -->
+                        <HBox alignment="CENTER_LEFT" spacing="15" styleClass="etape-item">
+                            <Label text="14:00" styleClass="etape-time"/>
+                            <VBox HBox.hgrow="ALWAYS" spacing="5">
+                                <Label text="Déjeuner au marché couvert" styleClass="etape-title"/>
+                                <Label text="Spécialités régionales et produits frais" style="-fx-text-fill: #7f8c8d; -fx-font-size: 12px;"/>
+                                <HBox styleClass="etape-meta">
+                                    <Label text="⏱️ 1h30" styleClass="etape-duree"/>
+                                    <Label text="💰 25€" styleClass="etape-budget"/>
+                                    <Label text="📍 Marché central" styleClass="etape-lieu"/>
+                                </HBox>
+                            </VBox>
+                            <HBox spacing="10">
+                                <Button text="Modifier" styleClass="btn-gray, btn-small"/>
+                                <Button text="Supprimer" styleClass="btn-danger, btn-small"/>
+                            </HBox>
+                        </HBox>
+                    </VBox>
+
+                    <HBox spacing="10" alignment="CENTER_RIGHT">
+                        <Button text="Ajouter une étape" styleClass="btn-success"/>
+                        <Button text="Voir carte" styleClass="btn-primary"/>
+                    </HBox>
                 </VBox>
 
-                <HBox spacing="30.0" VBox.vgrow="ALWAYS">
-                    <children>
-                        <ScrollPane fitToWidth="true" HBox.hgrow="ALWAYS"
-                                   style="-fx-background-color: transparent; -fx-background: transparent;">
-                            <content>
-                                <VBox fx:id="listeEtapesContainer" spacing="15.0">
-                                    <children>
-                                        <HBox alignment="CENTER_LEFT" prefHeight="80.0" spacing="20.0"
-                                              style="-fx-background-color: white; -fx-border-color: #e67e22; -fx-border-radius: 15; -fx-background-radius: 15;">
-                                            <padding>
-                                                <Insets left="20.0" right="20.0"/>
-                                            </padding>
-                                            <children>
-                                                <VBox alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
-                                                    <children>
-                                                        <Label text="Étape 1 :" style="-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: #d35400;"/>
-                                                    </children>
-                                                </VBox>
-                                                <Button mnemonicParsing="false" text="✏️" style="-fx-background-color: #f1f2f6; -fx-cursor: hand;"/>
-                                                <Button mnemonicParsing="false" text="🗑️" style="-fx-background-color: #f1f2f6; -fx-cursor: hand;"/>
-                                            </children>
-                                        </HBox>
-                                        <HBox alignment="CENTER_LEFT" prefHeight="80.0" spacing="20.0"
-                                              style="-fx-background-color: white; -fx-border-color: #e67e22; -fx-border-radius: 15; -fx-background-radius: 15;">
-                                            <padding>
-                                                <Insets left="20.0" right="20.0"/>
-                                            </padding>
-                                            <children>
-                                                <VBox alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
-                                                    <children>
-                                                        <Label text="Étape 2 :" style="-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: #d35400;"/>
-                                                    </children>
-                                                </VBox>
-                                                <Button mnemonicParsing="false" text="✏️" style="-fx-background-color: #f1f2f6; -fx-cursor: hand;"/>
-                                                <Button mnemonicParsing="false" text="🗑️" style="-fx-background-color: #f1f2f6; -fx-cursor: hand;"/>
-                                            </children>
-                                        </HBox>
-                                    </children>
-                                </VBox>
-                            </content>
-                        </ScrollPane>
-
-                        <VBox alignment="CENTER" prefWidth="200.0" spacing="25.0">
-                            <children>
-                                <VBox alignment="CENTER" spacing="5.0">
-                                    <Button fx:id="btnModifier" prefHeight="60.0" prefWidth="60.0" mnemonicParsing="false" text="✏️"
-                                            style="-fx-background-color: white; -fx-border-color: #e74c3c; -fx-border-width: 2; -fx-border-radius: 10; -fx-background-radius: 10; -fx-font-size: 20px; -fx-cursor: hand;"/>
-                                    <Label text="Modifier" style="-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #e74c3c;"/>
-                                </VBox>
-                                <VBox alignment="CENTER" spacing="5.0">
-                                    <Button fx:id="btnSupprimer" prefHeight="60.0" prefWidth="60.0" mnemonicParsing="false" text="🗑️"
-                                            style="-fx-background-color: white; -fx-border-color: #e74c3c; -fx-border-width: 2; -fx-border-radius: 10; -fx-background-radius: 10; -fx-font-size: 20px; -fx-cursor: hand;"/>
-                                    <Label text="Supprimer" style="-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #e74c3c;"/>
-                                </VBox>
-                            </children>
+                <!-- Jour 2 -->
+                <VBox styleClass="jour-container">
+                    <HBox alignment="CENTER_LEFT" spacing="15">
+                        <Label text="2" style="-fx-background-color: #9b59b6; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 15; -fx-background-radius: 5; -fx-font-size: 18px;"/>
+                        <VBox>
+                            <Label text="Jour 2" styleClass="jour-title"/>
+                            <Label text="Aventure et nature" styleClass="jour-description"/>
                         </VBox>
-                    </children>
-                </HBox>
-            </children>
-        </VBox>
-    </children>
-</AnchorPane>
+                    </HBox>
+
+                    <Separator styleClass="separator"/>
+
+                    <HBox alignment="CENTER" spacing="20" style="-fx-padding: 30 0;">
+                        <Label text="Aucune étape planifiée pour ce jour" style="-fx-text-fill: #95a5a6; -fx-font-style: italic;"/>
+                        <Button text="+ Ajouter" styleClass="btn-primary, btn-small"/>
+                    </HBox>
+                </VBox>
+
+                <!-- Jour 3 -->
+                <VBox styleClass="jour-container">
+                    <HBox alignment="CENTER_LEFT" spacing="15">
+                        <Label text="3" style="-fx-background-color: #e67e22; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 15; -fx-background-radius: 5; -fx-font-size: 18px;"/>
+                        <VBox>
+                            <Label text="Jour 3" styleClass="jour-title"/>
+                            <Label text="Détente et shopping" styleClass="jour-description"/>
+                        </VBox>
+                    </HBox>
+
+                    <Separator styleClass="separator"/>
+
+                    <HBox alignment="CENTER" spacing="20" style="-fx-padding: 30 0;">
+                        <Label text="Aucune étape planifiée pour ce jour" style="-fx-text-fill: #95a5a6; -fx-font-style: italic;"/>
+                        <Button text="+ Ajouter" styleClass="btn-primary, btn-small"/>
+                    </HBox>
+                </VBox>
+            </VBox>
+        </ScrollPane>
+    </center>
+
+    <!-- Footer -->
+    <bottom>
+        <HBox styleClass="footer">
+            <Label text="Total: 3 étapes" styleClass="footer-total"/>
+            <Label text="•" style="-fx-text-fill: #bdc3c7;"/>
+            <Label text="Durée totale: 4h30" styleClass="footer-info"/>
+        </HBox>
+    </bottom>
+</BorderPane>
