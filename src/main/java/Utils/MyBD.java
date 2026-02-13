@@ -6,7 +6,7 @@ public class MyBD {
 
     private Connection conn;
 
-    private final String URL = "jdbc:mysql://localhost:3306/esprit3a9";
+    private final String URL = "jdbc:mysql://localhost:3306/travelmate";
     private final String USER = "root";
     private final String PASS = "";
     private static MyBD instance; // variable statique pour l'instance unique
