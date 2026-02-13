@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+
+
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.Details">
+   <children>
+      <Label layoutX="80.0" layoutY="78.0" text="Nom:" />
+      <Label layoutX="80.0" layoutY="150.0" text="Prenom:" />
+      <Label layoutX="80.0" layoutY="227.0" text="Age:" />
+      <TextField fx:id="resnom" editable="false" layoutX="192.0" layoutY="74.0" />
+      <TextField fx:id="resprenom" editable="false" layoutX="192.0" layoutY="146.0" />
+      <TextField fx:id="resage" editable="false" layoutX="192.0" layoutY="223.0" />
+   </children>
+</AnchorPane>
