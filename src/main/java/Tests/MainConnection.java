@@ -6,7 +6,9 @@ import Services.BudgetCRUD;
 import Services.DepenseCRUD;
 import Tools.MyBD;
 
-import java.math.BigDecimal;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
@@ -15,73 +17,87 @@ public class MainConnection {
 
     public static void main(String[] args) {
 
-        // 🔹 Test DB connection
-        MyBD myBD = MyBD.getInstance();
-        System.out.println("Connexion BD réussie ✅");
-
-        BudgetCRUD budgetCRUD = new BudgetCRUD();
-        DepenseCRUD depenseCRUD = new DepenseCRUD();
-
         try {
-            // 🔹 CREATE Budgets (BigDecimal + tous les champs sauf id_voyage)
+            // 🔹 Connexion BD
+            MyBD myBD = MyBD.getInstance();
+            Connection conn = myBD.getConn();
+            System.out.println("Connexion BD réussie ✅");
+
+            // 🔹 Créer un utilisateur test pour respecter la FK
+            String sqlUser = "INSERT IGNORE INTO user (id, nom, email) VALUES (?, ?, ?)";
+            try (PreparedStatement psUser = conn.prepareStatement(sqlUser)) {
+                psUser.setInt(1, 1);           // id utilisateur
+                psUser.setString(2, "Alice");  // nom
+                psUser.setString(3, "alice@test.com"); // email
+                psUser.executeUpdate();
+            }
+            System.out.println("Utilisateur test créé ✅");
+
+            // 🔹 Initialiser CRUD
+            BudgetCRUD budgetCRUD = new BudgetCRUD();
+            DepenseCRUD depenseCRUD = new DepenseCRUD();
+
+            // 🔹 CREATE Budgets
             Budget b1 = new Budget(
-                    null,
-                    new BigDecimal("5556.10"),
+                    5556.10f,
                     "TND",
                     "ACTIF",
-                    "Budget principal pour le voyage"
+                    "Budget principal pour le voyage",
+                    1, // FK id_user
+                    0  // id_voyage
             );
 
             Budget b2 = new Budget(
-                    null,
-                    new BigDecimal("223.50"),
+                    223.50f,
                     "EUR",
                     "ACTIF",
-                    "Budget secondaire"
+                    "Budget secondaire",
+                    1, // FK id_user
+                    0
             );
+
 
             budgetCRUD.ajouter(b1);
             budgetCRUD.ajouter(b2);
+            System.out.println("Budgets ajoutés ✅");
 
             // 🔹 READ Budgets
-            System.out.println("📌 Liste des budgets :");
             List<Budget> budgets = budgetCRUD.afficher();
+            System.out.println("📌 Liste des budgets :");
             budgets.forEach(System.out::println);
 
-            // 🔹 CREATE Depenses (utiliser id_budget existant dans Budget)
-            // Ici, on prend le premier budget créé pour associer les dépenses
-            Long idBudget = budgets.get(0).getIdBudget().longValue();
+            // 🔹 CREATE Depenses pour le premier budget
+            int idBudget = budgets.get(0).getIdBudget(); // premier budget créé
 
             Depense d1 = new Depense(
-                    null,
+                    10.50f,
                     "Alimentation",
-                    new BigDecimal("10.50"),
                     "Nourriture",
                     "Petit-déjeuner et snacks",
                     "TND",
                     "Espèces",
-                    LocalDate.now(),
+                    Date.valueOf(LocalDate.now()),
                     idBudget
             );
 
             Depense d2 = new Depense(
-                    null,
+                    12.30f,
                     "Transport",
-                    new BigDecimal("12.30"),
                     "Taxi",
                     "Navette aéroport",
                     "TND",
                     "Carte",
-                    LocalDate.now(),
+                    Date.valueOf(LocalDate.now()),
                     idBudget
             );
 
             depenseCRUD.ajouter(d1);
             depenseCRUD.ajouter(d2);
+            System.out.println("Dépenses ajoutées ✅");
 
             // 🔹 READ Depenses
-            System.out.println("📌 Liste des dépenses :");
             List<Depense> depenses = depenseCRUD.afficher();
+            System.out.println("📌 Liste des dépenses :");
             depenses.forEach(System.out::println);
 
         } catch (SQLException e) {

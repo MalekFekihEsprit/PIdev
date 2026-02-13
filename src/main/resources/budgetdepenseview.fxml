@@ -1,0 +1,466 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.PieChart?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.shape.Rectangle?>
+
+<BorderPane prefHeight="900" prefWidth="1400" style="-fx-background-color: #f8fafc;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.BudgetController">
+
+    <!-- TOP NAV - STYLE CLAIR AVEC ORANGE -->
+    <top>
+        <VBox>
+            <!-- Main Navigation Bar -->
+            <HBox alignment="CENTER_LEFT" spacing="20" style="-fx-background-color: #ffffff; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.02), 10, 0, 0, 2);">
+                <padding>
+                    <Insets bottom="20" left="32" right="32" top="20" />
+                </padding>
+
+                <!-- Logo Section -->
+                <HBox alignment="CENTER" spacing="10">
+                    <Circle fill="linear-gradient(from 0% 0% to 100% 100%, #ff8c42, #ff6b4a)" radius="16" />
+                    <Label style="-fx-font-family: 'Clash Display'; -fx-font-size: 26; -fx-font-weight: bold; -fx-text-fill: #0f172a;" text="TravelMate" />
+                    <Label style="-fx-background-color: #ff8c42; -fx-text-fill: white; -fx-background-radius: 12; -fx-padding: 4 10; -fx-font-size: 10; -fx-font-weight: bold;" text="PRO" />
+                </HBox>
+
+                <!-- MAIN NAVIGATION MENU -->
+                <HBox spacing="8" alignment="CENTER_LEFT" style="-fx-padding: 0 0 0 20;">
+                    <!-- Destinations -->
+                    <HBox spacing="8" alignment="CENTER" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 8 16; -fx-cursor: hand;">
+                        <Label style="-fx-font-size: 16;" text="🌍" />
+                        <Label style="-fx-text-fill: #475569; -fx-font-weight: 500; -fx-font-size: 14;" text="Destinations" />
+                    </HBox>
+
+                    <!-- Itinéraires -->
+                    <HBox spacing="8" alignment="CENTER" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 8 16; -fx-cursor: hand;">
+                        <Label style="-fx-font-size: 16;" text="🗺️" />
+                        <Label style="-fx-text-fill: #475569; -fx-font-weight: 500; -fx-font-size: 14;" text="Itinéraires" />
+                    </HBox>
+
+                    <!-- Activités -->
+                    <HBox spacing="8" alignment="CENTER" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 8 16; -fx-cursor: hand;">
+                        <Label style="-fx-font-size: 16;" text="🏄" />
+                        <Label style="-fx-text-fill: #475569; -fx-font-weight: 500; -fx-font-size: 14;" text="Activités" />
+                    </HBox>
+
+                    <!-- Voyages -->
+                    <HBox spacing="8" alignment="CENTER" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 8 16; -fx-cursor: hand;">
+                        <Label style="-fx-font-size: 16;" text="✈️" />
+                        <Label style="-fx-text-fill: #475569; -fx-font-weight: 500; -fx-font-size: 14;" text="Voyages" />
+                    </HBox>
+
+                    <!-- Budgets - Active -->
+                    <HBox spacing="8" alignment="CENTER" style="-fx-background-color: rgba(255,140,66,0.1); -fx-background-radius: 12; -fx-padding: 8 16; -fx-cursor: hand; -fx-border-color: #ff8c42; -fx-border-width: 1; -fx-border-radius: 12;">
+                        <Label style="-fx-font-size: 16;" text="💰" />
+                        <Label style="-fx-text-fill: #ff8c42; -fx-font-weight: 600; -fx-font-size: 14;" text="Budgets" />
+                    </HBox>
+                </HBox>
+
+                <Region HBox.hgrow="ALWAYS" />
+
+                <!-- Search bar -->
+                <HBox alignment="CENTER" spacing="8" style="-fx-background-color: #f1f5f9; -fx-background-radius: 20; -fx-padding: 8 20;">
+                    <Label style="-fx-font-size: 14;" text="🔍" />
+                    <Label style="-fx-text-fill: #64748b; -fx-font-size: 13;" text="Rechercher un budget..." />
+                </HBox>
+
+                <!-- Notifications -->
+                <HBox alignment="CENTER" style="-fx-background-color: #f1f5f9; -fx-background-radius: 50%; -fx-min-width: 40; -fx-min-height: 40; -fx-cursor: hand;">
+                    <Label style="-fx-font-size: 16;" text="🔔" />
+                </HBox>
+
+                <!-- User Profile -->
+                <HBox alignment="CENTER" spacing="10" style="-fx-background-color: #f1f5f9; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand;">
+                    <Circle fill="linear-gradient(from 0% 0% to 100% 100%, #ff8c42, #ff6b4a)" radius="16" />
+                    <VBox spacing="0">
+                        <Label style="-fx-text-fill: #0f172a; -fx-font-weight: 600; -fx-font-size: 13;" text="Yosr Boutaieb" />
+                        <Label style="-fx-text-fill: #64748b; -fx-font-size: 10;" text="Administrateur" />
+                    </VBox>
+                    <Label style="-fx-text-fill: #64748b; -fx-font-size: 12;" text="▼" />
+                </HBox>
+            </HBox>
+
+            <!-- Breadcrumb Navigation -->
+            <HBox alignment="CENTER_LEFT" spacing="8" style="-fx-background-color: #ffffff; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0; -fx-padding: 12 32;">
+                <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 12;" text="🏠 Accueil" />
+                <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 12;" text="›" />
+                <Label style="-fx-text-fill: #64748b; -fx-font-size: 12;" text="Budgets" />
+                <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 12;" text="›" />
+                <Label style="-fx-text-fill: #ff8c42; -fx-font-size: 12; -fx-font-weight: 600;" text="Paris 2026" />
+
+                <Region HBox.hgrow="ALWAYS" />
+
+                <HBox spacing="12">
+                    <Label style="-fx-background-color: #f1f5f9; -fx-text-fill: #475569; -fx-background-radius: 20; -fx-padding: 4 12; -fx-font-size: 11; -fx-cursor: hand;" text="📅 Mars 2026" />
+                    <Label style="-fx-background-color: #ff8c42; -fx-text-fill: white; -fx-background-radius: 20; -fx-padding: 4 12; -fx-font-size: 11; -fx-font-weight: 600; -fx-cursor: hand;" text="+ Nouveau budget" />
+                </HBox>
+            </HBox>
+        </VBox>
+    </top>
+
+    <!-- BOTTOM STATUS -->
+    <bottom>
+        <HBox alignment="CENTER_LEFT" spacing="20" style="-fx-background-color: #ffffff; -fx-border-color: #e2e8f0; -fx-border-width: 1 0 0 0; -fx-padding: 12 32;">
+            <Label style="-fx-text-fill: #10b981; -fx-font-size: 11; -fx-font-weight: 500;" text="● Connecté" />
+            <Region HBox.hgrow="ALWAYS" />
+            <Label style="-fx-text-fill: #64748b; -fx-font-size: 11;" text="Dernière mise à jour: 12 Fév 2026, 15:30" />
+            <Label style="-fx-text-fill: #64748b; -fx-font-size: 11;" text="©️ 2026 TravelMate" />
+        </HBox>
+    </bottom>
+
+    <!-- MAIN CONTENT - STYLE CLAIR -->
+    <center>
+        <ScrollPane fitToWidth="true" style="-fx-background: #f8fafc; -fx-border-color: transparent; -fx-background-color: transparent;">
+            <content>
+                <VBox spacing="32" maxWidth="1400">
+                    <padding>
+                        <Insets bottom="60" left="40" right="40" top="40" />
+                    </padding>
+
+                    <!-- HEADER SECTION - BUDGET INFO -->
+                    <HBox alignment="CENTER_LEFT" spacing="24">
+                        <!-- Icon -->
+                        <VBox alignment="CENTER" style="-fx-background-color: #fff7ed; -fx-background-radius: 24; -fx-min-width: 80; -fx-min-height: 80;">
+                            <Label style="-fx-font-size: 48;" text="🗼" />
+                        </VBox>
+
+                        <!-- Budget Info -->
+                        <VBox spacing="8" VBox.vgrow="ALWAYS">
+                            <HBox spacing="12" alignment="CENTER_LEFT">
+                                <Label style="-fx-font-family: 'Clash Display'; -fx-font-size: 36; -fx-font-weight: bold; -fx-text-fill: #0f172a;" text="Paris Printemps 2026" />
+                                <Label style="-fx-background-color: #10b981; -fx-text-fill: white; -fx-background-radius: 20; -fx-padding: 4 12; -fx-font-size: 11; -fx-font-weight: 600;" text="● Actif" />
+                            </HBox>
+
+                            <HBox spacing="24">
+                                <HBox spacing="8" alignment="CENTER_LEFT">
+                                    <Label style="-fx-font-size: 14;" text="📅" />
+                                    <Label style="-fx-text-fill: #475569; -fx-font-size: 14;" text="15 - 22 Mars 2026" />
+                                </HBox>
+                                <HBox spacing="8" alignment="CENTER_LEFT">
+                                    <Label style="-fx-font-size: 14;" text="👥" />
+                                    <Label style="-fx-text-fill: #475569; -fx-font-size: 14;" text="4 participants" />
+                                </HBox>
+                                <HBox spacing="8" alignment="CENTER_LEFT">
+                                    <Label style="-fx-font-size: 14;" text="📍" />
+                                    <Label style="-fx-text-fill: #475569; -fx-font-size: 14;" text="Paris, France" />
+                                </HBox>
+                            </HBox>
+                        </VBox>
+
+                        <Region HBox.hgrow="ALWAYS" />
+
+                        <!-- Quick Actions -->
+                        <VBox alignment="CENTER_RIGHT" spacing="8">
+                            <HBox spacing="8">
+                                <Label style="-fx-background-color: #ffffff; -fx-text-fill: #475569; -fx-background-radius: 12; -fx-padding: 10 16; -fx-border-color: #e2e8f0; -fx-border-width: 1; -fx-border-radius: 12; -fx-font-weight: 500; -fx-font-size: 13; -fx-cursor: hand;" text="📊 Exporter" />
+                                <Label style="-fx-background-color: #ff8c42; -fx-text-fill: white; -fx-background-radius: 12; -fx-padding: 10 20; -fx-font-weight: 600; -fx-font-size: 13; -fx-cursor: hand;" text="➕ Ajouter" />
+                            </HBox>
+                            <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 11;" text="Créé le 10 Jan 2026" />
+                        </VBox>
+                    </HBox>
+
+                    <!-- KPI CARDS - STYLE CLAIR -->
+                    <HBox spacing="20">
+                        <!-- Budget Total Card -->
+                        <VBox spacing="12" style="-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 24; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.02), 10, 0, 0, 2); -fx-border-color: #ff8c42; -fx-border-width: 0 0 0 4; -fx-border-radius: 20;" HBox.hgrow="ALWAYS">
+                            <HBox alignment="CENTER_LEFT" spacing="12">
+                                <VBox alignment="CENTER" style="-fx-background-color: #fff7ed; -fx-background-radius: 14; -fx-min-width: 48; -fx-min-height: 48;">
+                                    <Label style="-fx-font-size: 24;" text="💰" />
+                                </VBox>
+                                <VBox spacing="2">
+                                    <Label style="-fx-text-fill: #64748b; -fx-font-size: 12; -fx-font-weight: 500;" text="BUDGET TOTAL" />
+                                    <Label fx:id="lblMontantTotal" style="-fx-font-family: 'Clash Display'; -fx-font-size: 32; -fx-font-weight: bold; -fx-text-fill: #0f172a;" text="5 000€" />
+                                </VBox>
+                            </HBox>
+                            <Label style="-fx-text-fill: #64748b; -fx-font-size: 12;" text="Budget par jour: 714€" />
+                        </VBox>
+
+                        <!-- Dépensé Card -->
+                        <VBox spacing="12" style="-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 24; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.02), 10, 0, 0, 2);" HBox.hgrow="ALWAYS">
+                            <HBox alignment="CENTER_LEFT" spacing="12">
+                                <VBox alignment="CENTER" style="-fx-background-color: #fef2f2; -fx-background-radius: 14; -fx-min-width: 48; -fx-min-height: 48;">
+                                    <Label style="-fx-font-size: 24;" text="💸" />
+                                </VBox>
+                                <VBox spacing="2">
+                                    <Label style="-fx-text-fill: #64748b; -fx-font-size: 12; -fx-font-weight: 500;" text="DÉPENSÉ" />
+                                    <Label fx:id="lblDepense" style="-fx-font-family: 'Clash Display'; -fx-font-size: 32; -fx-font-weight: bold; -fx-text-fill: #ef4444;" text="3 245€" />
+                                </VBox>
+                            </HBox>
+                            <Label style="-fx-text-fill: #ef4444; -fx-font-size: 12; -fx-font-weight: 500;" text="↗ 64.9% du budget" />
+                        </VBox>
+
+                        <!-- Restant Card -->
+                        <VBox spacing="12" style="-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 24; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.02), 10, 0, 0, 2);" HBox.hgrow="ALWAYS">
+                            <HBox alignment="CENTER_LEFT" spacing="12">
+                                <VBox alignment="CENTER" style="-fx-background-color: #e6f7e6; -fx-background-radius: 14; -fx-min-width: 48; -fx-min-height: 48;">
+                                    <Label style="-fx-font-size: 24;" text="✨" />
+                                </VBox>
+                                <VBox spacing="2">
+                                    <Label style="-fx-text-fill: #64748b; -fx-font-size: 12; -fx-font-weight: 500;" text="RESTANT" />
+                                    <Label fx:id="lblRestant" style="-fx-font-family: 'Clash Display'; -fx-font-size: 32; -fx-font-weight: bold; -fx-text-fill: #10b981;" text="1 755€" />
+                                </VBox>
+                            </HBox>
+                            <Label style="-fx-text-fill: #10b981; -fx-font-size: 12; -fx-font-weight: 500;" text="✓ 35.1% disponible" />
+                        </VBox>
+
+                        <!-- Utilisation Card -->
+                        <VBox spacing="12" style="-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 24; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.02), 10, 0, 0, 2);" HBox.hgrow="ALWAYS">
+                            <HBox alignment="CENTER_LEFT" spacing="12">
+                                <VBox alignment="CENTER" style="-fx-background-color: #fff7ed; -fx-background-radius: 14; -fx-min-width: 48; -fx-min-height: 48;">
+                                    <Label style="-fx-font-size: 24;" text="📊" />
+                                </VBox>
+                                <VBox spacing="2">
+                                    <Label style="-fx-text-fill: #64748b; -fx-font-size: 12; -fx-font-weight: 500;" text="UTILISATION" />
+                                    <Label fx:id="lblPct" style="-fx-font-family: 'Clash Display'; -fx-font-size: 32; -fx-font-weight: bold; -fx-text-fill: #ff8c42;" text="64.9%" />
+                                </VBox>
+                            </HBox>
+                            <ProgressBar fx:id="progressBudget" prefWidth="200" progress="0.649" style="-fx-accent: #ff8c42; -fx-background-color: #e2e8f0;" />
+                        </VBox>
+                    </HBox>
+
+                    <!-- RÉPARTITION PAR CATÉGORIE -->
+                    <GridPane hgap="20" vgap="20">
+                        <columnConstraints>
+                            <ColumnConstraints percentWidth="40" />
+                            <ColumnConstraints percentWidth="60" />
+                        </columnConstraints>
+
+                        <!-- Pie Chart Card -->
+                        <VBox spacing="16" style="-fx-background-color: white; -fx-background-radius: 24; -fx-padding: 28; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.02), 10, 0, 0, 2);" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                            <Label style="-fx-font-family: 'Clash Display'; -fx-font-size: 18; -fx-font-weight: 600; -fx-text-fill: #0f172a;" text="Répartition par catégorie" />
+
+                            <VBox alignment="CENTER" spacing="20">
+                                <!-- Simulated Pie Chart -->
+                                <VBox alignment="CENTER" spacing="8">
+                                    <HBox alignment="CENTER">
+                                        <Circle fill="#ff8c42" radius="60" />
+                                        <Circle fill="#f97316" radius="45" translateX="-15" />
+                                        <Circle fill="#fdba74" radius="30" translateX="-30" />
+                                    </HBox>
+                                </VBox>
+
+                                <VBox spacing="12" VBox.vgrow="ALWAYS">
+                                    <HBox alignment="CENTER_LEFT" spacing="12">
+                                        <Circle fill="#ff8c42" radius="8" />
+                                        <Label style="-fx-font-weight: 600; -fx-text-fill: #0f172a; -fx-font-size: 14;" text="Hébergement" />
+                                        <Region HBox.hgrow="ALWAYS" />
+                                        <Label style="-fx-font-weight: 600; -fx-text-fill: #0f172a; -fx-font-size: 14;" text="1 450€" />
+                                        <Label style="-fx-text-fill: #64748b; -fx-font-size: 12;" text="(44.7%)" />
+                                    </HBox>
+                                    <HBox alignment="CENTER_LEFT" spacing="12">
+                                        <Circle fill="#f97316" radius="8" />
+                                        <Label style="-fx-font-weight: 500; -fx-text-fill: #0f172a; -fx-font-size: 14;" text="Transport" />
+                                        <Region HBox.hgrow="ALWAYS" />
+                                        <Label style="-fx-font-weight: 600; -fx-text-fill: #0f172a; -fx-font-size: 14;" text="890€" />
+                                        <Label style="-fx-text-fill: #64748b; -fx-font-size: 12;" text="(27.4%)" />
+                                    </HBox>
+                                    <HBox alignment="CENTER_LEFT" spacing="12">
+                                        <Circle fill="#fdba74" radius="8" />
+                                        <Label style="-fx-font-weight: 500; -fx-text-fill: #0f172a; -fx-font-size: 14;" text="Restauration" />
+                                        <Region HBox.hgrow="ALWAYS" />
+                                        <Label style="-fx-font-weight: 600; -fx-text-fill: #0f172a; -fx-font-size: 14;" text="540€" />
+                                        <Label style="-fx-text-fill: #64748b; -fx-font-size: 12;" text="(16.6%)" />
+                                    </HBox>
+                                    <HBox alignment="CENTER_LEFT" spacing="12">
+                                        <Circle fill="#fed7aa" radius="8" />
+                                        <Label style="-fx-font-weight: 500; -fx-text-fill: #0f172a; -fx-font-size: 14;" text="Activités" />
+                                        <Region HBox.hgrow="ALWAYS" />
+                                        <Label style="-fx-font-weight: 600; -fx-text-fill: #0f172a; -fx-font-size: 14;" text="365€" />
+                                        <Label style="-fx-text-fill: #64748b; -fx-font-size: 12;" text="(11.3%)" />
+                                    </HBox>
+                                </VBox>
+                            </VBox>
+                        </VBox>
+
+                        <!-- Dépenses récentes Card -->
+                        <VBox spacing="16" style="-fx-background-color: white; -fx-background-radius: 24; -fx-padding: 28; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.02), 10, 0, 0, 2);" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                            <HBox alignment="CENTER_LEFT" spacing="12">
+                                <Label style="-fx-font-family: 'Clash Display'; -fx-font-size: 18; -fx-font-weight: 600; -fx-text-fill: #0f172a;" text="Dépenses récentes" />
+                                <Region HBox.hgrow="ALWAYS" />
+                                <Label style="-fx-text-fill: #ff8c42; -fx-font-size: 12; -fx-font-weight: 600; -fx-cursor: hand;" text="Voir tout →" />
+                            </HBox>
+
+                            <Separator style="-fx-background-color: #e2e8f0;" />
+
+                            <VBox spacing="12">
+                                <HBox alignment="CENTER_LEFT" spacing="12">
+                                    <VBox alignment="CENTER" style="-fx-background-color: #f1f5f9; -fx-background-radius: 12; -fx-min-width: 40; -fx-min-height: 40;">
+                                        <Label style="-fx-font-size: 18;" text="🏨" />
+                                    </VBox>
+                                    <VBox spacing="2">
+                                        <Label style="-fx-font-weight: 600; -fx-text-fill: #0f172a; -fx-font-size: 14;" text="Hôtel Le Marais" />
+                                        <Label style="-fx-text-fill: #64748b; -fx-font-size: 12;" text="12 Fév 2026 • Hébergement" />
+                                    </VBox>
+                                    <Region HBox.hgrow="ALWAYS" />
+                                    <Label style="-fx-font-weight: 700; -fx-text-fill: #0f172a; -fx-font-size: 16;" text="450€" />
+                                </HBox>
+
+                                <HBox alignment="CENTER_LEFT" spacing="12">
+                                    <VBox alignment="CENTER" style="-fx-background-color: #f1f5f9; -fx-background-radius: 12; -fx-min-width: 40; -fx-min-height: 40;">
+                                        <Label style="-fx-font-size: 18;" text="🚆" />
+                                    </VBox>
+                                    <VBox spacing="2">
+                                        <Label style="-fx-font-weight: 600; -fx-text-fill: #0f172a; -fx-font-size: 14;" text="TGV Paris - Lyon" />
+                                        <Label style="-fx-text-fill: #64748b; -fx-font-size: 12;" text="10 Fév 2026 • Transport" />
+                                    </VBox>
+                                    <Region HBox.hgrow="ALWAYS" />
+                                    <Label style="-fx-font-weight: 700; -fx-text-fill: #0f172a; -fx-font-size: 16;" text="89€" />
+                                </HBox>
+
+                                <HBox alignment="CENTER_LEFT" spacing="12">
+                                    <VBox alignment="CENTER" style="-fx-background-color: #f1f5f9; -fx-background-radius: 12; -fx-min-width: 40; -fx-min-height: 40;">
+                                        <Label style="-fx-font-size: 18;" text="🍽️" />
+                                    </VBox>
+                                    <VBox spacing="2">
+                                        <Label style="-fx-font-weight: 600; -fx-text-fill: #0f172a; -fx-font-size: 14;" text="Restaurant L'Atelier" />
+                                        <Label style="-fx-text-fill: #64748b; -fx-font-size: 12;" text="8 Fév 2026 • Restauration" />
+                                    </VBox>
+                                    <Region HBox.hgrow="ALWAYS" />
+                                    <Label style="-fx-font-weight: 700; -fx-text-fill: #0f172a; -fx-font-size: 16;" text="124€" />
+                                </HBox>
+
+                                <HBox alignment="CENTER_LEFT" spacing="12">
+                                    <VBox alignment="CENTER" style="-fx-background-color: #f1f5f9; -fx-background-radius: 12; -fx-min-width: 40; -fx-min-height: 40;">
+                                        <Label style="-fx-font-size: 18;" text="🎫" />
+                                    </VBox>
+                                    <VBox spacing="2">
+                                        <Label style="-fx-font-weight: 600; -fx-text-fill: #0f172a; -fx-font-size: 14;" text="Musée du Louvre" />
+                                        <Label style="-fx-text-fill: #64748b; -fx-font-size: 12;" text="5 Fév 2026 • Activités" />
+                                    </VBox>
+                                    <Region HBox.hgrow="ALWAYS" />
+                                    <Label style="-fx-font-weight: 700; -fx-text-fill: #0f172a; -fx-font-size: 16;" text="48€" />
+                                </HBox>
+                            </VBox>
+                        </VBox>
+                    </GridPane>
+
+                    <!-- TABLEAU DES DÉPENSES -->
+                    <VBox spacing="16" style="-fx-background-color: white; -fx-background-radius: 24; -fx-padding: 28; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.02), 10, 0, 0, 2);">
+                        <!-- Table Header -->
+                        <HBox alignment="CENTER_LEFT" spacing="12">
+                            <Label style="-fx-font-family: 'Clash Display'; -fx-font-size: 20; -fx-font-weight: 600; -fx-text-fill: #0f172a;" text="Journal des Dépenses" />
+                            <Label style="-fx-background-color: #ff8c42; -fx-text-fill: white; -fx-background-radius: 20; -fx-padding: 4 12; -fx-font-weight: 600; -fx-font-size: 11;" text="23 dépenses" />
+                            <Region HBox.hgrow="ALWAYS" />
+                            <HBox spacing="8">
+                                <Label style="-fx-background-color: #f1f5f9; -fx-text-fill: #475569; -fx-background-radius: 20; -fx-padding: 6 14; -fx-font-size: 12; -fx-cursor: hand;" text="📅 Trier par date" />
+                                <Label style="-fx-background-color: #f1f5f9; -fx-text-fill: #475569; -fx-background-radius: 20; -fx-padding: 6 14; -fx-font-size: 12; -fx-cursor: hand;" text="📊 Filtrer" />
+                            </HBox>
+                        </HBox>
+
+                        <!-- TABLE -->
+                        <TableView fx:id="tableDepenses" style="-fx-background-color: transparent; -fx-border-color: #e2e8f0; -fx-border-width: 1; -fx-border-radius: 12;" VBox.vgrow="ALWAYS">
+                            <columns>
+                                <TableColumn fx:id="colLibelle" prefWidth="300" text="Libellé" />
+                                <TableColumn fx:id="colCategorie" prefWidth="180" text="Catégorie" />
+                                <TableColumn fx:id="colMontant" prefWidth="150" text="Montant" />
+                                <TableColumn fx:id="colDate" prefWidth="150" text="Date" />
+                                <TableColumn fx:id="colPaiement" prefWidth="150" text="Paiement" />
+                                <TableColumn fx:id="colActions" prefWidth="100" text="Actions" />
+                            </columns>
+                            <placeholder>
+                                <VBox alignment="CENTER" spacing="12">
+                                    <Label style="-fx-font-size: 32;" text="📊" />
+                                    <Label style="-fx-text-fill: #64748b; -fx-font-size: 14;" text="Aucune dépense à afficher" />
+                                </VBox>
+                            </placeholder>
+                        </TableView>
+
+                        <!-- Pagination -->
+                        <HBox alignment="CENTER_RIGHT" spacing="8">
+                            <Label style="-fx-text-fill: #64748b; -fx-font-size: 12;" text="1-10 sur 23 dépenses" />
+                            <HBox spacing="4">
+                                <Label style="-fx-background-color: #ff8c42; -fx-text-fill: white; -fx-background-radius: 8; -fx-min-width: 32; -fx-min-height: 32; -fx-alignment: center; -fx-font-size: 12; -fx-cursor: hand;" text="1" />
+                                <Label style="-fx-background-color: #f1f5f9; -fx-text-fill: #475569; -fx-background-radius: 8; -fx-min-width: 32; -fx-min-height: 32; -fx-alignment: center; -fx-font-size: 12; -fx-cursor: hand;" text="2" />
+                                <Label style="-fx-background-color: #f1f5f9; -fx-text-fill: #475569; -fx-background-radius: 8; -fx-min-width: 32; -fx-min-height: 32; -fx-alignment: center; -fx-font-size: 12; -fx-cursor: hand;" text="3" />
+                            </HBox>
+                        </HBox>
+                    </VBox>
+
+                    <!-- BUDGETS SIMILAIRES -->
+                    <VBox spacing="16">
+                        <HBox alignment="CENTER_LEFT" spacing="12">
+                            <Label style="-fx-font-family: 'Clash Display'; -fx-font-size: 20; -fx-font-weight: 600; -fx-text-fill: #0f172a;" text="Autres budgets" />
+                            <Region HBox.hgrow="ALWAYS" />
+                            <Label style="-fx-text-fill: #ff8c42; -fx-font-size: 12; -fx-font-weight: 600; -fx-cursor: hand;" text="Voir tous les budgets →" />
+                        </HBox>
+
+                        <HBox spacing="20">
+                            <!-- Budget 1 -->
+                            <VBox spacing="12" style="-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.02), 10, 0, 0, 2); -fx-border-color: #e2e8f0; -fx-border-width: 1; -fx-border-radius: 20;" HBox.hgrow="ALWAYS">
+                                <HBox alignment="CENTER_LEFT" spacing="12">
+                                    <Label style="-fx-font-size: 32;" text="🏖️" />
+                                    <VBox spacing="2">
+                                        <Label style="-fx-font-weight: 600; -fx-text-fill: #0f172a; -fx-font-size: 16;" text="Djerba" />
+                                        <Label style="-fx-text-fill: #64748b; -fx-font-size: 12;" text="Juin 2026" />
+                                    </VBox>
+                                </HBox>
+                                <HBox alignment="CENTER_LEFT" spacing="6">
+                                    <Label style="-fx-font-weight: bold; -fx-text-fill: #0f172a; -fx-font-size: 16;" text="2 200€" />
+                                    <Label style="-fx-text-fill: #64748b; -fx-font-size: 13;" text="/ 2 200€" />
+                                </HBox>
+                                <ProgressBar prefWidth="200" progress="0.45" style="-fx-accent: #ff8c42; -fx-background-color: #e2e8f0;" />
+                                <Label style="-fx-text-fill: #64748b; -fx-font-size: 11;" text="45% utilisé · 2 participants" />
+                            </VBox>
+
+                            <!-- Budget 2 -->
+                            <VBox spacing="12" style="-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.02), 10, 0, 0, 2); -fx-border-color: #e2e8f0; -fx-border-width: 1; -fx-border-radius: 20;" HBox.hgrow="ALWAYS">
+                                <HBox alignment="CENTER_LEFT" spacing="12">
+                                    <Label style="-fx-font-size: 32;" text="🏔️" />
+                                    <VBox spacing="2">
+                                        <Label style="-fx-font-weight: 600; -fx-text-fill: #0f172a; -fx-font-size: 16;" text="Chamonix" />
+                                        <Label style="-fx-text-fill: #64748b; -fx-font-size: 12;" text="Déc 2026" />
+                                    </VBox>
+                                </HBox>
+                                <HBox alignment="CENTER_LEFT" spacing="6">
+                                    <Label style="-fx-font-weight: bold; -fx-text-fill: #0f172a; -fx-font-size: 16;" text="0€" />
+                                    <Label style="-fx-text-fill: #64748b; -fx-font-size: 13;" text="/ 3 500€" />
+                                </HBox>
+                                <ProgressBar prefWidth="200" progress="0" style="-fx-accent: #ff8c42; -fx-background-color: #e2e8f0;" />
+                                <Label style="-fx-text-fill: #64748b; -fx-font-size: 11;" text="Pas encore commencé · 3 participants" />
+                            </VBox>
+
+                            <!-- Budget 3 -->
+                            <VBox spacing="12" style="-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.02), 10, 0, 0, 2); -fx-border-color: #e2e8f0; -fx-border-width: 1; -fx-border-radius: 20;" HBox.hgrow="ALWAYS">
+                                <HBox alignment="CENTER_LEFT" spacing="12">
+                                    <Label style="-fx-font-size: 32;" text="🏛️" />
+                                    <VBox spacing="2">
+                                        <Label style="-fx-font-weight: 600; -fx-text-fill: #0f172a; -fx-font-size: 16;" text="Rome" />
+                                        <Label style="-fx-text-fill: #64748b; -fx-font-size: 12;" text="Sept 2026" />
+                                    </VBox>
+                                </HBox>
+                                <HBox alignment="CENTER_LEFT" spacing="6">
+                                    <Label style="-fx-font-weight: bold; -fx-text-fill: #0f172a; -fx-font-size: 16;" text="890€" />
+                                    <Label style="-fx-text-fill: #64748b; -fx-font-size: 13;" text="/ 4 200€" />
+                                </HBox>
+                                <ProgressBar prefWidth="200" progress="0.21" style="-fx-accent: #ff8c42; -fx-background-color: #e2e8f0;" />
+                                <Label style="-fx-text-fill: #64748b; -fx-font-size: 11;" text="21% utilisé · 2 participants" />
+                            </VBox>
+                        </HBox>
+                    </VBox>
+
+                    <!-- BOTTOM DECORATION -->
+                    <Rectangle fill="linear-gradient(to right, #ff8c42, #ff6b4a, #6366f1)" height="4" width="1400" arcHeight="8" arcWidth="8">
+                        <VBox.margin>
+                            <Insets top="20" />
+                        </VBox.margin>
+                    </Rectangle>
+
+                </VBox>
+            </content>
+        </ScrollPane>
+    </center>
+
+</BorderPane>
