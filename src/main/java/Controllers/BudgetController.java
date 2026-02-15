@@ -6,136 +6,198 @@ import Services.BudgetCRUD;
 import Services.DepenseCRUD;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.util.Callback;
+import javafx.util.StringConverter;
 
 import java.net.URL;
+import java.sql.Date;
 import java.sql.SQLException;
-import java.text.NumberFormat;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Locale;
 import java.util.ResourceBundle;
-import java.util.stream.Collectors;
 
 public class BudgetController implements Initializable {
 
-    // Services CRUD
+    // Services
     private final BudgetCRUD budgetCRUD = new BudgetCRUD();
     private final DepenseCRUD depenseCRUD = new DepenseCRUD();
 
-    // Données observables
-    private ObservableList<Budget> budgetList = FXCollections.observableArrayList();
-    private ObservableList<Depense> depenseList = FXCollections.observableArrayList();
+    // Budget actif
+    private Budget budgetActif;
+    private ObservableList<Budget> budgetsList = FXCollections.observableArrayList();
+    private ObservableList<Depense> depensesList = FXCollections.observableArrayList();
 
-    // Budget actuellement sélectionné (par défaut le premier)
-    private Budget currentBudget;
-    private int currentBudgetId = 1;
-
-    // ==================== INJECTION DES COMPOSANTS FXML ====================
-
-    // Header
+    // FXML Injections
+    @FXML
+    private ComboBox<Budget> cmbListeBudgets;
+    @FXML
+    private Button btnModifierBudget;
+    @FXML
+    private Button btnSupprimerBudget;
+    @FXML
+    private Label lblBudgetNom;
+    @FXML
+    private Label lblBudgetStatut;
+    @FXML
+    private Label lblBudgetDevise;
     @FXML
     private Label lblBudgetVoyage;
     @FXML
-    private Label lblDatesVoyage;
+    private Label lblModalBudgetTitle;
     @FXML
-    private Label lblParticipants;
-    @FXML
-    private Label lblStatutBudget;
+    private Label lblModalBudgetSubtitle;
 
-    // KPI Cards
+    // FXML Injections existantes
     @FXML
-    private Label lblMontantTotal;
+    private Button btnAjouterDepense;
     @FXML
-    private Label lblDepense;
+    private Button btnNouveauBudget;
     @FXML
-    private Label lblRestant;
+    private Button btnSaveBudget;
     @FXML
-    private Label lblPct;
+    private Button btnSaveDepense;
     @FXML
-    private ProgressBar progressBudget;
-
-    // Labels de répartition par catégorie
+    private ComboBox<String> cmbCategorieDepense;
     @FXML
-    private Label lblHebergementMontant;
+    private ComboBox<String> cmbDeviseBudget;
     @FXML
-    private Label lblHebergementPourcent;
+    private ComboBox<String> cmbDeviseDepense;
     @FXML
-    private Label lblTransportMontant;
+    private ComboBox<String> cmbPaiementDepense;
     @FXML
-    private Label lblTransportPourcent;
+    private ComboBox<String> cmbStatutBudget;
     @FXML
-    private Label lblRestaurationMontant;
-    @FXML
-    private Label lblRestaurationPourcent;
-    @FXML
-    private Label lblActivitesMontant;
-    @FXML
-    private Label lblActivitesPourcent;
-
-    // TableView des dépenses
-    @FXML
-    private TableView<Depense> tableDepenses;
-    @FXML
-    private TableColumn<Depense, String> colLibelle;
+    private TableColumn<Depense, String> colActions;
     @FXML
     private TableColumn<Depense, String> colCategorie;
     @FXML
-    private TableColumn<Depense, Float> colMontant;
+    private TableColumn<Depense, Date> colDate;
     @FXML
-    private TableColumn<Depense, java.sql.Date> colDate;
+    private TableColumn<Depense, String> colLibelle;
+    @FXML
+    private TableColumn<Depense, Float> colMontant;
     @FXML
     private TableColumn<Depense, String> colPaiement;
     @FXML
-    private TableColumn<Depense, Void> colActions;
+    private Label lblDepense;
+    @FXML
+    private Label lblModalTitle;
+    @FXML
+    private Label lblMontantTotal;
+    @FXML
+    private Label lblPct;
+    @FXML
+    private Label lblRestant;
+    @FXML
+    private Label lblNomBudget;
+    @FXML
+    private VBox modalBudget;
+    @FXML
+    private VBox modalDepense;
+    @FXML
+    private ProgressBar progressBudget;
+    @FXML
+    private TableView<Depense> tableDepenses;
+    @FXML
+    private TextField txtMontantBudget;
+    @FXML
+    private TextField txtMontantDepense;
+    @FXML
+    private TextField txtNomBudget;
+    @FXML
+    private TextArea txtNotesDepense;
+    @FXML
+    private TextField txtLibelleDepense;
+    @FXML
+    private DatePicker dateDepense;
 
-    // Labels supplémentaires
-    @FXML
-    private Label lblTotalDepenses; // Pour afficher le nombre total de dépenses
-    @FXML
-    private Label lblBudgetParJour;
-    @FXML
-    private Label lblDateCreation;
-
-    // ==================== INITIALISATION ====================
+    // Pour la modification
+    private Depense depenseEnCours;
+    private boolean isEditingDepense = false;
+    private boolean isEditingBudget = false;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        try {
-            // Configuration des colonnes du tableau
-            setupTableColumns();
+        initializeComboBoxes();
+        configureTableView();
+        configureBudgetComboBox();
+        chargerTousLesBudgets();
+        chargerPremierBudget();
+        chargerDepenses();
+        dateDepense.setValue(LocalDate.now());
+        setupDateConverters();
+    }
 
-            // Chargement des données depuis la base
-            loadBudgets();
-            loadCurrentBudget();
-            loadDepenses();
+    private void initializeComboBoxes() {
+        // Devises pour budget
+        if (cmbDeviseBudget != null) {
+            cmbDeviseBudget.setItems(FXCollections.observableArrayList("EUR", "USD", "GBP", "CHF", "CAD", "TND"));
+            cmbDeviseBudget.setValue("EUR");
+        }
 
-            // Mise à jour de l'interface
-            updateUI();
+        // Statut budget
+        if (cmbStatutBudget != null) {
+            cmbStatutBudget.setItems(FXCollections.observableArrayList("ACTIF", "INACTIF"));
+            cmbStatutBudget.setValue("ACTIF");
+        }
 
-            // Ajout des boutons d'action
-            addActionButtons();
+        // Devises pour dépense
+        if (cmbDeviseDepense != null) {
+            cmbDeviseDepense.setItems(FXCollections.observableArrayList("EUR", "USD", "GBP", "CHF", "CAD", "TND"));
+            cmbDeviseDepense.setValue("EUR");
+        }
 
-            System.out.println("✅ Contrôleur initialisé avec succès !");
+        // Catégories de dépenses
+        if (cmbCategorieDepense != null) {
+            cmbCategorieDepense.setItems(FXCollections.observableArrayList(
+                    "Hébergement", "Transport", "Restauration", "Activités",
+                    "Shopping", "Essence", "Péage", "Parking", "Autre"
+            ));
+        }
 
-        } catch (SQLException e) {
-            showAlert("Erreur de chargement",
-                    "Impossible de charger les données depuis la base : " + e.getMessage(),
-                    Alert.AlertType.ERROR);
-            e.printStackTrace();
+        // Méthodes de paiement
+        if (cmbPaiementDepense != null) {
+            cmbPaiementDepense.setItems(FXCollections.observableArrayList(
+                    "Carte bancaire", "Espèces", "Virement", "PayPal", "Apple Pay", "Google Pay"
+            ));
         }
     }
 
-    // ==================== CONFIGURATION DU TABLEAU ====================
+    private void configureBudgetComboBox() {
+        if (cmbListeBudgets != null) {
+            // Personnaliser l'affichage des budgets dans le ComboBox
+            cmbListeBudgets.setConverter(new StringConverter<Budget>() {
+                @Override
+                public String toString(Budget budget) {
+                    return budget != null ? budget.getDescriptionBudget() : "";
+                }
 
-    private void setupTableColumns() {
-        // Liaison des propriétés
+                @Override
+                public Budget fromString(String string) {
+                    return null;
+                }
+            });
+
+            // Gérer le changement de sélection
+            cmbListeBudgets.setOnAction(event -> {
+                Budget selected = cmbListeBudgets.getValue();
+                if (selected != null) {
+                    budgetActif = selected;
+                    afficherInfoBudget();
+                    chargerDepenses();
+                }
+            });
+        }
+    }
+
+    private void configureTableView() {
         colLibelle.setCellValueFactory(new PropertyValueFactory<>("libelleDepense"));
         colCategorie.setCellValueFactory(new PropertyValueFactory<>("categorieDepense"));
         colMontant.setCellValueFactory(new PropertyValueFactory<>("montantDepense"));
@@ -150,18 +212,17 @@ public class BudgetController implements Initializable {
                 if (empty || montant == null) {
                     setText(null);
                 } else {
-                    NumberFormat format = NumberFormat.getCurrencyInstance(Locale.FRANCE);
-                    setText(format.format(montant));
+                    setText(String.format("%.2f €", montant));
                 }
             }
         });
 
         // Formatage de la colonne date
-        colDate.setCellFactory(column -> new TableCell<Depense, java.sql.Date>() {
+        colDate.setCellFactory(column -> new TableCell<Depense, Date>() {
             private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
             @Override
-            protected void updateItem(java.sql.Date date, boolean empty) {
+            protected void updateItem(Date date, boolean empty) {
                 super.updateItem(date, empty);
                 if (empty || date == null) {
                     setText(null);
@@ -170,400 +231,539 @@ public class BudgetController implements Initializable {
                 }
             }
         });
-    }
 
-    private void addActionButtons() {
-        Callback<TableColumn<Depense, Void>, TableCell<Depense, Void>> cellFactory =
-                new Callback<>() {
-                    @Override
-                    public TableCell<Depense, Void> call(final TableColumn<Depense, Void> param) {
-                        return new TableCell<>() {
-                            private final Button btnEdit = new Button("✏️");
-                            private final Button btnDelete = new Button("❌");
-                            private final HBox pane = new HBox(5, btnEdit, btnDelete);
+        // Colonne des actions
+        colActions.setCellFactory(column -> new TableCell<Depense, String>() {
+            private final Button btnEdit = new Button("✏️");
+            private final Button btnDelete = new Button("❌");
 
-                            {
-                                // Style des boutons
-                                btnEdit.setStyle("-fx-background-color: #f1f5f9; -fx-cursor: hand; -fx-font-size: 12; -fx-padding: 5 10; -fx-background-radius: 5;");
-                                btnDelete.setStyle("-fx-background-color: #f1f5f9; -fx-cursor: hand; -fx-font-size: 12; -fx-padding: 5 10; -fx-background-radius: 5;");
+            {
+                btnEdit.setStyle("-fx-background-color: #f1f5f9; -fx-cursor: hand; -fx-font-size: 12; -fx-min-width: 30; -fx-background-radius: 8;");
+                btnDelete.setStyle("-fx-background-color: #f1f5f9; -fx-cursor: hand; -fx-font-size: 12; -fx-min-width: 30; -fx-background-radius: 8;");
 
-                                // Tooltips
-                                btnEdit.setTooltip(new Tooltip("Modifier cette dépense"));
-                                btnDelete.setTooltip(new Tooltip("Supprimer cette dépense"));
+                btnEdit.setOnAction(event -> {
+                    Depense depense = getTableView().getItems().get(getIndex());
+                    handleEditDepense(depense);
+                });
 
-                                // Actions
-                                btnEdit.setOnAction(event -> {
-                                    Depense depense = getTableView().getItems().get(getIndex());
-                                    editDepense(depense);
-                                });
-
-                                btnDelete.setOnAction(event -> {
-                                    Depense depense = getTableView().getItems().get(getIndex());
-                                    deleteDepense(depense);
-                                });
-                            }
-
-                            @Override
-                            public void updateItem(Void item, boolean empty) {
-                                super.updateItem(item, empty);
-                                setGraphic(empty ? null : pane);
-                            }
-                        };
-                    }
-                };
-        colActions.setCellFactory(cellFactory);
-    }
-
-    // ==================== CHARGEMENT DES DONNÉES ====================
-
-    private void loadBudgets() throws SQLException {
-        List<Budget> budgets = budgetCRUD.afficher();
-        budgetList.setAll(budgets);
-        System.out.println("📊 " + budgets.size() + " budgets chargés depuis la BDD");
-    }
-
-    private void loadCurrentBudget() throws SQLException {
-        // Charger le budget avec l'ID 1 (Paris)
-        currentBudget = budgetCRUD.getById(currentBudgetId);
-
-        if (currentBudget == null && !budgetList.isEmpty()) {
-            // Si le budget 1 n'existe pas, prendre le premier de la liste
-            currentBudget = budgetList.get(0);
-            currentBudgetId = currentBudget.getIdBudget();
-        }
-
-        if (currentBudget != null) {
-            System.out.println("💰 Budget courant : " + currentBudget.getDescriptionBudget() +
-                    " - " + currentBudget.getMontantTotal() + currentBudget.getDeviseBudget());
-        }
-    }
-
-    private void loadDepenses() throws SQLException {
-        List<Depense> toutesDepenses = depenseCRUD.afficher();
-
-        // Filtrer les dépenses pour le budget courant
-        List<Depense> depensesBudget = toutesDepenses.stream()
-                .filter(d -> d.getIdBudget() == currentBudgetId)
-                .collect(Collectors.toList());
-
-        depenseList.setAll(depensesBudget);
-        tableDepenses.setItems(depenseList);
-
-        System.out.println("📝 " + depensesBudget.size() + " dépenses chargées pour le budget " + currentBudgetId);
-    }
-
-    // ==================== MISE À JOUR DE L'INTERFACE ====================
-
-    private void updateUI() throws SQLException {
-        if (currentBudget == null) return;
-
-        // Mise à jour des informations du budget
-        updateBudgetInfo();
-
-        // Mise à jour des KPI
-        updateKPIs();
-
-        // Mise à jour de la répartition par catégorie
-        updateCategoryBreakdown();
-    }
-
-    private void updateBudgetInfo() {
-        if (currentBudget != null) {
-            // Titre du budget
-            if (lblBudgetVoyage != null) {
-                lblBudgetVoyage.setText(currentBudget.getDescriptionBudget());
+                btnDelete.setOnAction(event -> {
+                    Depense depense = getTableView().getItems().get(getIndex());
+                    handleDeleteDepense(depense);
+                });
             }
 
-            // Statut du budget
-            if (lblStatutBudget != null) {
-                lblStatutBudget.setText(currentBudget.getStatutBudget());
-                // Changer la couleur selon le statut
-                if ("Actif".equals(currentBudget.getStatutBudget())) {
-                    lblStatutBudget.setStyle("-fx-background-color: #10b981; -fx-text-fill: white; -fx-background-radius: 20; -fx-padding: 4 12;");
-                } else if ("Terminé".equals(currentBudget.getStatutBudget())) {
-                    lblStatutBudget.setStyle("-fx-background-color: #64748b; -fx-text-fill: white; -fx-background-radius: 20; -fx-padding: 4 12;");
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setGraphic(null);
                 } else {
-                    lblStatutBudget.setStyle("-fx-background-color: #f59e0b; -fx-text-fill: white; -fx-background-radius: 20; -fx-padding: 4 12;");
+                    HBox buttons = new HBox(5, btnEdit, btnDelete);
+                    buttons.setAlignment(javafx.geometry.Pos.CENTER);
+                    setGraphic(buttons);
                 }
             }
-
-            // Date de création
-            if (lblDateCreation != null) {
-                lblDateCreation.setText("Créé le " + java.time.LocalDate.now().minusMonths(1).format(DateTimeFormatter.ofPattern("dd MMM yyyy")));
-            }
-        }
-
-        // Informations statiques pour l'exemple (à remplacer par des vraies données de voyage)
-        if (lblDatesVoyage != null) lblDatesVoyage.setText("15 - 22 Mars 2026");
-        if (lblParticipants != null) lblParticipants.setText("4 participants");
-    }
-
-    private void updateKPIs() {
-        if (currentBudget == null || depenseList.isEmpty()) {
-            // Pas de données, afficher des valeurs par défaut
-            lblMontantTotal.setText(formatMontant(0));
-            lblDepense.setText(formatMontant(0));
-            lblRestant.setText(formatMontant(0));
-            lblPct.setText("0%");
-            progressBudget.setProgress(0);
-            if (lblBudgetParJour != null) lblBudgetParJour.setText("Budget par jour: 0€");
-            if (lblTotalDepenses != null) lblTotalDepenses.setText("0 dépense");
-            return;
-        }
-
-        float montantTotal = currentBudget.getMontantTotal();
-        float totalDepenses = (float) depenseList.stream()
-                .mapToDouble(Depense::getMontantDepense)
-                .sum();
-        float montantRestant = montantTotal - totalDepenses;
-        float pourcentageUtilise = (totalDepenses / montantTotal) * 100;
-
-        // Mise à jour des labels
-        lblMontantTotal.setText(formatMontant(montantTotal));
-        lblDepense.setText(formatMontant(totalDepenses));
-        lblRestant.setText(formatMontant(montantRestant));
-        lblPct.setText(String.format("%.1f%%", pourcentageUtilise));
-
-        // Mise à jour de la progress bar
-        progressBudget.setProgress(totalDepenses / montantTotal);
-
-        // Changer la couleur selon le niveau d'utilisation
-        if (pourcentageUtilise > 90) {
-            progressBudget.setStyle("-fx-accent: #ef4444;"); // Rouge
-        } else if (pourcentageUtilise > 70) {
-            progressBudget.setStyle("-fx-accent: #f97316;"); // Orange
-        } else {
-            progressBudget.setStyle("-fx-accent: #ff8c42;"); // Orange clair
-        }
-
-        // Budget par jour (supposant 7 jours de voyage)
-        if (lblBudgetParJour != null) {
-            float budgetParJour = montantTotal / 7;
-            lblBudgetParJour.setText(String.format("Budget par jour: %.0f€", budgetParJour));
-        }
-
-        // Nombre total de dépenses
-        if (lblTotalDepenses != null) {
-            lblTotalDepenses.setText(depenseList.size() + (depenseList.size() > 1 ? " dépenses" : " dépense"));
-        }
-    }
-
-    private void updateCategoryBreakdown() {
-        if (depenseList.isEmpty()) {
-            // Réinitialiser les catégories
-            resetCategoryLabels();
-            return;
-        }
-
-        float totalDepenses = (float) depenseList.stream()
-                .mapToDouble(Depense::getMontantDepense)
-                .sum();
-
-        // Calcul par catégorie
-        float hebergementTotal = calculateCategoryTotal("Hébergement");
-        float transportTotal = calculateCategoryTotal("Transport");
-        float restaurationTotal = calculateCategoryTotal("Restauration");
-        float activitesTotal = calculateCategoryTotal("Activités");
-
-        // Catégories supplémentaires
-        float autresTotal = totalDepenses - (hebergementTotal + transportTotal + restaurationTotal + activitesTotal);
-
-        // Mise à jour des labels
-        updateCategoryLabel(lblHebergementMontant, lblHebergementPourcent, hebergementTotal, totalDepenses);
-        updateCategoryLabel(lblTransportMontant, lblTransportPourcent, transportTotal, totalDepenses);
-        updateCategoryLabel(lblRestaurationMontant, lblRestaurationPourcent, restaurationTotal, totalDepenses);
-        updateCategoryLabel(lblActivitesMontant, lblActivitesPourcent, activitesTotal, totalDepenses);
-    }
-
-    private float calculateCategoryTotal(String categorie) {
-        return (float) depenseList.stream()
-                .filter(d -> categorie.equals(d.getCategorieDepense()))
-                .mapToDouble(Depense::getMontantDepense)
-                .sum();
-    }
-
-    private void updateCategoryLabel(Label montantLabel, Label pourcentLabel, float montant, float total) {
-        if (montantLabel != null) {
-            montantLabel.setText(formatMontant(montant));
-        }
-        if (pourcentLabel != null && total > 0) {
-            pourcentLabel.setText(String.format("(%.1f%%)", (montant / total) * 100));
-        }
-    }
-
-    private void resetCategoryLabels() {
-        String zero = formatMontant(0);
-        if (lblHebergementMontant != null) lblHebergementMontant.setText(zero);
-        if (lblTransportMontant != null) lblTransportMontant.setText(zero);
-        if (lblRestaurationMontant != null) lblRestaurationMontant.setText(zero);
-        if (lblActivitesMontant != null) lblActivitesMontant.setText(zero);
-
-        if (lblHebergementPourcent != null) lblHebergementPourcent.setText("(0%)");
-        if (lblTransportPourcent != null) lblTransportPourcent.setText("(0%)");
-        if (lblRestaurationPourcent != null) lblRestaurationPourcent.setText("(0%)");
-        if (lblActivitesPourcent != null) lblActivitesPourcent.setText("(0%)");
-    }
-
-    private String formatMontant(float montant) {
-        return String.format("%,.0f€", montant).replace(',', ' ');
-    }
-
-    // ==================== ACTIONS SUR LES DÉPENSES ====================
-
-    private void editDepense(Depense depense) {
-        // Création de la boîte de dialogue
-        Dialog<Depense> dialog = new Dialog<>();
-        dialog.setTitle("Modifier la dépense");
-        dialog.setHeaderText("Modification : " + depense.getLibelleDepense());
-
-        // Boutons
-        ButtonType saveButtonType = new ButtonType("Enregistrer", ButtonBar.ButtonData.OK_DONE);
-        dialog.getDialogPane().getButtonTypes().addAll(saveButtonType, ButtonType.CANCEL);
-
-        // Formulaire (simplifié pour l'exemple)
-        TextField montantField = new TextField(String.valueOf(depense.getMontantDepense()));
-        montantField.setPromptText("Montant");
-
-        dialog.getDialogPane().setContent(new VBox(10, new Label("Nouveau montant:"), montantField));
-
-        // Traitement du résultat
-        dialog.setResultConverter(dialogButton -> {
-            if (dialogButton == saveButtonType) {
-                try {
-                    float nouveauMontant = Float.parseFloat(montantField.getText());
-                    depense.setMontantDepense(nouveauMontant);
-                    return depense;
-                } catch (NumberFormatException e) {
-                    showAlert("Erreur", "Montant invalide", Alert.AlertType.ERROR);
-                }
-            }
-            return null;
         });
 
-        dialog.showAndWait().ifPresent(updatedDepense -> {
+        tableDepenses.setItems(depensesList);
+    }
+
+    private void setupDateConverters() {
+        StringConverter<LocalDate> converter = new StringConverter<LocalDate>() {
+            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+            @Override
+            public String toString(LocalDate date) {
+                if (date != null) {
+                    return dateFormatter.format(date);
+                }
+                return "";
+            }
+
+            @Override
+            public LocalDate fromString(String string) {
+                if (string != null && !string.isEmpty()) {
+                    return LocalDate.parse(string, dateFormatter);
+                }
+                return null;
+            }
+        };
+
+        if (dateDepense != null) dateDepense.setConverter(converter);
+    }
+
+    private void chargerTousLesBudgets() {
+        try {
+            List<Budget> budgets = budgetCRUD.afficher();
+            budgetsList.clear();
+            budgetsList.addAll(budgets);
+            if (cmbListeBudgets != null) {
+                cmbListeBudgets.setItems(budgetsList);
+            }
+        } catch (SQLException e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible de charger les budgets: " + e.getMessage());
+        }
+    }
+
+    private void chargerPremierBudget() {
+        try {
+            List<Budget> budgets = budgetCRUD.afficher();
+            if (!budgets.isEmpty()) {
+                budgetActif = budgets.get(0);
+                if (cmbListeBudgets != null) {
+                    cmbListeBudgets.setValue(budgetActif);
+                }
+                afficherInfoBudget();
+            } else {
+                budgetActif = null;
+                resetAffichageBudget();
+            }
+        } catch (SQLException e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible de charger les budgets: " + e.getMessage());
+        }
+    }
+
+    private void resetAffichageBudget() {
+        lblMontantTotal.setText("0€");
+        lblDepense.setText("0€");
+        lblRestant.setText("0€");
+        lblPct.setText("0%");
+        progressBudget.setProgress(0);
+
+        if (lblNomBudget != null) lblNomBudget.setText("Aucun budget");
+        if (lblBudgetNom != null) lblBudgetNom.setText("Aucun budget");
+        if (lblBudgetStatut != null) {
+            lblBudgetStatut.setText("● Inactif");
+            lblBudgetStatut.setStyle("-fx-background-color: #94a3b8; -fx-text-fill: white; -fx-background-radius: 20; -fx-padding: 4 12; -fx-font-size: 11; -fx-font-weight: 600;");
+        }
+        if (lblBudgetDevise != null) lblBudgetDevise.setText("Devise: -");
+        if (lblBudgetVoyage != null) lblBudgetVoyage.setText("Voyage ID: -");
+    }
+
+    private void afficherInfoBudget() {
+        if (budgetActif != null) {
+            // Mise à jour des labels principaux
+            lblMontantTotal.setText(String.format("%.0f %s", budgetActif.getMontantTotal(), budgetActif.getDeviseBudget()));
+
+            if (lblNomBudget != null) lblNomBudget.setText(budgetActif.getDescriptionBudget());
+            if (lblBudgetNom != null) lblBudgetNom.setText(budgetActif.getDescriptionBudget());
+
+            // Statut avec couleur
+            if (lblBudgetStatut != null) {
+                String statut = budgetActif.getStatutBudget();
+                lblBudgetStatut.setText("● " + statut);
+                if ("ACTIF".equals(statut)) {
+                    lblBudgetStatut.setStyle("-fx-background-color: #10b981; -fx-text-fill: white; -fx-background-radius: 20; -fx-padding: 4 12; -fx-font-size: 11; -fx-font-weight: 600;");
+                } else {
+                    lblBudgetStatut.setStyle("-fx-background-color: #ef4444; -fx-text-fill: white; -fx-background-radius: 20; -fx-padding: 4 12; -fx-font-size: 11; -fx-font-weight: 600;");
+                }
+            }
+
+            // Devise
+            if (lblBudgetDevise != null) {
+                lblBudgetDevise.setText("Devise: " + budgetActif.getDeviseBudget());
+            }
+
+            // ID Voyage
+            if (lblBudgetVoyage != null) {
+                lblBudgetVoyage.setText(budgetActif.getIdVoyage() > 0 ? "Voyage ID: " + budgetActif.getIdVoyage() : "Voyage non associé");
+            }
+        }
+    }
+
+    private void chargerDepenses() {
+        if (budgetActif != null) {
             try {
-                depenseCRUD.modifier(updatedDepense);
-                loadDepenses();
-                updateKPIs();
-                updateCategoryBreakdown();
-                showAlert("Succès", "Dépense modifiée avec succès!", Alert.AlertType.INFORMATION);
+                List<Depense> depenses = depenseCRUD.afficher();
+                depensesList.clear();
+                for (Depense d : depenses) {
+                    if (d.getIdBudget() == budgetActif.getIdBudget()) {
+                        depensesList.add(d);
+                    }
+                }
+                mettreAJourStats();
             } catch (SQLException e) {
-                showAlert("Erreur", "Erreur lors de la modification: " + e.getMessage(), Alert.AlertType.ERROR);
+                showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible de charger les dépenses: " + e.getMessage());
+            }
+        }
+    }
+
+    private void mettreAJourStats() {
+        if (budgetActif == null) return;
+
+        float totalDepenses = 0;
+        for (Depense d : depensesList) {
+            totalDepenses += d.getMontantDepense();
+        }
+
+        float restant = budgetActif.getMontantTotal() - totalDepenses;
+        float pourcentage = budgetActif.getMontantTotal() > 0 ? (totalDepenses / budgetActif.getMontantTotal()) * 100 : 0;
+
+        lblDepense.setText(String.format("%.0f %s", totalDepenses, budgetActif.getDeviseBudget()));
+        lblRestant.setText(String.format("%.0f %s", restant, budgetActif.getDeviseBudget()));
+        lblPct.setText(String.format("%.1f%%", pourcentage));
+        progressBudget.setProgress(budgetActif.getMontantTotal() > 0 ? totalDepenses / budgetActif.getMontantTotal() : 0);
+
+        // Changer la couleur selon le pourcentage
+        String couleur;
+        if (pourcentage > 85) {
+            couleur = "#ef4444";
+        } else if (pourcentage > 60) {
+            couleur = "#f59e0b";
+        } else {
+            couleur = "#10b981";
+        }
+
+        lblPct.setStyle("-fx-text-fill: " + couleur + ";");
+        progressBudget.setStyle("-fx-accent: " + couleur + ";");
+    }
+
+    // GESTION DES BUDGETS
+    @FXML
+    void handleNouveauBudget(ActionEvent event) {
+        modalBudget.setVisible(true);
+        modalBudget.setManaged(true);
+        modalDepense.setVisible(false);
+        modalDepense.setManaged(false);
+
+        isEditingBudget = false;
+
+        if (lblModalBudgetTitle != null) lblModalBudgetTitle.setText("Nouveau Budget");
+        if (lblModalBudgetSubtitle != null) lblModalBudgetSubtitle.setText("Créez un nouveau budget");
+
+        // Mode création - formulaire vide
+        txtNomBudget.clear();
+        txtMontantBudget.clear();
+        cmbDeviseBudget.setValue("EUR");
+        cmbStatutBudget.setValue("ACTIF");
+    }
+
+    @FXML
+    void handleModifierBudget(ActionEvent event) {
+        if (budgetActif == null) {
+            showAlert(Alert.AlertType.WARNING, "Attention", "Aucun budget sélectionné");
+            return;
+        }
+
+        modalBudget.setVisible(true);
+        modalBudget.setManaged(true);
+        modalDepense.setVisible(false);
+        modalDepense.setManaged(false);
+
+        isEditingBudget = true;
+
+        if (lblModalBudgetTitle != null) lblModalBudgetTitle.setText("Modifier le Budget");
+        if (lblModalBudgetSubtitle != null) lblModalBudgetSubtitle.setText("Modifiez les informations du budget");
+
+        // Pré-remplir le formulaire
+        txtNomBudget.setText(budgetActif.getDescriptionBudget());
+        txtMontantBudget.setText(String.valueOf(budgetActif.getMontantTotal()));
+        cmbDeviseBudget.setValue(budgetActif.getDeviseBudget());
+        cmbStatutBudget.setValue(budgetActif.getStatutBudget());
+    }
+
+    @FXML
+    void handleSupprimerBudget(ActionEvent event) {
+        if (budgetActif == null) {
+            showAlert(Alert.AlertType.WARNING, "Attention", "Aucun budget sélectionné");
+            return;
+        }
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Confirmation");
+        alert.setHeaderText("Supprimer le budget");
+        alert.setContentText("Êtes-vous sûr de vouloir supprimer ce budget ? Toutes les dépenses associées seront également supprimées.");
+
+        alert.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                try {
+                    // Supprimer d'abord les dépenses associées
+                    for (Depense d : depensesList) {
+                        depenseCRUD.supprimer(d.getIdDepense());
+                    }
+
+                    // Puis supprimer le budget
+                    budgetCRUD.supprimer(budgetActif.getIdBudget());
+
+                    // Recharger les listes
+                    chargerTousLesBudgets();
+                    chargerPremierBudget();
+
+                    showAlert(Alert.AlertType.INFORMATION, "Succès", "Budget supprimé avec succès !");
+                } catch (SQLException e) {
+                    showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible de supprimer: " + e.getMessage());
+                }
             }
         });
     }
 
-    private void deleteDepense(Depense depense) {
+    // GESTION DES DÉPENSES
+    @FXML
+    void handleAjouterDepense(ActionEvent event) {
+        if (budgetActif == null) {
+            showAlert(Alert.AlertType.WARNING, "Attention", "Veuillez d'abord sélectionner un budget");
+            return;
+        }
+
+        modalDepense.setVisible(true);
+        modalDepense.setManaged(true);
+        modalBudget.setVisible(false);
+        modalBudget.setManaged(false);
+
+        isEditingDepense = false;
+        depenseEnCours = null;
+        lblModalTitle.setText("Nouvelle Dépense");
+        txtLibelleDepense.clear();
+        txtMontantDepense.clear();
+        txtNotesDepense.clear();
+        cmbCategorieDepense.setValue(null);
+        cmbPaiementDepense.setValue(null);
+        cmbDeviseDepense.setValue(budgetActif.getDeviseBudget());
+        dateDepense.setValue(LocalDate.now());
+    }
+
+    private void handleEditDepense(Depense depense) {
+        modalDepense.setVisible(true);
+        modalDepense.setManaged(true);
+        modalBudget.setVisible(false);
+        modalBudget.setManaged(false);
+
+        isEditingDepense = true;
+        depenseEnCours = depense;
+        lblModalTitle.setText("Modifier la Dépense");
+
+        txtLibelleDepense.setText(depense.getLibelleDepense());
+        txtMontantDepense.setText(String.valueOf(depense.getMontantDepense()));
+        txtNotesDepense.setText(depense.getDescriptionDepense());
+        cmbCategorieDepense.setValue(depense.getCategorieDepense());
+        cmbPaiementDepense.setValue(depense.getTypePaiement());
+        cmbDeviseDepense.setValue(depense.getDeviseDepense() != null ? depense.getDeviseDepense() : budgetActif.getDeviseBudget());
+        dateDepense.setValue(depense.getDateCreation().toLocalDate());
+    }
+
+    private void handleDeleteDepense(Depense depense) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Confirmation");
         alert.setHeaderText("Supprimer la dépense");
-        alert.setContentText("Êtes-vous sûr de vouloir supprimer : " + depense.getLibelleDepense() + " ?");
+        alert.setContentText("Êtes-vous sûr de vouloir supprimer cette dépense ?");
 
         alert.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
                 try {
                     depenseCRUD.supprimer(depense.getIdDepense());
-                    loadDepenses();
-                    updateKPIs();
-                    updateCategoryBreakdown();
-                    showAlert("Succès", "Dépense supprimée!", Alert.AlertType.INFORMATION);
+                    depensesList.remove(depense);
+                    mettreAJourStats();
+                    showAlert(Alert.AlertType.INFORMATION, "Succès", "Dépense supprimée avec succès !");
                 } catch (SQLException e) {
-                    showAlert("Erreur", "Impossible de supprimer: " + e.getMessage(), Alert.AlertType.ERROR);
+                    showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible de supprimer: " + e.getMessage());
                 }
             }
         });
     }
 
-    // ==================== GESTION DES ÉVÉNEMENTS FXML ====================
-
+    // FERMETURE DES MODALES
     @FXML
-    private void handleAddDepense() {
-        // À implémenter : ouverture du formulaire d'ajout
-        showAlert("Info", "Fonctionnalité d'ajout à implémenter", Alert.AlertType.INFORMATION);
+    void handleCloseModalBudget(ActionEvent event) {
+        modalBudget.setVisible(false);
+        modalBudget.setManaged(false);
     }
 
     @FXML
-    private void handleExport() {
-        try {
-            // Génération d'un rapport CSV
-            StringBuilder csv = new StringBuilder();
-            csv.append("Libellé;Catégorie;Montant;Date;Paiement\n");
+    void handleCloseModalDepense(ActionEvent event) {
+        modalDepense.setVisible(false);
+        modalDepense.setManaged(false);
+    }
 
-            for (Depense d : depenseList) {
-                csv.append(d.getLibelleDepense()).append(";")
-                        .append(d.getCategorieDepense()).append(";")
-                        .append(d.getMontantDepense()).append(";")
-                        .append(d.getDateCreation()).append(";")
-                        .append(d.getTypePaiement()).append("\n");
+    // SAUVEGARDE BUDGET - CORRIGÉ POUR CORRESPONDRE À L'ENTITÉ BUDGET
+    @FXML
+    void handleSaveBudget(ActionEvent event) {
+        if (!validateBudgetForm()) {
+            return;
+        }
+
+        try {
+            Budget budget;
+            if (isEditingBudget && budgetActif != null) {
+                budget = budgetActif;
+            } else {
+                budget = new Budget();
             }
 
-            // Ici, vous sauvegarderiez le fichier
-            showAlert("Export", "Export réussi ! (" + depenseList.size() + " lignes)", Alert.AlertType.INFORMATION);
+            // Remplir les attributs selon l'entité Budget
+            budget.setMontantTotal(Float.parseFloat(txtMontantBudget.getText()));
+            budget.setDeviseBudget(cmbDeviseBudget.getValue());
+            budget.setStatutBudget(cmbStatutBudget.getValue());
+            budget.setDescriptionBudget(txtNomBudget.getText());
 
-        } catch (Exception e) {
-            showAlert("Erreur", "Erreur lors de l'export: " + e.getMessage(), Alert.AlertType.ERROR);
+            // ID de l'utilisateur (à remplacer par l'ID de l'utilisateur connecté)
+            budget.setId(1); // ID utilisateur par défaut
+
+            // ID du voyage (0 par défaut si non associé)
+            budget.setIdVoyage(0);
+
+            // Valider l'objet avant sauvegarde
+            budget.validate();
+
+            if (isEditingBudget && budgetActif != null) {
+                budgetCRUD.modifier(budget);
+                showAlert(Alert.AlertType.INFORMATION, "Succès", "Budget modifié avec succès !");
+            } else {
+                budgetCRUD.ajouter(budget);
+                showAlert(Alert.AlertType.INFORMATION, "Succès", "Budget créé avec succès !");
+            }
+
+            // Recharger les données
+            chargerTousLesBudgets();
+            chargerPremierBudget();
+            modalBudget.setVisible(false);
+            modalBudget.setManaged(false);
+
+        } catch (NumberFormatException e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Le montant doit être un nombre valide");
+        } catch (IllegalArgumentException e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur de validation", e.getMessage());
+        } catch (SQLException e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur lors de la sauvegarde: " + e.getMessage());
         }
     }
 
+    // SAUVEGARDE DEPENSE
     @FXML
-    private void handleFilter() {
-        ChoiceDialog<String> dialog = new ChoiceDialog<>("Toutes",
-                "Toutes", "Hébergement", "Transport", "Restauration", "Activités");
-        dialog.setTitle("Filtre");
-        dialog.setHeaderText("Filtrer les dépenses");
-        dialog.setContentText("Catégorie:");
+    void handleSaveDepense(ActionEvent event) {
+        if (!validateDepenseForm()) {
+            return;
+        }
 
-        dialog.showAndWait().ifPresent(categorie -> {
-            try {
-                if ("Toutes".equals(categorie)) {
-                    tableDepenses.setItems(depenseList);
-                } else {
-                    ObservableList<Depense> filtered = FXCollections.observableArrayList(
-                            depenseList.stream()
-                                    .filter(d -> categorie.equals(d.getCategorieDepense()))
-                                    .collect(Collectors.toList())
-                    );
-                    tableDepenses.setItems(filtered);
-                }
-            } catch (Exception e) {
-                showAlert("Erreur", "Erreur de filtrage", Alert.AlertType.ERROR);
+        if (budgetActif == null) {
+            showAlert(Alert.AlertType.WARNING, "Attention", "Aucun budget actif trouvé");
+            return;
+        }
+
+        try {
+            Depense depense;
+            if (isEditingDepense && depenseEnCours != null) {
+                depense = depenseEnCours;
+            } else {
+                depense = new Depense();
             }
-        });
+
+            depense.setLibelleDepense(txtLibelleDepense.getText());
+            depense.setMontantDepense(Float.parseFloat(txtMontantDepense.getText()));
+            depense.setCategorieDepense(cmbCategorieDepense.getValue());
+            depense.setTypePaiement(cmbPaiementDepense.getValue());
+            depense.setDeviseDepense(cmbDeviseDepense.getValue());
+            depense.setDescriptionDepense(txtNotesDepense.getText());
+            depense.setDateCreation(Date.valueOf(dateDepense.getValue()));
+            depense.setIdBudget(budgetActif.getIdBudget());
+
+            if (isEditingDepense) {
+                depenseCRUD.modifier(depense);
+                showAlert(Alert.AlertType.INFORMATION, "Succès", "Dépense modifiée avec succès !");
+            } else {
+                depenseCRUD.ajouter(depense);
+                showAlert(Alert.AlertType.INFORMATION, "Succès", "Dépense ajoutée avec succès !");
+            }
+
+            chargerDepenses();
+            modalDepense.setVisible(false);
+            modalDepense.setManaged(false);
+
+        } catch (NumberFormatException e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Le montant doit être un nombre valide");
+        } catch (IllegalArgumentException e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur de validation", e.getMessage());
+        } catch (SQLException e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur lors de la sauvegarde: " + e.getMessage());
+        }
     }
 
-    @FXML
-    private void handleSortByDate() {
-        FXCollections.sort(depenseList, (d1, d2) -> {
-            if (d1.getDateCreation() == null) return -1;
-            if (d2.getDateCreation() == null) return 1;
-            return d2.getDateCreation().compareTo(d1.getDateCreation());
-        });
+    // VALIDATION BUDGET
+    private boolean validateBudgetForm() {
+        if (txtNomBudget.getText() == null || txtNomBudget.getText().trim().isEmpty()) {
+            showAlert(Alert.AlertType.WARNING, "Validation", "Le nom du budget est requis");
+            return false;
+        }
+
+        if (txtMontantBudget.getText() == null || txtMontantBudget.getText().trim().isEmpty()) {
+            showAlert(Alert.AlertType.WARNING, "Validation", "Le montant total est requis");
+            return false;
+        }
+
+        try {
+            float montant = Float.parseFloat(txtMontantBudget.getText());
+            if (montant <= 0) {
+                showAlert(Alert.AlertType.WARNING, "Validation", "Le montant doit être positif");
+                return false;
+            }
+        } catch (NumberFormatException e) {
+            showAlert(Alert.AlertType.WARNING, "Validation", "Le montant doit être un nombre valide");
+            return false;
+        }
+
+        if (cmbDeviseBudget.getValue() == null) {
+            showAlert(Alert.AlertType.WARNING, "Validation", "La devise est requise");
+            return false;
+        }
+
+        if (cmbDeviseBudget.getValue().length() != 3) {
+            showAlert(Alert.AlertType.WARNING, "Validation", "La devise doit avoir 3 caractères (ex: EUR, USD)");
+            return false;
+        }
+
+        if (cmbStatutBudget.getValue() == null) {
+            showAlert(Alert.AlertType.WARNING, "Validation", "Le statut est requis");
+            return false;
+        }
+
+        return true;
     }
 
-    @FXML
-    private void handleNewBudget() {
-        showAlert("Nouveau budget", "Fonctionnalité de création de budget à implémenter", Alert.AlertType.INFORMATION);
+    // VALIDATION DEPENSE
+    private boolean validateDepenseForm() {
+        if (txtLibelleDepense.getText() == null || txtLibelleDepense.getText().trim().isEmpty()) {
+            showAlert(Alert.AlertType.WARNING, "Validation", "Le libellé est requis");
+            return false;
+        }
+
+        if (txtMontantDepense.getText() == null || txtMontantDepense.getText().trim().isEmpty()) {
+            showAlert(Alert.AlertType.WARNING, "Validation", "Le montant est requis");
+            return false;
+        }
+
+        try {
+            float montant = Float.parseFloat(txtMontantDepense.getText());
+            if (montant <= 0) {
+                showAlert(Alert.AlertType.WARNING, "Validation", "Le montant doit être positif");
+                return false;
+            }
+        } catch (NumberFormatException e) {
+            showAlert(Alert.AlertType.WARNING, "Validation", "Le montant doit être un nombre valide");
+            return false;
+        }
+
+        if (cmbCategorieDepense.getValue() == null) {
+            showAlert(Alert.AlertType.WARNING, "Validation", "La catégorie est requise");
+            return false;
+        }
+
+        if (cmbPaiementDepense.getValue() == null) {
+            showAlert(Alert.AlertType.WARNING, "Validation", "Le mode de paiement est requis");
+            return false;
+        }
+
+        if (dateDepense.getValue() == null) {
+            showAlert(Alert.AlertType.WARNING, "Validation", "La date est requise");
+            return false;
+        }
+
+        return true;
     }
 
-    // ==================== UTILITAIRES ====================
-
-    private void showAlert(String title, String message, Alert.AlertType type) {
+    private void showAlert(Alert.AlertType type, String title, String content) {
         Alert alert = new Alert(type);
         alert.setTitle(title);
         alert.setHeaderText(null);
-        alert.setContentText(message);
+        alert.setContentText(content);
         alert.showAndWait();
-    }
-
-    // Méthode pour changer de budget
-    public void switchBudget(int budgetId) {
-        try {
-            this.currentBudgetId = budgetId;
-            loadCurrentBudget();
-            loadDepenses();
-            updateUI();
-        } catch (SQLException e) {
-            showAlert("Erreur", "Impossible de changer de budget: " + e.getMessage(), Alert.AlertType.ERROR);
-        }
     }
 }
