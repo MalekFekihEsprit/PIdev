@@ -114,4 +114,19 @@ public class UserCRUD implements InterfaceCRUD<User> {
         ResultSet rs = pst.executeQuery();
         return rs.next();
     }
+
+    public boolean updatePassword(String email, String newPassword) throws SQLException {
+        String req = "UPDATE user SET mot_de_passe = ? WHERE email = ?";
+        PreparedStatement pst = conn.prepareStatement(req);
+        pst.setString(1, newPassword);
+        pst.setString(2, email);
+        return pst.executeUpdate() > 0;
+    }
+
+    public boolean deleteUser(int id) throws SQLException {
+        String req = "DELETE FROM user WHERE id = ?";
+        PreparedStatement pst = conn.prepareStatement(req);
+        pst.setInt(1, id);
+        return pst.executeUpdate() > 0;
+    }
 }

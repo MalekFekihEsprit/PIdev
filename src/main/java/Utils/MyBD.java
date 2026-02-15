@@ -8,7 +8,7 @@ public class MyBD {
 
     private final String URL = "jdbc:mysql://localhost:3306/travelmate";
     private final String USER = "root";
-    private final String PASS = "";
+    private final String PASS = "root";
     private static MyBD instance; // variable statique pour l'instance unique
     /*
         le singleton empêche l'instanciation directe de la classe en rendant le constructeur privé.

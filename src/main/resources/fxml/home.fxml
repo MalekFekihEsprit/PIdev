@@ -12,6 +12,10 @@
     <Circle fill="linear-gradient(from 0% 0% to 100% 100%, #ff8c42, #ff6b4a)" radius="48" />
     <Label fx:id="welcomeLabel" style="-fx-font-size: 32; -fx-font-weight: bold; -fx-text-fill: #0f172a;" text="Bienvenue !" />
     <Label style="-fx-font-size: 16; -fx-text-fill: #475569;" text="Vous êtes connecté à TravelMate." />
+     
+    <Label style="-fx-font-size: 16; -fx-text-fill: #475569;" text="Accédez à votre profil pour gérer vos informations et préférences." />
+    <Button mnemonicParsing="false" onAction="#goToProfile" prefHeight="48" prefWidth="200" style="-fx-background-color: #3b82f6; -fx-background-radius: 24; -fx-text-fill: white; -fx-font-size: 16; -fx-font-weight: 600; -fx-cursor: hand;" text="Mon Profil" />
+
     <Button mnemonicParsing="false" onAction="#handleLogout" prefHeight="48" prefWidth="200" style="-fx-background-color: #ff8c42; -fx-background-radius: 24; -fx-text-fill: white; -fx-font-size: 16; -fx-font-weight: 600; -fx-cursor: hand;" text="Déconnexion" />
 </VBox>
 </AnchorPane>

@@ -13,6 +13,7 @@ public class User {
     private String role;        // "USER" ou "ADMIN"
     private String photoUrl;
 
+
     // Constructeurs
     public User() {}
 
@@ -23,6 +24,7 @@ public class User {
         this.email = email;
         this.motDePasse = motDePasse;
         this.role = "USER";
+
     }
 
     @Override

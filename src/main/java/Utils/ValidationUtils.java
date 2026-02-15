@@ -34,3 +34,4 @@ public class ValidationUtils {
         return pwd1 != null && pwd1.equals(pwd2);
     }
 }
+

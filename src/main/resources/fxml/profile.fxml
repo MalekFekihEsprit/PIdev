@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.shape.Rectangle?>
+
+<AnchorPane prefHeight="900" prefWidth="1400" style="-fx-background-color: #f8fafc;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.ProfileController">
+
+    <!-- TOP NAV (copiée de interfaceFront.txt) -->
+    <VBox AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.topAnchor="0">
+        <HBox alignment="CENTER_LEFT" spacing="20" style="-fx-background-color: #ffffff; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.02), 10, 0, 0, 2);">
+            <padding><Insets bottom="20" left="32" right="32" top="20" /></padding>
+            <HBox alignment="CENTER" spacing="10">
+                <Circle fill="linear-gradient(from 0% 0% to 100% 100%, #ff8c42, #ff6b4a)" radius="16" />
+                <Label style="-fx-font-family: 'Clash Display'; -fx-font-size: 26; -fx-font-weight: bold; -fx-text-fill: #0f172a;" text="TravelMate" />
+                <Label style="-fx-background-color: #ff8c42; -fx-text-fill: white; -fx-background-radius: 12; -fx-padding: 4 10; -fx-font-size: 10; -fx-font-weight: bold;" text="PRO" />
+            </HBox>
+            <HBox spacing="8" alignment="CENTER_LEFT" style="-fx-padding: 0 0 0 20;">
+                <HBox spacing="8" alignment="CENTER" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 8 16; -fx-cursor: hand;">
+                    <Label style="-fx-font-size: 16;" text="🌍" /><Label style="-fx-text-fill: #475569; -fx-font-weight: 500; -fx-font-size: 14;" text="Destinations" />
+                </HBox>
+                <HBox spacing="8" alignment="CENTER" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 8 16; -fx-cursor: hand;">
+                    <Label style="-fx-font-size: 16;" text="🗺️" /><Label style="-fx-text-fill: #475569; -fx-font-weight: 500; -fx-font-size: 14;" text="Itinéraires" />
+                </HBox>
+                <HBox spacing="8" alignment="CENTER" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 8 16; -fx-cursor: hand;">
+                    <Label style="-fx-font-size: 16;" text="🏄" /><Label style="-fx-text-fill: #475569; -fx-font-weight: 500; -fx-font-size: 14;" text="Activités" />
+                </HBox>
+                <HBox spacing="8" alignment="CENTER" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 8 16; -fx-cursor: hand;">
+                    <Label style="-fx-font-size: 16;" text="✈️" /><Label style="-fx-text-fill: #475569; -fx-font-weight: 500; -fx-font-size: 14;" text="Voyages" />
+                </HBox>
+                <HBox spacing="8" alignment="CENTER" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 8 16; -fx-cursor: hand;">
+                    <Label style="-fx-font-size: 16;" text="💰" /><Label style="-fx-text-fill: #475569; -fx-font-weight: 500; -fx-font-size: 14;" text="Budgets" />
+                </HBox>
+            </HBox>
+            <Region HBox.hgrow="ALWAYS" />
+            <HBox alignment="CENTER" spacing="8" style="-fx-background-color: #f1f5f9; -fx-background-radius: 20; -fx-padding: 8 20;">
+                <Label style="-fx-font-size: 14;" text="🔍" /><Label style="-fx-text-fill: #64748b; -fx-font-size: 13;" text="Rechercher..." />
+            </HBox>
+            <HBox alignment="CENTER" style="-fx-background-color: #f1f5f9; -fx-background-radius: 50%; -fx-min-width: 40; -fx-min-height: 40; -fx-cursor: hand;">
+                <Label style="-fx-font-size: 16;" text="🔔" />
+            </HBox>
+            <HBox alignment="CENTER" spacing="10" style="-fx-background-color: #f1f5f9; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand;">
+                <Circle fill="linear-gradient(from 0% 0% to 100% 100%, #ff8c42, #ff6b4a)" radius="16" />
+                <VBox spacing="0">
+                    <Label fx:id="userNameLabel" style="-fx-text-fill: #0f172a; -fx-font-weight: 600; -fx-font-size: 13;" text="Chargement..." />
+                    <Label style="-fx-text-fill: #64748b; -fx-font-size: 10;" text="Utilisateur" />
+                </VBox>
+                <Label style="-fx-text-fill: #64748b; -fx-font-size: 12;" text="▼" />
+            </HBox>
+        </HBox>
+        <!-- Breadcrumb -->
+        <HBox alignment="CENTER_LEFT" spacing="8" style="-fx-background-color: #ffffff; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0; -fx-padding: 12 32;">
+            <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 12;" text="🏠 Accueil" /><Label style="-fx-text-fill: #94a3b8; -fx-font-size: 12;" text="›" /><Label style="-fx-text-fill: #ff8c42; -fx-font-size: 12; -fx-font-weight: 600;" text="Mon Profil" />
+            <Region HBox.hgrow="ALWAYS" />
+            <Hyperlink fx:id="logoutLink" onAction="#handleLogout" style="-fx-text-fill: #64748b; -fx-font-size: 12; -fx-font-weight: 500;" text="Déconnexion" />
+        </HBox>
+    </VBox>
+
+    <!-- MAIN CONTENT -->
+    <ScrollPane fitToWidth="true" style="-fx-background: #f8fafc; -fx-border-color: transparent;" AnchorPane.bottomAnchor="60" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.topAnchor="130">
+        <content>
+            <VBox spacing="28" maxWidth="1200">
+                <padding><Insets bottom="60" left="40" right="40" top="40" /></padding>
+
+                <!-- Header -->
+                <HBox alignment="CENTER_LEFT" spacing="24">
+                    <VBox alignment="CENTER" style="-fx-background-color: #fff7ed; -fx-background-radius: 24; -fx-min-width: 80; -fx-min-height: 80;">
+                        <Label style="-fx-font-size: 48;" fx:id="avatarLabel" text="👤" />
+                    </VBox>
+                    <VBox spacing="8">
+                        <Label style="-fx-font-family: 'Clash Display'; -fx-font-size: 32; -fx-font-weight: bold; -fx-text-fill: #0f172a;" fx:id="fullNameLabel" text="Nom Prénom" />
+                        <Label style="-fx-font-size: 14; -fx-text-fill: #64748b;" fx:id="emailLabel" text="email@exemple.com" />
+                    </VBox>
+                    <Region HBox.hgrow="ALWAYS" />
+                    <Button fx:id="editModeButton" mnemonicParsing="false" onAction="#toggleEditMode" style="-fx-background-color: #ff8c42; -fx-background-radius: 12; -fx-padding: 10 20; -fx-text-fill: white; -fx-font-weight: 600; -fx-font-size: 14;" text="✏️ Modifier" />
+                </HBox>
+
+                <!-- Contenu principal : deux colonnes -->
+                <GridPane hgap="20" vgap="20">
+                    <columnConstraints>
+                        <ColumnConstraints percentWidth="60" />
+                        <ColumnConstraints percentWidth="40" />
+                    </columnConstraints>
+
+                    <!-- Colonne gauche : formulaire -->
+                    <VBox spacing="20" style="-fx-background-color: white; -fx-background-radius: 24; -fx-padding: 28; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.02), 10, 0, 0, 2);" GridPane.columnIndex="0">
+                        <Label style="-fx-font-size: 18; -fx-font-weight: 600; -fx-text-fill: #0f172a;" text="Informations personnelles" />
+
+                        <GridPane hgap="20" vgap="16">
+                            <columnConstraints><ColumnConstraints percentWidth="30"/><ColumnConstraints percentWidth="70"/></columnConstraints>
+                            <rowConstraints><RowConstraints/><RowConstraints/><RowConstraints/><RowConstraints/><RowConstraints/><RowConstraints/></rowConstraints>
+
+                            <Label style="-fx-font-size: 14; -fx-font-weight: 500; -fx-text-fill: #475569;" text="Nom" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                            <TextField fx:id="nomField" editable="false" style="-fx-background-color: #f1f5f9; -fx-background-radius: 16; -fx-padding: 10 14; -fx-font-size: 14;" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+                            <Label style="-fx-font-size: 14; -fx-font-weight: 500; -fx-text-fill: #475569;" text="Prénom" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                            <TextField fx:id="prenomField" editable="false" style="-fx-background-color: #f1f5f9; -fx-background-radius: 16; -fx-padding: 10 14; -fx-font-size: 14;" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+                            <Label style="-fx-font-size: 14; -fx-font-weight: 500; -fx-text-fill: #475569;" text="Email" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                            <TextField fx:id="emailField" editable="false" style="-fx-background-color: #f1f5f9; -fx-background-radius: 16; -fx-padding: 10 14; -fx-font-size: 14;" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+
+                            <Label style="-fx-font-size: 14; -fx-font-weight: 500; -fx-text-fill: #475569;" text="Téléphone" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                            <TextField fx:id="telephoneField" editable="false" style="-fx-background-color: #f1f5f9; -fx-background-radius: 16; -fx-padding: 10 14; -fx-font-size: 14;" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+
+                            <Label style="-fx-font-size: 14; -fx-font-weight: 500; -fx-text-fill: #475569;" text="Date naissance" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+                            <DatePicker fx:id="dateNaissancePicker" editable="false" style="-fx-background-color: #f1f5f9; -fx-background-radius: 16; -fx-padding: 8 14; -fx-font-size: 14;" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+
+                            <Label style="-fx-font-size: 14; -fx-font-weight: 500; -fx-text-fill: #475569;" text="Photo URL" GridPane.columnIndex="0" GridPane.rowIndex="5" />
+                            <TextField fx:id="photoUrlField" editable="false" style="-fx-background-color: #f1f5f9; -fx-background-radius: 16; -fx-padding: 10 14; -fx-font-size: 14;" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                        </GridPane>
+
+                        <!-- Section mot de passe (visible seulement en mode édition) -->
+                        <VBox fx:id="passwordSection" spacing="12" visible="false" managed="false">
+                            <Separator />
+                            <Label style="-fx-font-size: 16; -fx-font-weight: 600; -fx-text-fill: #0f172a;" text="Changer le mot de passe" />
+                            <GridPane hgap="20" vgap="12">
+                                <columnConstraints><ColumnConstraints percentWidth="30"/><ColumnConstraints percentWidth="70"/></columnConstraints>
+                                <rowConstraints><RowConstraints/><RowConstraints/><RowConstraints/></rowConstraints>
+                                <Label style="-fx-font-size: 14; -fx-font-weight: 500; -fx-text-fill: #475569;" text="Nouveau" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                                <PasswordField fx:id="newPasswordField" GridPane.columnIndex="1" GridPane.rowIndex="0" promptText="••••••••" style="-fx-background-color: #f1f5f9; -fx-background-radius: 16; -fx-padding: 10 14;" />
+                                <Label style="-fx-font-size: 14; -fx-font-weight: 500; -fx-text-fill: #475569;" text="Confirmation" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                                <PasswordField fx:id="confirmPasswordField" GridPane.columnIndex="1" GridPane.rowIndex="1" promptText="••••••••" style="-fx-background-color: #f1f5f9; -fx-background-radius: 16; -fx-padding: 10 14;" />
+                            </GridPane>
+                        </VBox>
+
+                        <!-- Boutons d'action (mode édition) -->
+                        <HBox fx:id="editButtons" spacing="12" alignment="CENTER_RIGHT" visible="false" managed="false">
+                            <Button fx:id="saveButton" onAction="#handleSave" style="-fx-background-color: #10b981; -fx-background-radius: 12; -fx-padding: 10 20; -fx-text-fill: white; -fx-font-weight: 600;" text="💾 Enregistrer" />
+                            <Button fx:id="cancelButton" onAction="#cancelEdit" style="-fx-background-color: #f1f5f9; -fx-background-radius: 12; -fx-padding: 10 20; -fx-text-fill: #475569; -fx-font-weight: 600;" text="✖ Annuler" />
+                            <Button fx:id="deleteButton" onAction="#handleDeleteAccount" style="-fx-background-color: #ef4444; -fx-background-radius: 12; -fx-padding: 10 20; -fx-text-fill: white; -fx-font-weight: 600;" text="🗑 Supprimer le compte" />
+                        </HBox>
+                    </VBox>
+
+                    <!-- Colonne droite : statistiques -->
+                    <VBox spacing="20" style="-fx-background-color: white; -fx-background-radius: 24; -fx-padding: 28; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.02), 10, 0, 0, 2);" GridPane.columnIndex="1">
+                        <Label style="-fx-font-size: 18; -fx-font-weight: 600; -fx-text-fill: #0f172a;" text="Mes statistiques" />
+                        <VBox spacing="16">
+                            <HBox alignment="CENTER_LEFT" spacing="12">
+                                <VBox alignment="CENTER" style="-fx-background-color: #fff7ed; -fx-background-radius: 14; -fx-min-width: 48; -fx-min-height: 48;">
+                                    <Label style="-fx-font-size: 24;" text="✈️" />
+                                </VBox>
+                                <VBox spacing="2">
+                                    <Label style="-fx-text-fill: #64748b; -fx-font-size: 12;" text="Voyages" />
+                                    <Label fx:id="statsVoyages" style="-fx-font-size: 24; -fx-font-weight: bold; -fx-text-fill: #0f172a;" text="0" />
+                                </VBox>
+                            </HBox>
+                            <HBox alignment="CENTER_LEFT" spacing="12">
+                                <VBox alignment="CENTER" style="-fx-background-color: #fef2f2; -fx-background-radius: 14; -fx-min-width: 48; -fx-min-height: 48;">
+                                    <Label style="-fx-font-size: 24;" text="💰" />
+                                </VBox>
+                                <VBox spacing="2">
+                                    <Label style="-fx-text-fill: #64748b; -fx-font-size: 12;" text="Dépenses totales" />
+                                    <Label fx:id="statsDepenses" style="-fx-font-size: 24; -fx-font-weight: bold; -fx-text-fill: #0f172a;" text="0 €" />
+                                </VBox>
+                            </HBox>
+                        </VBox>
+                        <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 11; -fx-wrap-text: true;" text="Ces statistiques seront actualisées lorsque vous aurez des voyages et dépenses." />
+                    </VBox>
+                </GridPane>
+            </VBox>
+        </content>
+    </ScrollPane>
+
+    <!-- BOTTOM STATUS -->
+    <HBox alignment="CENTER_LEFT" spacing="20" style="-fx-background-color: #ffffff; -fx-border-color: #e2e8f0; -fx-border-width: 1 0 0 0; -fx-padding: 12 32;" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0">
+        <Label style="-fx-text-fill: #10b981; -fx-font-size: 11; -fx-font-weight: 500;" text="● Connecté" />
+        <Region HBox.hgrow="ALWAYS" />
+        <Label style="-fx-text-fill: #64748b; -fx-font-size: 11;" text="©️ 2026 TravelMate" />
+    </HBox>
+</AnchorPane>

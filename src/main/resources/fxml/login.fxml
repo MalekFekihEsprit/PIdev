@@ -38,7 +38,7 @@
 
         <!-- Links -->
         <HBox alignment="CENTER_RIGHT">
-            <Hyperlink fx:id="forgotPasswordLink" style="-fx-text-fill: #ff8c42; -fx-font-size: 13; -fx-font-weight: 500; -fx-border-color: transparent;" text="Mot de passe oublié ?" />
+            <Hyperlink fx:id="forgotPasswordLink" onAction="#goToForgotPassword" style="-fx-text-fill: #ff8c42; -fx-font-size: 13; -fx-font-weight: 500; -fx-border-color: transparent;" text="Mot de passe oublié ?" />
         </HBox>
 
         <!-- Login button -->
