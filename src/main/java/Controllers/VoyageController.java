@@ -7,42 +7,23 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
-import javax.swing.*;
 import java.io.IOException;
+import java.sql.Date;
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.Date;
 import java.util.List;
 
 public class VoyageController {
+
     public static VoyageController instance;
 
     @FXML
     private Button btnAnnulerModification;
-
     @FXML
     private Button btnConfirmerModification;
-
-    @FXML
-    private Button btnModifierFormulaire;
-
-    private int voyageEnCoursDeModification = -1;
-
-    @FXML
-    private Label activitesVoyage;
     @FXML
     private Button btnAjouter;
-    @FXML
-    private Label btnModifier;
-    @FXML
-    private Label btnParticipants;
-    @FXML
-    private Label btnSupprimer;
-    @FXML
-    private Label datesVoyage;
-    @FXML
-    private Label destinationVoyage;
+
     @FXML
     private DatePicker fxdated;
     @FXML
@@ -53,22 +34,31 @@ public class VoyageController {
     private ComboBox<String> fxstatut;
     @FXML
     private TextField fxtitre;
+
     @FXML
     private Label lblVoyagesCount;
     @FXML
-    private Label participantsVoyage;
-    @FXML
-    private Label statutVoyage;
-    @FXML
-    private Label titreVoyage;
-    @FXML
     private VBox voyagesContainer;
+
+    private int voyageEnCoursDeModification = -1;
 
     @FXML
     public void initialize() {
         instance = this;
-        chargerVoyages();
 
+        // Initialiser la ComboBox des statuts avec la valeur par défaut de la BD
+        fxstatut.getItems().addAll("a venir", "En cours", "Terminé", "Annulé");
+        fxstatut.setValue("a venir"); // Valeur par défaut
+
+        // Configurer les validateurs de dates
+        configurerDatePickers();
+
+        // Charger les voyages
+        chargerVoyages();
+    }
+
+    private void configurerDatePickers() {
+        // Date début: ne peut pas être avant aujourd'hui
         fxdated.setDayCellFactory(picker -> new DateCell() {
             @Override
             public void updateItem(LocalDate date, boolean empty) {
@@ -78,13 +68,14 @@ public class VoyageController {
             }
         });
 
+        // Date fin: doit être après date début
         fxdatef.setDayCellFactory(picker -> new DateCell() {
             @Override
             public void updateItem(LocalDate date, boolean empty) {
                 super.updateItem(date, empty);
                 LocalDate dateDebut = fxdated.getValue();
                 if (dateDebut != null) {
-                    setDisable(empty || date.isBefore(dateDebut) || date.isEqual(dateDebut));
+                    setDisable(empty || !date.isAfter(dateDebut));
                 }
             }
         });
@@ -97,7 +88,7 @@ public class VoyageController {
                     super.updateItem(date, empty);
                     LocalDate dateDebut = fxdated.getValue();
                     if (dateDebut != null) {
-                        setDisable(empty || date.isBefore(dateDebut) || date.isEqual(dateDebut));
+                        setDisable(empty || !date.isAfter(dateDebut));
                     }
                 }
             });
@@ -106,82 +97,20 @@ public class VoyageController {
 
     @FXML
     void saveVoyage(ActionEvent event) {
-        if (fxtitre.getText().isEmpty() || fxdestination.getText().isEmpty() ||
-                fxdated.getValue() == null || fxdatef.getValue() == null) {
-
-            JOptionPane.showMessageDialog(
-                    JOptionPane.getRootFrame(),
-                    "Veuillez remplir tous les champs!",
-                    "Erreur de validation",
-                    JOptionPane.ERROR_MESSAGE
-            );
-            return;
-        }
+        if (!validerFormulaire()) return;
 
         try {
-            LocalDate dateDebutLocal = fxdated.getValue();
-            LocalDate dateFinLocal = fxdatef.getValue();
-            LocalDate aujourdHui = LocalDate.now();
-
-            if (dateDebutLocal.isBefore(aujourdHui)) {
-                JOptionPane.showMessageDialog(
-                        JOptionPane.getRootFrame(),
-                        "La date de début doit être aujourd'hui ou une date future!",
-                        "Erreur de validation",
-                        JOptionPane.ERROR_MESSAGE
-                );
-                return;
-            }
-
-            if (!dateFinLocal.isAfter(dateDebutLocal)) {
-                JOptionPane.showMessageDialog(
-                        JOptionPane.getRootFrame(),
-                        "La date de fin doit être postérieure à la date de début!",
-                        "Erreur de validation",
-                        JOptionPane.ERROR_MESSAGE
-                );
-                return;
-            }
-
-            Date dateDebut = Date.from(dateDebutLocal.atStartOfDay(ZoneId.systemDefault()).toInstant());
-            Date dateFin = Date.from(dateFinLocal.atStartOfDay(ZoneId.systemDefault()).toInstant());
-
-            Voyage v = new Voyage(
-                    fxtitre.getText(),
-                    dateDebut,
-                    dateFin,
-                    "À venir",
-                    Integer.parseInt(fxdestination.getText())
-            );
-
+            Voyage v = construireVoyageFromFormulaire();
             VoyageCRUD vc = new VoyageCRUD();
             vc.ajouter(v);
 
-            JOptionPane.showMessageDialog(
-                    JOptionPane.getRootFrame(),
-                    "Voyage ajouté avec succès!",
-                    "Succès",
-                    JOptionPane.INFORMATION_MESSAGE
-            );
-
+            showAlert(Alert.AlertType.INFORMATION, "Succès", "Voyage ajouté avec succès!");
             chargerVoyages();
             resetForm();
 
         } catch (SQLException e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(
-                    JOptionPane.getRootFrame(),
-                    "Erreur lors de l'ajout du voyage: " + e.getMessage(),
-                    "Erreur BD",
-                    JOptionPane.ERROR_MESSAGE
-            );
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(
-                    JOptionPane.getRootFrame(),
-                    "L'ID de destination doit être un nombre!",
-                    "Erreur de format",
-                    JOptionPane.ERROR_MESSAGE
-            );
+            showAlert(Alert.AlertType.ERROR, "Erreur BD", "Erreur lors de l'ajout: " + e.getMessage());
         }
     }
 
@@ -195,174 +124,80 @@ public class VoyageController {
     @FXML
     void confirmerModification(ActionEvent event) {
         if (voyageEnCoursDeModification == -1) {
+            showAlert(Alert.AlertType.WARNING, "Attention", "Aucun voyage sélectionné pour modification");
             return;
         }
 
-        if (fxtitre.getText().isEmpty() || fxdestination.getText().isEmpty() ||
-                fxdated.getValue() == null || fxdatef.getValue() == null) {
-
-            JOptionPane.showMessageDialog(
-                    JOptionPane.getRootFrame(),
-                    "Veuillez remplir tous les champs!",
-                    "Erreur de validation",
-                    JOptionPane.ERROR_MESSAGE
-            );
-            return;
-        }
+        if (!validerFormulaire()) return;
 
         try {
-            LocalDate dateDebutLocal = fxdated.getValue();
-            LocalDate dateFinLocal = fxdatef.getValue();
-            LocalDate aujourdHui = LocalDate.now();
-
-            if (dateDebutLocal.isBefore(aujourdHui)) {
-                JOptionPane.showMessageDialog(
-                        JOptionPane.getRootFrame(),
-                        "La date de début doit être aujourd'hui ou une date future!",
-                        "Erreur de validation",
-                        JOptionPane.ERROR_MESSAGE
-                );
-                return;
-            }
-
-            if (!dateFinLocal.isAfter(dateDebutLocal)) {
-                JOptionPane.showMessageDialog(
-                        JOptionPane.getRootFrame(),
-                        "La date de fin doit être postérieure à la date de début!",
-                        "Erreur de validation",
-                        JOptionPane.ERROR_MESSAGE
-                );
-                return;
-            }
-
-            Date dateDebut = Date.from(dateDebutLocal.atStartOfDay(ZoneId.systemDefault()).toInstant());
-            Date dateFin = Date.from(dateFinLocal.atStartOfDay(ZoneId.systemDefault()).toInstant());
-
-            Voyage v = new Voyage(
-                    voyageEnCoursDeModification,
-                    fxtitre.getText(),
-                    dateDebut,
-                    dateFin,
-                    fxstatut.getValue() != null ? fxstatut.getValue() : "À venir",
-                    Integer.parseInt(fxdestination.getText())
-            );
+            Voyage v = construireVoyageFromFormulaire();
+            v.setId_voyage(voyageEnCoursDeModification);
 
             VoyageCRUD vc = new VoyageCRUD();
             vc.modifier(v);
 
-            JOptionPane.showMessageDialog(
-                    JOptionPane.getRootFrame(),
-                    "Voyage modifié avec succès!",
-                    "Succès",
-                    JOptionPane.INFORMATION_MESSAGE
-            );
-
+            showAlert(Alert.AlertType.INFORMATION, "Succès", "Voyage modifié avec succès!");
             resetForm();
             chargerVoyages();
 
         } catch (SQLException e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(
-                    JOptionPane.getRootFrame(),
-                    "Erreur lors de la modification: " + e.getMessage(),
-                    "Erreur BD",
-                    JOptionPane.ERROR_MESSAGE
-            );
+            showAlert(Alert.AlertType.ERROR, "Erreur BD", "Erreur lors de la modification: " + e.getMessage());
+        }
+    }
+
+    private boolean validerFormulaire() {
+        if (fxtitre.getText().isEmpty() || fxdestination.getText().isEmpty() ||
+                fxdated.getValue() == null || fxdatef.getValue() == null) {
+
+            showAlert(Alert.AlertType.ERROR, "Erreur de validation",
+                    "Veuillez remplir tous les champs (titre, destination, dates)");
+            return false;
+        }
+
+        LocalDate dateDebutLocal = fxdated.getValue();
+        LocalDate dateFinLocal = fxdatef.getValue();
+        LocalDate aujourdHui = LocalDate.now();
+
+        if (dateDebutLocal.isBefore(aujourdHui)) {
+            showAlert(Alert.AlertType.ERROR, "Erreur de validation",
+                    "La date de début doit être aujourd'hui ou une date future");
+            return false;
+        }
+
+        if (!dateFinLocal.isAfter(dateDebutLocal)) {
+            showAlert(Alert.AlertType.ERROR, "Erreur de validation",
+                    "La date de fin doit être postérieure à la date de début");
+            return false;
+        }
+
+        try {
+            Integer.parseInt(fxdestination.getText());
         } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(
-                    JOptionPane.getRootFrame(),
-                    "L'ID de destination doit être un nombre!",
-                    "Erreur de format",
-                    JOptionPane.ERROR_MESSAGE
-            );
-        }
-    }
-
-    @FXML
-    void ouvrirFormulaireModification(ActionEvent event) {
-        agrandirInterface();
-        preparerFormulaireModification();
-    }
-
-    private void agrandirInterface() {
-        VBox parentVBox = (VBox) voyagesContainer.getParent();
-        parentVBox.setPrefHeight(900);
-        parentVBox.setSpacing(32);
-
-        VBox formulaireBox = (VBox) btnAjouter.getParent().getParent();
-        formulaireBox.setStyle("-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 24; " +
-                "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 15, 0, 0, 5);");
-        formulaireBox.setPrefHeight(300);
-
-        fxtitre.setPrefHeight(35);
-        fxtitre.setStyle("-fx-background-color: #f1f5f9; -fx-background-radius: 12; -fx-padding: 10; -fx-font-size: 13;");
-
-        fxdestination.setPrefHeight(35);
-        fxdestination.setStyle("-fx-background-color: #f1f5f9; -fx-background-radius: 12; -fx-padding: 10; -fx-font-size: 13;");
-
-        fxdated.setPrefHeight(35);
-        fxdated.setStyle("-fx-background-color: #f1f5f9; -fx-background-radius: 12; -fx-padding: 8; -fx-font-size: 13;");
-
-        fxdatef.setPrefHeight(35);
-        fxdatef.setStyle("-fx-background-color: #f1f5f9; -fx-background-radius: 12; -fx-padding: 8; -fx-font-size: 13;");
-
-        fxstatut.setPrefHeight(35);
-        fxstatut.setStyle("-fx-background-color: #f1f5f9; -fx-background-radius: 12; -fx-padding: 8; -fx-font-size: 13;");
-
-        btnModifierFormulaire.setVisible(true);
-        btnModifierFormulaire.setManaged(true);
-
-        System.out.println("Interface agrandie pour modification");
-    }
-
-    private void preparerFormulaireModification() {
-        resetForm();
-
-        Label infoLabel = new Label("Sélectionnez un voyage à modifier dans la liste ci-dessous");
-        infoLabel.setStyle("-fx-text-fill: #10b981; -fx-font-size: 12; -fx-font-weight: bold; -fx-padding: 10 0 0 0;");
-
-        VBox formulaireBox = (VBox) btnAjouter.getParent().getParent();
-        boolean labelExiste = false;
-        for (javafx.scene.Node node : formulaireBox.getChildren()) {
-            if (node instanceof Label && ((Label) node).getText().contains("Sélectionnez un voyage")) {
-                labelExiste = true;
-                break;
-            }
+            showAlert(Alert.AlertType.ERROR, "Erreur de format",
+                    "L'ID de destination doit être un nombre");
+            return false;
         }
 
-        if (!labelExiste) {
-            formulaireBox.getChildren().add(infoLabel);
-        }
+        return true;
     }
 
-    private void restaurerInterface() {
-        VBox parentVBox = (VBox) voyagesContainer.getParent();
-        parentVBox.setPrefHeight(750);
-        parentVBox.setSpacing(24);
+    private Voyage construireVoyageFromFormulaire() {
+        LocalDate dateDebutLocal = fxdated.getValue();
+        LocalDate dateFinLocal = fxdatef.getValue();
 
-        VBox formulaireBox = (VBox) btnAjouter.getParent().getParent();
-        formulaireBox.setStyle("-fx-background-color: white; -fx-background-radius: 16; -fx-padding: 16; " +
-                "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.02), 10, 0, 0, 2);");
-        formulaireBox.setPrefHeight(250);
+        // Convertir LocalDate en java.sql.Date
+        Date dateDebut = Date.valueOf(dateDebutLocal);
+        Date dateFin = Date.valueOf(dateFinLocal);
 
-        fxtitre.setPrefHeight(30);
-        fxtitre.setStyle("-fx-background-color: #f1f5f9; -fx-background-radius: 10; -fx-padding: 8; -fx-font-size: 12;");
-
-        fxdestination.setPrefHeight(30);
-        fxdestination.setStyle("-fx-background-color: #f1f5f9; -fx-background-radius: 10; -fx-padding: 8; -fx-font-size: 12;");
-
-        fxdated.setPrefHeight(30);
-        fxdated.setStyle("-fx-background-color: #f1f5f9; -fx-background-radius: 10; -fx-padding: 8; -fx-font-size: 12;");
-
-        fxdatef.setPrefHeight(30);
-        fxdatef.setStyle("-fx-background-color: #f1f5f9; -fx-background-radius: 10; -fx-padding: 8; -fx-font-size: 12;");
-
-        fxstatut.setPrefHeight(30);
-        fxstatut.setStyle("-fx-background-color: #f1f5f9; -fx-background-radius: 10; -fx-padding: 8; -fx-font-size: 12;");
-
-        VBox formulaireBox2 = (VBox) btnAjouter.getParent().getParent();
-        formulaireBox2.getChildren().removeIf(node ->
-                node instanceof Label && ((Label) node).getText().contains("Sélectionnez un voyage"));
+        return new Voyage(
+                fxtitre.getText(),
+                dateDebut,
+                dateFin,
+                fxstatut.getValue() != null ? fxstatut.getValue() : "a venir",
+                Integer.parseInt(fxdestination.getText())
+        );
     }
 
     private void resetForm() {
@@ -370,17 +205,15 @@ public class VoyageController {
         fxdestination.clear();
         fxdated.setValue(null);
         fxdatef.setValue(null);
-        fxstatut.setValue(null);
+        fxstatut.setValue("a venir"); // Remettre la valeur par défaut
 
         voyageEnCoursDeModification = -1;
 
+        // Réinitialiser les boutons
         btnAjouter.setVisible(true);
         btnAjouter.setManaged(true);
         btnAjouter.setText("Ajouter Voyage");
         btnAjouter.setOnAction(this::saveVoyage);
-
-        btnModifierFormulaire.setVisible(false);
-        btnModifierFormulaire.setManaged(false);
 
         btnConfirmerModification.setVisible(false);
         btnConfirmerModification.setManaged(false);
@@ -388,20 +221,19 @@ public class VoyageController {
         btnAnnulerModification.setVisible(false);
         btnAnnulerModification.setManaged(false);
 
-        restaurerInterface();
-
         fxtitre.requestFocus();
     }
 
     public void chargerVoyages() {
         try {
-            System.out.println("=== RAFRAÎCHISSEMENT DES VOYAGES ===");
+            System.out.println("=== CHARGEMENT DES VOYAGES ===");
             voyagesContainer.getChildren().clear();
 
             VoyageCRUD vc = new VoyageCRUD();
             List<Voyage> voyages = vc.afficher();
 
-            lblVoyagesCount.setText(voyages.size() + " voyage" + (voyages.size() > 1 ? "s" : ""));
+            int nbVoyages = voyages.size();
+            lblVoyagesCount.setText(nbVoyages + " voyage" + (nbVoyages > 1 ? "s" : ""));
 
             if (voyages.isEmpty()) {
                 Label aucunVoyage = new Label("Aucun voyage trouvé");
@@ -422,36 +254,33 @@ public class VoyageController {
                 voyagesContainer.getChildren().add(carte);
             }
 
-            System.out.println("=== RAFFRAÎCHISSEMENT TERMINÉ: " + voyages.size() + " voyages ===");
+            System.out.println("=== CHARGEMENT TERMINÉ: " + voyages.size() + " voyages ===");
 
         } catch (SQLException | IOException e) {
             System.err.println("ERREUR chargement voyages: " + e.getMessage());
             e.printStackTrace();
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible de charger les voyages: " + e.getMessage());
         }
     }
 
     public void chargerVoyagePourModification(Voyage voyage) {
         this.voyageEnCoursDeModification = voyage.getId_voyage();
 
+        // Remplir le formulaire
         fxtitre.setText(voyage.getTitre_voyage());
         fxdestination.setText(String.valueOf(voyage.getId_destination()));
 
-        LocalDate dateDebut = voyage.getDate_debut().toInstant()
-                .atZone(ZoneId.systemDefault())
-                .toLocalDate();
-        LocalDate dateFin = voyage.getDate_fin().toInstant()
-                .atZone(ZoneId.systemDefault())
-                .toLocalDate();
+        // Convertir java.sql.Date en LocalDate
+        LocalDate dateDebut = voyage.getDate_debut().toLocalDate();
+        LocalDate dateFin = voyage.getDate_fin().toLocalDate();
 
         fxdated.setValue(dateDebut);
         fxdatef.setValue(dateFin);
         fxstatut.setValue(voyage.getStatut());
 
+        // Afficher les boutons de modification
         btnAjouter.setVisible(false);
         btnAjouter.setManaged(false);
-
-        btnModifierFormulaire.setVisible(false);
-        btnModifierFormulaire.setManaged(false);
 
         btnConfirmerModification.setVisible(true);
         btnConfirmerModification.setManaged(true);
@@ -462,5 +291,19 @@ public class VoyageController {
         fxtitre.requestFocus();
 
         System.out.println("Voyage chargé pour modification ID: " + voyage.getId_voyage());
+    }
+
+    private void showAlert(Alert.AlertType type, String title, String message) {
+        Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+    @FXML
+    void ouvrirFormulaireModification(ActionEvent event) {
+        // Cette méthode est appelée quand on clique sur "✏️ Modifier un voyage"
+        showAlert(Alert.AlertType.INFORMATION, "Info",
+                "Sélectionnez un voyage à modifier en cliquant sur le bouton 'Modifier' dans sa carte");
     }
 }

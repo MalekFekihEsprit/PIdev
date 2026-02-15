@@ -1,4 +1,4 @@
-package Tests;
+/*package Tests;
 
 import Entities.Participation;
 import Entities.Voyage;
@@ -88,4 +88,4 @@ public class MainConnection {
             s.printStackTrace();
         }
     }
-}
+}*/

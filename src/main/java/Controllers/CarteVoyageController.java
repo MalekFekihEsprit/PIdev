@@ -7,7 +7,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 import java.util.Optional;
 
@@ -41,30 +41,45 @@ public class CarteVoyageController {
         this.voyage = voyage;
         this.nomDestination = nomDestination;
 
+        // Titre
         titreVoyage.setText(voyage.getTitre_voyage());
+
+        // Destination
         destinationVoyage.setText(nomDestination);
 
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy", Locale.FRENCH);
-        String dateDebutStr = dateFormat.format(voyage.getDate_debut());
-        String dateFinStr = dateFormat.format(voyage.getDate_fin());
+        // Formatage des dates
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy", Locale.FRENCH);
+        String dateDebutStr = voyage.getDate_debut().toLocalDate().format(formatter);
+        String dateFinStr = voyage.getDate_fin().toLocalDate().format(formatter);
         datesVoyage.setText(dateDebutStr + " - " + dateFinStr);
 
-        String statutTexte = voyage.getStatut() != null ? voyage.getStatut() : "À venir";
+        // Statut avec style
+        String statutTexte = voyage.getStatut() != null ? voyage.getStatut() : "a venir";
         statutVoyage.setText("● " + statutTexte);
 
-        String statutCouleur = "#10b981";
+        // Couleur selon statut
+        String statutCouleur = "#10b981"; // Vert
         if ("Terminé".equalsIgnoreCase(statutTexte)) {
-            statutCouleur = "#64748b";
+            statutCouleur = "#64748b"; // Gris
         } else if ("En cours".equalsIgnoreCase(statutTexte)) {
-            statutCouleur = "#f59e0b";
+            statutCouleur = "#f59e0b"; // Orange
         } else if ("Annulé".equalsIgnoreCase(statutTexte)) {
-            statutCouleur = "#ef4444";
+            statutCouleur = "#ef4444"; // Rouge
+        } else if ("a venir".equalsIgnoreCase(statutTexte)) {
+            statutCouleur = "#10b981"; // Vert
         }
+
         statutVoyage.setStyle("-fx-background-color: " + statutCouleur + "; -fx-text-fill: white; " +
                 "-fx-background-radius: 20; -fx-padding: 3 10; -fx-font-size: 10; -fx-font-weight: 600;");
 
+        // Icône
         iconLabel.setText(getIconePourDestination(nomDestination));
 
+        // Valeurs par défaut
+        participantsVoyage.setText("0 participants");
+        activitesVoyage.setText("0 activités");
+
+        // Actions
         btnModifier.setOnMouseClicked(e -> handleModifier());
         btnParticipants.setOnMouseClicked(e -> handleParticipants());
         btnSupprimer.setOnMouseClicked(e -> handleSupprimer());
@@ -89,7 +104,8 @@ public class CarteVoyageController {
     }
 
     private void handleParticipants() {
-        System.out.println("Participants voyage ID: " + voyage.getId_voyage());
+        showAlert(Alert.AlertType.INFORMATION, "Participants",
+                "Gestion des participants pour: " + voyage.getTitre_voyage());
     }
 
     private void handleSupprimer() {
@@ -101,30 +117,27 @@ public class CarteVoyageController {
 
             Optional<ButtonType> result = alert.showAndWait();
 
-            if (result.isPresent() && result.get() == ButtonType.YES) {
+            if (result.isPresent() && result.get() == ButtonType.OK) {
                 VoyageCRUD vc = new VoyageCRUD();
                 vc.supprimer(voyage.getId_voyage());
 
-                Alert successAlert = new Alert(Alert.AlertType.INFORMATION);
-                successAlert.setTitle("Succès");
-                successAlert.setHeaderText(null);
-                successAlert.setContentText("Voyage supprimé avec succès!");
-                successAlert.showAndWait();
+                showAlert(Alert.AlertType.INFORMATION, "Succès", "Voyage supprimé avec succès!");
 
                 if (VoyageController.instance != null) {
                     VoyageController.instance.chargerVoyages();
-                    System.out.println("Rafraîchissement réussi!");
-                } else {
-                    System.err.println("ERREUR: VoyageController.instance est null!");
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            Alert errorAlert = new Alert(Alert.AlertType.ERROR);
-            errorAlert.setTitle("Erreur");
-            errorAlert.setHeaderText(null);
-            errorAlert.setContentText("Erreur lors de la suppression: " + e.getMessage());
-            errorAlert.showAndWait();
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur lors de la suppression: " + e.getMessage());
         }
+    }
+
+    private void showAlert(Alert.AlertType type, String title, String message) {
+        Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 }
