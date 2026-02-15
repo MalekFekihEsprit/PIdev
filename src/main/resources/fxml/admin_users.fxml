@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.shape.Rectangle?>
+
+<BorderPane prefHeight="900" prefWidth="1400" style="-fx-background-color: #0a0e27;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.AdminUsersController">
+
+    <!-- TOP NAV - DARK MODE WITH ORANGE ACCENT (copié de interfaceBack.txt) -->
+    <top>
+        <VBox>
+            <HBox alignment="CENTER_LEFT" spacing="20" style="-fx-background-color: #111633; -fx-border-color: #1e2749; -fx-border-width: 0 0 1 0;">
+                <padding><Insets bottom="20" left="32" right="32" top="20" /></padding>
+                <HBox alignment="CENTER" spacing="10">
+                    <Circle fill="linear-gradient(from 0% 0% to 100% 100%, #ff8c42, #ff6b4a)" radius="16" />
+                    <Label style="-fx-font-family: 'Clash Display'; -fx-font-size: 26; -fx-font-weight: bold; -fx-text-fill: #ffffff;" text="TravelMate" />
+                    <Label style="-fx-background-color: #ff8c42; -fx-text-fill: white; -fx-background-radius: 12; -fx-padding: 4 10; -fx-font-size: 10; -fx-font-weight: bold;" text="PRO" />
+                </HBox>
+                <HBox spacing="8" alignment="CENTER_LEFT" style="-fx-padding: 0 0 0 20;">
+                    <HBox spacing="8" alignment="CENTER" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 8 16; -fx-cursor: hand;">
+                        <Label style="-fx-font-size: 16;" text="🌍" /><Label style="-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;" text="Destinations" />
+                    </HBox>
+                    <HBox spacing="8" alignment="CENTER" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 8 16; -fx-cursor: hand;">
+                        <Label style="-fx-font-size: 16;" text="🗺️" /><Label style="-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;" text="Itinéraires" />
+                    </HBox>
+                    <HBox spacing="8" alignment="CENTER" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 8 16; -fx-cursor: hand;">
+                        <Label style="-fx-font-size: 16;" text="🏄" /><Label style="-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;" text="Activités" />
+                    </HBox>
+                    <HBox spacing="8" alignment="CENTER" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 8 16; -fx-cursor: hand;">
+                        <Label style="-fx-font-size: 16;" text="✈️" /><Label style="-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;" text="Voyages" />
+                    </HBox>
+                    <!-- Onglet Utilisateurs actif -->
+                    <HBox spacing="8" alignment="CENTER" style="-fx-background-color: rgba(255,140,66,0.15); -fx-background-radius: 12; -fx-padding: 8 16; -fx-cursor: hand; -fx-border-color: #ff8c42; -fx-border-width: 1; -fx-border-radius: 12;">
+                        <Label style="-fx-font-size: 16;" text="👥" /><Label style="-fx-text-fill: #ff8c42; -fx-font-weight: 600; -fx-font-size: 14;" text="Utilisateurs" />
+                    </HBox>
+                </HBox>
+                <Region HBox.hgrow="ALWAYS" />
+                <HBox alignment="CENTER" spacing="8" style="-fx-background-color: #1e2749; -fx-background-radius: 20; -fx-padding: 8 20;">
+                    <Label style="-fx-font-size: 14;" text="🔍" /><Label style="-fx-text-fill: #64748b; -fx-font-size: 13;" text="Rechercher..." />
+                </HBox>
+                <HBox alignment="CENTER" style="-fx-background-color: #1e2749; -fx-background-radius: 50%; -fx-min-width: 40; -fx-min-height: 40; -fx-cursor: hand;">
+                    <Label style="-fx-font-size: 16;" text="🔔" /><Circle fill="#ff8c42" radius="6" translateX="10" translateY="-10" />
+                </HBox>
+                <HBox alignment="CENTER" spacing="10" style="-fx-background-color: #1e2749; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand;">
+                    <Circle fill="linear-gradient(from 0% 0% to 100% 100%, #ff8c42, #ff6b4a)" radius="16" />
+                    <VBox spacing="0">
+                        <Label style="-fx-text-fill: #ffffff; -fx-font-weight: 600; -fx-font-size: 13;" text="Admin" />
+                        <Label style="-fx-text-fill: #64748b; -fx-font-size: 10;" text="Administrateur" />
+                    </VBox>
+                    <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 12;" text="▼" />
+                </HBox>
+            </HBox>
+            <!-- Secondary Navigation (optionnel, on peut le garder) -->
+            <HBox alignment="CENTER_LEFT" spacing="16" style="-fx-background-color: #0a0e27; -fx-border-color: #1e2749; -fx-border-width: 0 0 1 0; -fx-padding: 8 32;">
+                <HBox spacing="8" alignment="CENTER">
+                    <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 12; -fx-font-weight: 500;" text="FILTRES RAPIDES :" />
+                    <Label style="-fx-background-color: #1e2749; -fx-text-fill: #94a3b8; -fx-background-radius: 16; -fx-padding: 4 12; -fx-font-size: 11; -fx-cursor: hand;" text="Tous les utilisateurs" />
+                    <Label style="-fx-background-color: rgba(255,140,66,0.15); -fx-text-fill: #ff8c42; -fx-background-radius: 16; -fx-padding: 4 12; -fx-font-size: 11; -fx-cursor: hand;" text="Administrateurs" />
+                    <Label style="-fx-background-color: #1e2749; -fx-text-fill: #94a3b8; -fx-background-radius: 16; -fx-padding: 4 12; -fx-font-size: 11; -fx-cursor: hand;" text="Utilisateurs" />
+                </HBox>
+                <Region HBox.hgrow="ALWAYS" />
+                <!-- Stats rapides -->
+                <HBox spacing="16" alignment="CENTER">
+                    <HBox spacing="6"><Label style="-fx-font-size: 12;" text="👥" /><Label fx:id="totalUsersLabel" style="-fx-text-fill: #ff8c42; -fx-font-size: 11; -fx-font-weight: 600;" text="0 utilisateurs" /></HBox>
+                </HBox>
+            </HBox>
+        </VBox>
+    </top>
+
+    <!-- LEFT SIDEBAR -->
+    <left>
+        <VBox prefWidth="280" spacing="8" style="-fx-background-color: #111633; -fx-border-color: #1e2749; -fx-border-width: 0 1 0 0;">
+            <padding><Insets bottom="24" left="20" right="20" top="24" /></padding>
+            <Label style="-fx-font-family: 'Clash Display'; -fx-font-size: 13; -fx-font-weight: 700; -fx-text-fill: #64748b; -fx-letter-spacing: 1.5;" text="ADMINISTRATION" />
+            <VBox spacing="4">
+                <padding><Insets top="12" /></padding>
+                <!-- Utilisateurs actif -->
+                <HBox alignment="CENTER_LEFT" spacing="12" style="-fx-background-color: linear-gradient(to right, #ff8c42, #ff6b4a); -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;">
+                    <Label style="-fx-font-size: 16;" text="👥" />
+                    <Label style="-fx-text-fill: white; -fx-font-weight: 600; -fx-font-size: 14;" text="Utilisateurs" />
+                    <Region HBox.hgrow="ALWAYS" />
+                    <Label fx:id="sidebarTotalLabel" style="-fx-background-color: rgba(255,255,255,0.2); -fx-background-radius: 10; -fx-padding: 2 8; -fx-text-fill: white; -fx-font-size: 11; -fx-font-weight: bold;" text="0" />
+                </HBox>
+                <!-- Statistiques -->
+                <HBox alignment="CENTER_LEFT" spacing="12" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;" onMouseClicked="#goToStats">
+                    <Label style="-fx-font-size: 16;" text="📊" />
+                    <Label style="-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;" text="Statistiques" />
+                </HBox>
+            </VBox>
+            <Region VBox.vgrow="ALWAYS" />
+            <!-- Stats rapides dans sidebar -->
+            <VBox spacing="12" style="-fx-background-color: #0a0e27; -fx-background-radius: 16; -fx-padding: 16; -fx-border-color: #1e2749; -fx-border-width: 1; -fx-border-radius: 16;">
+                <Label style="-fx-font-weight: 600; -fx-text-fill: #64748b; -fx-font-size: 11; -fx-letter-spacing: 1;" text="RÉPARTITION" />
+                <GridPane hgap="10" vgap="10">
+                    <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 12;" text="Admins:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                    <Label fx:id="statsAdmins" style="-fx-font-weight: bold; -fx-text-fill: #ff8c42; -fx-font-size: 12;" text="0" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                    <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 12;" text="Utilisateurs:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                    <Label fx:id="statsUsers" style="-fx-font-weight: bold; -fx-text-fill: #ff8c42; -fx-font-size: 12;" text="0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                    <columnConstraints><ColumnConstraints /><ColumnConstraints halignment="RIGHT" /></columnConstraints>
+                    <rowConstraints><RowConstraints /><RowConstraints /></rowConstraints>
+                </GridPane>
+            </VBox>
+            <!-- Settings button -->
+            <HBox alignment="CENTER_LEFT" spacing="12" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand; -fx-border-color: #ff8c42; -fx-border-width: 1; -fx-border-radius: 12;">
+                <Label style="-fx-font-size: 16;" text="⚙️" />
+                <Label style="-fx-text-fill: #ff8c42; -fx-font-weight: 500; -fx-font-size: 14;" text="Paramètres" />
+            </HBox>
+        </VBox>
+    </left>
+
+    <!-- BOTTOM STATUS -->
+    <bottom>
+        <HBox alignment="CENTER_LEFT" spacing="20" style="-fx-background-color: #111633; -fx-border-color: #1e2749; -fx-border-width: 1 0 0 0; -fx-padding: 10 28;">
+            <Label style="-fx-text-fill: #ff8c42; -fx-font-size: 11; -fx-font-weight: 500;" text="● Connecté (Admin)" />
+            <Region HBox.hgrow="ALWAYS" />
+            <Label style="-fx-text-fill: #64748b; -fx-font-size: 11;" text="Mode administration" />
+            <Label style="-fx-text-fill: #64748b; -fx-font-size: 11;" text="©️ 2026 TravelMate" />
+        </HBox>
+    </bottom>
+
+    <!-- CENTER CONTENT -->
+    <center>
+        <ScrollPane fitToWidth="true" style="-fx-background: #0a0e27; -fx-border-color: transparent;">
+            <content>
+                <VBox spacing="24" style="-fx-padding: 36 40 60 40;">
+                    <!-- Header -->
+                    <HBox alignment="CENTER_LEFT" spacing="16">
+                        <Label style="-fx-font-family: 'Clash Display'; -fx-font-size: 32; -fx-font-weight: bold; -fx-text-fill: #ffffff;" text="Gestion des utilisateurs" />
+                        <Region HBox.hgrow="ALWAYS" />
+                        <!-- Search bar -->
+                        <HBox spacing="8" style="-fx-background-color: #1e2749; -fx-background-radius: 24; -fx-padding: 8 16;">
+                            <Label style="-fx-font-size: 14;" text="🔍" />
+                            <TextField fx:id="searchField" promptText="Rechercher par nom, email..." style="-fx-background-color: transparent; -fx-text-fill: white; -fx-prompt-text-fill: #64748b; -fx-font-size: 13;" />
+                        </HBox>
+                        <!-- Add button -->
+                        <Button fx:id="addButton" onAction="#handleAddNew" style="-fx-background-color: #ff8c42; -fx-background-radius: 24; -fx-padding: 10 20; -fx-text-fill: white; -fx-font-weight: 600; -fx-cursor: hand;" text="➕ Nouvel utilisateur" />
+                    </HBox>
+
+                    <!-- TableView des utilisateurs -->
+                    <TableView fx:id="userTable" style="-fx-background-color: #1e2749; -fx-background-radius: 20; -fx-border-color: #ff8c42; -fx-border-width: 1; -fx-border-radius: 20;" VBox.vgrow="ALWAYS">
+                        <columns>
+                            <TableColumn fx:id="colId" prefWidth="60" text="ID" />
+                            <TableColumn fx:id="colNom" prefWidth="120" text="Nom" />
+                            <TableColumn fx:id="colPrenom" prefWidth="120" text="Prénom" />
+                            <TableColumn fx:id="colEmail" prefWidth="200" text="Email" />
+                            <TableColumn fx:id="colRole" prefWidth="100" text="Rôle" />
+                            <TableColumn fx:id="colDateNaissance" prefWidth="120" text="Date naiss." />
+                            <TableColumn fx:id="colTelephone" prefWidth="120" text="Téléphone" />
+                            <TableColumn fx:id="colActions" prefWidth="120" text="Actions" />
+                        </columns>
+                        <placeholder>
+                            <VBox alignment="CENTER" spacing="12">
+                                <Label style="-fx-font-size: 32;" text="👥" />
+                                <Label style="-fx-text-fill: #64748b; -fx-font-size: 14;" text="Aucun utilisateur" />
+                            </VBox>
+                        </placeholder>
+                    </TableView>
+
+                    <!-- Formulaire d'ajout/édition -->
+                    <VBox spacing="20" style="-fx-background-color: #1e2749; -fx-background-radius: 20; -fx-padding: 28; -fx-border-color: #ff8c42; -fx-border-width: 1; -fx-border-radius: 20;">
+                        <Label style="-fx-font-size: 18; -fx-font-weight: 600; -fx-text-fill: white;" fx:id="formTitle" text="Ajouter un utilisateur" />
+                        <GridPane hgap="20" vgap="16">
+                            <columnConstraints>
+                                <ColumnConstraints percentWidth="20" />
+                                <ColumnConstraints percentWidth="30" />
+                                <ColumnConstraints percentWidth="20" />
+                                <ColumnConstraints percentWidth="30" />
+                            </columnConstraints>
+                            <rowConstraints>
+                                <RowConstraints />
+                                <RowConstraints />
+                                <RowConstraints />
+                                <RowConstraints />
+                                <RowConstraints />
+                            </rowConstraints>
+
+                            <!-- Ligne 1 : Nom, Prénom -->
+                            <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 13;" text="Nom *" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                            <TextField fx:id="nomField" style="-fx-background-color: #0a0e27; -fx-text-fill: white; -fx-background-radius: 12; -fx-padding: 10 14;" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                            <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 13;" text="Prénom *" GridPane.columnIndex="2" GridPane.rowIndex="0" />
+                            <TextField fx:id="prenomField" style="-fx-background-color: #0a0e27; -fx-text-fill: white; -fx-background-radius: 12; -fx-padding: 10 14;" GridPane.columnIndex="3" GridPane.rowIndex="0" />
+
+                            <!-- Ligne 2 : Email, Téléphone -->
+                            <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 13;" text="Email *" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                            <TextField fx:id="emailField" style="-fx-background-color: #0a0e27; -fx-text-fill: white; -fx-background-radius: 12; -fx-padding: 10 14;" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                            <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 13;" text="Téléphone" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                            <TextField fx:id="telephoneField" style="-fx-background-color: #0a0e27; -fx-text-fill: white; -fx-background-radius: 12; -fx-padding: 10 14;" GridPane.columnIndex="3" GridPane.rowIndex="1" />
+
+                            <!-- Ligne 3 : Date naissance, Rôle -->
+                            <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 13;" text="Date naissance *" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                            <DatePicker fx:id="dateNaissancePicker" style="-fx-background-color: #0a0e27; -fx-text-fill: white; -fx-background-radius: 12; -fx-padding: 8 14;" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                            <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 13;" text="Rôle" GridPane.columnIndex="2" GridPane.rowIndex="2" />
+                            <ComboBox fx:id="roleCombo" style="-fx-background-color: #0a0e27; -fx-text-fill: white; -fx-background-radius: 12; -fx-padding: 6;" GridPane.columnIndex="3" GridPane.rowIndex="2" />
+
+                            <!-- Ligne 4 : Mot de passe, Confirmation -->
+                            <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 13;" text="Mot de passe" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                            <PasswordField fx:id="passwordField" style="-fx-background-color: #0a0e27; -fx-text-fill: white; -fx-background-radius: 12; -fx-padding: 10 14;" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                            <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 13;" text="Confirmation" GridPane.columnIndex="2" GridPane.rowIndex="3" />
+                            <PasswordField fx:id="confirmPasswordField" style="-fx-background-color: #0a0e27; -fx-text-fill: white; -fx-background-radius: 12; -fx-padding: 10 14;" GridPane.columnIndex="3" GridPane.rowIndex="3" />
+
+                            <!-- Ligne 5 : Photo URL -->
+                            <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 13;" text="Photo URL" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+                            <TextField fx:id="photoUrlField" style="-fx-background-color: #0a0e27; -fx-text-fill: white; -fx-background-radius: 12; -fx-padding: 10 14;" GridPane.columnIndex="1" GridPane.rowIndex="4" GridPane.columnSpan="3" />
+                        </GridPane>
+
+                        <!-- Boutons d'action -->
+                        <HBox spacing="12" alignment="CENTER_RIGHT">
+                            <Button fx:id="saveButton" onAction="#handleSave" style="-fx-background-color: #10b981; -fx-background-radius: 12; -fx-padding: 10 20; -fx-text-fill: white; -fx-font-weight: 600;" text="💾 Enregistrer" />
+                            <Button fx:id="updateButton" onAction="#handleUpdate" style="-fx-background-color: #ff8c42; -fx-background-radius: 12; -fx-padding: 10 20; -fx-text-fill: white; -fx-font-weight: 600;" text="✏️ Modifier" />
+                            <Button fx:id="deleteButton" onAction="#handleDelete" style="-fx-background-color: #ef4444; -fx-background-radius: 12; -fx-padding: 10 20; -fx-text-fill: white; -fx-font-weight: 600;" text="🗑 Supprimer" />
+                            <Button fx:id="clearButton" onAction="#handleClear" style="-fx-background-color: #64748b; -fx-background-radius: 12; -fx-padding: 10 20; -fx-text-fill: white; -fx-font-weight: 600;" text="🧹 Vider" />
+                        </HBox>
+                    </VBox>
+                </VBox>
+            </content>
+        </ScrollPane>
+    </center>
+</BorderPane>

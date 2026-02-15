@@ -43,17 +43,42 @@ public class LoginController {
         try {
             User user = userCRUD.getUserByEmailAndPassword(email, password);
             if (user != null) {
-                // Connexion réussie
-                showAlert(Alert.AlertType.INFORMATION, "Succès", "Bienvenue " + user.getPrenom() + " !");
-                // Rediriger vers la page d'accueil
                 UserSession.getInstance().setCurrentUser(user);
-                redirectToProfile(user);
-            } else {
-                showAlert(Alert.AlertType.ERROR, "Échec", "Email ou mot de passe incorrect.");
+                if ("ADMIN".equals(user.getRole())) {
+                    showAlert(Alert.AlertType.INFORMATION, "Succès", "Bienvenue " + user.getPrenom() + " (Admin) !");
+                    // rediriger vers admin_users
+                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/admin_users.fxml"));
+                    Parent root = loader.load();
+                    Stage stage = (Stage) loginButton.getScene().getWindow();
+                    stage.setScene(new Scene(root));
+                } else {
+                    showAlert(Alert.AlertType.INFORMATION, "Succès", "Bienvenue " + user.getPrenom() + " !");
+                    // rediriger vers profile
+                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/profile.fxml"));
+                    Parent root = loader.load();
+                    ProfileController profileController = loader.getController();
+                    if (profileController != null) {
+                        profileController.setUser(user);
+                    }
+                    Stage stage = (Stage) loginButton.getScene().getWindow();
+                    stage.setScene(new Scene(root));
+
+                }
             }
+//            if (user != null) {
+//                // Connexion réussie
+//                showAlert(Alert.AlertType.INFORMATION, "Succès", "Bienvenue " + user.getPrenom() + " !");
+//                // Rediriger vers la page d'accueil
+//                UserSession.getInstance().setCurrentUser(user);
+//                redirectToProfile(user);
+//            } else {
+//                showAlert(Alert.AlertType.ERROR, "Échec", "Email ou mot de passe incorrect.");
+//            }
         } catch (SQLException e) {
             e.printStackTrace();
             showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur de base de données : " + e.getMessage());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
     @FXML
