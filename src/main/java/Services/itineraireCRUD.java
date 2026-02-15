@@ -153,4 +153,38 @@ public class itineraireCRUD implements interfaceCRUD<Itineraire> {
 
         return listeItineraire;
     }
+
+    // Ajouter cette méthode dans itineraireCRUD.java
+    public List<String> getEtapesParItineraire(int id_itineraire) throws SQLException {
+        List<String> etapes = new ArrayList<>();
+        Connection conn = null;
+        PreparedStatement pst = null;
+        ResultSet rs = null;
+
+        try {
+            conn = MyBD.getInstance().getConn();
+            String req = "SELECT lieu, heure FROM etape WHERE id_itineraire = ? ORDER BY heure ASC";
+            pst = conn.prepareStatement(req);
+            pst.setInt(1, id_itineraire);
+            rs = pst.executeQuery();
+
+            int compteur = 1;
+            while (rs.next()) {
+                String lieu = rs.getString("lieu");
+                Time heure = rs.getTime("heure");
+                // Format: "J1 - Paris (10:00)"
+                String etape = "J" + compteur + " - " + lieu;
+                if (heure != null) {
+                    etape += " (" + heure.toString().substring(0, 5) + ")";
+                }
+                etapes.add(etape);
+                compteur++;
+            }
+        } finally {
+            if (rs != null) try { rs.close(); } catch (SQLException e) { e.printStackTrace(); }
+            if (pst != null) try { pst.close(); } catch (SQLException e) { e.printStackTrace(); }
+        }
+
+        return etapes;
+    }
 }

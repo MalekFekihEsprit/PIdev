@@ -1,22 +1,20 @@
 package Controlles;
 
-import java.sql.*;
-import java.util.HashMap;
-import java.util.Map;
-
+import Entites.Itineraire;
+import Services.itineraireCRUD;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
+import java.sql.*;
+import java.util.HashMap;
+import java.util.Map;
 import Utils.MyBD;
 
-public class PageAjoutItineraire {
+public class PageModifierItineraire {
 
     @FXML
     private TextField nomField;
@@ -32,6 +30,8 @@ public class PageAjoutItineraire {
 
     private Map<String, Integer> voyageMap = new HashMap<>();
     private PageItineraire parentController;
+    private Itineraire itineraireActuel;
+    private itineraireCRUD itineraireCRUD = new itineraireCRUD();
 
     @FXML
     public void initialize() {
@@ -40,6 +40,26 @@ public class PageAjoutItineraire {
 
     public void setParentController(PageItineraire parentController) {
         this.parentController = parentController;
+    }
+
+    public void setItineraire(Itineraire itineraire) {
+        this.itineraireActuel = itineraire;
+        remplirChamps();
+    }
+
+    private void remplirChamps() {
+        if (itineraireActuel != null) {
+            nomField.setText(itineraireActuel.getNom_itineraire());
+            descriptionField.setText(itineraireActuel.getDescription_itineraire());
+
+            // Trouver et sélectionner le voyage correspondant
+            for (Map.Entry<String, Integer> entry : voyageMap.entrySet()) {
+                if (entry.getValue() == itineraireActuel.getId_voyage()) {
+                    voyageCombo.setValue(entry.getKey());
+                    break;
+                }
+            }
+        }
     }
 
     private void chargerVoyages() {
@@ -64,14 +84,12 @@ public class PageAjoutItineraire {
                 Date dateDebut = rs.getDate("date_debut");
                 Date dateFin = rs.getDate("date_fin");
 
-                // Calculer la durée
                 int duree = 0;
                 if (dateDebut != null && dateFin != null) {
                     long diff = dateFin.getTime() - dateDebut.getTime();
                     duree = (int) (diff / (1000 * 60 * 60 * 24)) + 1;
                 }
 
-                // Construire le texte à afficher
                 String displayText = titre;
                 if (nomDestination != null && !nomDestination.isEmpty()) {
                     displayText += " - " + nomDestination;
@@ -104,8 +122,7 @@ public class PageAjoutItineraire {
     }
 
     @FXML
-    private void handleCreer() {
-        // Validation des champs
+    private void handleModifier() {
         if (nomField.getText() == null || nomField.getText().trim().isEmpty()) {
             errorLabel.setText("Le nom de l'itinéraire est requis");
             errorLabel.setVisible(true);
@@ -128,39 +145,26 @@ public class PageAjoutItineraire {
         }
 
         int idVoyage = voyageMap.get(voyageCombo.getValue());
-        Connection conn = null;
-        PreparedStatement stmt = null;
+
+        itineraireActuel.setNom_itineraire(nomField.getText().trim());
+        itineraireActuel.setDescription_itineraire(descriptionField.getText() != null ? descriptionField.getText().trim() : null);
+        itineraireActuel.setId_voyage(idVoyage);
 
         try {
-            conn = MyBD.getInstance().getConn();
-            String insertQuery = "INSERT INTO itineraire (nom_itineraire, description_itineraire, id_voyage) VALUES (?, ?, ?)";
-            stmt = conn.prepareStatement(insertQuery);
+            itineraireCRUD.modifier(itineraireActuel);
 
-            stmt.setString(1, nomField.getText().trim());
-            stmt.setString(2, descriptionField.getText() != null ? descriptionField.getText().trim() : null);
-            stmt.setInt(3, idVoyage);
-
-            int rowsAffected = stmt.executeUpdate();
-
-            if (rowsAffected > 0) {
-                if (parentController != null) {
-                    parentController.refreshItineraries();
-                }
-                handleAnnuler();
+            if (parentController != null) {
+                parentController.refreshItineraries();
             }
+
+            handleAnnuler();
+            showAlert("Succès", "Itinéraire modifié avec succès !");
 
         } catch (SQLException e) {
             e.printStackTrace();
-            errorLabel.setText("Erreur lors de la création: " + e.getMessage());
+            errorLabel.setText("Erreur lors de la modification: " + e.getMessage());
             errorLabel.setVisible(true);
             errorLabel.setManaged(true);
-        } finally {
-            // Fermer seulement le Statement, pas la connexion
-            try {
-                if (stmt != null) stmt.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
         }
     }
 
@@ -177,5 +181,12 @@ public class PageAjoutItineraire {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void showAlert(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 }
