@@ -3,9 +3,15 @@ package Controllers;
 import Entities.Voyage;
 import Services.VoyageCRUD;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
+import javafx.stage.Stage;
+
+import java.io.IOException;
 import java.sql.SQLException;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
@@ -104,8 +110,29 @@ public class CarteVoyageController {
     }
 
     private void handleParticipants() {
-        showAlert(Alert.AlertType.INFORMATION, "Participants",
-                "Gestion des participants pour: " + voyage.getTitre_voyage());
+        try {
+            // Ouvrir la page des participants
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/PageParticipation.fxml"));
+            Parent root = loader.load();
+
+            // Récupérer le contrôleur et passer les données du voyage
+            ParticipationController participationController = loader.getController();
+            participationController.initData(
+                    voyage.getId_voyage(),
+                    voyage.getTitre_voyage(),
+                    nomDestination,
+                    datesVoyage.getText()
+            );
+
+            // Changer de scène
+            Stage stage = (Stage) btnParticipants.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.show();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir la page des participants: " + e.getMessage());
+        }
     }
 
     private void handleSupprimer() {
