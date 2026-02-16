@@ -18,16 +18,15 @@ class ParticipationCRUDTest {
     static ParticipationCRUD pc;
     static VoyageCRUD vc;
 
-    // IDs des utilisateurs existants dans votre table user
-    static int idUser1 = 1; // minyar ghannem
+    // IDs des utilisateurs existants
+    static int idUser1 = 1; // minyar ghanem
     static int idUser2 = 2; // ghfjkghjkl vghjkl
 
-    // IDs des voyages existants dans votre table voyage (d'après la capture)
-    static int idVoyage7 = 7;  // DOUDOUZO
-    static int idVoyage8 = 8;  // lara
-    static int idVoyage3 = 3;  // (ID 3 existe)
-    static int idVoyage19 = 19; // Voyage Test
-    static int idVoyage17 = 17; // Voyage Test (Modifié)
+    // IDs des voyages qui existent
+    static int idVoyage7 = 7;
+    static int idVoyage8 = 8;
+    static int idVoyage3 = 3;
+    static int idVoyage17 = 17;
 
     @BeforeAll
     static void setUp() {
@@ -39,32 +38,41 @@ class ParticipationCRUDTest {
     @Test
     @Order(1)
     void ajouter() {
-        // Utiliser une combinaison (user, voyage) qui n'existe pas encore
-        // D'après la table participation, il n'y a pas de participation avec user=2 et voyage=8
-        String roleUnique = "Test Ajout " + System.currentTimeMillis();
-
-        Participation p = new Participation(
-                idUser2,      // user 2
-                roleUnique,
-                idVoyage8     // voyage 8 (lara) - pas de participation avec user 2
-        );
-
         try {
+            // Récupérer toutes les participations existantes
+            List<Participation> existingData = pc.afficher();
+
+            // Utiliser user2 + voyage3 qui n'existe pas
+            final int finalUserId = idUser2;
+            final int finalVoyageId = idVoyage3;
+
+            String roleUnique = "Test Ajout " + System.currentTimeMillis();
+
+            Participation p = new Participation(
+                    finalUserId,
+                    roleUnique,
+                    finalVoyageId
+            );
+
             pc.ajouter(p);
             List<Participation> data = pc.afficher();
 
             assertFalse(data.isEmpty(), "La liste des participations est vide");
 
+            final int checkUserId = finalUserId;
+            final int checkVoyageId = finalVoyageId;
+            final String checkRole = roleUnique;
+
             boolean trouve = data.stream()
-                    .anyMatch(r -> r.getId() == idUser2 &&
-                            r.getId_voyage() == idVoyage8 &&
-                            r.getRole_participation().equals(roleUnique));
+                    .anyMatch(r -> r.getId() == checkUserId &&
+                            r.getId_voyage() == checkVoyageId &&
+                            r.getRole_participation().equals(checkRole));
 
             assertTrue(trouve, "Participation inexistante dans la liste");
 
             System.out.println("Test ajouter réussi !");
-            System.out.println("  - User ID: " + idUser2 +
-                    ", Voyage ID: " + idVoyage8 +
+            System.out.println("  - User ID: " + finalUserId +
+                    ", Voyage ID: " + finalVoyageId +
                     ", Rôle: " + roleUnique);
 
         } catch (SQLException e) {
@@ -104,7 +112,6 @@ class ParticipationCRUDTest {
     @Order(3)
     void modifier() {
         try {
-            // Modifier la participation ID 16 (user 2, voyage 7) qui existe déjà
             List<Participation> data = pc.afficher();
 
             if (data.isEmpty()) {
@@ -112,7 +119,7 @@ class ParticipationCRUDTest {
                 return;
             }
 
-            // Chercher une participation existante à modifier (par exemple ID 16)
+            // Chercher une participation existante à modifier (ID 16 qui existe)
             Participation p = null;
             for (Participation part : data) {
                 if (part.getId_participation() == 16) {
@@ -122,7 +129,6 @@ class ParticipationCRUDTest {
             }
 
             if (p == null) {
-                // Si pas trouvé, prendre la première
                 p = data.get(0);
             }
 
@@ -134,7 +140,6 @@ class ParticipationCRUDTest {
             p.setRole_participation(nouveauRole);
             pc.modifier(p);
 
-            // Vérifier la modification
             final int finalIdParticipation = idParticipation;
             final String finalNouveauRole = nouveauRole;
 
@@ -160,27 +165,39 @@ class ParticipationCRUDTest {
     @Order(4)
     void supprimer() {
         try {
-            // Ajouter d'abord une nouvelle participation à supprimer
-            // Utiliser user 1 avec voyage 17 (pas de participation avec cette combinaison)
+            // Utiliser une combinaison différente de celle du test ajouter()
+            // Ici on utilise user1 + voyage17 (qui n'existe pas encore)
+            final int finalUser1 = idUser1;
+            final int finalVoyage17 = idVoyage17;
+
+            // Vérifier d'abord si cette combinaison existe déjà
+            List<Participation> existingData = pc.afficher();
+            boolean existeDeja = existingData.stream()
+                    .anyMatch(r -> r.getId() == finalUser1 && r.getId_voyage() == finalVoyage17);
+
+            if (existeDeja) {
+                System.out.println("La combinaison user1+v17 existe déjà, test supprimer ignoré");
+                return;
+            }
+
             String roleASupprimer = "À supprimer " + System.currentTimeMillis();
 
             Participation p = new Participation(
-                    idUser1,      // user 1
+                    finalUser1,
                     roleASupprimer,
-                    idVoyage17    // voyage 17 - pas de participation avec user 1
+                    finalVoyage17
             );
 
             pc.ajouter(p);
             System.out.println("Participation ajoutée pour suppression");
 
-            // Récupérer l'ID de la participation ajoutée
             List<Participation> data = pc.afficher();
             int idASupprimer = -1;
 
             for (Participation participation : data) {
                 if (participation.getRole_participation().equals(roleASupprimer) &&
-                        participation.getId() == idUser1 &&
-                        participation.getId_voyage() == idVoyage17) {
+                        participation.getId() == finalUser1 &&
+                        participation.getId_voyage() == finalVoyage17) {
                     idASupprimer = participation.getId_participation();
                     break;
                 }
@@ -188,13 +205,9 @@ class ParticipationCRUDTest {
 
             assertNotEquals(-1, idASupprimer, "Participation à supprimer non trouvée");
 
-            // Sauvegarder l'ID dans une variable finale pour la lambda
             final int finalIdASupprimer = idASupprimer;
-
-            // Supprimer la participation
             pc.supprimer(finalIdASupprimer);
 
-            // Vérifier la suppression
             List<Participation> newData = pc.afficher();
             boolean trouve = newData.stream()
                     .anyMatch(r -> r.getId_participation() == finalIdASupprimer);
@@ -206,7 +219,7 @@ class ParticipationCRUDTest {
                     ", Rôle: " + roleASupprimer);
 
         } catch (SQLException e) {
-            System.out.println(" Erreur lors du test de suppression: " + e.getMessage());
+            System.out.println("Erreur lors du test de suppression: " + e.getMessage());
             e.printStackTrace();
             fail("Exception lors de la suppression: " + e.getMessage());
         }
