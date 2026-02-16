@@ -5,173 +5,84 @@
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.shape.Circle?>
 <?import javafx.scene.shape.Rectangle?>
 
-<BorderPane fx:id="mainBorderPane" prefHeight="720" style="-fx-background-color: #f8fafc;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controlles.PageEtape">
+<VBox spacing="20" style="-fx-background-color: #f8fafc;"
+      xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="Controllers.PageEtape">
 
-    <!-- TOP NAV -->
-    <top>
-        <VBox>
-            <!-- Main Navigation Bar -->
-            <HBox alignment="CENTER_LEFT" spacing="15" style="-fx-background-color: #ffffff; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.02), 10, 0, 0, 2);">
-                <padding>
-                    <Insets bottom="15" left="24" right="24" top="15" />
-                </padding>
+    <padding>
+        <Insets bottom="30" left="24" right="24" top="24" />
+    </padding>
 
-                <!-- Logo Section -->
-                <HBox alignment="CENTER" spacing="8">
-                    <Circle fill="linear-gradient(from 0% 0% to 100% 100%, #ff8c42, #ff6b4a)" radius="12" />
-                    <Label style="-fx-font-family: 'Clash Display'; -fx-font-size: 20; -fx-font-weight: bold; -fx-text-fill: #0f172a;" text="TravelMate" />
-                    <Label style="-fx-background-color: #ff8c42; -fx-text-fill: white; -fx-background-radius: 10; -fx-padding: 2 8; -fx-font-size: 9; -fx-font-weight: bold;" text="PRO" />
-                </HBox>
+    <!-- HEADER SECTION avec bouton retour -->
+    <HBox alignment="CENTER_LEFT" spacing="16" HBox.hgrow="ALWAYS">
+        <!-- Bouton retour -->
+        <Button onAction="#handleRetour"
+                style="-fx-background-color: transparent; -fx-text-fill: #ff8c42; -fx-font-size: 24; -fx-cursor: hand; -fx-padding: 0 10 0 0;"
+                text="←" />
 
-                <!-- MAIN NAVIGATION MENU -->
-                <HBox alignment="CENTER_LEFT" spacing="6" style="-fx-padding: 0 0 0 15;">
-                    <HBox alignment="CENTER" spacing="6" style="-fx-background-color: transparent; -fx-background-radius: 10; -fx-padding: 6 12; -fx-cursor: hand;">
-                        <Label style="-fx-font-size: 14;" text="🌍" />
-                        <Label style="-fx-text-fill: #475569; -fx-font-weight: 500; -fx-font-size: 12;" text="Destinations" />
-                    </HBox>
+        <VBox alignment="CENTER" style="-fx-background-color: #fff7ed; -fx-background-radius: 18; -fx-min-width: 60; -fx-min-height: 60;">
+            <Label fx:id="jourIcon" style="-fx-font-size: 36;" text="1" />
+        </VBox>
 
-                    <HBox alignment="CENTER" spacing="6" style="-fx-background-color: rgba(255,140,66,0.1); -fx-background-radius: 10; -fx-padding: 6 12; -fx-cursor: hand; -fx-border-color: #ff8c42; -fx-border-width: 1; -fx-border-radius: 10;">
-                        <Label style="-fx-font-size: 14;" text="🗺️" />
-                        <Label style="-fx-text-fill: #ff8c42; -fx-font-weight: 600; -fx-font-size: 12;" text="Itinéraires" />
-                    </HBox>
+        <VBox spacing="6">
+            <Label fx:id="titreJour" style="-fx-font-family: 'Clash Display'; -fx-font-size: 28; -fx-font-weight: bold; -fx-text-fill: #0f172a;" text="Jour 1" />
+            <Label fx:id="sousTitreJour" style="-fx-text-fill: #64748b; -fx-font-size: 12;" text="Planification des activités" />
+        </VBox>
 
-                    <HBox alignment="CENTER" spacing="6" style="-fx-background-color: transparent; -fx-background-radius: 10; -fx-padding: 6 12; -fx-cursor: hand;">
-                        <Label style="-fx-font-size: 14;" text="🏄" />
-                        <Label style="-fx-text-fill: #475569; -fx-font-weight: 500; -fx-font-size: 12;" text="Activités" />
-                    </HBox>
+        <Region HBox.hgrow="ALWAYS" />
 
-                    <HBox alignment="CENTER" spacing="6" style="-fx-background-color: transparent; -fx-background-radius: 10; -fx-padding: 6 12; -fx-cursor: hand;">
-                        <Label style="-fx-font-size: 14;" text="✈️" />
-                        <Label style="-fx-text-fill: #475569; -fx-font-weight: 500; -fx-font-size: 12;" text="Voyages" />
-                    </HBox>
-
-                    <HBox alignment="CENTER" spacing="6" style="-fx-background-color: transparent; -fx-background-radius: 10; -fx-padding: 6 12; -fx-cursor: hand;">
-                        <Label style="-fx-font-size: 14;" text="💰" />
-                        <Label style="-fx-text-fill: #475569; -fx-font-weight: 500; -fx-font-size: 12;" text="Budgets" />
-                    </HBox>
-                </HBox>
-
-                <Region HBox.hgrow="ALWAYS" />
-
-                <!-- Search bar -->
-                <HBox alignment="CENTER" spacing="6" style="-fx-background-color: #f1f5f9; -fx-background-radius: 16; -fx-padding: 6 16;">
-                    <Label style="-fx-font-size: 12;" text="🔍" />
-                    <Label style="-fx-text-fill: #64748b; -fx-font-size: 11;" text="Rechercher une étape..." />
-                </HBox>
-
-                <!-- Notifications -->
-                <HBox alignment="CENTER" style="-fx-background-color: #f1f5f9; -fx-background-radius: 50%; -fx-min-width: 32; -fx-min-height: 32; -fx-cursor: hand;">
-                    <Label style="-fx-font-size: 14;" text="🔔" />
-                </HBox>
-
-                <!-- User Profile -->
-                <HBox alignment="CENTER" spacing="8" style="-fx-background-color: #f1f5f9; -fx-background-radius: 20; -fx-padding: 4 12 4 4; -fx-cursor: hand;">
-                    <Circle fill="linear-gradient(from 0% 0% to 100% 100%, #ff8c42, #ff6b4a)" radius="12" />
-                    <VBox spacing="0">
-                        <Label style="-fx-text-fill: #0f172a; -fx-font-weight: 600; -fx-font-size: 11;" text="Meriem Bou" />
-                        <Label style="-fx-text-fill: #64748b; -fx-font-size: 8;" text="Utilisateur" />
-                    </VBox>
-                    <Label style="-fx-text-fill: #64748b; -fx-font-size: 10;" text="▼" />
-                </HBox>
-            </HBox>
-
-            <!-- Breadcrumb Navigation -->
-            <HBox alignment="CENTER_LEFT" spacing="6" style="-fx-background-color: #ffffff; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0; -fx-padding: 8 24;">
-                <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 10;" text="🏠 Accueil" />
-                <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 10;" text="›" />
-                <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 10;" text="Itinéraires" />
-                <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 10;" text="›" />
-                <Label fx:id="breadcrumbJour" style="-fx-text-fill: #ff8c42; -fx-font-size: 10; -fx-font-weight: 600;" text="Jour 1" />
+        <!-- Quick Actions -->
+        <VBox alignment="CENTER_RIGHT" spacing="6">
+            <HBox spacing="6">
+                <Button onAction="#handleAjouterEtape" style="-fx-background-color: #ff8c42; -fx-text-fill: white; -fx-background-radius: 10; -fx-padding: 8 16; -fx-font-weight: 600; -fx-font-size: 11; -fx-cursor: hand;" text="➕ Ajouter une étape" />
             </HBox>
         </VBox>
-    </top>
+    </HBox>
 
-    <!-- BOTTOM STATUS -->
-    <bottom>
-        <HBox alignment="CENTER_LEFT" spacing="15" style="-fx-background-color: #ffffff; -fx-border-color: #e2e8f0; -fx-border-width: 1 0 0 0; -fx-padding: 8 24;">
-            <Label style="-fx-text-fill: #10b981; -fx-font-size: 10; -fx-font-weight: 500;" text="● Connecté" />
-            <Region HBox.hgrow="ALWAYS" />
-            <Label fx:id="lblTotalEtapes" style="-fx-text-fill: #64748b; -fx-font-size: 10;" text="Total: 0 étape" />
-            <Label style="-fx-text-fill: #64748b; -fx-font-size: 10;" text="•" />
-            <Label fx:id="lblDureeTotale" style="-fx-text-fill: #64748b; -fx-font-size: 10;" text="Durée totale: 0h" />
+    <!-- FILTERS SECTION -->
+    <VBox spacing="10" VBox.vgrow="ALWAYS">
+        <HBox alignment="CENTER_LEFT" spacing="12" HBox.hgrow="ALWAYS">
+            <Label style="-fx-font-family: 'Clash Display'; -fx-font-size: 14; -fx-font-weight: 600; -fx-text-fill: #0f172a;" text="Filtres" />
+
+            <ComboBox promptText="Trier par heure" style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 2;" HBox.hgrow="ALWAYS" />
+            <ComboBox promptText="Type d'activité" style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 2;" HBox.hgrow="ALWAYS" />
+            <Button style="-fx-background-color: #ff8c42; -fx-text-fill: white; -fx-background-radius: 10; -fx-padding: 6 16; -fx-font-weight: 600; -fx-cursor: hand;" text="Appliquer" />
         </HBox>
-    </bottom>
+    </VBox>
 
-    <!-- MAIN CONTENT -->
-    <center>
-        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" style="-fx-background: #f8fafc; -fx-border-color: transparent; -fx-background-color: transparent;">
-            <content>
-                <VBox spacing="20" VBox.vgrow="ALWAYS">
-                    <padding>
-                        <Insets bottom="30" left="24" right="24" top="24" />
-                    </padding>
+    <!-- LISTE DES ÉTAPES -->
+    <VBox spacing="12" style="-fx-background-color: white; -fx-background-radius: 18; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.02), 8, 0, 0, 2);" VBox.vgrow="ALWAYS">
+        <!-- Header avec statistiques -->
+        <HBox alignment="CENTER_LEFT" spacing="8">
+            <Label style="-fx-font-family: 'Clash Display'; -fx-font-size: 16; -fx-font-weight: 600; -fx-text-fill: #0f172a;" text="Étapes du jour" />
+            <Region HBox.hgrow="ALWAYS" />
+            <HBox spacing="10" alignment="CENTER_RIGHT">
+                <Label fx:id="lblTotalEtapes" style="-fx-text-fill: #64748b; -fx-font-size: 12; -fx-font-weight: 500;" text="Total: 0 étape" />
+                <Label style="-fx-text-fill: #e2e8f0;" text="|" />
+                <Label fx:id="lblDureeTotale" style="-fx-text-fill: #64748b; -fx-font-size: 12; -fx-font-weight: 500;" text="Durée totale: 0h" />
+            </HBox>
+        </HBox>
 
-                    <!-- HEADER SECTION -->
-                    <HBox alignment="CENTER_LEFT" spacing="16" HBox.hgrow="ALWAYS">
-                        <VBox alignment="CENTER" style="-fx-background-color: #fff7ed; -fx-background-radius: 18; -fx-min-width: 60; -fx-min-height: 60;">
-                            <Label fx:id="jourIcon" style="-fx-font-size: 36;" text="1" />
-                        </VBox>
+        <!-- ETAPES CONTAINER -->
+        <VBox fx:id="etapesContainer" spacing="15" VBox.vgrow="ALWAYS">
+            <!-- Les étapes seront générées dynamiquement -->
+        </VBox>
 
-                        <VBox spacing="6">
-                            <Label fx:id="titreJour" style="-fx-font-family: 'Clash Display'; -fx-font-size: 28; -fx-font-weight: bold; -fx-text-fill: #0f172a;" text="Jour 1" />
-                            <Label fx:id="sousTitreJour" style="-fx-text-fill: #64748b; -fx-font-size: 12;" text="Planification des activités" />
-                        </VBox>
+        <!-- Message si aucune étape -->
+        <VBox fx:id="emptyPlaceholder" alignment="CENTER" managed="false" spacing="8" visible="false">
+            <Label style="-fx-font-size: 48;" text="⏰" />
+            <Label style="-fx-text-fill: #64748b; -fx-font-size: 14;" text="Aucune étape planifiée pour ce jour" />
+            <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 12;" text="Commencez par ajouter une activité" />
+            <Button onAction="#handleAjouterEtape" style="-fx-background-color: #ff8c42; -fx-text-fill: white; -fx-background-radius: 16; -fx-padding: 8 16; -fx-cursor: hand; -fx-font-size: 12;" text="+ Ajouter une étape" />
+        </VBox>
+    </VBox>
 
-                        <Region HBox.hgrow="ALWAYS" />
-
-                        <!-- Quick Actions -->
-                        <VBox alignment="CENTER_RIGHT" spacing="6">
-                            <HBox spacing="6">
-                                <Button onAction="#handleAjouterEtape" style="-fx-background-color: #ff8c42; -fx-text-fill: white; -fx-background-radius: 10; -fx-padding: 8 16; -fx-font-weight: 600; -fx-font-size: 11; -fx-cursor: hand;" text="➕ Ajouter une étape" />
-                            </HBox>
-                        </VBox>
-                    </HBox>
-
-                    <!-- FILTERS SECTION -->
-                    <VBox spacing="10" VBox.vgrow="ALWAYS">
-                        <HBox alignment="CENTER_LEFT" spacing="12" HBox.hgrow="ALWAYS">
-                            <Label style="-fx-font-family: 'Clash Display'; -fx-font-size: 14; -fx-font-weight: 600; -fx-text-fill: #0f172a;" text="Filtres" />
-
-                            <ComboBox promptText="Trier par heure" style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 2;" HBox.hgrow="ALWAYS" />
-                            <ComboBox promptText="Type d'activité" style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 2;" HBox.hgrow="ALWAYS" />
-                            <Button style="-fx-background-color: #ff8c42; -fx-text-fill: white; -fx-background-radius: 10; -fx-padding: 6 16; -fx-font-weight: 600; -fx-cursor: hand;" text="Appliquer" />
-                        </HBox>
-                    </VBox>
-
-                    <!-- LISTE DES ÉTAPES -->
-                    <VBox spacing="12" style="-fx-background-color: white; -fx-background-radius: 18; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.02), 8, 0, 0, 2);" VBox.vgrow="ALWAYS">
-                        <!-- Header -->
-                        <HBox alignment="CENTER_LEFT" spacing="8">
-                            <Label style="-fx-font-family: 'Clash Display'; -fx-font-size: 16; -fx-font-weight: 600; -fx-text-fill: #0f172a;" text="Étapes du jour" />
-                            <Region HBox.hgrow="ALWAYS" />
-                            <HBox spacing="6" />
-                        </HBox>
-
-                        <!-- ETAPES CONTAINER -->
-                        <VBox fx:id="etapesContainer" spacing="15" VBox.vgrow="ALWAYS">
-                            <!-- Les étapes seront générées dynamiquement -->
-                        </VBox>
-
-                        <!-- Message si aucune étape -->
-                        <VBox fx:id="emptyPlaceholder" alignment="CENTER" managed="false" spacing="8" visible="false">
-                            <Label style="-fx-font-size: 48;" text="⏰" />
-                            <Label style="-fx-text-fill: #64748b; -fx-font-size: 14;" text="Aucune étape planifiée pour ce jour" />
-                            <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 12;" text="Commencez par ajouter une activité" />
-                            <Button onAction="#handleAjouterEtape" style="-fx-background-color: #ff8c42; -fx-text-fill: white; -fx-background-radius: 16; -fx-padding: 8 16; -fx-cursor: hand; -fx-font-size: 12;" text="+ Ajouter une étape" />
-                        </VBox>
-                    </VBox>
-
-                    <!-- BOTTOM DECORATION -->
-                    <Rectangle arcHeight="6" arcWidth="6" fill="linear-gradient(to right, #ff8c42, #ff6b4a, #6366f1)" height="3" VBox.vgrow="NEVER" />
-                </VBox>
-            </content>
-        </ScrollPane>
-    </center>
-</BorderPane>
+    <!-- BOTTOM DECORATION -->
+    <Rectangle arcHeight="6" arcWidth="6" fill="linear-gradient(to right, #ff8c42, #ff6b4a, #6366f1)" height="3" VBox.vgrow="NEVER" />
+</VBox>
