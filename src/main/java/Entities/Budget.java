@@ -127,4 +127,11 @@ public class Budget {
                 ", idVoyage=" + idVoyage +
                 '}';
     }
+    // Dans Entities/Budget.java, ajoutez cette méthode
+    public boolean isSameAs(Budget other) {
+        return this.libelleBudget.equals(other.libelleBudget)
+                && this.idVoyage == other.idVoyage
+                && this.id == other.id;
+    }
 }
+

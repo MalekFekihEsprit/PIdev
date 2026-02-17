@@ -812,29 +812,55 @@ public class BudgetFrontController implements Initializable {
 
         try {
             if (currentBudget.getIdVoyage() == 0) {
-                // Sélectionner "Sans voyage" sans déclencher le listener
-                isProgrammaticChange = true;
-                cmbVoyageBudget.getSelectionModel().selectFirst();
+                // Sélectionner "Sans voyage"
+                selectVoyageItem("Sans voyage");
             } else {
                 VoyageInfo info = voyagesInfoMap.get(currentBudget.getIdVoyage());
                 if (info != null) {
-                    String displayName = info.getTitre();
-                    List<Budget> budgetsDuVoyage = budgetsParVoyage.getOrDefault(currentBudget.getIdVoyage(), new ArrayList<>());
-                    if (budgetsDuVoyage.size() > 1) {
-                        displayName += " (" + budgetsDuVoyage.size() + " budgets)";
+                    String voyageName = info.getTitre();
+                    boolean selected = false;
+
+                    // Chercher l'élément exact ou commençant par le nom
+                    for (String item : cmbVoyageBudget.getItems()) {
+                        if (item.equals(voyageName) || item.startsWith(voyageName)) {
+                            selectVoyageItem(item);
+                            selected = true;
+                            break;
+                        }
                     }
-                    // Sélectionner sans déclencher le listener
-                    isProgrammaticChange = true;
-                    cmbVoyageBudget.setValue(displayName);
+
+                    if (!selected) {
+                        // Si pas trouvé, sélectionner "Sans voyage"
+                        selectVoyageItem("Sans voyage");
+                    }
+                } else {
+                    selectVoyageItem("Sans voyage");
                 }
             }
         } catch (Exception e) {
             showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible de charger le voyage: " + e.getMessage());
+            selectVoyageItem("Sans voyage");
         }
 
         lblModalBudgetTitle.setText("Modifier Budget");
         lblModalBudgetSubtitle.setText("Modifiez les informations de votre budget");
         modalBudget.setVisible(true);
+    }
+
+    /**
+     * Méthode utilitaire pour sélectionner un item dans la ComboBox sans ajouter de nouvel élément
+     */
+    private void selectVoyageItem(String itemName) {
+        for (String item : cmbVoyageBudget.getItems()) {
+            if (item.equals(itemName)) {
+                isProgrammaticChange = true;
+                cmbVoyageBudget.setValue(item);
+                return;
+            }
+        }
+        // Si pas trouvé, sélectionner le premier élément ("Sans voyage")
+        isProgrammaticChange = true;
+        cmbVoyageBudget.getSelectionModel().selectFirst();
     }
 
     @FXML
@@ -864,6 +890,23 @@ public class BudgetFrontController implements Initializable {
             if (voyageSelection != null && !voyageSelection.equals("Sans voyage")) {
                 String cleanName = voyageSelection.replaceAll(" \\(\\d+ budget.*\\)", "");
                 idVoyage = voyagesReverseMap.get(cleanName);
+            }
+
+            // VÉRIFICATION D'UNICITÉ
+            if (isEditingBudget && currentBudget != null) {
+                // Mode modification : vérifier si un AUTRE budget avec le même libellé existe
+                if (budgetCRUD.budgetExisteExclusion(nom, idVoyage, currentUserId, currentBudget.getIdBudget())) {
+                    showAlert(Alert.AlertType.ERROR, "Erreur",
+                            "Un budget avec le libellé \"" + nom + "\" existe déjà pour ce voyage.");
+                    return;
+                }
+            } else {
+                // Mode création : vérifier si un budget avec ce libellé existe déjà
+                if (budgetCRUD.budgetExiste(nom, idVoyage, currentUserId)) {
+                    showAlert(Alert.AlertType.ERROR, "Erreur",
+                            "Un budget avec le libellé \"" + nom + "\" existe déjà pour ce voyage.");
+                    return;
+                }
             }
 
             if (isEditingBudget && currentBudget != null) {

@@ -233,4 +233,42 @@ public class BudgetCRUD {
                 rs.getInt("id_voyage")
         );
     }
+    // Dans Services/BudgetCRUD.java, ajoutez/modifiez ces méthodes
+
+    /**
+     * Vérifie si un budget avec le même libellé existe déjà pour le même voyage et utilisateur
+     */
+    public boolean budgetExiste(String libelle, int idVoyage, int userId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM budget WHERE libelle_budget = ? AND id_voyage = ? AND id = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, libelle);
+            ps.setInt(2, idVoyage);
+            ps.setInt(3, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Vérifie si un budget avec le même libellé existe déjà (excluant un ID spécifique pour la modification)
+     */
+    public boolean budgetExisteExclusion(String libelle, int idVoyage, int userId, int idBudgetExclu) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM budget WHERE libelle_budget = ? AND id_voyage = ? AND id = ? AND id_budget != ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, libelle);
+            ps.setInt(2, idVoyage);
+            ps.setInt(3, userId);
+            ps.setInt(4, idBudgetExclu);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        }
+        return false;
+    }
 }
