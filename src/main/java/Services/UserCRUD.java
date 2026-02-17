@@ -47,12 +47,13 @@ public class UserCRUD implements InterfaceCRUD<User> {
     }
 
     @Override
-    public void supprimer(int id) throws SQLException {
+    public boolean supprimer(int id) throws SQLException {
         String req = "DELETE FROM user WHERE id=?";
         PreparedStatement pst = conn.prepareStatement(req);
         pst.setInt(1, id);
         pst.executeUpdate();
         System.out.println("Utilisateur supprimé !");
+        return true;
     }
 
     @Override
@@ -64,6 +65,7 @@ public class UserCRUD implements InterfaceCRUD<User> {
         ResultSet rs = pst.executeQuery();
         while (rs.next()) {
             list.add(mapResultSetToUser(rs));
+            System.out.println("Utilisateur trouvé : " + rs.getString("email"));
         }
         return list;
     }
@@ -76,6 +78,7 @@ public class UserCRUD implements InterfaceCRUD<User> {
         ResultSet rs = st.executeQuery(req);
         while (rs.next()) {
             list.add(mapResultSetToUser(rs));
+            System.out.println("Utilisateur trouvé : " + rs.getString("email"));
         }
         return list;
     }
@@ -102,6 +105,7 @@ public class UserCRUD implements InterfaceCRUD<User> {
         pst.setString(2, password);
         ResultSet rs = pst.executeQuery();
         if (rs.next()) {
+            System.out.println("Utilisateur trouvé : " + rs.getString("email"));
             return mapResultSetToUser(rs);
         }
         return null;
@@ -112,6 +116,7 @@ public class UserCRUD implements InterfaceCRUD<User> {
         PreparedStatement pst = conn.prepareStatement(req);
         pst.setString(1, email);
         ResultSet rs = pst.executeQuery();
+        System.out.println("Vérification de l'email : " + email);
         return rs.next();
     }
 
@@ -120,6 +125,7 @@ public class UserCRUD implements InterfaceCRUD<User> {
         PreparedStatement pst = conn.prepareStatement(req);
         pst.setString(1, newPassword);
         pst.setString(2, email);
+        System.out.println("Mise à jour du mot de passe pour : " + email);
         return pst.executeUpdate() > 0;
     }
 
@@ -127,6 +133,7 @@ public class UserCRUD implements InterfaceCRUD<User> {
         String req = "DELETE FROM user WHERE id = ?";
         PreparedStatement pst = conn.prepareStatement(req);
         pst.setInt(1, id);
+        System.out.println("Suppression de l'utilisateur avec ID : " + id);
         return pst.executeUpdate() > 0;
     }
 }

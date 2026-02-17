@@ -38,11 +38,12 @@ public class PersCRUD implements InterfaceCRUD<Pers> {
     }
 
     @Override
-    public void supprimer(int id) throws SQLException {
+    public boolean supprimer(int id) throws SQLException {
         String req = "DELETE FROM pers WHERE id = " + id + ";"; // requete SQL avec id
         Statement st = conn.createStatement(); // création d'un objet Statement pour exécuter la requête
         st.executeUpdate(req); // exécution de la requête
         System.out.println("Personne supprimée !");
+        return false;
     }
 
     @Override
