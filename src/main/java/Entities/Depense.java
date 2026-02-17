@@ -5,20 +5,22 @@ import java.sql.Date;
 public class Depense {
 
     private int idDepense;             // id_depense
-    private float montantDepense;      // montant_depense
+    private double montantDepense;     // montant_depense
     private String libelleDepense;     // libelle_depense
     private String categorieDepense;   // categorie_depense
     private String descriptionDepense; // description_depense
-    private String deviseDepense;      // devise_depense (nullable)
+    private String deviseDepense;      // devise_depense (nullable, défaut EUR)
     private String typePaiement;       // type_paiement
     private Date dateCreation;         // date_creation
     private int idBudget;              // id_budget (FK)
 
     // Constructeur vide
-    public Depense() { }
+    public Depense() {
+        this.deviseDepense = "EUR"; // valeur par défaut
+    }
 
     // Constructeur pour création (sans idDepense)
-    public Depense(float montantDepense, String libelleDepense, String categorieDepense,
+    public Depense(double montantDepense, String libelleDepense, String categorieDepense,
                    String descriptionDepense, String deviseDepense, String typePaiement,
                    Date dateCreation, int idBudget) {
         setMontantDepense(montantDepense);
@@ -32,7 +34,7 @@ public class Depense {
     }
 
     // Constructeur complet
-    public Depense(int idDepense, float montantDepense, String libelleDepense, String categorieDepense,
+    public Depense(int idDepense, double montantDepense, String libelleDepense, String categorieDepense,
                    String descriptionDepense, String deviseDepense, String typePaiement,
                    Date dateCreation, int idBudget) {
         this(montantDepense, libelleDepense, categorieDepense, descriptionDepense,
@@ -40,15 +42,15 @@ public class Depense {
         setIdDepense(idDepense);
     }
 
-    // ===== Getters & Setters avec contrôle =====
+    // ===== Getters & Setters avec validation =====
     public int getIdDepense() { return idDepense; }
     public void setIdDepense(int idDepense) {
         if (idDepense < 0) throw new IllegalArgumentException("idDepense doit être >= 0.");
         this.idDepense = idDepense;
     }
 
-    public float getMontantDepense() { return montantDepense; }
-    public void setMontantDepense(float montantDepense) {
+    public double getMontantDepense() { return montantDepense; }
+    public void setMontantDepense(double montantDepense) {
         if (montantDepense <= 0) throw new IllegalArgumentException("Montant dépense doit être positif.");
         this.montantDepense = montantDepense;
     }
@@ -73,16 +75,19 @@ public class Depense {
 
     public String getDescriptionDepense() { return descriptionDepense; }
     public void setDescriptionDepense(String descriptionDepense) {
-        if (descriptionDepense == null || descriptionDepense.isEmpty())
-            throw new IllegalArgumentException("Description dépense obligatoire.");
+        // description peut être null ou vide
         this.descriptionDepense = descriptionDepense;
     }
 
     public String getDeviseDepense() { return deviseDepense; }
     public void setDeviseDepense(String deviseDepense) {
-        if (deviseDepense != null && !deviseDepense.isEmpty() && deviseDepense.length() != 3)
+        if (deviseDepense == null || deviseDepense.isEmpty()) {
+            this.deviseDepense = "EUR";
+        } else if (deviseDepense.length() != 3) {
             throw new IllegalArgumentException("Devise doit avoir 3 caractères (ex: TND, EUR).");
-        this.deviseDepense = (deviseDepense != null) ? deviseDepense.toUpperCase() : null;
+        } else {
+            this.deviseDepense = deviseDepense.toUpperCase();
+        }
     }
 
     public String getTypePaiement() { return typePaiement; }
@@ -98,16 +103,12 @@ public class Depense {
     public void setDateCreation(Date dateCreation) {
         if (dateCreation == null)
             throw new IllegalArgumentException("Date de création obligatoire.");
-        Date today = Date.valueOf(java.time.LocalDate.now());
-        if (dateCreation.after(today))
-            throw new IllegalArgumentException("Date de création ne peut pas être dans le futur.");
         this.dateCreation = dateCreation;
     }
 
     public int getIdBudget() { return idBudget; }
     public void setIdBudget(int idBudget) {
-        if (idBudget <= 0)
-            throw new IllegalArgumentException("idBudget doit être un entier positif existant.");
+        if (idBudget <= 0) throw new IllegalArgumentException("idBudget doit être un entier positif existant.");
         this.idBudget = idBudget;
     }
 

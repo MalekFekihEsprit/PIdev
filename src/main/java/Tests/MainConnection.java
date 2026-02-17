@@ -9,6 +9,7 @@ import Tools.MyBD;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
@@ -19,80 +20,65 @@ public class MainConnection {
 
         try {
             // 🔹 Connexion BD
-            MyBD myBD = MyBD.getInstance();
-            Connection conn = myBD.getConn();
+            Connection conn = MyBD.getInstance().getConn();
             System.out.println("Connexion BD réussie ✅");
 
-            // 🔹 Créer un utilisateur test pour respecter la FK
+            // 🔹 Créer un utilisateur test
             String sqlUser = "INSERT IGNORE INTO user (id, nom, email) VALUES (?, ?, ?)";
             try (PreparedStatement psUser = conn.prepareStatement(sqlUser)) {
-                psUser.setInt(1, 1);           // id utilisateur
-                psUser.setString(2, "Alice");  // nom
-                psUser.setString(3, "alice@test.com"); // email
+                psUser.setInt(1, 1);
+                psUser.setString(2, "Alice");
+                psUser.setString(3, "alice@test.com");
                 psUser.executeUpdate();
             }
             System.out.println("Utilisateur test créé ✅");
+
+            // 🔹 Récupérer un id_voyage existant
+            int idVoyage = 0;
+            String sqlVoyage = "SELECT id_voyage FROM voyage LIMIT 1";
+            try (PreparedStatement ps = conn.prepareStatement(sqlVoyage);
+                 ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    idVoyage = rs.getInt("id_voyage");
+                } else {
+                    throw new SQLException("Aucun voyage trouvé dans la base ! Créez-en au moins un.");
+                }
+            }
+            System.out.println("id_voyage récupéré : " + idVoyage);
 
             // 🔹 Initialiser CRUD
             BudgetCRUD budgetCRUD = new BudgetCRUD();
             DepenseCRUD depenseCRUD = new DepenseCRUD();
 
-            // 🔹 CREATE Budgets
-            Budget b1 = new Budget(
-                    5556.10f,
-                    "TND",
-                    "ACTIF",
-                    "Budget principal pour le voyage",
-                    1, // FK id_user
-                    0  // id_voyage
-            );
+            // 🔹 CREATE plusieurs budgets
+            Budget[] budgetsToAdd = new Budget[]{
+                    new Budget("Budget loisirs", 1500.00, "TND", "ACTIF", "Budget pour sorties et loisirs", 1, idVoyage),
+                    new Budget("Budget nourriture", 800.00, "TND", "ACTIF", "Alimentation quotidienne", 1, idVoyage),
+                    new Budget("Budget transport", 500.00, "TND", "ACTIF", "Taxi, bus, train", 1, idVoyage)
+            };
 
-            Budget b2 = new Budget(
-                    223.50f,
-                    "EUR",
-                    "ACTIF",
-                    "Budget secondaire",
-                    1, // FK id_user
-                    0
-            );
-
-
-            budgetCRUD.ajouter(b1);
-            budgetCRUD.ajouter(b2);
-            System.out.println("Budgets ajoutés ✅");
+            for (Budget b : budgetsToAdd) {
+                budgetCRUD.ajouter(b);
+            }
+            System.out.println("Tous les budgets ajoutés ✅");
 
             // 🔹 READ Budgets
             List<Budget> budgets = budgetCRUD.afficher();
             System.out.println("📌 Liste des budgets :");
             budgets.forEach(System.out::println);
 
-            // 🔹 CREATE Depenses pour le premier budget
-            int idBudget = budgets.get(0).getIdBudget(); // premier budget créé
+            // 🔹 Récupérer le premier budget
+            Budget premierBudget = budgetCRUD.afficher().get(0);
+            int idBudget = premierBudget.getIdBudget();
 
-            Depense d1 = new Depense(
-                    10.50f,
-                    "Alimentation",
-                    "Nourriture",
-                    "Petit-déjeuner et snacks",
-                    "TND",
-                    "Espèces",
-                    Date.valueOf(LocalDate.now()),
-                    idBudget
-            );
+// 🔹 Créer les dépenses
+            Depense dep1 = new Depense(10.50, "Petit-déjeuner", "Nourriture", "Café et croissant", "TND", "Espèces", Date.valueOf(LocalDate.now()), idBudget);
+            Depense dep2 = new Depense(25.00, "Taxi", "Transport", "Course aéroport", "TND", "Carte", Date.valueOf(LocalDate.now()), idBudget);
 
-            Depense d2 = new Depense(
-                    12.30f,
-                    "Transport",
-                    "Taxi",
-                    "Navette aéroport",
-                    "TND",
-                    "Carte",
-                    Date.valueOf(LocalDate.now()),
-                    idBudget
-            );
+// 🔹 Ajouter les dépenses
+            depenseCRUD.ajouter(dep1);
+            depenseCRUD.ajouter(dep2);
 
-            depenseCRUD.ajouter(d1);
-            depenseCRUD.ajouter(d2);
             System.out.println("Dépenses ajoutées ✅");
 
             // 🔹 READ Depenses
