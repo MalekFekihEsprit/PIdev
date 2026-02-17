@@ -25,7 +25,7 @@ public class LoginController {
     private UserCRUD userCRUD = new UserCRUD();
 
     @FXML
-    private void handleLogin() {
+    private void handleLogin() { // Gérer la connexion de l'utilisateur après validation des champs
         String email = emailField.getText().trim();
         String password = passwordField.getText();
 
@@ -34,7 +34,12 @@ public class LoginController {
             showAlert(Alert.AlertType.ERROR, "Champs requis", "Veuillez remplir tous les champs.");
             return;
         }
-
+        // Validation si l'email et le mot de passe correspondent à un utilisateur existant
+        if (!userCRUD.validateEmailAndPassword(email, password)) {
+            showAlert(Alert.AlertType.ERROR, "Mot de passe ou email incorrect", "Le mot de passe ou email incorrect.");
+            return;
+        }
+        
         if (!ValidationUtils.isValidEmail(email)) {
             showAlert(Alert.AlertType.ERROR, "Email invalide", "L'adresse email n'est pas valide.");
             return;
@@ -44,14 +49,14 @@ public class LoginController {
             User user = userCRUD.getUserByEmailAndPassword(email, password);
             if (user != null) {
                 UserSession.getInstance().setCurrentUser(user);
-                if ("ADMIN".equals(user.getRole())) {
+                if ("ADMIN".equals(user.getRole())) { // Si l'utilisateur est admin, rediriger vers admin_users
                     showAlert(Alert.AlertType.INFORMATION, "Succès", "Bienvenue " + user.getPrenom() + " (Admin) !");
                     // rediriger vers admin_users
                     FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/admin_users.fxml"));
                     Parent root = loader.load();
                     Stage stage = (Stage) loginButton.getScene().getWindow();
                     stage.setScene(new Scene(root));
-                } else {
+                } else { // Sinon, rediriger vers profile
                     showAlert(Alert.AlertType.INFORMATION, "Succès", "Bienvenue " + user.getPrenom() + " !");
                     // rediriger vers profile
                     FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/profile.fxml"));
@@ -65,15 +70,6 @@ public class LoginController {
 
                 }
             }
-//            if (user != null) {
-//                // Connexion réussie
-//                showAlert(Alert.AlertType.INFORMATION, "Succès", "Bienvenue " + user.getPrenom() + " !");
-//                // Rediriger vers la page d'accueil
-//                UserSession.getInstance().setCurrentUser(user);
-//                redirectToProfile(user);
-//            } else {
-//                showAlert(Alert.AlertType.ERROR, "Échec", "Email ou mot de passe incorrect.");
-//            }
         } catch (SQLException e) {
             e.printStackTrace();
             showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur de base de données : " + e.getMessage());

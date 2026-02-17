@@ -25,7 +25,7 @@ public class ForgotPasswordController {
     private UserCRUD userCRUD = new UserCRUD();
 
     @FXML
-    private void handleSend() {
+    private void handleSend() { // Gérer l'envoi du lien de réinitialisation après validation de l'email
         String email = emailField.getText().trim();
 
         if (!ValidationUtils.isNotEmpty(email)) {

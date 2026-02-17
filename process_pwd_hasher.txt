@@ -1,0 +1,27 @@
+1. Hashing the Password (during user registration):
+
+import org.mindrot.jbcrypt.BCrypt;
+// Generate a salted hash with a work factor (e.g., 12 rounds)
+String plainPassword = new String(passwordCharArray); // Use char[] from input field
+String hashed_password = BCrypt.hashpw(plainPassword, BCrypt.gensalt(12));
+// Store the 'hashed_password' string in your database
+// The hash string already contains the salt and work factor
+// Wipe the plain-text password from memory
+Arrays.fill(passwordCharArray, '0');
+
+
+
+2. Verifying the Password (during login):
+
+import org.mindrot.jbcrypt.BCrypt;
+// Retrieve the stored hash from the database
+String storedHash = "the_hash_from_database"; 
+String enteredPassword = new String(enteredPasswordCharArray);
+// Check the entered password against the stored hash
+if (BCrypt.checkpw(enteredPassword, storedHash)) {
+    System.out.println("Password is correct. Login successful.");
+} else {
+    System.out.println("Incorrect password. Login failed.");
+}
+// Wipe the plain-text password from memory
+Arrays.fill(enteredPasswordCharArray, '0');

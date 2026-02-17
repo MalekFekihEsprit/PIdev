@@ -4,7 +4,7 @@ import java.time.LocalDate;
 import java.time.Period;
 import java.util.regex.Pattern;
 
-public class ValidationUtils {
+public class ValidationUtils { // Classe utilitaire pour centraliser les méthodes de validation utilisées dans les différents contrôleurs (ex: validation d'email, de mot de passe, etc.)
 
     private static final String EMAIL_REGEX = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
     private static final String PHONE_REGEX = "^[0-9]{8,15}$";

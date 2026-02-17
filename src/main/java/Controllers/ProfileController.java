@@ -9,7 +9,10 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
+import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -27,11 +30,44 @@ public class ProfileController {
     @FXML private Button editModeButton, saveButton, cancelButton, deleteButton;
     @FXML private Hyperlink logoutLink;
     @FXML private Label statsVoyages, statsDepenses;
+    @FXML private VBox headerAvatarContainer;
+    @FXML private Label headerAvatarLabel;
+    @FXML private VBox avatarContainer;
 
     private UserCRUD userCRUD = new UserCRUD();
     private User currentUser;
     private boolean editMode = false;
 
+    private void loadUserAvatar(User user) {
+
+        avatarContainer.getChildren().clear();
+
+        if (user.getPhotoUrl() != null && !user.getPhotoUrl().isEmpty()) {
+            try {
+
+                // Anti-cache
+                String imageUrl = user.getPhotoUrl() + "?v=" + System.currentTimeMillis();
+
+                Image image = new Image(imageUrl, 64, 64, true, true, false);
+                ImageView imageView = new ImageView(image);
+                imageView.setFitWidth(64);
+                imageView.setFitHeight(64);
+                imageView.setPreserveRatio(true);
+
+                avatarContainer.getChildren().add(imageView);
+
+            } catch (Exception e) {
+                avatarLabel.setText("👤");
+                avatarContainer.getChildren().add(avatarLabel);
+            }
+        } else {
+            avatarLabel.setText("👤");
+            avatarContainer.getChildren().add(avatarLabel);
+        }
+    }
+
+
+    
     @FXML
     public void initialize() {
         // Récupérer l'utilisateur connecté depuis la session
@@ -44,6 +80,7 @@ public class ProfileController {
             return;
         }
         loadUserData();
+        loadUserAvatar(currentUser);
         // Initialiser les statistiques (pour l'instant à 0)
         statsVoyages.setText("0");
         statsDepenses.setText("0 €");
@@ -55,7 +92,6 @@ public class ProfileController {
         fullNameLabel.setText(currentUser.getPrenom() + " " + currentUser.getNom());
         emailLabel.setText(currentUser.getEmail());
         userNameLabel.setText(currentUser.getPrenom() + " " + currentUser.getNom());
-        avatarLabel.setText("👤"); // Pourrait être une image plus tard
 
         // Remplir les champs du formulaire
         nomField.setText(currentUser.getNom());
@@ -64,6 +100,9 @@ public class ProfileController {
         telephoneField.setText(currentUser.getTelephone() != null ? currentUser.getTelephone() : "");
         dateNaissancePicker.setValue(currentUser.getDateNaissance());
         photoUrlField.setText(currentUser.getPhotoUrl() != null ? currentUser.getPhotoUrl() : "");
+        
+        // Load avatar with user data
+        loadUserAvatar(currentUser);
     }
 
     /**
@@ -75,16 +114,17 @@ public class ProfileController {
         if (user != null) {
             // update the UI immediately if initialization already happened
             loadUserData();
+            loadUserAvatar(currentUser);
             statsVoyages.setText("0");
             statsDepenses.setText("0 €");
         }
     }
 
     @FXML
-    private void toggleEditMode() {
+    private void toggleEditMode() { // Basculer entre mode consultation et édition, en affichant ou cachant les champs de mot de passe et les boutons de sauvegarde/annulation
         editMode = !editMode;
         setEditable(editMode);
-        editModeButton.setText(editMode ? "🔍 Mode consultation" : "✏️ Modifier");
+        editModeButton.setText(editMode ? "🔍 Mode consultation" : "✏️Modifier");
         passwordSection.setVisible(editMode);
         passwordSection.setManaged(editMode);
         editButtons.setVisible(editMode);
@@ -160,6 +200,7 @@ public class ProfileController {
 
             // Recharger l'affichage et quitter le mode édition
             loadUserData();
+            loadUserAvatar(currentUser);
             toggleEditMode(); // repasse en mode consultation
             newPasswordField.clear();
             confirmPasswordField.clear();
@@ -173,13 +214,14 @@ public class ProfileController {
     private void cancelEdit() {
         // Remettre les valeurs initiales et quitter le mode édition
         loadUserData();
+        loadUserAvatar(currentUser);
         newPasswordField.clear();
         confirmPasswordField.clear();
         if (editMode) toggleEditMode();
     }
 
     @FXML
-    private void handleDeleteAccount() {
+    private void handleDeleteAccount() { // Gérer la suppression du compte après confirmation de l'utilisateur, en appelant la méthode supprimer du CRUD et en redirigeant vers login
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
         confirm.setTitle("Suppression du compte");
         confirm.setHeaderText("Êtes-vous sûr de vouloir supprimer votre compte ?");

@@ -83,7 +83,7 @@ public class UserCRUD implements InterfaceCRUD<User> {
         return list;
     }
 
-    private User mapResultSetToUser(ResultSet rs) throws SQLException { 
+    private User mapResultSetToUser(ResultSet rs) throws SQLException {
         User u = new User();
         u.setId(rs.getInt("id"));
         u.setNom(rs.getString("nom"));
@@ -129,11 +129,18 @@ public class UserCRUD implements InterfaceCRUD<User> {
         return pst.executeUpdate() > 0;
     }
 
-    public boolean deleteUser(int id) throws SQLException {
-        String req = "DELETE FROM user WHERE id = ?";
-        PreparedStatement pst = conn.prepareStatement(req);
-        pst.setInt(1, id);
-        System.out.println("Suppression de l'utilisateur avec ID : " + id);
-        return pst.executeUpdate() > 0;
+    public boolean validateEmailAndPassword(String email, String password) {
+        try {
+            String req = "SELECT id FROM user WHERE email = ? AND mot_de_passe = ?";
+            PreparedStatement pst = conn.prepareStatement(req);
+            pst.setString(1, email);
+            pst.setString(2, password);
+            ResultSet rs = pst.executeQuery();
+            System.out.println("Validation de l'email et du mot de passe pour : " + email);
+            return rs.next();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 }

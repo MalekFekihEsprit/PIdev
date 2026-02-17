@@ -30,7 +30,7 @@ public class ResetPasswordController {
     }
 
     @FXML
-    private void handleReset() {
+    private void handleReset() { // Gérer la réinitialisation du mot de passe après validation des champs, en appelant la méthode updatePassword du CRUD et en redirigeant vers login
         String newPwd = newPasswordField.getText();
         String confirm = confirmPasswordField.getText();
 

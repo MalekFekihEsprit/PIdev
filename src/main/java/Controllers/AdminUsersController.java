@@ -21,7 +21,7 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 
 public class AdminUsersController {
-
+    // FXML components
     @FXML private TableView<User> userTable;
     @FXML private TableColumn<User, Integer> colId;
     @FXML private TableColumn<User, String> colNom, colPrenom, colEmail, colRole, colTelephone;
@@ -38,8 +38,8 @@ public class AdminUsersController {
     @FXML private Label totalUsersLabel, sidebarTotalLabel, statsAdmins, statsUsers;
 
     private UserCRUD userCRUD = new UserCRUD();
-    private ObservableList<User> userList = FXCollections.observableArrayList();
-    private FilteredList<User> filteredData;
+    private ObservableList<User> userList = FXCollections.observableArrayList();  // pour stocker les utilisateurs chargés
+    private FilteredList<User> filteredData;  // pour la recherche dynamique
     private User selectedUser = null; // pour l'édition
 
     @FXML
@@ -63,16 +63,16 @@ public class AdminUsersController {
                 editButton.setStyle("-fx-background-color: #ff8c42; -fx-text-fill: white; -fx-background-radius: 8; -fx-cursor: hand;");
                 deleteButton.setStyle("-fx-background-color: #ef4444; -fx-text-fill: white; -fx-background-radius: 8; -fx-cursor: hand;");
                 editButton.setOnAction(event -> {
-                    User user = getTableView().getItems().get(getIndex());
-                    loadUserForEdit(user);
+                    User user = getTableView().getItems().get(getIndex()); // Récupérer l'utilisateur de la ligne
+                    loadUserForEdit(user); // Charger les données de l'utilisateur dans le formulaire pour modification
                 });
                 deleteButton.setOnAction(event -> {
                     User user = getTableView().getItems().get(getIndex());
-                    handleDeleteUser(user);
+                    handleDeleteUser(user); // Supprimer l'utilisateur après confirmation 
                 });
             }
 
-            @Override
+            @Override // Mettre à jour la cellule pour afficher les boutons
             protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
                 if (empty) {
@@ -102,7 +102,7 @@ public class AdminUsersController {
                         || (user.getTelephone() != null && user.getTelephone().contains(lowerCaseFilter));
             });
         });
-
+        // Lier le tri de la table au SortedList
         SortedList<User> sortedData = new SortedList<>(filteredData);
         sortedData.comparatorProperty().bind(userTable.comparatorProperty());
         userTable.setItems(sortedData);
@@ -111,7 +111,7 @@ public class AdminUsersController {
         updateStats();
     }
 
-    private void loadUsers() {
+    private void loadUsers() { // Charger les utilisateurs depuis la base de données et les mettre dans userList
         try {
             userList.setAll(userCRUD.afficherAll());
         } catch (SQLException e) {
@@ -120,7 +120,7 @@ public class AdminUsersController {
         }
     }
 
-    private void updateStats() {
+    private void updateStats() { // Mettre à jour les compteurs d'utilisateurs et de rôles
         int total = userList.size();
         totalUsersLabel.setText(total + " utilisateurs");
         sidebarTotalLabel.setText(String.valueOf(total));
@@ -131,7 +131,7 @@ public class AdminUsersController {
     }
 
     @FXML
-    private void handleAddNew() {
+    private void handleAddNew() { // Préparer le formulaire pour ajouter un nouvel utilisateur
         clearForm();
         selectedUser = null;
         formTitle.setText("Ajouter un utilisateur");
@@ -142,7 +142,7 @@ public class AdminUsersController {
         confirmPasswordField.setDisable(false);
     }
 
-    private void loadUserForEdit(User user) {
+    private void loadUserForEdit(User user) { // Charger les données d'un utilisateur dans le formulaire pour modification
         selectedUser = user;
         formTitle.setText("Modifier l'utilisateur #" + user.getId());
         nomField.setText(user.getNom());
@@ -163,9 +163,9 @@ public class AdminUsersController {
     }
 
     @FXML
-    private void handleSave() {
+    private void handleSave() { // Ajouter un nouvel utilisateur après validation des champs
         if (!validateInputs(true)) return;
-
+        // Créer un objet User à partir des champs du formulaire 
         User user = new User();
         user.setNom(nomField.getText().trim());
         user.setPrenom(prenomField.getText().trim());
@@ -184,9 +184,9 @@ public class AdminUsersController {
             }
             userCRUD.ajouter(user);
             showAlert(Alert.AlertType.INFORMATION, "Succès", "Utilisateur ajouté avec succès.");
-            loadUsers();
-            updateStats();
-            clearForm();
+            loadUsers(); // Recharger les utilisateurs pour afficher le nouvel utilisateur ajouté
+            updateStats(); // Mettre à jour les compteurs
+            clearForm(); // Vider le formulaire après l'ajout
         } catch (SQLException e) {
             e.printStackTrace();
             showAlert(Alert.AlertType.ERROR, "Erreur", "Échec de l'ajout : " + e.getMessage());
@@ -195,9 +195,9 @@ public class AdminUsersController {
 
     @FXML
     private void handleUpdate() {
-        if (selectedUser == null) return;
-        if (!validateInputs(false)) return;
-
+        if (selectedUser == null) return; // ne rien faire si aucun utilisateur n'est sélectionné pour modification
+        if (!validateInputs(false)) return; 
+        // Mettre à jour les données de selectedUser avec les valeurs du formulaire
         selectedUser.setNom(nomField.getText().trim());
         selectedUser.setPrenom(prenomField.getText().trim());
         selectedUser.setEmail(emailField.getText().trim());
@@ -220,7 +220,7 @@ public class AdminUsersController {
             selectedUser.setMotDePasse(newPwd);
         }
 
-        try {
+        try { // Mettre à jour l'utilisateur dans la base de données
             userCRUD.modifier(selectedUser);
             showAlert(Alert.AlertType.INFORMATION, "Succès", "Utilisateur modifié avec succès.");
             loadUsers();
@@ -233,12 +233,12 @@ public class AdminUsersController {
     }
 
     @FXML
-    private void handleDelete() {
+    private void handleDelete() { // Supprimer l'utilisateur sélectionné après confirmation
         if (selectedUser == null) return;
         handleDeleteUser(selectedUser);
     }
 
-    private void handleDeleteUser(User user) {
+    private void handleDeleteUser(User user) { // Supprimer un utilisateur donné après confirmation
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
         confirm.setTitle("Confirmation");
         confirm.setHeaderText("Supprimer l'utilisateur " + user.getEmail() + " ?");
@@ -281,7 +281,7 @@ public class AdminUsersController {
         deleteButton.setDisable(true);
     }
 
-    private boolean validateInputs(boolean isNew) {
+    private boolean validateInputs(boolean isNew) { // Valider les champs du formulaire avant d'ajouter ou de modifier un utilisateur
         String nom = nomField.getText().trim();
         String prenom = prenomField.getText().trim();
         String email = emailField.getText().trim();
@@ -337,7 +337,7 @@ public class AdminUsersController {
         }
     }
 
-    private void showAlert(Alert.AlertType type, String title, String msg) {
+    private void showAlert(Alert.AlertType type, String title, String msg) { // Afficher une alerte avec le titre et le message spécifiés
         Alert alert = new Alert(type);
         alert.setTitle(title);
         alert.setHeaderText(null);

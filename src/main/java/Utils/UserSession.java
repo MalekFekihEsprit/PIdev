@@ -2,7 +2,7 @@ package Utils;
 
 import Entities.User;
 
-public class UserSession {
+public class UserSession { // Classe singleton pour stocker l'utilisateur connecté et partager les données de session à travers les différentes scènes
     private static UserSession instance;
     private User currentUser;
 

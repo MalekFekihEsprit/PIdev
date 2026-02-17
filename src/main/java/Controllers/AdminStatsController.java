@@ -17,8 +17,6 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 public class AdminStatsController {
 
