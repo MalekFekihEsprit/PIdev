@@ -1,0 +1,87 @@
+/* styles.css */
+
+/* Style pour les DatePicker */
+.date-picker {
+    -fx-background-color: transparent;
+}
+
+.date-picker .arrow-button {
+    -fx-background-color: transparent;
+}
+
+.date-picker .arrow-button .arrow {
+    -fx-background-color: #ff8c42;
+}
+
+.date-picker .cell {
+    -fx-background-color: white;
+}
+
+.date-picker .cell:hover {
+    -fx-background-color: #ff8c42;
+    -fx-text-fill: white;
+}
+
+/* Style pour les ComboBox */
+.combo-box {
+    -fx-background-color: transparent;
+}
+
+.combo-box .arrow-button {
+    -fx-background-color: transparent;
+}
+
+.combo-box .arrow-button .arrow {
+    -fx-background-color: #ff8c42;
+}
+
+/* Style pour les Tooltips */
+.tooltip {
+    -fx-background-color: #1e293b;
+    -fx-text-fill: white;
+    -fx-font-size: 11px;
+    -fx-background-radius: 6px;
+}
+
+/* Animation pour les cartes */
+.itinerary-card {
+    -fx-transition: all 0.3s ease;
+}
+
+.itinerary-card:hover {
+    -fx-effect: dropshadow(gaussian, rgba(255,140,66,0.2), 15, 0, 0, 5);
+    -fx-translate-y: -2px;
+}
+
+/* Style pour les boutons d'action */
+.action-button {
+    -fx-transition: all 0.2s ease;
+}
+
+.action-button:hover {
+    -fx-scale-x: 1.1;
+    -fx-scale-y: 1.1;
+}
+
+/* Style pour les badges de filtre actif */
+.active-filter {
+    -fx-background-color: #ff8c42;
+    -fx-text-fill: white;
+    -fx-background-radius: 16;
+    -fx-padding: 4 12;
+    -fx-font-size: 11px;
+}
+
+/* Style pour la barre de recherche */
+.search-bar {
+    -fx-background-color: white;
+    -fx-background-radius: 50;
+    -fx-border-color: #e2e8f0;
+    -fx-border-width: 1;
+    -fx-border-radius: 50;
+}
+
+.search-bar:focused {
+    -fx-border-color: #ff8c42;
+    -fx-effect: dropshadow(gaussian, rgba(255,140,66,0.2), 5, 0, 0, 0);
+}

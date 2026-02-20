@@ -2,6 +2,7 @@ package Controllers;
 
 import Entites.etape;
 import Services.etapeCRUD;
+import Utils.AlertUtil;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
@@ -9,6 +10,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.geometry.Insets;
+
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
@@ -23,18 +25,42 @@ public class PageEtape {
     @FXML private Label lblDureeTotale;
     @FXML private VBox etapesContainer;
     @FXML private VBox emptyPlaceholder;
+    @FXML private ComboBox<String> triCombo; // NOUVEAU: ComboBox pour le tri
+    @FXML private ComboBox<String> filtreTypeCombo; // NOUVEAU: Filtre par type d'activité
 
     private int numeroJour;
     private int idItineraire;
     private String nomItineraire;
     private etapeCRUD etapeCRUD = new etapeCRUD();
     private List<etape> etapes;
+    private List<etape> etapesOriginales;
     private MainLayoutController mainLayoutController;
 
     @FXML
     public void initialize() {
         System.out.println("PageEtape initialisée");
         mainLayoutController = MainLayoutController.getInstance();
+
+        // NOUVEAU: Initialiser les options de tri
+        if (triCombo != null) {
+            triCombo.getItems().addAll(
+                    "Par heure (croissante)",
+                    "Par heure (décroissante)",
+                    "Par activité (A → Z)",
+                    "Par activité (Z → A)",
+                    "Par durée (croissante)",
+                    "Par durée (décroissante)"
+            );
+            triCombo.getSelectionModel().selectFirst();
+            triCombo.setOnAction(e -> appliquerTri());
+        }
+
+        // NOUVEAU: Initialiser le filtre par type d'activité
+        if (filtreTypeCombo != null) {
+            filtreTypeCombo.getItems().add("Tous les types");
+            filtreTypeCombo.getSelectionModel().selectFirst();
+            filtreTypeCombo.setOnAction(e -> appliquerFiltre());
+        }
     }
 
     public void setJourInfo(int numeroJour, int idItineraire, String nomItineraire) {
@@ -58,10 +84,77 @@ public class PageEtape {
     private void chargerEtapes() {
         try {
             etapes = etapeCRUD.getEtapesByItineraire(idItineraire);
+            etapesOriginales = etapes; // Conserver une copie originale
+
+            // NOUVEAU: Charger les types d'activités pour le filtre
+            if (filtreTypeCombo != null && etapes != null) {
+                filtreTypeCombo.getItems().clear();
+                filtreTypeCombo.getItems().add("Tous les types");
+                etapes.stream()
+                        .map(e -> e.getNomActivite())
+                        .filter(nom -> nom != null && !nom.isEmpty())
+                        .distinct()
+                        .sorted()
+                        .forEach(nom -> filtreTypeCombo.getItems().add(nom));
+                filtreTypeCombo.getSelectionModel().selectFirst();
+            }
+
             updateEtapesDisplay();
         } catch (SQLException e) {
             e.printStackTrace();
-            showAlert("Erreur", "Impossible de charger les étapes: " + e.getMessage());
+            AlertUtil.showError("Erreur", "Impossible de charger les étapes: " + e.getMessage());
+        }
+    }
+
+    // NOUVELLE MÉTHODE: Appliquer le filtre par type d'activité
+    private void appliquerFiltre() {
+        if (etapesOriginales == null || filtreTypeCombo == null) return;
+
+        String selectedType = filtreTypeCombo.getSelectionModel().getSelectedItem();
+        if (selectedType == null || selectedType.equals("Tous les types")) {
+            etapes = etapesOriginales;
+        } else {
+            etapes = etapesOriginales.stream()
+                    .filter(e -> selectedType.equals(e.getNomActivite()))
+                    .toList();
+        }
+
+        appliquerTri(); // Réappliquer le tri après le filtre
+    }
+
+    // NOUVELLE MÉTHODE: Appliquer le tri sélectionné
+    private void appliquerTri() {
+        if (etapes == null || etapes.isEmpty() || triCombo == null) return;
+
+        String selectedTri = triCombo.getSelectionModel().getSelectedItem();
+        if (selectedTri == null) return;
+
+        try {
+            switch (selectedTri) {
+                case "Par heure (croissante)":
+                    etapes = etapeCRUD.trierParHeure(etapes, true);
+                    break;
+                case "Par heure (décroissante)":
+                    etapes = etapeCRUD.trierParHeure(etapes, false);
+                    break;
+                case "Par activité (A → Z)":
+                    etapes = etapeCRUD.trierParTypeActivite(etapes, true);
+                    break;
+                case "Par activité (Z → A)":
+                    etapes = etapeCRUD.trierParTypeActivite(etapes, false);
+                    break;
+                case "Par durée (croissante)":
+                    etapes = etapeCRUD.trierParDuree(etapes, true);
+                    break;
+                case "Par durée (décroissante)":
+                    etapes = etapeCRUD.trierParDuree(etapes, false);
+                    break;
+                default:
+                    break;
+            }
+            updateEtapesDisplay();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -169,6 +262,18 @@ public class PageEtape {
             infoBox.getChildren().add(dureeBox);
         }
 
+        // NOUVEAU: Ajouter le niveau de difficulté
+        if (etape.getNiveauDifficulteActivite() != null) {
+            HBox niveauBox = new HBox(4);
+            niveauBox.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+            Label iconNiveau = new Label("📊");
+            iconNiveau.setStyle("-fx-font-size: 10;");
+            Label niveauLabel = new Label(etape.getNiveauTexte());
+            niveauLabel.setStyle("-fx-text-fill: #64748b; -fx-font-size: 11;");
+            niveauBox.getChildren().addAll(iconNiveau, niveauLabel);
+            infoBox.getChildren().add(niveauBox);
+        }
+
         activiteBox.getChildren().addAll(nomActiviteLabel, infoBox);
 
         Region spacer = new Region();
@@ -218,25 +323,20 @@ public class PageEtape {
 
         } catch (IOException e) {
             e.printStackTrace();
-            showAlert("Erreur", "Impossible d'ouvrir le formulaire de modification: " + e.getMessage());
+            AlertUtil.showError("Erreur", "Impossible d'ouvrir le formulaire de modification: " + e.getMessage());
         }
     }
 
     private void handleSupprimerEtape(etape etape) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Confirmation de suppression");
-        alert.setHeaderText("Supprimer l'étape");
-        alert.setContentText("Êtes-vous sûr de vouloir supprimer cette étape ?");
-
-        Optional<ButtonType> result = alert.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
+        if (AlertUtil.showConfirmation("Confirmation de suppression",
+                "Êtes-vous sûr de vouloir supprimer cette étape ?")) {
             try {
                 etapeCRUD.supprimer(etape.getId_etape());
                 chargerEtapes();
-                showAlert("Succès", "Étape supprimée avec succès !");
+                AlertUtil.showInfo("Succès", "Étape supprimée avec succès !");
             } catch (SQLException e) {
                 e.printStackTrace();
-                showAlert("Erreur", "Impossible de supprimer l'étape: " + e.getMessage());
+                AlertUtil.showError("Erreur", "Impossible de supprimer l'étape: " + e.getMessage());
             }
         }
     }
@@ -259,7 +359,7 @@ public class PageEtape {
 
         } catch (IOException e) {
             e.printStackTrace();
-            showAlert("Erreur", "Impossible d'ouvrir le formulaire d'ajout: " + e.getMessage());
+            AlertUtil.showError("Erreur", "Impossible d'ouvrir le formulaire d'ajout: " + e.getMessage());
         }
     }
 
@@ -268,12 +368,5 @@ public class PageEtape {
         if (mainLayoutController != null) {
             mainLayoutController.loadPage("/PageItineraire.fxml");
         }
-    }
-
-    private void showAlert(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(title);
-        alert.setContentText(message);
-        alert.showAndWait();
     }
 }

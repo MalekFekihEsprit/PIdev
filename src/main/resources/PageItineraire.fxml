@@ -6,13 +6,14 @@
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Rectangle?>
 
-<?import javafx.scene.control.ComboBox?>
 <BorderPane fx:id="mainBorderPane" prefHeight="720" style="-fx-background-color: #f8fafc;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.PageItineraire">
 
     <!-- MAIN CONTENT -->
@@ -26,66 +27,107 @@
 
                     <!-- HEADER SECTION -->
                     <HBox alignment="CENTER_LEFT" spacing="16" HBox.hgrow="ALWAYS">
-                        <!-- Icon -->
-                        <VBox alignment="CENTER" style="-fx-background-color: #fff7ed; -fx-background-radius: 18; -fx-min-width: 60; -fx-min-height: 60;">
-                            <Label style="-fx-font-size: 36;" text="🗺" />
+                        <!-- Icône avec dégradé -->
+                        <VBox alignment="CENTER" style="-fx-background-color: linear-gradient(to bottom, #fff7ed, #ffedd5); -fx-background-radius: 18; -fx-min-width: 70; -fx-min-height: 70; -fx-effect: dropshadow(gaussian, rgba(255,140,66,0.2), 10, 0, 0, 2);">
+                            <Label style="-fx-font-size: 36;" text="🗺️" />
                         </VBox>
 
                         <!-- Stats Info -->
                         <VBox spacing="6" VBox.vgrow="ALWAYS">
                             <HBox alignment="CENTER_LEFT" spacing="8">
                                 <Label style="-fx-font-family: 'Clash Display'; -fx-font-size: 28; -fx-font-weight: bold; -fx-text-fill: #0f172a;" text="Mes Itinéraires" />
-                                <Label fx:id="lblTotalItinerairesTable" style="-fx-background-color: #ff8c42; -fx-text-fill: white; -fx-background-radius: 16; -fx-padding: 2 8; -fx-font-size: 9; -fx-font-weight: 600;" text="0 itinéraire" />
+                                <Label fx:id="lblTotalItinerairesTable" style="-fx-background-color: #ff8c42; -fx-text-fill: white; -fx-background-radius: 20; -fx-padding: 4 12; -fx-font-size: 12; -fx-font-weight: 600;" text="0 itinéraire" />
                             </HBox>
 
-                            <HBox spacing="16">
-                                <HBox alignment="CENTER_LEFT" spacing="6">
-                                    <Label style="-fx-font-size: 12;" text="✈" />
-                                    <Label style="-fx-text-fill: #475569; -fx-font-size: 12;" text="8 destinations" />
+                            <HBox spacing="24">
+                                <HBox alignment="CENTER_LEFT" spacing="8" style="-fx-background-color: #f1f5f9; -fx-background-radius: 20; -fx-padding: 6 12;">
+                                    <Label style="-fx-font-size: 14; -fx-text-fill: #ff8c42;" text="📍" />
+                                    <Label fx:id="lblDestinationsCount" style="-fx-text-fill: #334155; -fx-font-size: 13; -fx-font-weight: 500;" text="0 destinations" />
                                 </HBox>
-                                <HBox alignment="CENTER_LEFT" spacing="6">
-                                    <Label style="-fx-font-size: 12;" text="📅" />
-                                    <Label style="-fx-text-fill: #475569; -fx-font-size: 12;" text="42 jours d'aventure" />
+                                <HBox alignment="CENTER_LEFT" spacing="8" style="-fx-background-color: #f1f5f9; -fx-background-radius: 20; -fx-padding: 6 12;">
+                                    <Label style="-fx-font-size: 14; -fx-text-fill: #3b82f6;" text="📅" />
+                                    <Label fx:id="lblJoursCount" style="-fx-text-fill: #334155; -fx-font-size: 13; -fx-font-weight: 500;" text="0 jours d'aventure" />
                                 </HBox>
                             </HBox>
                         </VBox>
 
                         <Region HBox.hgrow="ALWAYS" />
 
-                        <!-- Quick Actions -->
-                        <VBox alignment="CENTER_RIGHT" spacing="6">
-                            <HBox spacing="6">
-                                <Label onMouseClicked="#handleCreerClick" style="-fx-background-color: #ff8c42; -fx-text-fill: white; -fx-background-radius: 10; -fx-padding: 8 16; -fx-font-weight: 600; -fx-font-size: 11; -fx-cursor: hand;" text="➕ Créer" />
-                            </HBox>
-                        </VBox>
+                        <!-- Quick Actions - SUPPRESSION DU BOUTON GESTION -->
+                        <Button onAction="#handleCreerClick" style="-fx-background-color: #ff8c42; -fx-text-fill: white; -fx-background-radius: 12; -fx-padding: 10 20; -fx-font-weight: 600; -fx-font-size: 12; -fx-cursor: hand; -fx-effect: dropshadow(gaussian, rgba(255,140,66,0.3), 8, 0, 0, 2);" text="➕ Créer">
+                            <tooltip><Tooltip text="Créer un nouvel itinéraire" /></tooltip>
+                        </Button>
+                    </HBox>
+
+                    <!-- BARRE DE RECHERCHE -->
+                    <HBox spacing="12" alignment="CENTER_LEFT" style="-fx-background-color: white; -fx-background-radius: 50; -fx-padding: 4 4 4 16; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 5, 0, 0, 2);">
+                        <Label style="-fx-font-size: 16; -fx-text-fill: #94a3b8;" text="🔍" />
+                        <TextField fx:id="searchField" promptText="Rechercher un itinéraire par nom, description, voyage ou destination..."
+                                   style="-fx-background-color: transparent; -fx-pref-width: 500; -fx-font-size: 13; -fx-prompt-text-fill: #94a3b8;"
+                                   HBox.hgrow="ALWAYS" />
+
+                        <Region HBox.hgrow="ALWAYS" />
+
+                        <!-- Bouton de réinitialisation de recherche -->
+                        <Button fx:id="btnClearSearch" style="-fx-background-color: transparent; -fx-text-fill: #94a3b8; -fx-font-size: 14; -fx-cursor: hand;" text="✕" visible="false" managed="false" />
                     </HBox>
 
                     <!-- FILTERS SECTION -->
-                    <VBox spacing="10" VBox.vgrow="ALWAYS">
-                        <HBox alignment="CENTER_LEFT" spacing="12" HBox.hgrow="ALWAYS">
-                            <Label style="-fx-font-family: 'Clash Display'; -fx-font-size: 14; -fx-font-weight: 600; -fx-text-fill: #0f172a;" text="Filtres" />
+                    <VBox spacing="12" style="-fx-background-color: white; -fx-background-radius: 24; -fx-padding: 16; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.03), 5, 0, 0, 2);">
+                        <!-- Titre des filtres -->
+                        <HBox alignment="CENTER_LEFT" spacing="8">
+                            <Label style="-fx-font-size: 14; -fx-text-fill: #ff8c42;" text="⚡" />
+                            <Label style="-fx-font-weight: 600; -fx-text-fill: #0f172a; -fx-font-size: 14;" text="Filtres" />
+                            <Region HBox.hgrow="ALWAYS" />
+                            <Button fx:id="btnReinitialiserFiltres" style="-fx-background-color: transparent; -fx-text-fill: #64748b; -fx-font-size: 12; -fx-cursor: hand; -fx-underline: true;" text="Réinitialiser tout" />
+                        </HBox>
 
-                            <ComboBox fx:id="comboDestination" promptText="Toutes les destinations" style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 2;" HBox.hgrow="ALWAYS" />
+                        <!-- Ligne de filtres -->
+                        <HBox spacing="12" alignment="CENTER_LEFT">
+                            <!-- Destination avec icône -->
+                            <HBox spacing="8" alignment="CENTER_LEFT" style="-fx-background-color: #f8fafc; -fx-background-radius: 12; -fx-padding: 4 8 4 12; -fx-border-color: #e2e8f0; -fx-border-width: 1; -fx-border-radius: 12;">
+                                <Label style="-fx-font-size: 14;" text="📍" />
+                                <ComboBox fx:id="comboDestination" promptText="Destination" style="-fx-background-color: transparent; -fx-pref-width: 180;" />
+                            </HBox>
 
-                            <DatePicker fx:id="dateDebut" promptText="Date début" style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 10; -fx-background-radius: 10;" HBox.hgrow="ALWAYS" />
+                            <!-- Date début avec icône -->
+                            <HBox spacing="8" alignment="CENTER_LEFT" style="-fx-background-color: #f8fafc; -fx-background-radius: 12; -fx-padding: 4 8 4 12; -fx-border-color: #e2e8f0; -fx-border-width: 1; -fx-border-radius: 12;">
+                                <Label style="-fx-font-size: 14;" text="📅" />
+                                <DatePicker fx:id="dateDebut" promptText="Date début" style="-fx-background-color: transparent; -fx-pref-width: 140;" />
+                            </HBox>
 
-                            <Label style="-fx-font-size: 14px; -fx-text-fill: #94a3b8;" text="→" />
+                            <Label style="-fx-font-size: 14; -fx-text-fill: #94a3b8;" text="→" />
 
-                            <DatePicker fx:id="dateFin" promptText="Date fin" style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 10; -fx-background-radius: 10;" HBox.hgrow="ALWAYS" />
+                            <!-- Date fin avec icône -->
+                            <HBox spacing="8" alignment="CENTER_LEFT" style="-fx-background-color: #f8fafc; -fx-background-radius: 12; -fx-padding: 4 8 4 12; -fx-border-color: #e2e8f0; -fx-border-width: 1; -fx-border-radius: 12;">
+                                <Label style="-fx-font-size: 14;" text="📅" />
+                                <DatePicker fx:id="dateFin" promptText="Date fin" style="-fx-background-color: transparent; -fx-pref-width: 140;" />
+                            </HBox>
 
-                            <Button fx:id="btnRechercher" onAction="#handleRechercherClick" style="-fx-background-color: #ff8c42; -fx-text-fill: white; -fx-background-radius: 10; -fx-padding: 6 16; -fx-font-weight: 600; -fx-cursor: hand;" text="Rechercher" />
+                            <!-- Tri avec icône -->
+                            <HBox spacing="8" alignment="CENTER_LEFT" style="-fx-background-color: #f8fafc; -fx-background-radius: 12; -fx-padding: 4 8 4 12; -fx-border-color: #e2e8f0; -fx-border-width: 1; -fx-border-radius: 12;">
+                                <Label style="-fx-font-size: 14;" text="🔄" />
+                                <ComboBox fx:id="triCombo" promptText="Trier par" style="-fx-background-color: transparent; -fx-pref-width: 180;" />
+                            </HBox>
+
+                            <Region HBox.hgrow="ALWAYS" />
+
+                            <!-- Bouton de filtre -->
+                            <Button fx:id="btnRechercher" style="-fx-background-color: #ff8c42; -fx-text-fill: white; -fx-background-radius: 30; -fx-padding: 8 24; -fx-font-weight: 600; -fx-font-size: 13; -fx-cursor: hand; -fx-effect: dropshadow(gaussian, rgba(255,140,66,0.3), 8, 0, 0, 2);" text="Appliquer" />
                         </HBox>
                     </VBox>
 
                     <!-- LISTE DES ITINÉRAIRES -->
-                    <VBox spacing="12" style="-fx-background-color: white; -fx-background-radius: 18; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.02), 8, 0, 0, 2);" VBox.vgrow="ALWAYS">
-                        <!-- Header -->
+                    <VBox spacing="12" style="-fx-background-color: white; -fx-background-radius: 24; -fx-padding: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.03), 8, 0, 0, 2);" VBox.vgrow="ALWAYS">
+                        <!-- Header avec titre DYNAMIQUE -->
                         <HBox alignment="CENTER_LEFT" spacing="8">
-                            <Label style="-fx-font-family: 'Clash Display'; -fx-font-size: 16; -fx-font-weight: 600; -fx-text-fill: #0f172a;" text="Liste des itinéraires" />
+                            <Label fx:id="lblListeTitre" style="-fx-font-family: 'Clash Display'; -fx-font-size: 18; -fx-font-weight: 600; -fx-text-fill: #0f172a;" text="Tous les itinéraires" />
+                            <Label fx:id="lblResultCount" style="-fx-background-color: #f1f5f9; -fx-text-fill: #475569; -fx-background-radius: 16; -fx-padding: 2 10; -fx-font-size: 12;" text="0" />
                             <Region HBox.hgrow="ALWAYS" />
-                            <HBox spacing="6">
-                                <Label onMouseClicked="#handleTrierParDate" style="-fx-background-color: #f1f5f9; -fx-text-fill: #475569; -fx-background-radius: 16; -fx-padding: 4 10; -fx-font-size: 10; -fx-cursor: hand;" text="📅 Trier par date" />
-                                <Label onMouseClicked="#handleExporter" style="-fx-background-color: #f1f5f9; -fx-text-fill: #475569; -fx-background-radius: 16; -fx-padding: 4 10; -fx-font-size: 10; -fx-cursor: hand;" text="📊 Exporter" />
+                            <HBox spacing="8">
+                                <Button onAction="#handleExporter" style="-fx-background-color: #10b981; -fx-text-fill: white; -fx-background-radius: 30; -fx-padding: 8 20; -fx-font-weight: 600; -fx-font-size: 12; -fx-cursor: hand;" text="📊 Exporter tout">
+                                    <tooltip><Tooltip text="Exporter tous les itinéraires" /></tooltip>
+                                </Button>
                             </HBox>
                         </HBox>
 
@@ -95,15 +137,19 @@
                         </VBox>
 
                         <!-- Message si aucun itinéraire -->
-                        <VBox fx:id="emptyPlaceholder" alignment="CENTER" managed="false" spacing="8" visible="false">
-                            <Label style="-fx-font-size: 24;" text="🗺️" />
-                            <Label style="-fx-text-fill: #64748b; -fx-font-size: 12;" text="Aucun itinéraire à afficher" />
-                            <Button fx:id="btnCreerPremierItineraire" onAction="#handleCreerClick" style="-fx-background-color: #ff8c42; -fx-text-fill: white; -fx-background-radius: 16; -fx-padding: 6 12; -fx-cursor: hand;" text="+ Créer votre premier itinéraire" />
+                        <VBox fx:id="emptyPlaceholder" alignment="CENTER" managed="false" spacing="15" visible="false" style="-fx-padding: 40 20;">
+                            <Label style="-fx-font-size: 64; -fx-opacity: 0.5;" text="🗺️" />
+                            <Label style="-fx-text-fill: #64748b; -fx-font-size: 16; -fx-font-weight: 500;" text="Aucun itinéraire trouvé" />
+                            <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 13;" text="Modifiez vos filtres ou créez un nouvel itinéraire" />
+                            <HBox spacing="10" alignment="CENTER" style="-fx-padding: 10 0 0 0;">
+                                <Button fx:id="btnCreerPremierItineraire" onAction="#handleCreerClick" style="-fx-background-color: #ff8c42; -fx-text-fill: white; -fx-background-radius: 30; -fx-padding: 10 24; -fx-font-weight: 600; -fx-font-size: 13; -fx-cursor: hand;" text="+ Créer un itinéraire" />
+                                <Button onAction="#reinitialiserFiltres" style="-fx-background-color: #f1f5f9; -fx-text-fill: #475569; -fx-background-radius: 30; -fx-padding: 10 24; -fx-font-weight: 600; -fx-font-size: 13; -fx-cursor: hand;" text="Réinitialiser les filtres" />
+                            </HBox>
                         </VBox>
                     </VBox>
 
                     <!-- BOTTOM DECORATION -->
-                    <Rectangle arcHeight="6" arcWidth="6" fill="linear-gradient(to right, #ff8c42, #ff6b4a, #6366f1)" height="3" VBox.vgrow="NEVER" />
+                    <Rectangle arcHeight="6" arcWidth="6" fill="linear-gradient(to right, #ff8c42, #ff6b4a, #6366f1)" height="4" VBox.vgrow="NEVER" style="-fx-arc-height: 6; -fx-arc-width: 6;" />
                 </VBox>
             </content>
         </ScrollPane>

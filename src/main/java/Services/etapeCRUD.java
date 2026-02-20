@@ -5,6 +5,8 @@ import Utils.MyBD;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Comparator;
+import java.util.stream.Collectors;
 
 public class etapeCRUD implements interfaceCRUD<etape> {
     Connection conn;
@@ -98,7 +100,6 @@ public class etapeCRUD implements interfaceCRUD<etape> {
         e.setId_itineraire(rs.getInt("id_itineraire"));
         e.setId_activite(rs.getInt("id_activite"));
 
-        // Données de l'activité
         e.setNomActivite(rs.getString("nom_activite"));
         e.setLieuActivite(rs.getString("lieu"));
         e.setDescriptionActivite(rs.getString("description_activite"));
@@ -107,14 +108,11 @@ public class etapeCRUD implements interfaceCRUD<etape> {
         e.setNiveauDifficulteActivite(rs.getInt("niveaudifficulte"));
         e.setAgeMinActivite(rs.getInt("agemin"));
         e.setStatutActivite(rs.getString("statut"));
-
-        // Données de l'itinéraire
         e.setNomItineraire(rs.getString("nom_itineraire"));
 
         return e;
     }
 
-    // Méthode pour obtenir l'ID du voyage à partir de l'ID de l'itinéraire
     public int getVoyageIdFromItineraire(int idItineraire) throws SQLException {
         String req = "SELECT id_voyage FROM itineraire WHERE id_itineraire = ?";
         PreparedStatement pst = conn.prepareStatement(req);
@@ -126,7 +124,6 @@ public class etapeCRUD implements interfaceCRUD<etape> {
         return -1;
     }
 
-    // Méthode pour obtenir les activités disponibles pour un voyage
     public List<ActiviteItem> getActivitesByVoyage(int idVoyage) throws SQLException {
         List<ActiviteItem> activites = new ArrayList<>();
 
@@ -154,7 +151,73 @@ public class etapeCRUD implements interfaceCRUD<etape> {
         return activites;
     }
 
-    // Classe interne pour les activités
+    public int getNombreJoursItineraire(int idItineraire) throws SQLException {
+        Connection conn = MyBD.getInstance().getConn();
+        String query = "SELECT v.date_debut, v.date_fin FROM itineraire i " +
+                "JOIN voyage v ON i.id_voyage = v.id_voyage " +
+                "WHERE i.id_itineraire = ?";
+        PreparedStatement stmt = conn.prepareStatement(query);
+        stmt.setInt(1, idItineraire);
+        ResultSet rs = stmt.executeQuery();
+
+        if (rs.next()) {
+            Date dateDebut = rs.getDate("date_debut");
+            Date dateFin = rs.getDate("date_fin");
+            if (dateDebut != null && dateFin != null) {
+                long diff = dateFin.getTime() - dateDebut.getTime();
+                return (int) (diff / (1000 * 60 * 60 * 24)) + 1;
+            }
+        }
+        return 5;
+    }
+
+    // NOUVELLE MÉTHODE: Trier les étapes par heure
+    public List<etape> trierParHeure(List<etape> etapes, boolean ascendant) {
+        Comparator<etape> comparator = Comparator.comparing(e -> {
+            if (e.getHeure() == null) return Time.valueOf("00:00:00");
+            return e.getHeure();
+        });
+
+        if (!ascendant) {
+            comparator = comparator.reversed();
+        }
+
+        return etapes.stream()
+                .sorted(comparator)
+                .collect(Collectors.toList());
+    }
+
+    // NOUVELLE MÉTHODE: Trier les étapes par type d'activité (nom)
+    public List<etape> trierParTypeActivite(List<etape> etapes, boolean ascendant) {
+        Comparator<etape> comparator = Comparator.comparing(
+                e -> e.getNomActivite() != null ? e.getNomActivite() : "",
+                String.CASE_INSENSITIVE_ORDER
+        );
+
+        if (!ascendant) {
+            comparator = comparator.reversed();
+        }
+
+        return etapes.stream()
+                .sorted(comparator)
+                .collect(Collectors.toList());
+    }
+
+    // NOUVELLE MÉTHODE: Trier les étapes par durée
+    public List<etape> trierParDuree(List<etape> etapes, boolean ascendant) {
+        Comparator<etape> comparator = Comparator.comparing(
+                e -> e.getDureeActivite() != null ? e.getDureeActivite() : 0f
+        );
+
+        if (!ascendant) {
+            comparator = comparator.reversed();
+        }
+
+        return etapes.stream()
+                .sorted(comparator)
+                .collect(Collectors.toList());
+    }
+
     public static class ActiviteItem {
         private int id;
         private String nom;
@@ -174,7 +237,6 @@ public class etapeCRUD implements interfaceCRUD<etape> {
             this.niveauDifficulte = niveauDifficulte;
         }
 
-        // Getters
         public int getId() { return id; }
         public String getNom() { return nom; }
         public String getLieu() { return lieu; }
@@ -198,25 +260,4 @@ public class etapeCRUD implements interfaceCRUD<etape> {
             return nom + " (" + lieu + ") - " + getNiveauTexte();
         }
     }
-
-    public int getNombreJoursItineraire(int idItineraire) throws SQLException {
-        Connection conn = MyBD.getInstance().getConn();
-        String query = "SELECT v.date_debut, v.date_fin FROM itineraire i " +
-                "JOIN voyage v ON i.id_voyage = v.id_voyage " +
-                "WHERE i.id_itineraire = ?";
-        PreparedStatement stmt = conn.prepareStatement(query);
-        stmt.setInt(1, idItineraire);
-        ResultSet rs = stmt.executeQuery();
-
-        if (rs.next()) {
-            Date dateDebut = rs.getDate("date_debut");
-            Date dateFin = rs.getDate("date_fin");
-            if (dateDebut != null && dateFin != null) {
-                long diff = dateFin.getTime() - dateDebut.getTime();
-                return (int) (diff / (1000 * 60 * 60 * 24)) + 1;
-            }
-        }
-        return 5; // valeur par défaut
-    }
-
 }

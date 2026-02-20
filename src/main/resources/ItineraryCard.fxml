@@ -35,6 +35,13 @@
 
         <!-- Boutons d'action -->
         <HBox spacing="8" alignment="CENTER_RIGHT">
+            <!-- NOUVEAU: Bouton d'export -->
+            <Button fx:id="exportButton" style="-fx-background-color: #10b981; -fx-text-fill: white; -fx-background-radius: 8; -fx-padding: 6 10; -fx-font-size: 12; -fx-cursor: hand;" text="📤">
+                <tooltip>
+                    <Tooltip text="Exporter" />
+                </tooltip>
+            </Button>
+
             <Button fx:id="editButton" style="-fx-background-color: #f1f5f9; -fx-text-fill: #475569; -fx-background-radius: 8; -fx-padding: 6 10; -fx-font-size: 12; -fx-cursor: hand;" text="✏️">
                 <tooltip>
                     <Tooltip text="Modifier" />

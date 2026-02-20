@@ -4,6 +4,7 @@ import Entites.Itineraire;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import java.util.function.Consumer;
@@ -16,12 +17,14 @@ public class ItineraryCardController {
     @FXML private Label descLabel;
     @FXML private Button editButton;
     @FXML private Button deleteButton;
+    @FXML private Button exportButton; // NOUVEAU: Bouton d'export
     @FXML private VBox joursContainer;
     @FXML private Label pasJoursLabel;
 
     private Itineraire itineraire;
     private Consumer<Itineraire> onEdit;
     private Consumer<Itineraire> onDelete;
+    private Consumer<Itineraire> onExport; // NOUVEAU: Callback pour l'export
     private TriConsumer<Integer, Integer, String> onJourClick;
 
     public void setData(Itineraire itineraire,
@@ -30,12 +33,14 @@ public class ItineraryCardController {
                         String emoji,
                         Consumer<Itineraire> onEdit,
                         Consumer<Itineraire> onDelete,
-                        TriConsumer<Integer, Integer, String> onJourClick) {
+                        TriConsumer<Integer, Integer, String> onJourClick,
+                        Consumer<Itineraire> onExport) { // NOUVEAU: Paramètre onExport
 
         this.itineraire = itineraire;
         this.onEdit = onEdit;
         this.onDelete = onDelete;
         this.onJourClick = onJourClick;
+        this.onExport = onExport;
 
         iconLabel.setText(emoji);
         nameLabel.setText(itineraire.getNom_itineraire());
@@ -50,6 +55,14 @@ public class ItineraryCardController {
         deleteButton.setOnAction(e -> {
             if (onDelete != null) onDelete.accept(itineraire);
         });
+
+        // NOUVEAU: Gestionnaire pour le bouton d'export
+        if (exportButton != null) {
+            exportButton.setOnAction(e -> {
+                if (onExport != null) onExport.accept(itineraire);
+            });
+            exportButton.setTooltip(new Tooltip("Exporter cet itinéraire"));
+        }
 
         generateJours(nbJours);
     }

@@ -45,14 +45,18 @@
         </VBox>
     </HBox>
 
-    <!-- FILTERS SECTION -->
+    <!-- FILTERS SECTION - MODIFIÉ avec tri et filtre -->
     <VBox spacing="10" VBox.vgrow="ALWAYS">
         <HBox alignment="CENTER_LEFT" spacing="12" HBox.hgrow="ALWAYS">
-            <Label style="-fx-font-family: 'Clash Display'; -fx-font-size: 14; -fx-font-weight: 600; -fx-text-fill: #0f172a;" text="Filtres" />
+            <Label style="-fx-font-family: 'Clash Display'; -fx-font-size: 14; -fx-font-weight: 600; -fx-text-fill: #0f172a;" text="Organiser" />
 
-            <ComboBox promptText="Trier par heure" style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 2;" HBox.hgrow="ALWAYS" />
-            <ComboBox promptText="Type d'activité" style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 2;" HBox.hgrow="ALWAYS" />
-            <Button style="-fx-background-color: #ff8c42; -fx-text-fill: white; -fx-background-radius: 10; -fx-padding: 6 16; -fx-font-weight: 600; -fx-cursor: hand;" text="Appliquer" />
+            <!-- NOUVEAU: Filtre par type d'activité -->
+            <ComboBox fx:id="filtreTypeCombo" promptText="Type d'activité" style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 2;" prefWidth="180" HBox.hgrow="ALWAYS" />
+
+            <!-- NOUVEAU: Tri -->
+            <ComboBox fx:id="triCombo" promptText="Trier par" style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 2;" prefWidth="180" HBox.hgrow="ALWAYS" />
+
+            <Region HBox.hgrow="ALWAYS" />
         </HBox>
     </VBox>
 
