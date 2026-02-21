@@ -165,6 +165,8 @@
                     <TableColumn fx:id="colStatut" text="Statut" prefWidth="100" style="-fx-alignment: CENTER;"/>
                     <TableColumn fx:id="colDuree" text="Durée (h)" prefWidth="90" style="-fx-alignment: CENTER;"/>
                     <TableColumn fx:id="colCategorie" text="Catégorie" prefWidth="120" style="-fx-alignment: CENTER;"/>
+                    <!-- NOUVELLE COLONNE IMAGE -->
+                    <TableColumn fx:id="colImage" text="Image" prefWidth="80" style="-fx-alignment: CENTER;"/>
                 </columns>
 
                 <placeholder>

@@ -1,163 +1,61 @@
-/* categoriesfront.css */
+/* categoriesfront.css - TravelMate Front Office Light Theme */
 
-/* Style pour le ScrollPane */
-.scroll-pane {
-    -fx-background: transparent;
-    -fx-background-color: transparent;
+.root {
+    -fx-background-color: #f0f4f0;
+    -fx-font-family: 'Segoe UI', Arial, sans-serif;
 }
 
-.scroll-pane .viewport {
-    -fx-background-color: transparent;
-}
+/* ─── ScrollPane ─── */
+.scroll-pane { -fx-background: transparent; -fx-background-color: transparent; -fx-border-color: transparent; }
+.scroll-pane .viewport { -fx-background-color: transparent; }
+.scroll-pane > .scroll-bar { -fx-opacity: 0.5; }
 
-/* Style pour les ComboBox */
+/* ─── ComboBox ─── */
 .combo-box {
-    -fx-background-color: #1e2749;
-    -fx-text-fill: #ffffff;
-    -fx-border-color: #2d3a5f;
-    -fx-border-radius: 10;
-    -fx-background-radius: 10;
+    -fx-background-color: white;
+    -fx-text-fill: #555;
+    -fx-border-color: #ddd;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
     -fx-padding: 4 8;
+    -fx-font-size: 12;
 }
+.combo-box .list-cell { -fx-background-color: white; -fx-text-fill: #333; }
+.combo-box .list-view { -fx-background-color: white; -fx-border-color: #f5a623; }
+.combo-box .list-view .list-cell:hover { -fx-background-color: rgba(245,166,35,0.15); }
+.combo-box .list-view .list-cell:selected { -fx-background-color: #f5a623; -fx-text-fill: white; }
+.combo-box .arrow-button { -fx-background-color: transparent; }
+.combo-box .arrow { -fx-background-color: #f5a623; }
 
-.combo-box .list-cell {
-    -fx-background-color: #1e2749;
-    -fx-text-fill: #ffffff;
-}
-
-.combo-box .list-view {
-    -fx-background-color: #1e2749;
-    -fx-border-color: #ff8c42;
-}
-
-.combo-box .list-view .list-cell:hover {
-    -fx-background-color: rgba(255,140,66,0.3);
-}
-
-.combo-box .list-view .list-cell:selected {
-    -fx-background-color: #ff8c42;
-}
-
-.combo-box .arrow-button {
-    -fx-background-color: transparent;
-}
-
-.combo-box .arrow {
-    -fx-background-color: #ff8c42;
-}
-
-/* Style pour les cartes de catégories */
+/* ─── Cartes catégories ─── */
 .category-card {
-    -fx-background-color: #1e2749;
-    -fx-background-radius: 15;
-    -fx-padding: 15;
-    -fx-border-color: #ff8c42;
-    -fx-border-width: 2;
-    -fx-border-radius: 15;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 10, 0, 0, 0);
+    -fx-background-color: white;
+    -fx-background-radius: 16;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.10), 10, 0, 0, 3);
+    -fx-cursor: hand;
 }
-
 .category-card:hover {
-    -fx-border-color: #ff8c42;
+    -fx-effect: dropshadow(three-pass-box, rgba(245,166,35,0.40), 18, 0, 0, 5);
     -fx-scale-x: 1.02;
     -fx-scale-y: 1.02;
-    -fx-effect: dropshadow(three-pass-box, rgba(255,140,66,0.3), 15, 0, 0, 0);
-    -fx-transition: all 0.3s ease;
 }
 
-/* Style pour les labels dans les cartes */
-.card-title {
-    -fx-font-family: 'Clash Display';
-    -fx-font-size: 18;
-    -fx-font-weight: bold;
-    -fx-text-fill: #ffffff;
-}
+/* ─── PieChart ─── */
+.chart-pie-label { -fx-font-size: 0; }
+.chart-legend-item-label { -fx-font-size: 11; -fx-text-fill: #555; }
 
-.card-description {
-    -fx-text-fill: #94a3b8;
-    -fx-font-size: 13;
-}
+/* ─── ProgressBar ─── */
+.progress-bar .track { -fx-background-color: #f0f0f0; -fx-background-radius: 3; }
+.progress-bar .bar   { -fx-background-color: #ff6b00; -fx-background-radius: 3; -fx-background-insets: 0; }
 
-.card-info {
-    -fx-text-fill: #e2e8f0;
-    -fx-font-size: 12;
-}
-
-.card-type {
-    -fx-text-fill: #60a5fa;
-    -fx-font-size: 12;
-    -fx-font-weight: bold;
-}
-
-.card-saison-printemps {
-    -fx-text-fill: #34d399;
-    -fx-font-size: 12;
-    -fx-font-weight: bold;
-}
-
-.card-saison-ete {
-    -fx-text-fill: #fbbf24;
-    -fx-font-size: 12;
-    -fx-font-weight: bold;
-}
-
-.card-saison-automne {
-    -fx-text-fill: #ff8c42;
-    -fx-font-size: 12;
-    -fx-font-weight: bold;
-}
-
-.card-saison-hiver {
-    -fx-text-fill: #60a5fa;
-    -fx-font-size: 12;
-    -fx-font-weight: bold;
-}
-
-.card-intensite-faible {
-    -fx-text-fill: #34d399;
-    -fx-font-size: 12;
-    -fx-font-weight: bold;
-}
-
-.card-intensite-moyen {
-    -fx-text-fill: #fbbf24;
-    -fx-font-size: 12;
-    -fx-font-weight: bold;
-}
-
-.card-intensite-eleve {
-    -fx-text-fill: #ef4444;
-    -fx-font-size: 12;
-    -fx-font-weight: bold;
-}
-
-/* Style pour les icônes */
-.icon-label {
-    -fx-font-size: 20;
-}
-
-/* Style pour la grille */
-.grid-pane {
-    -fx-padding: 10;
-    -fx-hgap: 20;
-    -fx-vgap: 20;
-}
-
-/* Style pour le bouton Back Office */
-#btnBackOffice {
+/* ─── Bouton toggle office ─── */
+#btnToggleOffice {
     -fx-background-color: #6366f1;
     -fx-text-fill: white;
-    -fx-font-weight: 600;
-    -fx-background-radius: 20;
-    -fx-padding: 8 20;
+    -fx-font-weight: bold;
+    -fx-background-radius: 15;
+    -fx-padding: 6 16;
     -fx-cursor: hand;
-    -fx-font-size: 12;
-    -fx-border-color: #818cf8;
-    -fx-border-width: 1;
-    -fx-border-radius: 20;
+    -fx-border-width: 0;
 }
-
-#btnBackOffice:hover {
-    -fx-background-color: #4f46e5;
-    -fx-border-color: #6366f1;
-}
+#btnToggleOffice:hover { -fx-background-color: #4f46e5; }

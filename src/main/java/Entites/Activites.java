@@ -15,10 +15,28 @@ public class Activites {
     private int categorieId;
     private Categories categorie;
 
+    // NOUVEL ATTRIBUT POUR L'IMAGE
+    private String imagePath;
+
     public Activites() {
     }
 
-    // Getters et Setters
+    // Constructeur avec tous les champs (optionnel)
+    public Activites(String nom, String description, int budget, String niveaudifficulte,
+                     String lieu, int agemin, String statut, int duree, int categorieId, String imagePath) {
+        this.nom = nom;
+        this.description = description;
+        this.budget = budget;
+        this.niveaudifficulte = niveaudifficulte;
+        this.lieu = lieu;
+        this.agemin = agemin;
+        this.statut = statut;
+        this.duree = duree;
+        this.categorieId = categorieId;
+        this.imagePath = imagePath;
+    }
+
+    // Getters et Setters existants
     public int getId() {
         return id;
     }
@@ -105,6 +123,15 @@ public class Activites {
 
     public void setCategorie(Categories categorie) {
         this.categorie = categorie;
+    }
+
+    // NOUVEAUX getter/setter pour imagePath
+    public String getImagePath() {
+        return imagePath;
+    }
+
+    public void setImagePath(String imagePath) {
+        this.imagePath = imagePath;
     }
 
     @Override

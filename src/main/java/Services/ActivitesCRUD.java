@@ -18,8 +18,8 @@ public class ActivitesCRUD implements IntrefaceCRUD<Activites> {
 
     @Override
     public void ajouter(Activites activite) throws SQLException {
-        String req = "INSERT INTO Activites (nom, description, budget, niveaudifficulte, lieu, agemin, statut, duree, categorie_id) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String req = "INSERT INTO Activites (nom, description, budget, niveaudifficulte, lieu, agemin, statut, duree, categorie_id, image_path) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         PreparedStatement pst = conn.prepareStatement(req, Statement.RETURN_GENERATED_KEYS);
         pst.setString(1, activite.getNom());
@@ -31,6 +31,7 @@ public class ActivitesCRUD implements IntrefaceCRUD<Activites> {
         pst.setString(7, activite.getStatut());
         pst.setInt(8, activite.getDuree());
         pst.setInt(9, activite.getCategorieId());
+        pst.setString(10, activite.getImagePath());
 
         pst.executeUpdate();
 
@@ -46,7 +47,7 @@ public class ActivitesCRUD implements IntrefaceCRUD<Activites> {
     @Override
     public void modifier(Activites activite) throws SQLException {
         String req = "UPDATE Activites SET nom=?, description=?, budget=?, niveaudifficulte=?, " +
-                "lieu=?, agemin=?, statut=?, duree=?, categorie_id=? WHERE id=?";
+                "lieu=?, agemin=?, statut=?, duree=?, categorie_id=?, image_path=? WHERE id=?";
 
         PreparedStatement pst = conn.prepareStatement(req);
         pst.setString(1, activite.getNom());
@@ -58,7 +59,8 @@ public class ActivitesCRUD implements IntrefaceCRUD<Activites> {
         pst.setString(7, activite.getStatut());
         pst.setInt(8, activite.getDuree());
         pst.setInt(9, activite.getCategorieId());
-        pst.setInt(10, activite.getId());
+        pst.setString(10, activite.getImagePath());
+        pst.setInt(11, activite.getId());
 
         pst.executeUpdate();
         System.out.println("Activité modifiée");
@@ -66,6 +68,27 @@ public class ActivitesCRUD implements IntrefaceCRUD<Activites> {
 
     @Override
     public void supprimer(int id) throws SQLException {
+        // D'abord récupérer le chemin de l'image pour pouvoir la supprimer du disque
+        String selectReq = "SELECT image_path FROM Activites WHERE id=?";
+        PreparedStatement selectPst = conn.prepareStatement(selectReq);
+        selectPst.setInt(1, id);
+        ResultSet rs = selectPst.executeQuery();
+        if (rs.next()) {
+            String imagePath = rs.getString("image_path");
+            if (imagePath != null && !imagePath.isEmpty()) {
+                // Supprimer le fichier image du disque
+                try {
+                    java.io.File file = new java.io.File(imagePath);
+                    if (file.exists()) {
+                        file.delete();
+                    }
+                } catch (Exception e) {
+                    System.err.println("Erreur lors de la suppression du fichier image: " + e.getMessage());
+                }
+            }
+        }
+
+        // Ensuite supprimer l'activité
         String req = "DELETE FROM Activites WHERE id=?";
         PreparedStatement pst = conn.prepareStatement(req);
         pst.setInt(1, id);
@@ -97,6 +120,7 @@ public class ActivitesCRUD implements IntrefaceCRUD<Activites> {
             p.setStatut(rs.getString("statut"));
             p.setDuree(rs.getInt("duree"));
             p.setCategorieId(rs.getInt("categorie_id"));
+            p.setImagePath(rs.getString("image_path")); // NOUVEAU
 
             // Créer et associer l'objet Catégorie si elle existe
             if (rs.getObject("cat_id") != null) {
@@ -107,7 +131,7 @@ public class ActivitesCRUD implements IntrefaceCRUD<Activites> {
                 cat.setSaison(rs.getString("cat_saison"));
                 cat.setNiveauintensite(rs.getString("cat_intensite"));
                 cat.setPubliccible(rs.getString("cat_public"));
-                p.setCategorie(cat); // ← LIGNE IMPORTANTE !
+                p.setCategorie(cat);
             }
 
             listeActivites.add(p);
@@ -137,9 +161,35 @@ public class ActivitesCRUD implements IntrefaceCRUD<Activites> {
             p.setStatut(rs.getString("statut"));
             p.setDuree(rs.getInt("duree"));
             p.setCategorieId(rs.getInt("categorie_id"));
+            p.setImagePath(rs.getString("image_path")); // NOUVEAU
 
             listeActivites.add(p);
         }
         return listeActivites;
+    }
+
+    // NOUVELLE METHODE : Récupérer une activité par ID (pour modification)
+    public Activites getOne(int id) throws SQLException {
+        String req = "SELECT * FROM Activites WHERE id = ?";
+        PreparedStatement pst = conn.prepareStatement(req);
+        pst.setInt(1, id);
+        ResultSet rs = pst.executeQuery();
+
+        if (rs.next()) {
+            Activites a = new Activites();
+            a.setId(rs.getInt("id"));
+            a.setNom(rs.getString("nom"));
+            a.setDescription(rs.getString("description"));
+            a.setBudget(rs.getInt("budget"));
+            a.setNiveaudifficulte(rs.getString("niveaudifficulte"));
+            a.setLieu(rs.getString("lieu"));
+            a.setAgemin(rs.getInt("agemin"));
+            a.setStatut(rs.getString("statut"));
+            a.setDuree(rs.getInt("duree"));
+            a.setCategorieId(rs.getInt("categorie_id"));
+            a.setImagePath(rs.getString("image_path"));
+            return a;
+        }
+        return null;
     }
 }

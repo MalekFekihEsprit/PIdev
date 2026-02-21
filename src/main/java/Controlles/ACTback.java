@@ -4,6 +4,7 @@ import Entites.Activites;
 import Entites.Categories;
 import Services.ActivitesCRUD;
 import Services.CategoriesCRUD;
+import Utils.FileManager;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -14,11 +15,15 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.geometry.Insets;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.scene.control.ListCell;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.sql.SQLException;
@@ -41,6 +46,7 @@ public class ACTback implements Initializable {
     @FXML private TableColumn<Activites, Integer> colAgeMin;
     @FXML private TableColumn<Activites, String> colStatut;
     @FXML private TableColumn<Activites, String> colCategorie;
+    @FXML private TableColumn<Activites, String> colImage;
 
     // Boutons et champs
     @FXML private Button btnModifier;
@@ -71,6 +77,10 @@ public class ACTback implements Initializable {
     // Service CRUD
     private ActivitesCRUD activitesCRUD;
     private ObservableList<Activites> activitesData;
+
+    // Variables pour la gestion d'images
+    private File selectedImageFile;
+    private String currentImagePath;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -118,6 +128,37 @@ public class ACTback implements Initializable {
                 return new javafx.beans.property.SimpleStringProperty(activite.getCategorie().getNom());
             } else {
                 return new javafx.beans.property.SimpleStringProperty("");
+            }
+        });
+
+        // Colonne pour l'image
+        colImage.setCellValueFactory(new PropertyValueFactory<>("imagePath"));
+        colImage.setCellFactory(column -> new TableCell<Activites, String>() {
+            private final ImageView imageView = new ImageView();
+
+            @Override
+            protected void updateItem(String imagePath, boolean empty) {
+                super.updateItem(imagePath, empty);
+                if (empty || imagePath == null || imagePath.isEmpty()) {
+                    setGraphic(null);
+                    setText("❌");
+                } else {
+                    try {
+                        File file = new File(imagePath);
+                        if (file.exists()) {
+                            Image image = new Image(file.toURI().toString(), 30, 30, true, true);
+                            imageView.setImage(image);
+                            setGraphic(imageView);
+                            setText(null);
+                        } else {
+                            setGraphic(null);
+                            setText("❌");
+                        }
+                    } catch (Exception e) {
+                        setGraphic(null);
+                        setText("❌");
+                    }
+                }
             }
         });
 
@@ -432,7 +473,85 @@ public class ACTback implements Initializable {
     }
 
     /**
-     * Ajouter une nouvelle activité avec validation
+     * Crée la section de sélection d'image pour les formulaires
+     */
+    private VBox createImageSection(ImageView imageView, Button chooseButton, Label imageNameLabel, String currentImage) {
+        VBox imageSection = new VBox(10);
+        imageSection.setStyle("-fx-padding: 10; -fx-background-color: #1e2749; -fx-background-radius: 10; -fx-max-width: 400;");
+
+        Label imageLabel = new Label("Image de l'activité :");
+        imageLabel.setStyle("-fx-text-fill: #ffffff; -fx-font-weight: bold;");
+
+        // Image preview
+        imageView.setFitWidth(150);
+        imageView.setFitHeight(150);
+        imageView.setPreserveRatio(true);
+        imageView.setStyle("-fx-background-color: #0a0e27; -fx-background-radius: 8; -fx-padding: 5;");
+
+        // Charger l'image actuelle si elle existe
+        if (currentImage != null && !currentImage.isEmpty()) {
+            try {
+                File file = new File(currentImage);
+                if (file.exists()) {
+                    Image image = new Image(file.toURI().toString());
+                    imageView.setImage(image);
+                    imageNameLabel.setText("Image actuelle : " + file.getName());
+                } else {
+                    imageNameLabel.setText("Aucune image");
+                }
+            } catch (Exception e) {
+                imageNameLabel.setText("Aucune image");
+            }
+        } else {
+            imageNameLabel.setText("Aucune image sélectionnée");
+        }
+
+        chooseButton.setText("📁 Choisir une image");
+        chooseButton.setStyle("-fx-background-color: #ff8c42; -fx-text-fill: white; -fx-font-weight: 600; -fx-background-radius: 10; -fx-padding: 8 15; -fx-cursor: hand;");
+
+        imageNameLabel.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 11; -fx-wrap-text: true;");
+
+        HBox buttonBox = new HBox(10, chooseButton);
+        buttonBox.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+
+        imageSection.getChildren().addAll(imageLabel, imageView, imageNameLabel, buttonBox);
+
+        return imageSection;
+    }
+
+    /**
+     * Gère la sélection d'image
+     */
+    private void handleChooseImage(ImageView imageView, Label imageNameLabel) {
+        File file = FileManager.chooseImage(imageView.getScene().getWindow());
+        if (file != null) {
+            selectedImageFile = file;
+            try {
+                Image image = new Image(file.toURI().toString());
+                imageView.setImage(image);
+                imageNameLabel.setText("Image sélectionnée : " + file.getName());
+            } catch (Exception e) {
+                showError("Erreur", "Impossible de charger l'image : " + e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * Crée un formulaire avec ScrollPane
+     */
+    private ScrollPane createFormScrollPane(GridPane grid) {
+        ScrollPane scrollPane = new ScrollPane();
+        scrollPane.setContent(grid);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setFitToHeight(true);
+        scrollPane.setPrefHeight(500);
+        scrollPane.setPrefWidth(700);
+        scrollPane.setStyle("-fx-background: #1e2749; -fx-background-color: #1e2749; -fx-border-color: #ff8c42; -fx-border-radius: 10;");
+        return scrollPane;
+    }
+
+    /**
+     * Ajouter une nouvelle activité avec validation et image
      */
     @FXML
     private void handleAjouter() {
@@ -472,6 +591,14 @@ public class ACTback implements Initializable {
         statutCombo.setValue("Active");
 
         ComboBox<Categories> categorieCombo = new ComboBox<>();
+
+        // Section image
+        ImageView imagePreview = new ImageView();
+        Button chooseImageButton = new Button();
+        Label imageNameLabel = new Label();
+        VBox imageSection = createImageSection(imagePreview, chooseImageButton, imageNameLabel, null);
+
+        chooseImageButton.setOnAction(e -> handleChooseImage(imagePreview, imageNameLabel));
 
         // Labels d'erreur
         Label errorNom = createErrorLabel();
@@ -565,8 +692,21 @@ public class ACTback implements Initializable {
         vboxCategorie.getChildren().addAll(categorieCombo, new Label());
         grid.add(vboxCategorie, 1, row++);
 
-        dialog.getDialogPane().setContent(grid);
+        // Ajouter la section image sur une nouvelle ligne
+        grid.add(new Label("Image:"), 0, row);
+        grid.add(imageSection, 1, row++);
+
+        // Créer le ScrollPane et y mettre le GridPane
+        ScrollPane scrollPane = createFormScrollPane(grid);
+
+        // Créer un VBox pour contenir le ScrollPane
+        VBox contentBox = new VBox(10, scrollPane);
+        contentBox.setPadding(new Insets(10));
+
+        dialog.getDialogPane().setContent(contentBox);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        dialog.getDialogPane().setPrefWidth(750);
+        dialog.getDialogPane().setPrefHeight(600);
 
         // Validation avant de fermer le dialogue
         Button okButton = (Button) dialog.getDialogPane().lookupButton(ButtonType.OK);
@@ -605,6 +745,17 @@ public class ACTback implements Initializable {
                         activite.setCategorieId(0);
                     }
 
+                    // Gestion de l'image
+                    if (selectedImageFile != null) {
+                        try {
+                            String imagePath = FileManager.saveImage(selectedImageFile);
+                            activite.setImagePath(imagePath);
+                        } catch (IOException e) {
+                            showError("Erreur", "Impossible de sauvegarder l'image : " + e.getMessage());
+                            return null;
+                        }
+                    }
+
                     return activite;
                 } catch (NumberFormatException e) {
                     return null;
@@ -620,6 +771,7 @@ public class ACTback implements Initializable {
                 activitesCRUD.ajouter(activite);
                 showInfo("Succès", "Activité ajoutée avec succès !");
                 loadActivites();
+                selectedImageFile = null; // Réinitialiser
             } catch (SQLException e) {
                 showError("Erreur d'ajout",
                         "Impossible d'ajouter l'activité : " + e.getMessage());
@@ -629,7 +781,7 @@ public class ACTback implements Initializable {
     }
 
     /**
-     * Modifier l'activité sélectionnée avec validation
+     * Modifier l'activité sélectionnée avec validation et image
      */
     @FXML
     private void handleModifier() {
@@ -639,6 +791,10 @@ public class ACTback implements Initializable {
             showWarning("Aucune sélection", "Veuillez sélectionner une activité à modifier.");
             return;
         }
+
+        // Réinitialiser les variables d'image
+        selectedImageFile = null;
+        currentImagePath = selectedActivite.getImagePath();
 
         Dialog<Activites> dialog = new Dialog<>();
         dialog.setTitle("Modifier Activité");
@@ -663,6 +819,14 @@ public class ACTback implements Initializable {
         ComboBox<String> statutCombo = new ComboBox<>();
         statutCombo.getItems().addAll("Active", "Inactive", "En attente");
         statutCombo.setValue(selectedActivite.getStatut());
+
+        // Section image
+        ImageView imagePreview = new ImageView();
+        Button chooseImageButton = new Button();
+        Label imageNameLabel = new Label();
+        VBox imageSection = createImageSection(imagePreview, chooseImageButton, imageNameLabel, currentImagePath);
+
+        chooseImageButton.setOnAction(e -> handleChooseImage(imagePreview, imageNameLabel));
 
         // Labels d'erreur
         Label errorNom = createErrorLabel();
@@ -764,8 +928,21 @@ public class ACTback implements Initializable {
         vboxCategorie.getChildren().addAll(categorieCombo, new Label());
         grid.add(vboxCategorie, 1, row++);
 
-        dialog.getDialogPane().setContent(grid);
+        // Ajouter la section image sur une nouvelle ligne
+        grid.add(new Label("Image:"), 0, row);
+        grid.add(imageSection, 1, row++);
+
+        // Créer le ScrollPane et y mettre le GridPane
+        ScrollPane scrollPane = createFormScrollPane(grid);
+
+        // Créer un VBox pour contenir le ScrollPane
+        VBox contentBox = new VBox(10, scrollPane);
+        contentBox.setPadding(new Insets(10));
+
+        dialog.getDialogPane().setContent(contentBox);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        dialog.getDialogPane().setPrefWidth(750);
+        dialog.getDialogPane().setPrefHeight(600);
 
         // Validation avant de fermer le dialogue
         Button okButton = (Button) dialog.getDialogPane().lookupButton(ButtonType.OK);
@@ -802,6 +979,25 @@ public class ACTback implements Initializable {
                         selectedActivite.setCategorieId(0);
                     }
 
+                    // Gestion de l'image
+                    if (selectedImageFile != null) {
+                        // Supprimer l'ancienne image si elle existe
+                        if (currentImagePath != null && !currentImagePath.isEmpty()) {
+                            FileManager.deleteImage(currentImagePath);
+                        }
+                        // Sauvegarder la nouvelle image
+                        try {
+                            String newImagePath = FileManager.saveImage(selectedImageFile);
+                            selectedActivite.setImagePath(newImagePath);
+                        } catch (IOException e) {
+                            showError("Erreur", "Impossible de sauvegarder l'image : " + e.getMessage());
+                            return null;
+                        }
+                    } else {
+                        // Conserver l'image existante
+                        selectedActivite.setImagePath(currentImagePath);
+                    }
+
                     return selectedActivite;
                 } catch (NumberFormatException e) {
                     return null;
@@ -817,6 +1013,7 @@ public class ACTback implements Initializable {
                 activitesCRUD.modifier(activite);
                 showInfo("Succès", "Activité modifiée avec succès !");
                 loadActivites();
+                selectedImageFile = null;
             } catch (SQLException e) {
                 showError("Erreur de modification",
                         "Impossible de modifier l'activité : " + e.getMessage());
@@ -846,6 +1043,7 @@ public class ACTback implements Initializable {
 
         if (result.isPresent() && result.get() == ButtonType.OK) {
             try {
+                // La suppression de l'image est gérée dans le CRUD
                 activitesCRUD.supprimer(selectedActivite.getId());
                 showInfo("Succès", "Activité supprimée avec succès !");
                 loadActivites();
@@ -913,7 +1111,8 @@ public class ACTback implements Initializable {
         GridPane grid = new GridPane();
         grid.setHgap(10);
         grid.setVgap(10);
-        grid.setPadding(new Insets(20, 150, 10, 10));
+        grid.setPadding(new Insets(20, 20, 20, 20));
+        grid.setStyle("-fx-background-color: #1e2749; -fx-background-radius: 10;");
         return grid;
     }
 

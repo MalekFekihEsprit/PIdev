@@ -2,241 +2,458 @@ package Controlles;
 
 import Entites.Activites;
 import Services.ActivitesCRUD;
+import Utils.TranslationManager;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.chart.PieChart;
 import javafx.scene.control.*;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
+import javafx.scene.effect.DropShadow;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.sql.SQLException;
-import java.util.List;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.stream.Collectors;
 import java.util.ResourceBundle;
 
 public class ACTfront implements Initializable {
 
+    // ─── FXML Injections ───────────────────────────────────────────────
     @FXML private GridPane activitesGrid;
     @FXML private Label lblTotalActivites;
     @FXML private Button btnBackOffice;
+    @FXML private Button btnModifier;
+    @FXML private Button btnSupprimer;
+    @FXML private Button btnFavoris;
     @FXML private HBox btnVersCategories;
     @FXML private ComboBox<String> filterTypeCombo;
     @FXML private ComboBox<String> filterSaisonCombo;
     @FXML private ComboBox<String> filterDifficulteCombo;
+    @FXML private PieChart pieChart;
+    @FXML private Label lblDateMoyenne;
+    @FXML private Label lblNomMoyenne;
+    @FXML private Label lblTopLieu;
+    @FXML private Label lblTopBudget;
+    @FXML private Label lblTopNom;
+    @FXML private ProgressBar progressTop;
+    @FXML private Label lblSelectedDate;
+    @FXML private Label lblSelectedBudget;
+    @FXML private Circle dotColor;
+    @FXML private Label lblDate;
+    @FXML private TextField searchField;
+    @FXML private Button btnTranslate;
 
+    // ─── State ─────────────────────────────────────────────────────────
     private ActivitesCRUD activitesCRUD;
     private ObservableList<Activites> activitesList;
+    private FilteredList<Activites> filteredData;
+    private Activites selectedActivite = null;
+
+    // ─── Couleurs pour le PieChart ──────────────────────────────────────
+    private static final String[] PIE_COLORS = {
+            "#ff6b00", "#f5a623", "#ef4444", "#34d399", "#60a5fa", "#a78bfa", "#fbbf24", "#f87171"
+    };
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         activitesCRUD = new ActivitesCRUD();
         activitesList = FXCollections.observableArrayList();
 
-        // Initialiser les filtres
+        // Date du jour dans la navbar
+        if (lblDate != null) {
+            lblDate.setText("📅 " + LocalDate.now().format(DateTimeFormatter.ofPattern("MMMM yyyy", Locale.FRENCH)));
+        }
+
         setupFilters();
-
-        // Charger les activités
+        setupSearch();
         loadActivites();
-
-        // Mettre à jour le compteur
-        updateTotalCount();
     }
 
+    // ═══════════════════════════════════════════════════════════════════
+    // SETUP SEARCH
+    // ═══════════════════════════════════════════════════════════════════
+    private void setupSearch() {
+        if (searchField != null) {
+            searchField.textProperty().addListener((observable, oldValue, newValue) -> {
+                applyFilters();
+            });
+
+            searchField.setPromptText("Rechercher une activité...");
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // SETUP FILTERS
+    // ═══════════════════════════════════════════════════════════════════
     private void setupFilters() {
-        // Filtres par type de catégorie
         filterTypeCombo.getItems().addAll("Tous les types", "Aventure", "Détente", "Culturel", "Sportif", "Gastronomique", "Famille", "Nature");
         filterTypeCombo.setValue("Tous les types");
-        filterTypeCombo.setOnAction(event -> applyFilters());
+        filterTypeCombo.setOnAction(e -> applyFilters());
 
-        // Filtres par saison
         filterSaisonCombo.getItems().addAll("Toutes saisons", "Printemps", "Été", "Automne", "Hiver");
         filterSaisonCombo.setValue("Toutes saisons");
-        filterSaisonCombo.setOnAction(event -> applyFilters());
+        filterSaisonCombo.setOnAction(e -> applyFilters());
 
-        // Filtres par difficulté
         filterDifficulteCombo.getItems().addAll("Tous niveaux", "Facile", "Moyen", "Difficile", "Expert");
         filterDifficulteCombo.setValue("Tous niveaux");
-        filterDifficulteCombo.setOnAction(event -> applyFilters());
+        filterDifficulteCombo.setOnAction(e -> applyFilters());
     }
 
+    // ═══════════════════════════════════════════════════════════════════
+    // LOAD & DISPLAY ACTIVITIES
+    // ═══════════════════════════════════════════════════════════════════
     private void loadActivites() {
         try {
             List<Activites> liste = activitesCRUD.afficher();
             activitesList.clear();
             activitesList.addAll(liste);
-            displayActivites(activitesList);
+            filteredData = new FilteredList<>(activitesList, p -> true);
+            displayActivites(filteredData);
+            updateStats(filteredData);
+            updatePieChart(filteredData);
         } catch (SQLException e) {
             showError("Erreur de chargement", "Impossible de charger les activités: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 
     private void applyFilters() {
+        if (filteredData == null) return;
+
         String selectedType = filterTypeCombo.getValue();
         String selectedSaison = filterSaisonCombo.getValue();
         String selectedDifficulte = filterDifficulteCombo.getValue();
+        String searchText = searchField != null ? searchField.getText().toLowerCase() : "";
 
-        ObservableList<Activites> filteredList = FXCollections.observableArrayList();
-
-        for (Activites activite : activitesList) {
+        filteredData.setPredicate(activite -> {
             boolean matchType = selectedType.equals("Tous les types") ||
-                    (activite.getCategorie() != null && activite.getCategorie().getType().equals(selectedType));
+                    (activite.getCategorie() != null && activite.getCategorie().getType() != null
+                            && activite.getCategorie().getType().equals(selectedType));
 
             boolean matchSaison = selectedSaison.equals("Toutes saisons") ||
-                    (activite.getCategorie() != null && activite.getCategorie().getSaison().equals(selectedSaison));
+                    (activite.getCategorie() != null && activite.getCategorie().getSaison() != null
+                            && activite.getCategorie().getSaison().equals(selectedSaison));
 
             boolean matchDifficulte = selectedDifficulte.equals("Tous niveaux") ||
-                    activite.getNiveaudifficulte().equals(selectedDifficulte);
+                    (activite.getNiveaudifficulte() != null
+                            && activite.getNiveaudifficulte().equalsIgnoreCase(selectedDifficulte));
 
-            if (matchType && matchSaison && matchDifficulte) {
-                filteredList.add(activite);
-            }
-        }
+            boolean matchSearch = searchText.isEmpty() ||
+                    (activite.getNom() != null && activite.getNom().toLowerCase().contains(searchText)) ||
+                    (activite.getDescription() != null && activite.getDescription().toLowerCase().contains(searchText)) ||
+                    (activite.getLieu() != null && activite.getLieu().toLowerCase().contains(searchText)) ||
+                    (activite.getCategorie() != null && activite.getCategorie().getNom() != null
+                            && activite.getCategorie().getNom().toLowerCase().contains(searchText));
 
-        displayActivites(filteredList);
-        updateTotalCount(filteredList.size());
+            return matchType && matchSaison && matchDifficulte && matchSearch;
+        });
+
+        displayActivites(filteredData);
+        updateStats(filteredData);
+        updatePieChart(filteredData);
     }
 
+    // ═══════════════════════════════════════════════════════════════════
+    // DISPLAY: Grid of Image Cards
+    // ═══════════════════════════════════════════════════════════════════
     private void displayActivites(ObservableList<Activites> activites) {
         activitesGrid.getChildren().clear();
+        activitesGrid.getColumnConstraints().clear();
+
+        for (int i = 0; i < 4; i++) {
+            ColumnConstraints cc = new ColumnConstraints();
+            cc.setHgrow(Priority.ALWAYS);
+            cc.setPercentWidth(25);
+            activitesGrid.getColumnConstraints().add(cc);
+        }
+
         int column = 0;
         int row = 0;
 
         for (Activites activite : activites) {
-            VBox card = createActivityCard(activite);
+            VBox card = createImageCard(activite);
             activitesGrid.add(card, column, row);
-
             column++;
-            if (column >= 3) {
+            if (column >= 4) {
                 column = 0;
                 row++;
             }
         }
+
+        lblTotalActivites.setText(String.valueOf(activites.size()));
     }
 
-    private VBox createActivityCard(Activites activite) {
-        VBox card = new VBox(12);
-        card.setStyle("-fx-background-color: #1e2749; -fx-background-radius: 15; -fx-padding: 15; -fx-border-color: #ff8c42; -fx-border-width: 2; -fx-border-radius: 15;");
-        card.setPrefWidth(350);
-        card.setPrefHeight(280);
+    private VBox createImageCard(Activites activite) {
+        VBox card = new VBox(0);
+        card.getStyleClass().add("activity-card");
+        card.setPrefWidth(200);
+        card.setMinWidth(160);
 
-        // En-tête avec icône et titre
-        HBox header = new HBox(10);
-        header.setStyle("-fx-alignment: CENTER_LEFT;");
+        StackPane imageContainer = new StackPane();
+        imageContainer.setPrefHeight(140);
+        imageContainer.setMinHeight(140);
 
-        Label iconLabel = new Label("🎯");
-        iconLabel.setStyle("-fx-font-size: 24;");
+        ImageView imageView = tryLoadImage(activite);
 
-        Label titleLabel = new Label(activite.getNom());
-        titleLabel.setStyle("-fx-font-family: 'Clash Display'; -fx-font-size: 18; -fx-font-weight: bold; -fx-text-fill: #ffffff;");
-        titleLabel.setWrapText(true);
+        if (imageView != null) {
+            imageView.setFitWidth(200);
+            imageView.setFitHeight(140);
+            imageView.setPreserveRatio(false);
+            imageView.setSmooth(true);
+            imageContainer.getChildren().add(imageView);
+        } else {
+            Pane placeholder = new Pane();
+            placeholder.setPrefSize(200, 140);
+            placeholder.setStyle("-fx-background-color: " + getCardGradient(activite) + "; -fx-background-radius: 10 10 0 0;");
 
-        header.getChildren().addAll(iconLabel, titleLabel);
+            Label icon = new Label(getCategoryIcon(activite));
+            icon.setStyle("-fx-font-size: 40;");
+            StackPane.setAlignment(icon, Pos.CENTER);
 
-        // Description
-        Label descriptionLabel = new Label(activite.getDescription());
-        descriptionLabel.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 13;");
-        descriptionLabel.setWrapText(true);
-        descriptionLabel.setPrefHeight(60);
-
-        // Informations
-        GridPane infoGrid = new GridPane();
-        infoGrid.setHgap(10);
-        infoGrid.setVgap(8);
-
-        // Lieu
-        Label lieuIcon = new Label("📍");
-        Label lieuLabel = new Label(activite.getLieu());
-        lieuLabel.setStyle("-fx-text-fill: #e2e8f0; -fx-font-size: 12;");
-        infoGrid.add(lieuIcon, 0, 0);
-        infoGrid.add(lieuLabel, 1, 0);
-
-        // Budget
-        Label budgetIcon = new Label("💰");
-        Label budgetLabel = new Label(activite.getBudget() + " €");
-        budgetLabel.setStyle("-fx-text-fill: #ff8c42; -fx-font-size: 12; -fx-font-weight: bold;");
-        infoGrid.add(budgetIcon, 0, 1);
-        infoGrid.add(budgetLabel, 1, 1);
-
-        // Durée
-        Label dureeIcon = new Label("⏱️");
-        Label dureeLabel = new Label(activite.getDuree() + "h");
-        dureeLabel.setStyle("-fx-text-fill: #e2e8f0; -fx-font-size: 12;");
-        infoGrid.add(dureeIcon, 0, 2);
-        infoGrid.add(dureeLabel, 1, 2);
-
-        // Difficulté
-        Label difficulteIcon = new Label("📊");
-        Label difficulteLabel = new Label(activite.getNiveaudifficulte());
-        difficulteLabel.setStyle(getDifficultyStyle(activite.getNiveaudifficulte()));
-        infoGrid.add(difficulteIcon, 0, 3);
-        infoGrid.add(difficulteLabel, 1, 3);
-
-        // Âge minimum
-        Label ageIcon = new Label("👤");
-        Label ageLabel = new Label(activite.getAgemin() + "+ ans");
-        ageLabel.setStyle("-fx-text-fill: #e2e8f0; -fx-font-size: 12;");
-        infoGrid.add(ageIcon, 0, 4);
-        infoGrid.add(ageLabel, 1, 4);
-
-        // Catégorie
-        if (activite.getCategorie() != null) {
-            Label categorieIcon = new Label("📑");
-            Label categorieLabel = new Label(activite.getCategorie().getNom());
-            categorieLabel.setStyle("-fx-text-fill: #60a5fa; -fx-font-size: 12; -fx-font-weight: bold;");
-            infoGrid.add(categorieIcon, 0, 5);
-            infoGrid.add(categorieLabel, 1, 5);
+            imageContainer.getChildren().addAll(placeholder, icon);
         }
 
-        // Statut
-        Label statutIcon = new Label("⚡");
-        Label statutLabel = new Label(activite.getStatut());
-        statutLabel.setStyle(getStatusStyle(activite.getStatut()));
-        infoGrid.add(statutIcon, 0, 6);
-        infoGrid.add(statutLabel, 1, 6);
+        Label badgeDiff = new Label(activite.getNiveaudifficulte() != null ? activite.getNiveaudifficulte() : "");
+        badgeDiff.setStyle("-fx-background-color: " + getDifficultyBgColor(activite.getNiveaudifficulte()) +
+                "; -fx-text-fill: white; -fx-background-radius: 8; -fx-padding: 2 8; -fx-font-size: 10; -fx-font-weight: bold;");
+        StackPane.setAlignment(badgeDiff, Pos.TOP_RIGHT);
+        StackPane.setMargin(badgeDiff, new Insets(8, 8, 0, 0));
+        imageContainer.getChildren().add(badgeDiff);
 
-        card.getChildren().addAll(header, descriptionLabel, infoGrid);
+        VBox infoBox = new VBox(4);
+        infoBox.setStyle("-fx-padding: 10 12 12 12; -fx-background-color: white;" +
+                "-fx-background-radius: 0 0 14 14;");
+
+        Label nameLabel = new Label(activite.getNom() != null ? activite.getNom() : "");
+        nameLabel.getStyleClass().add("card-title");
+        nameLabel.setWrapText(true);
+        nameLabel.setMaxWidth(180);
+
+        HBox lieuBox = new HBox(4);
+        lieuBox.setAlignment(Pos.CENTER_LEFT);
+        Label lieuIcon = new Label(isLocationIcon(activite) ? "📍" : "📋");
+        lieuIcon.setStyle("-fx-font-size: 11;");
+        Label lieuLabel = new Label(activite.getLieu() != null ? activite.getLieu() : "");
+        lieuLabel.getStyleClass().add("card-location");
+        lieuBox.getChildren().addAll(lieuIcon, lieuLabel);
+
+        HBox bottomRow = new HBox(8);
+        bottomRow.setAlignment(Pos.CENTER_LEFT);
+        Label budgetLabel = new Label("💰 " + activite.getBudget() + " €");
+        budgetLabel.getStyleClass().add("card-budget");
+
+        Label statutLabel = new Label(activite.getStatut() != null ? activite.getStatut() : "");
+        if ("active".equalsIgnoreCase(activite.getStatut())) {
+            statutLabel.getStyleClass().add("card-statut-active");
+        } else {
+            statutLabel.getStyleClass().add("card-statut-inactive");
+        }
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        bottomRow.getChildren().addAll(budgetLabel, spacer, statutLabel);
+
+        infoBox.getChildren().addAll(nameLabel, lieuBox, bottomRow);
+
+        card.getChildren().addAll(imageContainer, infoBox);
+
+        card.setOnMouseClicked(e -> selectActivite(activite));
+
+        card.setOnMouseEntered(e -> {
+            card.setEffect(new DropShadow(16, Color.web("#f5a62355")));
+            card.setScaleX(1.02);
+            card.setScaleY(1.02);
+        });
+        card.setOnMouseExited(e -> {
+            card.setEffect(new DropShadow(10, Color.web("#00000019")));
+            card.setScaleX(1.0);
+            card.setScaleY(1.0);
+        });
 
         return card;
     }
 
-    private String getDifficultyStyle(String difficulte) {
-        switch (difficulte.toLowerCase()) {
-            case "facile":
-                return "-fx-text-fill: #34d399; -fx-font-size: 12; -fx-font-weight: bold;";
-            case "moyen":
-                return "-fx-text-fill: #fbbf24; -fx-font-size: 12; -fx-font-weight: bold;";
-            case "difficile":
-                return "-fx-text-fill: #ef4444; -fx-font-size: 12; -fx-font-weight: bold;";
-            case "expert":
-                return "-fx-text-fill: #ff8c42; -fx-font-size: 12; -fx-font-weight: bold;";
-            default:
-                return "-fx-text-fill: #e2e8f0; -fx-font-size: 12;";
+    private ImageView tryLoadImage(Activites activite) {
+        if (activite.getImagePath() != null && !activite.getImagePath().isEmpty()) {
+            try {
+                File f = new File(activite.getImagePath());
+                if (f.exists()) {
+                    return new ImageView(new Image(f.toURI().toString(), 200, 140, false, true));
+                }
+            } catch (Exception ignored) {}
+        }
+
+        if (activite.getNom() != null) {
+            String[] exts = {".jpg", ".jpeg", ".png", ".webp"};
+            String baseName = activite.getNom().toLowerCase().replaceAll("\\s+", "_").replaceAll("[^a-z0-9_]", "");
+            for (String ext : exts) {
+                URL url = getClass().getResource("/images/" + baseName + ext);
+                if (url != null) {
+                    try {
+                        return new ImageView(new Image(url.toExternalForm(), 200, 140, false, true));
+                    } catch (Exception ignored) {}
+                }
+            }
+            for (String ext : exts) {
+                URL url = getClass().getResource("/images/activite_" + activite.getId() + ext);
+                if (url != null) {
+                    try {
+                        return new ImageView(new Image(url.toExternalForm(), 200, 140, false, true));
+                    } catch (Exception ignored) {}
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private void updateStats(ObservableList<Activites> list) {
+        lblTotalActivites.setText(String.valueOf(list.size()));
+
+        if (list.isEmpty()) {
+            lblNomMoyenne.setText("Aucune activité");
+            lblDateMoyenne.setText("—");
+            lblTopLieu.setText("—");
+            lblTopBudget.setText("—");
+            lblTopNom.setText("—");
+            if (progressTop != null) progressTop.setProgress(0);
+            return;
+        }
+
+        double avgBudget = list.stream().mapToInt(Activites::getBudget).average().orElse(0);
+        lblDateMoyenne.setText(LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+        lblNomMoyenne.setText(String.format("Budget moyen : %.0f €", avgBudget));
+
+        Activites top = list.stream()
+                .max(Comparator.comparingInt(Activites::getBudget))
+                .orElse(list.get(0));
+
+        lblTopLieu.setText(top.getLieu() != null ? top.getLieu() : "—");
+        lblTopBudget.setText(top.getBudget() + " €");
+        lblTopNom.setText(top.getNom() != null ? top.getNom() : "—");
+
+        int maxBudget = list.stream().mapToInt(Activites::getBudget).max().orElse(1);
+        if (progressTop != null && maxBudget > 0) {
+            progressTop.setProgress((double) top.getBudget() / maxBudget);
+        }
+
+        if (selectedActivite == null && !list.isEmpty()) {
+            selectActivite(list.get(0));
         }
     }
 
-    private String getStatusStyle(String statut) {
-        if (statut.equalsIgnoreCase("active")) {
-            return "-fx-text-fill: #34d399; -fx-font-size: 12; -fx-font-weight: bold;";
-        } else {
-            return "-fx-text-fill: #ef4444; -fx-font-size: 12; -fx-font-weight: bold;";
+    private void updatePieChart(ObservableList<Activites> list) {
+        pieChart.getData().clear();
+
+        Map<String, Long> countByType = list.stream()
+                .collect(Collectors.groupingBy(a -> {
+                    if (a.getCategorie() != null && a.getCategorie().getType() != null) {
+                        return a.getCategorie().getType();
+                    }
+                    return "Autres";
+                }, Collectors.counting()));
+
+        int colorIdx = 0;
+        for (Map.Entry<String, Long> entry : countByType.entrySet()) {
+            PieChart.Data slice = new PieChart.Data(entry.getKey(), entry.getValue());
+            pieChart.getData().add(slice);
+
+            String color = PIE_COLORS[colorIdx % PIE_COLORS.length];
+            final String col = color;
+            slice.nodeProperty().addListener((obs, oldNode, newNode) -> {
+                if (newNode != null) {
+                    newNode.setStyle("-fx-pie-color: " + col + ";");
+                }
+            });
+            colorIdx++;
+        }
+
+        if (selectedActivite != null && list.size() > 0) {
+            double pct = 100.0 / list.size();
+            lblSelectedBudget.setText(selectedActivite.getBudget() + "€ (" +
+                    String.format("%.1f", pct) + "%)");
         }
     }
 
-    private void updateTotalCount() {
-        updateTotalCount(activitesList.size());
+    private void selectActivite(Activites activite) {
+        selectedActivite = activite;
+        lblSelectedDate.setText(LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+        if (lblSelectedBudget != null) {
+            int total = activitesList.isEmpty() ? 1 : activitesList.stream().mapToInt(Activites::getBudget).sum();
+            double pct = total > 0 ? (activite.getBudget() * 100.0 / total) : 0;
+            lblSelectedBudget.setText(activite.getBudget() + "€ (" + String.format("%.1f", pct) + "%)");
+        }
     }
 
-    private void updateTotalCount(int count) {
-        lblTotalActivites.setText(String.valueOf(count));
+    @FXML
+    private void handleTranslate() {
+        Button translateBtn = TranslationManager.createTranslationButton(() -> {
+            TranslationManager.translateInterface(btnTranslate.getScene().getRoot(),
+                    TranslationManager.getCurrentLanguage());
+        });
+
+        if (btnTranslate.getParent() instanceof HBox) {
+            HBox parent = (HBox) btnTranslate.getParent();
+            int index = parent.getChildren().indexOf(btnTranslate);
+            parent.getChildren().set(index, translateBtn);
+            btnTranslate = translateBtn;
+        }
+    }
+
+    @FXML
+    private void handleModifier() {
+        if (selectedActivite == null) {
+            showInfo("Sélection requise", "Veuillez cliquer sur une activité pour la sélectionner.");
+            return;
+        }
+        handleBackOffice();
+    }
+
+    @FXML
+    private void handleSupprimer() {
+        if (selectedActivite == null) {
+            showInfo("Sélection requise", "Veuillez cliquer sur une activité pour la sélectionner.");
+            return;
+        }
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Confirmation");
+        confirm.setHeaderText("Supprimer l'activité");
+        confirm.setContentText("Voulez-vous supprimer \"" + selectedActivite.getNom() + "\" ?");
+        Optional<ButtonType> result = confirm.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            try {
+                activitesCRUD.supprimer(selectedActivite.getId());
+                selectedActivite = null;
+                loadActivites();
+            } catch (SQLException e) {
+                showError("Erreur suppression", e.getMessage());
+            }
+        }
+    }
+
+    @FXML
+    private void handleFavoris() {
+        if (selectedActivite == null) {
+            showInfo("Sélection requise", "Veuillez cliquer sur une activité pour la sélectionner.");
+            return;
+        }
+        showInfo("Favoris", "\"" + selectedActivite.getNom() + "\" ajouté aux favoris !");
     }
 
     @FXML
@@ -251,11 +468,10 @@ public class ACTfront implements Initializable {
             stage.show();
         } catch (IOException e) {
             showError("Erreur de navigation", "Impossible de charger le back office: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 
-    @FXML // ← Ajout de l'annotation @FXML ici
+    @FXML
     private void handleVersCategories() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/categoriesfront.fxml"));
@@ -267,7 +483,6 @@ public class ACTfront implements Initializable {
             stage.show();
         } catch (IOException e) {
             showError("Erreur de navigation", "Impossible de charger les catégories: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 
@@ -276,12 +491,69 @@ public class ACTfront implements Initializable {
         filterTypeCombo.setValue("Tous les types");
         filterSaisonCombo.setValue("Toutes saisons");
         filterDifficulteCombo.setValue("Tous niveaux");
-        displayActivites(activitesList);
-        updateTotalCount();
+        if (searchField != null) {
+            searchField.clear();
+        }
+        applyFilters();
+    }
+
+    private String getCardGradient(Activites activite) {
+        if (activite.getCategorie() == null) return "linear-gradient(to bottom right, #f5a623, #ff6b00)";
+        String type = activite.getCategorie().getType();
+        if (type == null) return "linear-gradient(to bottom right, #f5a623, #ff6b00)";
+        switch (type.toLowerCase()) {
+            case "aventure":    return "linear-gradient(to bottom right, #ef4444, #dc2626)";
+            case "détente":     return "linear-gradient(to bottom right, #34d399, #059669)";
+            case "culturel":    return "linear-gradient(to bottom right, #60a5fa, #2563eb)";
+            case "sportif":     return "linear-gradient(to bottom right, #f97316, #ea580c)";
+            case "gastronomique": return "linear-gradient(to bottom right, #fbbf24, #d97706)";
+            case "famille":     return "linear-gradient(to bottom right, #a78bfa, #7c3aed)";
+            case "nature":      return "linear-gradient(to bottom right, #86efac, #16a34a)";
+            default:            return "linear-gradient(to bottom right, #f5a623, #ff6b00)";
+        }
+    }
+
+    private String getCategoryIcon(Activites activite) {
+        if (activite.getCategorie() == null) return "🎯";
+        String type = activite.getCategorie().getType();
+        if (type == null) return "🎯";
+        switch (type.toLowerCase()) {
+            case "aventure":    return "🏔";
+            case "détente":     return "🧘";
+            case "culturel":    return "🏛";
+            case "sportif":     return "⚽";
+            case "gastronomique": return "🍽";
+            case "famille":     return "👨‍👩‍👧";
+            case "nature":      return "🌿";
+            default:            return "🎯";
+        }
+    }
+
+    private String getDifficultyBgColor(String difficulte) {
+        if (difficulte == null) return "#888888";
+        switch (difficulte.toLowerCase()) {
+            case "facile":  return "#34d399";
+            case "moyen":   return "#f5a623";
+            case "difficile": return "#ef4444";
+            case "expert":  return "#7c3aed";
+            default:        return "#888888";
+        }
+    }
+
+    private boolean isLocationIcon(Activites activite) {
+        return activite.getCategorie() != null;
     }
 
     private void showError(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    private void showInfo(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);
         alert.setHeaderText(null);
         alert.setContentText(message);
