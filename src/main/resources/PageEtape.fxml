@@ -4,89 +4,185 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressIndicator?>
 <?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.web.WebView?>
 
-<VBox spacing="20" style="-fx-background-color: #f8fafc;"
-      xmlns="http://javafx.com/javafx/17"
-      xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="Controllers.PageEtape">
+<ScrollPane fitToWidth="true" style="-fx-background-color: transparent; -fx-background: #f8fafc; -fx-border-color: transparent;"
+            xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="Controllers.PageEtape">
 
-    <padding>
-        <Insets bottom="30" left="24" right="24" top="24" />
-    </padding>
+    <content>
+        <VBox spacing="15" style="-fx-background-color: #f8fafc;" prefWidth="1000" prefHeight="800">
+            <padding>
+                <Insets bottom="20" left="20" right="20" top="20" />
+            </padding>
 
-    <!-- HEADER SECTION avec bouton retour -->
-    <HBox alignment="CENTER_LEFT" spacing="16" HBox.hgrow="ALWAYS">
-        <!-- Bouton retour -->
-        <Button onAction="#handleRetour"
-                style="-fx-background-color: transparent; -fx-text-fill: #ff8c42; -fx-font-size: 24; -fx-cursor: hand; -fx-padding: 0 10 0 0;"
-                text="←" />
+            <!-- HEADER SECTION -->
+            <HBox alignment="CENTER_LEFT" spacing="12">
+                <!-- Bouton retour -->
+                <Button onAction="#handleRetour"
+                        style="-fx-background-color: transparent; -fx-text-fill: #ff8c42; -fx-font-size: 22; -fx-cursor: hand; -fx-padding: 0;"
+                        text="←">
+                    <tooltip>
+                        <Tooltip text="Retour à la liste des itinéraires" />
+                    </tooltip>
+                </Button>
 
-        <VBox alignment="CENTER" style="-fx-background-color: #fff7ed; -fx-background-radius: 18; -fx-min-width: 60; -fx-min-height: 60;">
-            <Label fx:id="jourIcon" style="-fx-font-size: 36;" text="1" />
-        </VBox>
+                <!-- Icône du jour -->
+                <VBox alignment="CENTER" style="-fx-background-color: linear-gradient(to bottom, #fff7ed, #ffedd5); -fx-background-radius: 16; -fx-min-width: 60; -fx-min-height: 60; -fx-effect: dropshadow(gaussian, rgba(255,140,66,0.2), 8, 0, 0, 2);">
+                    <Label fx:id="jourIcon" style="-fx-font-size: 32; -fx-font-weight: bold; -fx-text-fill: #ff8c42;" text="1" />
+                </VBox>
 
-        <VBox spacing="6">
-            <Label fx:id="titreJour" style="-fx-font-family: 'Clash Display'; -fx-font-size: 28; -fx-font-weight: bold; -fx-text-fill: #0f172a;" text="Jour 1" />
-            <Label fx:id="sousTitreJour" style="-fx-text-fill: #64748b; -fx-font-size: 12;" text="Planification des activités" />
-        </VBox>
+                <!-- Titre et sous-titre -->
+                <VBox spacing="4">
+                    <Label fx:id="titreJour" style="-fx-font-size: 24; -fx-font-weight: bold; -fx-text-fill: #0f172a; -fx-font-family: 'Clash Display';" text="Jour 1" />
+                    <Label fx:id="sousTitreJour" style="-fx-text-fill: #64748b; -fx-font-size: 12;" text="Planification des activités pour le jour 1" />
+                </VBox>
 
-        <Region HBox.hgrow="ALWAYS" />
+                <Region HBox.hgrow="ALWAYS" />
 
-        <!-- Quick Actions -->
-        <VBox alignment="CENTER_RIGHT" spacing="6">
-            <HBox spacing="6">
-                <Button onAction="#handleAjouterEtape" style="-fx-background-color: #ff8c42; -fx-text-fill: white; -fx-background-radius: 10; -fx-padding: 8 16; -fx-font-weight: 600; -fx-font-size: 11; -fx-cursor: hand;" text="➕ Ajouter une étape" />
+                <!-- Boutons d'action -->
+                <HBox spacing="8">
+                    <!-- Toggle button pour afficher/masquer la carte -->
+                    <ToggleButton fx:id="toggleMapButton"
+                                  style="-fx-background-color: #3b82f6; -fx-text-fill: white; -fx-background-radius: 8; -fx-padding: 8 16; -fx-font-size: 12; -fx-font-weight: 600; -fx-cursor: hand; -fx-effect: dropshadow(gaussian, rgba(59,130,246,0.3), 8, 0, 0, 2);"
+                                  text="🗺️ Masquer la carte" selected="true">
+                        <tooltip>
+                            <Tooltip text="Afficher ou masquer la carte" />
+                        </tooltip>
+                    </ToggleButton>
+
+                    <!-- Bouton ajouter une étape -->
+                    <Button onAction="#handleAjouterEtape"
+                            style="-fx-background-color: #ff8c42; -fx-text-fill: white; -fx-background-radius: 8; -fx-padding: 8 16; -fx-font-size: 12; -fx-font-weight: 600; -fx-cursor: hand; -fx-effect: dropshadow(gaussian, rgba(255,140,66,0.3), 8, 0, 0, 2);"
+                            text="➕ Ajouter une étape">
+                        <tooltip>
+                            <Tooltip text="Ajouter une nouvelle étape" />
+                        </tooltip>
+                    </Button>
+                </HBox>
             </HBox>
+
+            <!-- LABEL DE DÉBOGAGE (optionnel) -->
+            <Label fx:id="mapDebugLabel"
+                   style="-fx-background-color: #f1f5f9; -fx-text-fill: #334155; -fx-padding: 8 12; -fx-font-size: 12; -fx-background-radius: 8; -fx-border-color: #cbd5e1; -fx-border-width: 1; -fx-border-radius: 8;"
+                   text="🔍 Débogage actif - Statut de la carte"
+                   visible="true" managed="true" />
+
+            <!-- LABEL D'INFORMATION GÉOCODAGE -->
+            <Label fx:id="geoInfoLabel"
+                   style="-fx-background-color: #e8f5e9; -fx-text-fill: #2e7d32; -fx-padding: 8 12; -fx-font-size: 11; -fx-background-radius: 8; -fx-border-color: #a5d6a7; -fx-border-width: 1; -fx-border-radius: 8;"
+                   text="📍 Informations de localisation"
+                   visible="false" managed="false" wrapText="true" />
+
+            <!-- SECTION MAP -->
+            <VBox fx:id="mapContainer" spacing="8" managed="true" visible="true">
+                <!-- En-tête de la carte -->
+                <HBox alignment="CENTER_LEFT" spacing="8" style="-fx-padding: 4 0;">
+                    <Label style="-fx-font-size: 14; -fx-text-fill: #ff8c42;" text="🗺️" />
+                    <Label style="-fx-font-weight: 600; -fx-text-fill: #0f172a; -fx-font-size: 13;" text="Carte interactive des localisations" />
+                    <Region HBox.hgrow="ALWAYS" />
+
+                    <!-- Indicateur de chargement -->
+                    <ProgressIndicator fx:id="mapLoadingIndicator" visible="false" managed="false" prefWidth="20" prefHeight="20" />
+
+                    <!-- Bouton centrer la carte -->
+                    <Button onAction="#handleCentrerCarte"
+                            style="-fx-background-color: #f1f5f9; -fx-text-fill: #475569; -fx-background-radius: 6; -fx-padding: 4 12; -fx-font-size: 11; -fx-font-weight: 600; -fx-cursor: hand; -fx-border-color: #e2e8f0; -fx-border-width: 1; -fx-border-radius: 6;"
+                            text="🎯 Recentrer">
+                        <tooltip>
+                            <Tooltip text="Centrer la carte sur tous les marqueurs" />
+                        </tooltip>
+                    </Button>
+                </HBox>
+
+                <!-- WebView pour la carte -->
+                <WebView fx:id="mapWebView"
+                         prefHeight="400"
+                         minHeight="300"
+                         style="-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #ff8c42; -fx-border-width: 2; -fx-border-radius: 12; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 5, 0, 0, 2);" />
+
+                <!-- Label d'erreur pour la carte -->
+                <Label fx:id="mapErrorLabel"
+                       style="-fx-background-color: #fff3cd; -fx-text-fill: #856404; -fx-padding: 8; -fx-font-size: 12; -fx-background-radius: 8; -fx-border-color: #ffeeba; -fx-border-width: 1; -fx-border-radius: 8;"
+                       managed="false" visible="false"
+                       text="⚠️ Aucune localisation trouvée pour les étapes" />
+
+                <!-- Légende rapide -->
+                <HBox spacing="15" alignment="CENTER_LEFT" style="-fx-padding: 4 0;">
+                    <HBox spacing="4" alignment="CENTER_LEFT">
+                        <Label style="-fx-background-color: #ff8c42; -fx-background-radius: 50%; -fx-min-width: 16; -fx-min-height: 16; -fx-alignment: center; -fx-text-fill: white; -fx-font-size: 9; -fx-font-weight: bold;" text="1" />
+                        <Label style="-fx-text-fill: #64748b; -fx-font-size: 10;" text="Numéro d'étape" />
+                    </HBox>
+                    <HBox spacing="4" alignment="CENTER_LEFT">
+                        <Label style="-fx-font-size: 12; -fx-text-fill: #10b981;" text="📍" />
+                        <Label style="-fx-text-fill: #64748b; -fx-font-size: 10;" text="Lieu géolocalisé" />
+                    </HBox>
+                </HBox>
+            </VBox>
+
+            <!-- FILTERS SECTION -->
+            <VBox spacing="10" style="-fx-background-color: white; -fx-background-radius: 16; -fx-padding: 16; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.03), 5, 0, 0, 2);">
+                <HBox alignment="CENTER_LEFT" spacing="8">
+                    <Label style="-fx-font-size: 14; -fx-text-fill: #ff8c42;" text="⚡" />
+                    <Label style="-fx-font-weight: 600; -fx-text-fill: #0f172a; -fx-font-size: 14;" text="Filtres et tri" />
+                </HBox>
+
+                <HBox spacing="12">
+                    <!-- Filtre par type d'activité -->
+                    <HBox spacing="4" alignment="CENTER_LEFT" style="-fx-background-color: #f8fafc; -fx-background-radius: 8; -fx-padding: 4 8; -fx-border-color: #e2e8f0; -fx-border-width: 1; -fx-border-radius: 8;" HBox.hgrow="ALWAYS">
+                        <Label style="-fx-font-size: 14;" text="🎯" />
+                        <ComboBox fx:id="filtreTypeCombo" promptText="Tous les types" style="-fx-background-color: transparent; -fx-pref-width: 180;" />
+                    </HBox>
+
+                    <!-- Tri -->
+                    <HBox spacing="4" alignment="CENTER_LEFT" style="-fx-background-color: #f8fafc; -fx-background-radius: 8; -fx-padding: 4 8; -fx-border-color: #e2e8f0; -fx-border-width: 1; -fx-border-radius: 8;" HBox.hgrow="ALWAYS">
+                        <Label style="-fx-font-size: 14;" text="🔄" />
+                        <ComboBox fx:id="triCombo" promptText="Par heure (croissante)" style="-fx-background-color: transparent; -fx-pref-width: 180;" />
+                    </HBox>
+                </HBox>
+            </VBox>
+
+            <!-- LISTE DES ÉTAPES -->
+            <VBox spacing="10" style="-fx-background-color: white; -fx-background-radius: 16; -fx-padding: 16; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.03), 8, 0, 0, 2);">
+                <!-- En-tête avec statistiques -->
+                <HBox alignment="CENTER_LEFT" spacing="8">
+                    <Label style="-fx-font-weight: 600; -fx-text-fill: #0f172a; -fx-font-size: 15; -fx-font-family: 'Clash Display';" text="Étapes du jour" />
+                    <Region HBox.hgrow="ALWAYS" />
+                    <HBox spacing="8" style="-fx-background-color: #f1f5f9; -fx-background-radius: 20; -fx-padding: 4 12;">
+                        <Label fx:id="lblTotalEtapes" style="-fx-text-fill: #475569; -fx-font-size: 12; -fx-font-weight: 500;" text="Total: 0 étape" />
+                        <Label style="-fx-text-fill: #e2e8f0;" text="|" />
+                        <Label fx:id="lblDureeTotale" style="-fx-text-fill: #475569; -fx-font-size: 12; -fx-font-weight: 500;" text="Durée: 0h" />
+                    </HBox>
+                </HBox>
+
+                <!-- Conteneur des étapes -->
+                <VBox fx:id="etapesContainer" spacing="12">
+                    <!-- Les étapes seront générées dynamiquement -->
+                </VBox>
+
+                <!-- Message si aucune étape -->
+                <VBox fx:id="emptyPlaceholder" alignment="CENTER" managed="false" spacing="15" visible="false" style="-fx-padding: 40 20;">
+                    <Label style="-fx-font-size: 64; -fx-opacity: 0.5;" text="⏰" />
+                    <Label style="-fx-text-fill: #64748b; -fx-font-size: 16; -fx-font-weight: 500;" text="Aucune étape planifiée pour ce jour" />
+                    <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 13;" text="Commencez par ajouter une activité" />
+                    <HBox spacing="10" alignment="CENTER" style="-fx-padding: 10 0 0 0;">
+                        <Button onAction="#handleAjouterEtape" style="-fx-background-color: #ff8c42; -fx-text-fill: white; -fx-background-radius: 30; -fx-padding: 10 24; -fx-font-weight: 600; -fx-font-size: 13; -fx-cursor: hand;" text="➕ Ajouter une étape" />
+                        <Button onAction="#handleCentrerCarte" style="-fx-background-color: #3b82f6; -fx-text-fill: white; -fx-background-radius: 30; -fx-padding: 10 24; -fx-font-weight: 600; -fx-font-size: 13; -fx-cursor: hand;" text="🗺️ Voir sur la carte" />
+                    </HBox>
+                </VBox>
+            </VBox>
+
+            <!-- BOTTOM DECORATION -->
+            <Rectangle arcHeight="4" arcWidth="4" fill="linear-gradient(to right, #ff8c42, #ff6b4a, #6366f1)" height="4" style="-fx-arc-height: 4; -fx-arc-width: 4;" />
         </VBox>
-    </HBox>
-
-    <!-- FILTERS SECTION - MODIFIÉ avec tri et filtre -->
-    <VBox spacing="10" VBox.vgrow="ALWAYS">
-        <HBox alignment="CENTER_LEFT" spacing="12" HBox.hgrow="ALWAYS">
-            <Label style="-fx-font-family: 'Clash Display'; -fx-font-size: 14; -fx-font-weight: 600; -fx-text-fill: #0f172a;" text="Organiser" />
-
-            <!-- NOUVEAU: Filtre par type d'activité -->
-            <ComboBox fx:id="filtreTypeCombo" promptText="Type d'activité" style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 2;" prefWidth="180" HBox.hgrow="ALWAYS" />
-
-            <!-- NOUVEAU: Tri -->
-            <ComboBox fx:id="triCombo" promptText="Trier par" style="-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 2;" prefWidth="180" HBox.hgrow="ALWAYS" />
-
-            <Region HBox.hgrow="ALWAYS" />
-        </HBox>
-    </VBox>
-
-    <!-- LISTE DES ÉTAPES -->
-    <VBox spacing="12" style="-fx-background-color: white; -fx-background-radius: 18; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.02), 8, 0, 0, 2);" VBox.vgrow="ALWAYS">
-        <!-- Header avec statistiques -->
-        <HBox alignment="CENTER_LEFT" spacing="8">
-            <Label style="-fx-font-family: 'Clash Display'; -fx-font-size: 16; -fx-font-weight: 600; -fx-text-fill: #0f172a;" text="Étapes du jour" />
-            <Region HBox.hgrow="ALWAYS" />
-            <HBox spacing="10" alignment="CENTER_RIGHT">
-                <Label fx:id="lblTotalEtapes" style="-fx-text-fill: #64748b; -fx-font-size: 12; -fx-font-weight: 500;" text="Total: 0 étape" />
-                <Label style="-fx-text-fill: #e2e8f0;" text="|" />
-                <Label fx:id="lblDureeTotale" style="-fx-text-fill: #64748b; -fx-font-size: 12; -fx-font-weight: 500;" text="Durée totale: 0h" />
-            </HBox>
-        </HBox>
-
-        <!-- ETAPES CONTAINER -->
-        <VBox fx:id="etapesContainer" spacing="15" VBox.vgrow="ALWAYS">
-            <!-- Les étapes seront générées dynamiquement -->
-        </VBox>
-
-        <!-- Message si aucune étape -->
-        <VBox fx:id="emptyPlaceholder" alignment="CENTER" managed="false" spacing="8" visible="false">
-            <Label style="-fx-font-size: 48;" text="⏰" />
-            <Label style="-fx-text-fill: #64748b; -fx-font-size: 14;" text="Aucune étape planifiée pour ce jour" />
-            <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 12;" text="Commencez par ajouter une activité" />
-            <Button onAction="#handleAjouterEtape" style="-fx-background-color: #ff8c42; -fx-text-fill: white; -fx-background-radius: 16; -fx-padding: 8 16; -fx-cursor: hand; -fx-font-size: 12;" text="+ Ajouter une étape" />
-        </VBox>
-    </VBox>
-
-    <!-- BOTTOM DECORATION -->
-    <Rectangle arcHeight="6" arcWidth="6" fill="linear-gradient(to right, #ff8c42, #ff6b4a, #6366f1)" height="3" VBox.vgrow="NEVER" />
-</VBox>
+    </content>
+</ScrollPane>
