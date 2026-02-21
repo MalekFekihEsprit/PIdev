@@ -1,6 +1,7 @@
 package Controllers;
 
 import Services.UserCRUD;
+import Utils.EmailSender;
 import Utils.ValidationUtils;
 import Entities.User;
 import javafx.fxml.FXML;
@@ -13,6 +14,7 @@ import javafx.scene.control.Hyperlink;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
+import javax.mail.MessagingException;
 import java.io.IOException;
 import java.sql.SQLException;
 
@@ -45,13 +47,17 @@ public class ForgotPasswordController {
                 return;
             }
 
-            // Simuler l'envoi d'un lien (ici on redirige directement vers reset_password en passant l'email)
-            
-            showAlert(Alert.AlertType.INFORMATION, "Email envoyé", "Un lien de réinitialisation a été envoyé à votre adresse. (Simulation : redirection vers la page de réinitialisation)");
-
-            // Rediriger vers reset_password.fxml avec l'email en paramètre
-            goToResetPassword(email);
-
+            // Dans handleSend(), après avoir vérifié que l'email existe :
+            try {
+                // Générer un code
+                String code = VerifyCodeController.generateCode();
+                EmailSender.sendResetCode(email, code); 
+                // Aller à la page de vérification en passant l'email et le code
+                goToVerifyCode(email, code);
+            } catch (MessagingException e) {
+                e.printStackTrace();
+                showAlert(Alert.AlertType.ERROR, "Erreur d'envoi", "L'email n'a pas pu être envoyé : " + e.getMessage());
+            }
         } catch (SQLException e) {
             e.printStackTrace();
             showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur de base de données : " + e.getMessage());
@@ -81,7 +87,18 @@ public class ForgotPasswordController {
             e.printStackTrace();
         }
     }
-
+    private void goToVerifyCode(String email, String code) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/verify_code.fxml"));
+            Parent root = loader.load();
+            VerifyCodeController controller = loader.getController();
+            controller.setEmailAndCode(email, code);
+            Stage stage = (Stage) sendButton.getScene().getWindow();
+            stage.setScene(new Scene(root));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
     private void showAlert(Alert.AlertType type, String title, String msg) {
         Alert alert = new Alert(type);
         alert.setTitle(title);
