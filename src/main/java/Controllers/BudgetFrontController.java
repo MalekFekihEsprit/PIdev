@@ -6,6 +6,17 @@ import Services.BudgetCRUD;
 import Services.DepenseCRUD;
 import Tools.VoyageHelper;
 import Tools.VoyageHelper.VoyageInfo;
+import com.itextpdf.kernel.colors.ColorConstants;
+import com.itextpdf.kernel.font.PdfFont;
+import com.itextpdf.kernel.font.PdfFontFactory;
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.layout.Document;
+import com.itextpdf.layout.element.Cell;
+import com.itextpdf.layout.element.Paragraph;
+import com.itextpdf.layout.element.Table;
+import com.itextpdf.layout.properties.TextAlignment;
+import com.itextpdf.layout.properties.UnitValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -18,11 +29,17 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.net.URL;
 import java.sql.Date;
 import java.sql.SQLException;
+import java.text.DecimalFormat;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -38,6 +55,7 @@ public class BudgetFrontController implements Initializable {
     @FXML private Button btnSaveDepense;
     @FXML private Button btnSupprimerBudget;
     @FXML private Button btnVoirTousBudgets;
+    @FXML private Label lblExportPDF; // Ajoutez ce label dans le FXML
 
     // ===== NOUVEAUX ÉLÉMENTS POUR L'ACCORDÉON =====
     @FXML private VBox contentTousBudgets;
@@ -126,6 +144,7 @@ public class BudgetFrontController implements Initializable {
     private boolean isEditingBudget = false;
     private boolean isEditingDepense = false;
     private Depense editingDepense = null;
+    private DecimalFormat df = new DecimalFormat("#,##0.00");
 
     // Flag pour éviter la confirmation lors des changements programmatiques
     private boolean isProgrammaticChange = false;
@@ -141,6 +160,11 @@ public class BudgetFrontController implements Initializable {
     // Liste de tous les budgets
     private ObservableList<Budget> allBudgetsList = FXCollections.observableArrayList();
 
+    // État du tri
+    private boolean isDateAscending = false;
+    private boolean isMontantAscending = false;
+    private boolean isLibelleAscending = true;
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         try {
@@ -150,13 +174,136 @@ public class BudgetFrontController implements Initializable {
             setupTableColumns();
             setupToggleGroup();
             setupAccordionListener();
-            //setupVoyageSelectionListener();
             loadDefaultBudget();
             loadAllBudgets();
             setupListeners();
+            setupExportHandlers();
         } catch (SQLException e) {
             showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible de charger les données: " + e.getMessage());
             e.printStackTrace();
+        }
+    }
+
+    /**
+     * Configure les gestionnaires d'export
+     */
+    private void setupExportHandlers() {
+        // Le gestionnaire est déjà défini dans le FXML
+    }
+
+    /**
+     * Configure le groupe de boutons de tri
+     */
+    private void setupToggleGroup() {
+        triGroup = new ToggleGroup();
+        btnTriDate.setToggleGroup(triGroup);
+        btnTriLibelle.setToggleGroup(triGroup);
+        btnTriMontant.setToggleGroup(triGroup);
+
+        // Sélectionner le tri par date par défaut
+        btnTriDate.setSelected(true);
+        updateSortButtonStyles(btnTriDate);
+    }
+
+    /**
+     * Configure les listeners
+     */
+    private void setupListeners() {
+        triGroup.selectedToggleProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null && sortedData != null) {
+                // Réinitialiser l'état d'ascendance quand on change de type de tri
+                if (newVal == btnTriDate) {
+                    isDateAscending = false;
+                } else if (newVal == btnTriMontant) {
+                    isMontantAscending = false;
+                } else if (newVal == btnTriLibelle) {
+                    isLibelleAscending = true;
+                }
+                applySort();
+            }
+        });
+
+        // Double-clic sur les boutons pour inverser le tri
+        btnTriDate.setOnMouseClicked(event -> {
+            if (event.getClickCount() == 2 && btnTriDate.isSelected()) {
+                isDateAscending = !isDateAscending;
+                applySort();
+            }
+        });
+
+        btnTriMontant.setOnMouseClicked(event -> {
+            if (event.getClickCount() == 2 && btnTriMontant.isSelected()) {
+                isMontantAscending = !isMontantAscending;
+                applySort();
+            }
+        });
+
+        btnTriLibelle.setOnMouseClicked(event -> {
+            if (event.getClickCount() == 2 && btnTriLibelle.isSelected()) {
+                isLibelleAscending = !isLibelleAscending;
+                applySort();
+            }
+        });
+    }
+
+    /**
+     * Applique le tri selon le bouton sélectionné
+     */
+    private void applySort() {
+        if (sortedData == null || filteredData == null) return;
+
+        if (btnTriDate.isSelected()) {
+            if (isDateAscending) {
+                // Tri par date croissant (plus ancien d'abord)
+                sortedData.setComparator((d1, d2) -> d1.getDateCreation().compareTo(d2.getDateCreation()));
+                btnTriDate.setText("📅 Date ↑");
+            } else {
+                // Tri par date décroissant (plus récent d'abord)
+                sortedData.setComparator((d1, d2) -> d2.getDateCreation().compareTo(d1.getDateCreation()));
+                btnTriDate.setText("📅 Date ↓");
+            }
+            updateSortButtonStyles(btnTriDate);
+        } else if (btnTriLibelle.isSelected()) {
+            if (isLibelleAscending) {
+                // Tri par libellé A-Z
+                sortedData.setComparator((d1, d2) -> d1.getLibelleDepense().compareToIgnoreCase(d2.getLibelleDepense()));
+                btnTriLibelle.setText("📝 A-Z");
+            } else {
+                // Tri par libellé Z-A
+                sortedData.setComparator((d1, d2) -> d2.getLibelleDepense().compareToIgnoreCase(d1.getLibelleDepense()));
+                btnTriLibelle.setText("📝 Z-A");
+            }
+            updateSortButtonStyles(btnTriLibelle);
+        } else if (btnTriMontant.isSelected()) {
+            if (isMontantAscending) {
+                // Tri par montant croissant
+                sortedData.setComparator((d1, d2) -> Double.compare(d1.getMontantDepense(), d2.getMontantDepense()));
+                btnTriMontant.setText("💰 Montant ↑");
+            } else {
+                // Tri par montant décroissant
+                sortedData.setComparator((d1, d2) -> Double.compare(d2.getMontantDepense(), d1.getMontantDepense()));
+                btnTriMontant.setText("💰 Montant ↓");
+            }
+            updateSortButtonStyles(btnTriMontant);
+        }
+
+        // Forcer le rafraîchissement
+        tableDepenses.setItems(sortedData);
+    }
+
+    /**
+     * Met à jour le style des boutons de tri
+     */
+    private void updateSortButtonStyles(ToggleButton activeButton) {
+        String activeStyle = "-fx-background-color: #ff8c42; -fx-text-fill: white; -fx-border-color: #ff8c42; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 6 12; -fx-font-size: 12; -fx-cursor: hand;";
+        String inactiveStyle = "-fx-background-color: #f8fafc; -fx-text-fill: #475569; -fx-border-color: #e2e8f0; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 6 12; -fx-font-size: 12; -fx-cursor: hand;";
+
+        btnTriDate.setStyle(inactiveStyle);
+        btnTriLibelle.setStyle(inactiveStyle);
+        btnTriMontant.setStyle(inactiveStyle);
+
+        if (activeButton != null) {
+            activeButton.setStyle(activeStyle);
         }
     }
 
@@ -198,67 +345,6 @@ public class BudgetFrontController implements Initializable {
                 }
                 budgetsParVoyage.get(budget.getIdVoyage()).add(budget);
             }
-        }
-    }
-
-    /**
-     * Configure le listener pour la sélection de voyage
-     */
-    private void setupVoyageSelectionListener() {
-        cmbVoyageBudget.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-            // Ne rien faire
-        });
-    }
-
-    /**
-     * Gère la sélection d'un voyage
-     */
-    private void handleVoyageSelection(String voyageNom) {
-        String cleanName = voyageNom.replaceAll(" \\(\\d+ budget.*\\)", "");
-        Integer idVoyage = voyagesReverseMap.get(cleanName);
-        if (idVoyage == null) return;
-
-        try {
-            VoyageInfo voyageInfo = voyagesInfoMap.get(idVoyage);
-
-            // Compter les budgets existants
-            List<Budget> budgetsExistants = budgetsParVoyage.getOrDefault(idVoyage, new ArrayList<>());
-
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.setTitle("Nouveau budget");
-            alert.setHeaderText("Créer un budget pour " + voyageInfo.getNomDestination());
-
-            String message = "Voulez-vous créer un nouveau budget pour ce voyage ?";
-            if (!budgetsExistants.isEmpty()) {
-                message = "Ce voyage a déjà " + budgetsExistants.size() + " budget" +
-                        (budgetsExistants.size() > 1 ? "s" : "") + ".\n" +
-                        "Voulez-vous en créer un nouveau ?";
-            }
-            alert.setContentText(message);
-
-            ButtonType btnCreer = new ButtonType("Créer un budget");
-            ButtonType btnAnnuler = new ButtonType("Annuler", ButtonBar.ButtonData.CANCEL_CLOSE);
-
-            alert.getButtonTypes().setAll(btnCreer, btnAnnuler);
-
-            Optional<ButtonType> result = alert.showAndWait();
-
-            if (result.isPresent() && result.get() == btnCreer) {
-                txtNomBudget.setText("Budget - " + voyageInfo.getNomDestination() +
-                        (budgetsExistants.isEmpty() ? "" : " " + (budgetsExistants.size() + 1)));
-                txtMontantBudget.clear();
-                txtDescriptionBudget.clear();
-                cmbDeviseBudget.setValue("EUR");
-                cmbStatutBudget.setValue("ACTIF");
-
-                isEditingBudget = false;
-                lblModalBudgetTitle.setText("Nouveau Budget pour " + voyageInfo.getNomDestination());
-                lblModalBudgetSubtitle.setText("Créez un budget pour ce voyage");
-                modalBudget.setVisible(true);
-            }
-
-        } catch (Exception e) {
-            showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible de traiter la demande: " + e.getMessage());
         }
     }
 
@@ -320,10 +406,8 @@ public class BudgetFrontController implements Initializable {
 
         cmbStatutBudget.setItems(FXCollections.observableArrayList("ACTIF", "INACTIF"));
 
-        cmbFiltreCategorie.setItems(FXCollections.observableArrayList(
-                "Toutes les catégories", "Hébergement", "Transport", "Restauration", "Activités", "Shopping", "Autre"
-        ));
-        cmbFiltreCategorie.getSelectionModel().selectFirst();
+        // Le filtre catégorie sera mis à jour dynamiquement
+        cmbFiltreCategorie.setItems(FXCollections.observableArrayList("Toutes les catégories"));
 
         ObservableList<String> voyageNames = FXCollections.observableArrayList();
         voyageNames.add("Sans voyage");
@@ -353,14 +437,42 @@ public class BudgetFrontController implements Initializable {
         colPaiement.setCellValueFactory(new PropertyValueFactory<>("typePaiement"));
         colDescription.setCellValueFactory(new PropertyValueFactory<>("descriptionDepense"));
 
+        // Formatage de la colonne montant
+        colMontant.setCellFactory(column -> new TableCell<Depense, Double>() {
+            @Override
+            protected void updateItem(Double item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(df.format(item));
+                    setStyle("-fx-alignment: CENTER-RIGHT; -fx-font-weight: bold;");
+                }
+            }
+        });
+
+        // Formatage de la colonne date
+        colDate.setCellFactory(column -> new TableCell<Depense, Date>() {
+            @Override
+            protected void updateItem(Date item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item.toLocalDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+                    setStyle("-fx-alignment: CENTER;");
+                }
+            }
+        });
+
         colActions.setCellFactory(param -> new TableCell<>() {
             private final Button btnEdit = new Button("✏");
             private final Button btnDelete = new Button("🗑");
             private final HBox pane = new HBox(5, btnEdit, btnDelete);
 
             {
-                btnEdit.setStyle("-fx-background-color: #f1f5f9; -fx-text-fill: #475569; -fx-cursor: hand; -fx-font-size: 12; -fx-min-width: 30;");
-                btnDelete.setStyle("-fx-background-color: #fee2e2; -fx-text-fill: #ef4444; -fx-cursor: hand; -fx-font-size: 12; -fx-min-width: 30;");
+                btnEdit.setStyle("-fx-background-color: #f1f5f9; -fx-text-fill: #475569; -fx-cursor: hand; -fx-font-size: 12; -fx-min-width: 30; -fx-background-radius: 6;");
+                btnDelete.setStyle("-fx-background-color: #fee2e2; -fx-text-fill: #ef4444; -fx-cursor: hand; -fx-font-size: 12; -fx-min-width: 30; -fx-background-radius: 6;");
 
                 btnEdit.setOnAction(event -> {
                     Depense depense = getTableView().getItems().get(getIndex());
@@ -377,21 +489,6 @@ public class BudgetFrontController implements Initializable {
             protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
                 setGraphic(empty ? null : pane);
-            }
-        });
-    }
-
-    private void setupToggleGroup() {
-        triGroup = new ToggleGroup();
-        btnTriDate.setToggleGroup(triGroup);
-        btnTriLibelle.setToggleGroup(triGroup);
-        btnTriMontant.setToggleGroup(triGroup);
-    }
-
-    private void setupListeners() {
-        triGroup.selectedToggleProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal != null && sortedData != null) {
-                applySort();
             }
         });
     }
@@ -464,15 +561,37 @@ public class BudgetFrontController implements Initializable {
 
             filteredData = new FilteredList<>(depenseList, p -> true);
             sortedData = new SortedList<>(filteredData);
-            sortedData.comparatorProperty().bind(tableDepenses.comparatorProperty());
+
             tableDepenses.setItems(sortedData);
 
             updateStats();
+            updateCategoryFilter();
+
+            // Appliquer le tri par défaut
+            btnTriDate.setSelected(true);
+            updateSortButtonStyles(btnTriDate);
+            applySort();
 
         } catch (SQLException e) {
             showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible de charger les dépenses: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Met à jour la liste des catégories disponibles dans le filtre
+     */
+    private void updateCategoryFilter() {
+        Set<String> categories = depenseList.stream()
+                .map(Depense::getCategorieDepense)
+                .collect(Collectors.toCollection(TreeSet::new));
+
+        ObservableList<String> filterItems = FXCollections.observableArrayList();
+        filterItems.add("Toutes les catégories");
+        filterItems.addAll(categories);
+
+        cmbFiltreCategorie.setItems(filterItems);
+        cmbFiltreCategorie.getSelectionModel().selectFirst();
     }
 
     private void updateStats() {
@@ -688,20 +807,11 @@ public class BudgetFrontController implements Initializable {
         }
     }
 
-    private void applySort() {
-        if (sortedData == null) return;
-
-        if (btnTriDate.isSelected()) {
-            sortedData.setComparator((d1, d2) -> d2.getDateCreation().compareTo(d1.getDateCreation()));
-        } else if (btnTriLibelle.isSelected()) {
-            sortedData.setComparator((d1, d2) -> d1.getLibelleDepense().compareTo(d2.getLibelleDepense()));
-        } else if (btnTriMontant.isSelected()) {
-            sortedData.setComparator((d1, d2) -> Double.compare(d2.getMontantDepense(), d1.getMontantDepense()));
-        }
-    }
-
+    /**
+     * Application des filtres
+     */
     private void applyFilters() {
-        if (filteredData == null) return;
+        if (filteredData == null || currentBudget == null) return;
 
         filteredData.setPredicate(depense -> {
             String selectedCategorie = cmbFiltreCategorie.getValue();
@@ -727,6 +837,10 @@ public class BudgetFrontController implements Initializable {
         });
 
         updateStats();
+
+        int resultCount = filteredData.size();
+        String message = resultCount + " dépense" + (resultCount > 1 ? "s" : "") + " trouvée" + (resultCount > 1 ? "s" : "");
+        lblNbDepenses.setText(message);
     }
 
     private void clearFilters() {
@@ -736,6 +850,8 @@ public class BudgetFrontController implements Initializable {
         if (filteredData != null) {
             filteredData.setPredicate(p -> true);
         }
+        updateStats();
+        lblNbDepenses.setText(depenseList.size() + " dépense" + (depenseList.size() > 1 ? "s" : ""));
     }
 
     private void clearBudgetDisplay() {
@@ -1048,8 +1164,6 @@ public class BudgetFrontController implements Initializable {
 
             LocalDate date = dateDepense.getValue();
             if (date == null) throw new IllegalArgumentException("La date est requise.");
-            // Commenté temporairement pour permettre les dates futures (budgets planifiés)
-            // if (date.isAfter(LocalDate.now())) throw new IllegalArgumentException("La date ne peut pas être dans le futur.");
 
             String notes = txtNotesDepense.getText();
 
@@ -1102,6 +1216,7 @@ public class BudgetFrontController implements Initializable {
                 depenseCRUD.supprimer(depense.getIdDepense());
                 depenseList.remove(depense);
                 updateStats();
+                updateCategoryFilter();
                 showAlert(Alert.AlertType.INFORMATION, "Succès", "Dépense supprimée avec succès !");
             } catch (SQLException e) {
                 showAlert(Alert.AlertType.ERROR, "Erreur", e.getMessage());
@@ -1126,17 +1241,26 @@ public class BudgetFrontController implements Initializable {
 
     @FXML
     void handleTriDate(ActionEvent event) {
-        applySort();
+        if (btnTriDate.isSelected()) {
+            isDateAscending = !isDateAscending;
+            applySort();
+        }
     }
 
     @FXML
     void handleTriLibelle(ActionEvent event) {
-        applySort();
+        if (btnTriLibelle.isSelected()) {
+            isLibelleAscending = !isLibelleAscending;
+            applySort();
+        }
     }
 
     @FXML
     void handleTriMontant(ActionEvent event) {
-        applySort();
+        if (btnTriMontant.isSelected()) {
+            isMontantAscending = !isMontantAscending;
+            applySort();
+        }
     }
 
     @FXML
@@ -1148,6 +1272,232 @@ public class BudgetFrontController implements Initializable {
 
         if (isBudgetsSectionVisible) {
             loadAllBudgets();
+        }
+    }
+
+    /**
+     * Export CSV
+     */
+    @FXML
+    void handleExportCSV(javafx.scene.input.MouseEvent event) {
+        if (currentBudget == null) {
+            showAlert(Alert.AlertType.WARNING, "Aucun budget", "Veuillez sélectionner un budget d'abord.");
+            return;
+        }
+
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Exporter en CSV");
+        fileChooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("Fichier CSV", "*.csv")
+        );
+
+        String defaultFileName = "Budget_" + currentBudget.getLibelleBudget().replace(" ", "_") +
+                "_" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        fileChooser.setInitialFileName(defaultFileName);
+
+        File file = fileChooser.showSaveDialog(null);
+
+        if (file != null) {
+            exportToCSV(file);
+        }
+    }
+
+    /**
+     * Export PDF
+     */
+    @FXML
+    void handleExportPDF(javafx.scene.input.MouseEvent event) {
+        if (currentBudget == null) {
+            showAlert(Alert.AlertType.WARNING, "Aucun budget", "Veuillez sélectionner un budget d'abord.");
+            return;
+        }
+
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Exporter en PDF");
+        fileChooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("Fichier PDF", "*.pdf")
+        );
+
+        String defaultFileName = "Budget_" + currentBudget.getLibelleBudget().replace(" ", "_") +
+                "_" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        fileChooser.setInitialFileName(defaultFileName);
+
+        File file = fileChooser.showSaveDialog(null);
+
+        if (file != null) {
+            exportToPDF(file);
+        }
+    }
+
+    /**
+     * Export vers fichier CSV
+     */
+    private void exportToCSV(File file) {
+        try (PrintWriter writer = new PrintWriter(new FileWriter(file))) {
+            // En-tête du fichier
+            writer.println("=== HISTORIQUE DES DÉPENSES ===");
+            writer.println("Budget : " + currentBudget.getLibelleBudget());
+            writer.println("Montant total : " + df.format(currentBudget.getMontantTotal()) + " " + currentBudget.getDeviseBudget());
+
+            double totalDepense = depenseList.stream().mapToDouble(Depense::getMontantDepense).sum();
+            writer.println("Total dépensé : " + df.format(totalDepense) + " " + currentBudget.getDeviseBudget());
+            writer.println("Date d'export : " + LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+            writer.println();
+
+            // En-têtes des colonnes
+            writer.println("Libellé;Catégorie;Montant;Devise;Date;Paiement;Description");
+
+            // Données
+            for (Depense d : depenseList) {
+                writer.printf("%s;%s;%.2f;%s;%s;%s;%s%n",
+                        d.getLibelleDepense(),
+                        d.getCategorieDepense(),
+                        d.getMontantDepense(),
+                        d.getDeviseDepense(),
+                        d.getDateCreation().toLocalDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
+                        d.getTypePaiement(),
+                        d.getDescriptionDepense() != null ? d.getDescriptionDepense().replace(";", ",") : ""
+                );
+            }
+
+            // Résumé par catégorie
+            writer.println();
+            writer.println("=== RÉSUMÉ PAR CATÉGORIE ===");
+            Map<String, Double> totalsByCategory = depenseList.stream()
+                    .collect(Collectors.groupingBy(
+                            Depense::getCategorieDepense,
+                            Collectors.summingDouble(Depense::getMontantDepense)
+                    ));
+
+            for (Map.Entry<String, Double> entry : totalsByCategory.entrySet()) {
+                writer.printf("%s;%.2f %s%n", entry.getKey(), entry.getValue(), currentBudget.getDeviseBudget());
+            }
+
+            // Statistiques mensuelles
+            writer.println();
+            writer.println("=== STATISTIQUES MENSUELLES ===");
+            Map<String, Double> monthlyTotals = depenseList.stream()
+                    .collect(Collectors.groupingBy(
+                            d -> d.getDateCreation().toLocalDate().format(DateTimeFormatter.ofPattern("MMMM yyyy")),
+                            Collectors.summingDouble(Depense::getMontantDepense)
+                    ));
+
+            for (Map.Entry<String, Double> entry : monthlyTotals.entrySet()) {
+                writer.printf("%s;%.2f %s%n", entry.getKey(), entry.getValue(), currentBudget.getDeviseBudget());
+            }
+
+            showAlert(Alert.AlertType.INFORMATION, "Succès",
+                    "Export CSV réussi !\nFichier : " + file.getName() +
+                            "\n" + depenseList.size() + " dépenses exportées.");
+
+        } catch (Exception e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur lors de l'export CSV : " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Export vers fichier PDF
+     */
+    private void exportToPDF(File file) {
+        try {
+            // Initialiser le PDF writer
+            PdfWriter writer = new PdfWriter(file.getAbsolutePath());
+            PdfDocument pdfDoc = new PdfDocument(writer);
+            Document document = new Document(pdfDoc);
+
+            // Polices
+            PdfFont boldFont = PdfFontFactory.createFont(com.itextpdf.io.font.constants.StandardFonts.HELVETICA_BOLD);
+            PdfFont normalFont = PdfFontFactory.createFont(com.itextpdf.io.font.constants.StandardFonts.HELVETICA);
+
+            // Titre
+            Paragraph title = new Paragraph("RAPPORT DE BUDGET")
+                    .setFont(boldFont)
+                    .setFontSize(20)
+                    .setTextAlignment(TextAlignment.CENTER)
+                    .setMarginBottom(20);
+            document.add(title);
+
+            // Informations générales
+            document.add(new Paragraph("Budget : " + currentBudget.getLibelleBudget())
+                    .setFont(boldFont).setFontSize(14));
+            document.add(new Paragraph("Montant total : " + df.format(currentBudget.getMontantTotal()) + " " + currentBudget.getDeviseBudget())
+                    .setFont(normalFont).setFontSize(12));
+
+            double totalDepense = depenseList.stream().mapToDouble(Depense::getMontantDepense).sum();
+            document.add(new Paragraph("Total dépensé : " + df.format(totalDepense) + " " + currentBudget.getDeviseBudget())
+                    .setFont(normalFont).setFontSize(12));
+
+            double restant = currentBudget.getMontantTotal() - totalDepense;
+            document.add(new Paragraph("Reste : " + df.format(restant) + " " + currentBudget.getDeviseBudget())
+                    .setFont(normalFont).setFontSize(12));
+
+            document.add(new Paragraph("Date d'export : " + LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
+                    .setFont(normalFont).setFontSize(10)
+                    .setMarginBottom(20));
+
+            // Tableau des dépenses
+            if (!depenseList.isEmpty()) {
+                document.add(new Paragraph("DÉTAIL DES DÉPENSES")
+                        .setFont(boldFont).setFontSize(14)
+                        .setMarginBottom(10));
+
+                float[] columnWidths = {2f, 1.5f, 1f, 0.8f, 1.2f, 1.5f, 3f};
+                Table table = new Table(UnitValue.createPercentArray(columnWidths));
+                table.setWidth(UnitValue.createPercentValue(100));
+
+                // En-têtes
+                String[] headers = {"Libellé", "Catégorie", "Montant", "Devise", "Date", "Paiement", "Description"};
+                for (String header : headers) {
+                    table.addHeaderCell(new Cell().add(new Paragraph(header).setFont(boldFont).setFontSize(10))
+                            .setBackgroundColor(ColorConstants.LIGHT_GRAY)
+                            .setTextAlignment(TextAlignment.CENTER));
+                }
+
+                // Données
+                for (Depense d : depenseList) {
+                    table.addCell(new Cell().add(new Paragraph(d.getLibelleDepense()).setFont(normalFont).setFontSize(9)));
+                    table.addCell(new Cell().add(new Paragraph(d.getCategorieDepense()).setFont(normalFont).setFontSize(9)));
+                    table.addCell(new Cell().add(new Paragraph(df.format(d.getMontantDepense())).setFont(normalFont).setFontSize(9))
+                            .setTextAlignment(TextAlignment.RIGHT));
+                    table.addCell(new Cell().add(new Paragraph(d.getDeviseDepense()).setFont(normalFont).setFontSize(9))
+                            .setTextAlignment(TextAlignment.CENTER));
+                    table.addCell(new Cell().add(new Paragraph(d.getDateCreation().toLocalDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
+                                    .setFont(normalFont).setFontSize(9))
+                            .setTextAlignment(TextAlignment.CENTER));
+                    table.addCell(new Cell().add(new Paragraph(d.getTypePaiement()).setFont(normalFont).setFontSize(9)));
+                    table.addCell(new Cell().add(new Paragraph(d.getDescriptionDepense() != null ? d.getDescriptionDepense() : "")
+                            .setFont(normalFont).setFontSize(9)));
+                }
+
+                document.add(table);
+            }
+
+            // Résumé par catégorie
+            document.add(new Paragraph("\nRÉSUMÉ PAR CATÉGORIE")
+                    .setFont(boldFont).setFontSize(14)
+                    .setMarginTop(20).setMarginBottom(10));
+
+            Map<String, Double> totalsByCategory = depenseList.stream()
+                    .collect(Collectors.groupingBy(
+                            Depense::getCategorieDepense,
+                            Collectors.summingDouble(Depense::getMontantDepense)
+                    ));
+
+            for (Map.Entry<String, Double> entry : totalsByCategory.entrySet()) {
+                document.add(new Paragraph(entry.getKey() + " : " + df.format(entry.getValue()) + " " + currentBudget.getDeviseBudget())
+                        .setFont(normalFont).setFontSize(11));
+            }
+
+            document.close();
+
+            showAlert(Alert.AlertType.INFORMATION, "Succès",
+                    "Export PDF réussi !\nFichier : " + file.getName() +
+                            "\n" + depenseList.size() + " dépenses exportées.");
+
+        } catch (Exception e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur lors de l'export PDF : " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }
