@@ -43,7 +43,32 @@
             <type>pom</type>
         </dependency>
 
-    </dependencies>
+            <!-- 1. HTTP Client pour appeler l'API FRED -->
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpclient</artifactId>
+                <version>4.5.14</version>
+            </dependency>
+
+            <!-- 2. Pour parser le JSON retourné par FRED -->
+            <dependency>
+                <groupId>com.google.code.gson</groupId>
+                <artifactId>gson</artifactId>
+                <version>2.10.1</version>
+            </dependency>
+
+            <!-- 3. Pour la connexion MySQL (si tu utilises MySQL) -->
+
+            <!-- 4. Optionnel: Pour les emails (JavaMail) -->
+            <dependency>
+                <groupId>com.sun.mail</groupId>
+                <artifactId>javax.mail</artifactId>
+                <version>1.6.2</version>
+            </dependency>
+
+        </dependencies>
+
+
     <build>
         <plugins>
             <plugin>
