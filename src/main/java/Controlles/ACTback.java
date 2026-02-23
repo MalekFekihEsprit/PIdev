@@ -3,8 +3,13 @@ package Controlles;
 import Entites.Activites;
 import Entites.Categories;
 import Services.ActivitesCRUD;
+import Services.AIService;
 import Services.CategoriesCRUD;
 import Utils.FileManager;
+import javafx.animation.PauseTransition;
+import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -21,7 +26,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import javafx.scene.control.ListCell;
+import javafx.util.Duration;
 
 import java.io.File;
 import java.io.IOException;
@@ -117,6 +122,9 @@ public class ACTback implements Initializable {
 
         // Recherche en temps réel
         setupSearch();
+
+        // Tester la connexion à l'IA au démarrage (optionnel)
+        testAIConnection();
     }
 
     /**
@@ -257,7 +265,7 @@ public class ACTback implements Initializable {
             if (lblKpiTotal != null) lblKpiTotal.setText(String.valueOf(total));
             if (lblKpiActives != null) lblKpiActives.setText(String.valueOf(actives));
             if (lblKpiInactives != null) lblKpiInactives.setText(String.valueOf(inactives));
-            if (lblKpiBudget != null) lblKpiBudget.setText(String.format("%.0f", budgetMoyen));
+            if (lblKpiBudget != null) lblKpiBudget.setText(String.format("%.0f €", budgetMoyen));
             // Statistiques sidebar
             if (lblStatActivites != null) lblStatActivites.setText(String.valueOf(total));
             if (lblStatActives != null) lblStatActives.setText(String.valueOf(actives));
@@ -270,6 +278,154 @@ public class ACTback implements Initializable {
                     "Impossible de charger les activités : " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Teste la connexion à l'API IA
+     */
+    private void testAIConnection() {
+        new Thread(() -> {
+            try {
+                boolean isConnected = AIService.testConnection();
+                Platform.runLater(() -> {
+                    if (isConnected) {
+                        System.out.println("✅ API IA connectée avec succès");
+                    } else {
+                        System.out.println("⚠️ API IA non disponible (mode dégradé)");
+                    }
+                });
+            } catch (Exception e) {
+                Platform.runLater(() ->
+                        System.out.println("⚠️ API IA non disponible - utilisation manuelle uniquement"));
+            }
+        }).start();
+    }
+
+    /**
+     * Configure la génération automatique de description par IA
+     */
+    private void setupAutoDescriptionGeneration(TextField nomField, ComboBox<String> difficulteCombo,
+                                                TextField lieuField, TextArea descriptionField) {
+
+        // Binding pour détecter quand les 3 champs sont remplis
+        BooleanBinding allFieldsFilled = Bindings.createBooleanBinding(
+                () -> !nomField.getText().trim().isEmpty()
+                        && difficulteCombo.getValue() != null
+                        && !lieuField.getText().trim().isEmpty(),
+                nomField.textProperty(),
+                difficulteCombo.valueProperty(),
+                lieuField.textProperty()
+        );
+
+        allFieldsFilled.addListener((obs, wasFilled, isNowFilled) -> {
+            if (isNowFilled && descriptionField.getText().trim().isEmpty()) {
+                generateDescriptionWithDelay(nomField, difficulteCombo, lieuField, descriptionField);
+            }
+        });
+
+        // Écouteurs pour régénérer si l'utilisateur modifie un champ
+        nomField.textProperty().addListener((obs, oldVal, newVal) -> {
+            if (shouldRegenerateDescription(nomField, difficulteCombo, lieuField, descriptionField)) {
+                generateDescriptionWithDelay(nomField, difficulteCombo, lieuField, descriptionField);
+            }
+        });
+
+        difficulteCombo.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if (shouldRegenerateDescription(nomField, difficulteCombo, lieuField, descriptionField)) {
+                generateDescriptionWithDelay(nomField, difficulteCombo, lieuField, descriptionField);
+            }
+        });
+
+        lieuField.textProperty().addListener((obs, oldVal, newVal) -> {
+            if (shouldRegenerateDescription(nomField, difficulteCombo, lieuField, descriptionField)) {
+                generateDescriptionWithDelay(nomField, difficulteCombo, lieuField, descriptionField);
+            }
+        });
+    }
+
+    /**
+     * Vérifie si on doit régénérer la description
+     */
+    private boolean shouldRegenerateDescription(TextField nomField, ComboBox<String> difficulteCombo,
+                                                TextField lieuField, TextArea descriptionField) {
+        return !nomField.getText().trim().isEmpty()
+                && difficulteCombo.getValue() != null
+                && !lieuField.getText().trim().isEmpty()
+                && descriptionField.getText().trim().isEmpty();
+    }
+
+    /**
+     * Génère la description avec un délai pour éviter trop de requêtes
+     */
+    private void generateDescriptionWithDelay(TextField nomField, ComboBox<String> difficulteCombo,
+                                              TextField lieuField, TextArea descriptionField) {
+        PauseTransition pause = new PauseTransition(Duration.seconds(0.5));
+
+        pause.setOnFinished(event -> {
+            String nom = nomField.getText().trim();
+            String difficulte = difficulteCombo.getValue();
+            String lieu = lieuField.getText().trim();
+
+            if (nom.isEmpty() || difficulte == null || lieu.isEmpty()) {
+                return;
+            }
+
+            // Désactiver temporairement le champ
+            descriptionField.setDisable(true);
+            descriptionField.setPromptText("🤖 Génération de la description par IA...");
+
+            new Thread(() -> {
+                try {
+                    String description = AIService.genererDescription(nom, difficulte, lieu);
+
+                    Platform.runLater(() -> {
+                        descriptionField.setText(description);
+                        descriptionField.setDisable(false);
+                        descriptionField.setPromptText("Description (min " + DESCRIPTION_MIN_LENGTH + " caractères)");
+
+                        // Notification discrète
+                        showInfo("IA", "Description générée automatiquement !");
+                    });
+                } catch (Exception e) {
+                    Platform.runLater(() -> {
+                        descriptionField.setDisable(false);
+                        descriptionField.setPromptText("Description (min " + DESCRIPTION_MIN_LENGTH + " caractères)");
+
+                        // Message d'erreur discret
+                        if (descriptionField.getText().trim().isEmpty()) {
+                            descriptionField.setPromptText("⚠️ Erreur IA - Saisie manuelle requise");
+                        }
+                    });
+                    e.printStackTrace();
+                }
+            }).start();
+        });
+
+        pause.play();
+    }
+
+    /**
+     * Crée un bouton de génération manuelle par IA
+     */
+    private Button createAIGenerateButton(TextField nomField, ComboBox<String> difficulteCombo,
+                                          TextField lieuField, TextArea descriptionField) {
+        Button generateBtn = new Button("🤖 Générer description avec IA");
+        generateBtn.setStyle("-fx-background-color: #6366f1; -fx-text-fill: white; -fx-font-weight: 600; " +
+                "-fx-background-radius: 10; -fx-padding: 10 20; -fx-cursor: hand; -fx-font-size: 12;");
+
+        generateBtn.setOnAction(e -> {
+            if (nomField.getText().trim().isEmpty() ||
+                    difficulteCombo.getValue() == null ||
+                    lieuField.getText().trim().isEmpty()) {
+                showWarning("Champs manquants",
+                        "Veuillez remplir le nom, la difficulté et le lieu d'abord.");
+                return;
+            }
+
+            generateDescriptionWithDelay(nomField, difficulteCombo, lieuField, descriptionField);
+        });
+
+        return generateBtn;
     }
 
     /**
@@ -578,9 +734,21 @@ public class ACTback implements Initializable {
         scrollPane.setFitToWidth(true);
         scrollPane.setFitToHeight(true);
         scrollPane.setPrefHeight(500);
-        scrollPane.setPrefWidth(700);
+        scrollPane.setPrefWidth(750);
         scrollPane.setStyle("-fx-background: #1e2749; -fx-background-color: #1e2749; -fx-border-color: #ff8c42; -fx-border-radius: 10;");
         return scrollPane;
+    }
+
+    /**
+     * Crée une grille de formulaire stylée
+     */
+    private GridPane createFormGrid() {
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20, 20, 20, 20));
+        grid.setStyle("-fx-background-color: #1e2749; -fx-background-radius: 10;");
+        return grid;
     }
 
     /**
@@ -678,6 +846,12 @@ public class ACTback implements Initializable {
             e.printStackTrace();
         }
 
+        // Configuration de la génération automatique par IA
+        setupAutoDescriptionGeneration(nomField, difficulteCombo, lieuField, descriptionField);
+
+        // Bouton de génération manuelle
+        Button generateAIBtn = createAIGenerateButton(nomField, difficulteCombo, lieuField, descriptionField);
+
         // Ajouter les champs avec leurs labels d'erreur
         int row = 0;
         grid.add(new Label("Nom:*"), 0, row);
@@ -725,21 +899,25 @@ public class ACTback implements Initializable {
         vboxCategorie.getChildren().addAll(categorieCombo, new Label());
         grid.add(vboxCategorie, 1, row++);
 
-        // Ajouter la section image sur une nouvelle ligne
+        // Ajouter la section IA et image
+        grid.add(new Label("IA:"), 0, row);
+        VBox vboxIA = new VBox(10);
+        vboxIA.getChildren().addAll(generateAIBtn, new Label("(Génération automatique quand les 3 champs sont remplis)"));
+        vboxIA.setStyle("-fx-padding: 5;");
+        grid.add(vboxIA, 1, row++);
+
         grid.add(new Label("Image:"), 0, row);
         grid.add(imageSection, 1, row++);
 
-        // Créer le ScrollPane et y mettre le GridPane
+        // Créer le ScrollPane
         ScrollPane scrollPane = createFormScrollPane(grid);
-
-        // Créer un VBox pour contenir le ScrollPane
         VBox contentBox = new VBox(10, scrollPane);
         contentBox.setPadding(new Insets(10));
 
         dialog.getDialogPane().setContent(contentBox);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
-        dialog.getDialogPane().setPrefWidth(750);
-        dialog.getDialogPane().setPrefHeight(600);
+        dialog.getDialogPane().setPrefWidth(800);
+        dialog.getDialogPane().setPrefHeight(650);
 
         // Validation avant de fermer le dialogue
         Button okButton = (Button) dialog.getDialogPane().lookupButton(ButtonType.OK);
@@ -753,7 +931,7 @@ public class ACTback implements Initializable {
                     && validateAgeMin(ageMinField, errorAgeMin);
 
             if (!isValid) {
-                event.consume(); // Empêche la fermeture du dialogue
+                event.consume();
             }
         });
 
@@ -804,7 +982,7 @@ public class ACTback implements Initializable {
                 activitesCRUD.ajouter(activite);
                 showInfo("Succès", "Activité ajoutée avec succès !");
                 loadActivites();
-                selectedImageFile = null; // Réinitialiser
+                selectedImageFile = null;
             } catch (SQLException e) {
                 showError("Erreur d'ajout",
                         "Impossible d'ajouter l'activité : " + e.getMessage());
@@ -814,7 +992,7 @@ public class ACTback implements Initializable {
     }
 
     /**
-     * Modifier l'activité sélectionnée avec validation et image
+     * Modifier l'activité sélectionnée
      */
     @FXML
     private void handleModifier() {
@@ -825,7 +1003,6 @@ public class ACTback implements Initializable {
             return;
         }
 
-        // Réinitialiser les variables d'image
         selectedImageFile = null;
         currentImagePath = selectedActivite.getImagePath();
 
@@ -833,7 +1010,6 @@ public class ACTback implements Initializable {
         dialog.setTitle("Modifier Activité");
         dialog.setHeaderText("Modifier l'activité: " + selectedActivite.getNom());
 
-        // Créer le formulaire pré-rempli
         GridPane grid = createFormGrid();
 
         TextField nomField = new TextField(selectedActivite.getNom());
@@ -914,7 +1090,12 @@ public class ACTback implements Initializable {
             e.printStackTrace();
         }
 
-        // Ajouter les champs avec leurs labels d'erreur
+        // Configuration de la génération automatique par IA (pour la modification)
+        setupAutoDescriptionGeneration(nomField, difficulteCombo, lieuField, descriptionField);
+
+        // Bouton de génération manuelle
+        Button generateAIBtn = createAIGenerateButton(nomField, difficulteCombo, lieuField, descriptionField);
+
         int row = 0;
         grid.add(new Label("Nom:*"), 0, row);
         VBox vboxNom = new VBox(3);
@@ -961,23 +1142,25 @@ public class ACTback implements Initializable {
         vboxCategorie.getChildren().addAll(categorieCombo, new Label());
         grid.add(vboxCategorie, 1, row++);
 
-        // Ajouter la section image sur une nouvelle ligne
+        // Ajouter la section IA
+        grid.add(new Label("IA:"), 0, row);
+        VBox vboxIA = new VBox(10);
+        vboxIA.getChildren().addAll(generateAIBtn, new Label("(Génération automatique quand les 3 champs sont modifiés)"));
+        vboxIA.setStyle("-fx-padding: 5;");
+        grid.add(vboxIA, 1, row++);
+
         grid.add(new Label("Image:"), 0, row);
         grid.add(imageSection, 1, row++);
 
-        // Créer le ScrollPane et y mettre le GridPane
         ScrollPane scrollPane = createFormScrollPane(grid);
-
-        // Créer un VBox pour contenir le ScrollPane
         VBox contentBox = new VBox(10, scrollPane);
         contentBox.setPadding(new Insets(10));
 
         dialog.getDialogPane().setContent(contentBox);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
-        dialog.getDialogPane().setPrefWidth(750);
-        dialog.getDialogPane().setPrefHeight(600);
+        dialog.getDialogPane().setPrefWidth(800);
+        dialog.getDialogPane().setPrefHeight(650);
 
-        // Validation avant de fermer le dialogue
         Button okButton = (Button) dialog.getDialogPane().lookupButton(ButtonType.OK);
         okButton.addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
             boolean isValid = validateNom(nomField, errorNom)
@@ -1014,11 +1197,9 @@ public class ACTback implements Initializable {
 
                     // Gestion de l'image
                     if (selectedImageFile != null) {
-                        // Supprimer l'ancienne image si elle existe
                         if (currentImagePath != null && !currentImagePath.isEmpty()) {
                             FileManager.deleteImage(currentImagePath);
                         }
-                        // Sauvegarder la nouvelle image
                         try {
                             String newImagePath = FileManager.saveImage(selectedImageFile);
                             selectedActivite.setImagePath(newImagePath);
@@ -1027,7 +1208,6 @@ public class ACTback implements Initializable {
                             return null;
                         }
                     } else {
-                        // Conserver l'image existante
                         selectedActivite.setImagePath(currentImagePath);
                     }
 
@@ -1076,7 +1256,6 @@ public class ACTback implements Initializable {
 
         if (result.isPresent() && result.get() == ButtonType.OK) {
             try {
-                // La suppression de l'image est gérée dans le CRUD
                 activitesCRUD.supprimer(selectedActivite.getId());
                 showInfo("Succès", "Activité supprimée avec succès !");
                 loadActivites();
@@ -1135,18 +1314,6 @@ public class ACTback implements Initializable {
                     "Impossible de charger le front office : " + e.getMessage());
             e.printStackTrace();
         }
-    }
-
-    /**
-     * Crée une grille de formulaire stylée
-     */
-    private GridPane createFormGrid() {
-        GridPane grid = new GridPane();
-        grid.setHgap(10);
-        grid.setVgap(10);
-        grid.setPadding(new Insets(20, 20, 20, 20));
-        grid.setStyle("-fx-background-color: #1e2749; -fx-background-radius: 10;");
-        return grid;
     }
 
     // ==================== MÉTHODES UTILITAIRES ====================
