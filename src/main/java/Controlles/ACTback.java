@@ -57,18 +57,14 @@ public class ACTback implements Initializable {
     @FXML private Button btnModifier;
     @FXML private Button btnSupprimer;
     @FXML private TextField searchField;
-    // Sidebar : badge compteur sur l'item actif du menu
     @FXML private Label lblTotalActivites;
-    // KPI Cards (zone centrale)
     @FXML private Label lblKpiTotal;
     @FXML private Label lblKpiActives;
     @FXML private Label lblKpiInactives;
     @FXML private Label lblKpiBudget;
-    // Statistiques sidebar
     @FXML private Label lblStatActivites;
     @FXML private Label lblStatActives;
     @FXML private Label lblStatInactives;
-    // Badge liste
     @FXML private Label lblCountBadge;
     @FXML private Button btnVersCategories;
     @FXML private Button btnFrontOffice;
@@ -101,17 +97,12 @@ public class ACTback implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // Initialiser le service CRUD
         activitesCRUD = new ActivitesCRUD();
         activitesData = FXCollections.observableArrayList();
 
-        // Configurer les colonnes du TableView
         setupTableColumns();
-
-        // Charger les données
         loadActivites();
 
-        // Activer/désactiver les boutons selon la sélection
         tableActivites.getSelectionModel().selectedItemProperty().addListener(
                 (obs, oldSelection, newSelection) -> {
                     boolean isSelected = newSelection != null;
@@ -120,16 +111,10 @@ public class ACTback implements Initializable {
                 }
         );
 
-        // Recherche en temps réel
         setupSearch();
-
-        // Tester la connexion à l'IA au démarrage (optionnel)
         testAIConnection();
     }
 
-    /**
-     * Configure les colonnes du TableView
-     */
     private void setupTableColumns() {
         colId.setCellValueFactory(new PropertyValueFactory<>("id"));
         colNom.setCellValueFactory(new PropertyValueFactory<>("nom"));
@@ -141,7 +126,6 @@ public class ACTback implements Initializable {
         colAgeMin.setCellValueFactory(new PropertyValueFactory<>("agemin"));
         colStatut.setCellValueFactory(new PropertyValueFactory<>("statut"));
 
-        // Colonne catégorie
         colCategorie.setCellValueFactory(cellData -> {
             Activites activite = cellData.getValue();
             if (activite.getCategorie() != null) {
@@ -151,7 +135,6 @@ public class ACTback implements Initializable {
             }
         });
 
-        // Colonne pour l'image
         colImage.setCellValueFactory(new PropertyValueFactory<>("imagePath"));
         colImage.setCellFactory(column -> new TableCell<Activites, String>() {
             private final ImageView imageView = new ImageView();
@@ -182,7 +165,6 @@ public class ACTback implements Initializable {
             }
         });
 
-        // Style personnalisé pour la colonne statut
         colStatut.setCellFactory(column -> new TableCell<Activites, String>() {
             @Override
             protected void updateItem(String item, boolean empty) {
@@ -201,7 +183,6 @@ public class ACTback implements Initializable {
             }
         });
 
-        // Style pour le budget
         colBudget.setCellFactory(column -> new TableCell<Activites, Integer>() {
             @Override
             protected void updateItem(Integer item, boolean empty) {
@@ -216,9 +197,6 @@ public class ACTback implements Initializable {
         });
     }
 
-    /**
-     * Configure la recherche en temps réel
-     */
     private void setupSearch() {
         searchField.textProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue == null || newValue.isEmpty()) {
@@ -239,9 +217,6 @@ public class ACTback implements Initializable {
         });
     }
 
-    /**
-     * Charge toutes les activités depuis la base de données
-     */
     private void loadActivites() {
         try {
             List<Activites> listeActivites = activitesCRUD.afficher();
@@ -259,30 +234,22 @@ public class ACTback implements Initializable {
                     .average()
                     .orElse(0);
 
-            // Sidebar badge (item actif menu)
             if (lblTotalActivites != null) lblTotalActivites.setText(String.valueOf(total));
-            // KPI Cards
             if (lblKpiTotal != null) lblKpiTotal.setText(String.valueOf(total));
             if (lblKpiActives != null) lblKpiActives.setText(String.valueOf(actives));
             if (lblKpiInactives != null) lblKpiInactives.setText(String.valueOf(inactives));
             if (lblKpiBudget != null) lblKpiBudget.setText(String.format("%.0f €", budgetMoyen));
-            // Statistiques sidebar
             if (lblStatActivites != null) lblStatActivites.setText(String.valueOf(total));
             if (lblStatActives != null) lblStatActives.setText(String.valueOf(actives));
             if (lblStatInactives != null) lblStatInactives.setText(String.valueOf(inactives));
-            // Badge liste
             if (lblCountBadge != null) lblCountBadge.setText(total + " activité" + (total > 1 ? "s" : ""));
 
         } catch (SQLException e) {
-            showError("Erreur de chargement",
-                    "Impossible de charger les activités : " + e.getMessage());
+            showError("Erreur de chargement", "Impossible de charger les activités : " + e.getMessage());
             e.printStackTrace();
         }
     }
 
-    /**
-     * Teste la connexion à l'API IA
-     */
     private void testAIConnection() {
         new Thread(() -> {
             try {
@@ -303,134 +270,110 @@ public class ACTback implements Initializable {
 
     /**
      * Configure la génération automatique de description par IA
+     * Déclenchement uniquement à la perte de focus du dernier champ
      */
     private void setupAutoDescriptionGeneration(TextField nomField, ComboBox<String> difficulteCombo,
                                                 TextField lieuField, TextArea descriptionField) {
 
-        // Binding pour détecter quand les 3 champs sont remplis
-        BooleanBinding allFieldsFilled = Bindings.createBooleanBinding(
-                () -> !nomField.getText().trim().isEmpty()
-                        && difficulteCombo.getValue() != null
-                        && !lieuField.getText().trim().isEmpty(),
-                nomField.textProperty(),
-                difficulteCombo.valueProperty(),
-                lieuField.textProperty()
-        );
+        final boolean[] isGenerating = {false};
 
-        allFieldsFilled.addListener((obs, wasFilled, isNowFilled) -> {
-            if (isNowFilled && descriptionField.getText().trim().isEmpty()) {
-                generateDescriptionWithDelay(nomField, difficulteCombo, lieuField, descriptionField);
-            }
-        });
+        // Écouteur pour le champ lieu (dernier champ)
+        lieuField.focusedProperty().addListener((obs, oldVal, newVal) -> {
+            if (!newVal && !isGenerating[0]) {
+                if (!nomField.getText().trim().isEmpty() &&
+                        difficulteCombo.getValue() != null &&
+                        !lieuField.getText().trim().isEmpty() &&
+                        descriptionField.getText().trim().isEmpty()) {
 
-        // Écouteurs pour régénérer si l'utilisateur modifie un champ
-        nomField.textProperty().addListener((obs, oldVal, newVal) -> {
-            if (shouldRegenerateDescription(nomField, difficulteCombo, lieuField, descriptionField)) {
-                generateDescriptionWithDelay(nomField, difficulteCombo, lieuField, descriptionField);
-            }
-        });
-
-        difficulteCombo.valueProperty().addListener((obs, oldVal, newVal) -> {
-            if (shouldRegenerateDescription(nomField, difficulteCombo, lieuField, descriptionField)) {
-                generateDescriptionWithDelay(nomField, difficulteCombo, lieuField, descriptionField);
-            }
-        });
-
-        lieuField.textProperty().addListener((obs, oldVal, newVal) -> {
-            if (shouldRegenerateDescription(nomField, difficulteCombo, lieuField, descriptionField)) {
-                generateDescriptionWithDelay(nomField, difficulteCombo, lieuField, descriptionField);
-            }
-        });
-    }
-
-    /**
-     * Vérifie si on doit régénérer la description
-     */
-    private boolean shouldRegenerateDescription(TextField nomField, ComboBox<String> difficulteCombo,
-                                                TextField lieuField, TextArea descriptionField) {
-        return !nomField.getText().trim().isEmpty()
-                && difficulteCombo.getValue() != null
-                && !lieuField.getText().trim().isEmpty()
-                && descriptionField.getText().trim().isEmpty();
-    }
-
-    /**
-     * Génère la description avec un délai pour éviter trop de requêtes
-     */
-    private void generateDescriptionWithDelay(TextField nomField, ComboBox<String> difficulteCombo,
-                                              TextField lieuField, TextArea descriptionField) {
-        PauseTransition pause = new PauseTransition(Duration.seconds(0.5));
-
-        pause.setOnFinished(event -> {
-            String nom = nomField.getText().trim();
-            String difficulte = difficulteCombo.getValue();
-            String lieu = lieuField.getText().trim();
-
-            if (nom.isEmpty() || difficulte == null || lieu.isEmpty()) {
-                return;
-            }
-
-            // Désactiver temporairement le champ
-            descriptionField.setDisable(true);
-            descriptionField.setPromptText("🤖 Génération de la description par IA...");
-
-            new Thread(() -> {
-                try {
-                    String description = AIService.genererDescription(nom, difficulte, lieu);
-
-                    Platform.runLater(() -> {
-                        descriptionField.setText(description);
-                        descriptionField.setDisable(false);
-                        descriptionField.setPromptText("Description (min " + DESCRIPTION_MIN_LENGTH + " caractères)");
-
-                        // Notification discrète
-                        showInfo("IA", "Description générée automatiquement !");
-                    });
-                } catch (Exception e) {
-                    Platform.runLater(() -> {
-                        descriptionField.setDisable(false);
-                        descriptionField.setPromptText("Description (min " + DESCRIPTION_MIN_LENGTH + " caractères)");
-
-                        // Message d'erreur discret
-                        if (descriptionField.getText().trim().isEmpty()) {
-                            descriptionField.setPromptText("⚠️ Erreur IA - Saisie manuelle requise");
-                        }
-                    });
-                    e.printStackTrace();
+                    isGenerating[0] = true;
+                    generateAttractiveDescription(nomField, difficulteCombo, lieuField, descriptionField, isGenerating);
                 }
-            }).start();
-        });
-
-        pause.play();
-    }
-
-    /**
-     * Crée un bouton de génération manuelle par IA
-     */
-    private Button createAIGenerateButton(TextField nomField, ComboBox<String> difficulteCombo,
-                                          TextField lieuField, TextArea descriptionField) {
-        Button generateBtn = new Button("🤖 Générer description avec IA");
-        generateBtn.setStyle("-fx-background-color: #6366f1; -fx-text-fill: white; -fx-font-weight: 600; " +
-                "-fx-background-radius: 10; -fx-padding: 10 20; -fx-cursor: hand; -fx-font-size: 12;");
-
-        generateBtn.setOnAction(e -> {
-            if (nomField.getText().trim().isEmpty() ||
-                    difficulteCombo.getValue() == null ||
-                    lieuField.getText().trim().isEmpty()) {
-                showWarning("Champs manquants",
-                        "Veuillez remplir le nom, la difficulté et le lieu d'abord.");
-                return;
             }
-
-            generateDescriptionWithDelay(nomField, difficulteCombo, lieuField, descriptionField);
         });
 
-        return generateBtn;
+        // Aussi déclencher quand l'utilisateur appuie sur Entrée dans le champ lieu
+        lieuField.setOnAction(event -> {
+            if (!isGenerating[0]) {
+                if (!nomField.getText().trim().isEmpty() &&
+                        difficulteCombo.getValue() != null &&
+                        !lieuField.getText().trim().isEmpty() &&
+                        descriptionField.getText().trim().isEmpty()) {
+
+                    isGenerating[0] = true;
+                    generateAttractiveDescription(nomField, difficulteCombo, lieuField, descriptionField, isGenerating);
+                }
+            }
+        });
     }
 
     /**
-     * Crée un label d'erreur
+     * Génère une description attrayante et professionnelle
      */
+    private void generateAttractiveDescription(TextField nomField, ComboBox<String> difficulteCombo,
+                                               TextField lieuField, TextArea descriptionField,
+                                               boolean[] isGenerating) {
+
+        String nom = nomField.getText().trim();
+        String difficulte = difficulteCombo.getValue();
+        String lieu = lieuField.getText().trim();
+
+        descriptionField.setDisable(true);
+        descriptionField.setPromptText("🤖 Génération d'une description attrayante...");
+
+        new Thread(() -> {
+            try {
+                String description = AIService.genererDescriptionAttrayante(nom, difficulte, lieu);
+
+                Platform.runLater(() -> {
+                    descriptionField.setText(description);
+                    descriptionField.setDisable(false);
+                    descriptionField.setPromptText("Description (min " + DESCRIPTION_MIN_LENGTH + " caractères)");
+                    isGenerating[0] = false;
+
+                    descriptionField.setStyle("-fx-border-color: #34d399; -fx-border-width: 2;");
+                    new Thread(() -> {
+                        try { Thread.sleep(1000); } catch (InterruptedException e) {}
+                        Platform.runLater(() ->
+                                descriptionField.setStyle("-fx-border-color: #2d3a5f; -fx-border-width: 1;")
+                        );
+                    }).start();
+                });
+            } catch (Exception e) {
+                Platform.runLater(() -> {
+                    String fallbackDescription = getFallbackAttractiveDescription(nom, difficulte, lieu);
+                    descriptionField.setText(fallbackDescription);
+                    descriptionField.setDisable(false);
+                    descriptionField.setPromptText("Description (min " + DESCRIPTION_MIN_LENGTH + " caractères)");
+                    isGenerating[0] = false;
+
+                    descriptionField.setStyle("-fx-border-color: #f59e0b; -fx-border-width: 2;");
+                });
+                e.printStackTrace();
+            }
+        }).start();
+    }
+
+    /**
+     * Description de secours attrayante (quand l'API ne répond pas)
+     */
+    private String getFallbackAttractiveDescription(String nom, String difficulte, String lieu) {
+        String[] templates = {
+                "✨ Préparez-vous pour une aventure inoubliable ! %s vous attend à %s. Une activité de niveau %s qui vous fera vibrer et créer des souvenirs magiques !",
+                "🌟 Vivez une expérience unique avec %s à %s ! Que vous soyez débutant ou expert (niveau %s), cette activité saura vous séduire par son authenticité.",
+                "🎉 Découvrez %s comme vous ne l'avez jamais vu ! À %s, cette activité de niveau %s vous promet des moments de pur bonheur et d'émerveillement.",
+                "🔥 L'aventure vous appelle ! %s à %s est l'activité parfaite pour les amateurs de sensations (niveau %s). Venez vivre des moments intenses !",
+                "💫 Laissez-vous tenter par %s à %s ! Une expérience de niveau %s qui ravira petits et grands. Préparez-vous à être émerveillés !",
+                "⭐ Une activité exceptionnelle vous attend : %s à %s ! Niveau %s, cette expérience unique restera gravée dans vos mémoires.",
+                "🎯 Envie de découverte ? %s à %s est fait pour vous ! Activité de niveau %s, idéale pour les passionnés d'aventure.",
+                "🌈 Plongez dans l'univers magique de %s à %s ! Une activité de niveau %s qui éveillera tous vos sens."
+        };
+
+        java.util.Random rand = new java.util.Random();
+        String template = templates[rand.nextInt(templates.length)];
+
+        return String.format(template, nom, lieu, difficulte.toLowerCase());
+    }
+
     private Label createErrorLabel() {
         Label label = new Label();
         label.setStyle("-fx-text-fill: #ef4444; -fx-font-size: 11; -fx-wrap-text: true;");
@@ -438,9 +381,6 @@ public class ACTback implements Initializable {
         return label;
     }
 
-    /**
-     * Valide le champ nom
-     */
     private boolean validateNom(TextField champ, Label errorLabel) {
         String texte = champ.getText();
         champ.setStyle("-fx-border-color: #2d3a5f; -fx-border-width: 1;");
@@ -474,9 +414,6 @@ public class ACTback implements Initializable {
         return true;
     }
 
-    /**
-     * Valide le champ description
-     */
     private boolean validateDescription(TextArea champ, Label errorLabel) {
         String texte = champ.getText();
         champ.setStyle("-fx-border-color: #2d3a5f; -fx-border-width: 1;");
@@ -504,9 +441,6 @@ public class ACTback implements Initializable {
         return true;
     }
 
-    /**
-     * Valide le champ budget
-     */
     private boolean validateBudget(TextField champ, Label errorLabel) {
         String texte = champ.getText();
         champ.setStyle("-fx-border-color: #2d3a5f; -fx-border-width: 1;");
@@ -539,9 +473,6 @@ public class ACTback implements Initializable {
         return true;
     }
 
-    /**
-     * Valide le champ durée
-     */
     private boolean validateDuree(TextField champ, Label errorLabel) {
         String texte = champ.getText();
         champ.setStyle("-fx-border-color: #2d3a5f; -fx-border-width: 1;");
@@ -574,9 +505,6 @@ public class ACTback implements Initializable {
         return true;
     }
 
-    /**
-     * Valide le champ difficulté
-     */
     private boolean validateDifficulte(ComboBox<String> combo, Label errorLabel) {
         combo.setStyle("-fx-border-color: #2d3a5f; -fx-border-width: 1;");
         errorLabel.setText("");
@@ -590,9 +518,6 @@ public class ACTback implements Initializable {
         return true;
     }
 
-    /**
-     * Valide le champ lieu
-     */
     private boolean validateLieu(TextField champ, Label errorLabel) {
         String texte = champ.getText();
         champ.setStyle("-fx-border-color: #2d3a5f; -fx-border-width: 1;");
@@ -626,9 +551,6 @@ public class ACTback implements Initializable {
         return true;
     }
 
-    /**
-     * Valide le champ âge minimum
-     */
     private boolean validateAgeMin(TextField champ, Label errorLabel) {
         String texte = champ.getText();
         champ.setStyle("-fx-border-color: #2d3a5f; -fx-border-width: 1;");
@@ -661,9 +583,6 @@ public class ACTback implements Initializable {
         return true;
     }
 
-    /**
-     * Crée la section de sélection d'image pour les formulaires
-     */
     private VBox createImageSection(ImageView imageView, Button chooseButton, Label imageNameLabel, String currentImage) {
         VBox imageSection = new VBox(10);
         imageSection.setStyle("-fx-padding: 10; -fx-background-color: #1e2749; -fx-background-radius: 10; -fx-max-width: 400;");
@@ -671,13 +590,11 @@ public class ACTback implements Initializable {
         Label imageLabel = new Label("Image de l'activité :");
         imageLabel.setStyle("-fx-text-fill: #ffffff; -fx-font-weight: bold;");
 
-        // Image preview
         imageView.setFitWidth(150);
         imageView.setFitHeight(150);
         imageView.setPreserveRatio(true);
         imageView.setStyle("-fx-background-color: #0a0e27; -fx-background-radius: 8; -fx-padding: 5;");
 
-        // Charger l'image actuelle si elle existe
         if (currentImage != null && !currentImage.isEmpty()) {
             try {
                 File file = new File(currentImage);
@@ -708,9 +625,6 @@ public class ACTback implements Initializable {
         return imageSection;
     }
 
-    /**
-     * Gère la sélection d'image
-     */
     private void handleChooseImage(ImageView imageView, Label imageNameLabel) {
         File file = FileManager.chooseImage(imageView.getScene().getWindow());
         if (file != null) {
@@ -725,9 +639,6 @@ public class ACTback implements Initializable {
         }
     }
 
-    /**
-     * Crée un formulaire avec ScrollPane
-     */
     private ScrollPane createFormScrollPane(GridPane grid) {
         ScrollPane scrollPane = new ScrollPane();
         scrollPane.setContent(grid);
@@ -739,9 +650,6 @@ public class ACTback implements Initializable {
         return scrollPane;
     }
 
-    /**
-     * Crée une grille de formulaire stylée
-     */
     private GridPane createFormGrid() {
         GridPane grid = new GridPane();
         grid.setHgap(10);
@@ -751,19 +659,14 @@ public class ACTback implements Initializable {
         return grid;
     }
 
-    /**
-     * Ajouter une nouvelle activité avec validation et image
-     */
     @FXML
     private void handleAjouter() {
         Dialog<Activites> dialog = new Dialog<>();
         dialog.setTitle("Nouvelle Activité");
         dialog.setHeaderText("Ajouter une nouvelle activité");
 
-        // Créer le formulaire
         GridPane grid = createFormGrid();
 
-        // Champs du formulaire
         TextField nomField = new TextField();
         nomField.setPromptText("Nom de l'activité (min " + NOM_MIN_LENGTH + " caractères)");
 
@@ -793,7 +696,6 @@ public class ACTback implements Initializable {
 
         ComboBox<Categories> categorieCombo = new ComboBox<>();
 
-        // Section image
         ImageView imagePreview = new ImageView();
         Button chooseImageButton = new Button();
         Label imageNameLabel = new Label();
@@ -801,7 +703,6 @@ public class ACTback implements Initializable {
 
         chooseImageButton.setOnAction(e -> handleChooseImage(imagePreview, imageNameLabel));
 
-        // Labels d'erreur
         Label errorNom = createErrorLabel();
         Label errorDescription = createErrorLabel();
         Label errorBudget = createErrorLabel();
@@ -810,7 +711,6 @@ public class ACTback implements Initializable {
         Label errorLieu = createErrorLabel();
         Label errorAgeMin = createErrorLabel();
 
-        // Charger les catégories
         try {
             CategoriesCRUD categoriesCRUD = new CategoriesCRUD();
             List<Categories> categoriesList = categoriesCRUD.afficher();
@@ -852,7 +752,6 @@ public class ACTback implements Initializable {
         // Bouton de génération manuelle
         Button generateAIBtn = createAIGenerateButton(nomField, difficulteCombo, lieuField, descriptionField);
 
-        // Ajouter les champs avec leurs labels d'erreur
         int row = 0;
         grid.add(new Label("Nom:*"), 0, row);
         VBox vboxNom = new VBox(3);
@@ -899,17 +798,16 @@ public class ACTback implements Initializable {
         vboxCategorie.getChildren().addAll(categorieCombo, new Label());
         grid.add(vboxCategorie, 1, row++);
 
-        // Ajouter la section IA et image
         grid.add(new Label("IA:"), 0, row);
         VBox vboxIA = new VBox(10);
-        vboxIA.getChildren().addAll(generateAIBtn, new Label("(Génération automatique quand les 3 champs sont remplis)"));
-        vboxIA.setStyle("-fx-padding: 5;");
+        Label iaHint = new Label("✨ La description sera générée automatiquement quand vous aurez rempli les 3 champs (nom, difficulté, lieu) et quitté le champ lieu");
+        iaHint.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 11; -fx-wrap-text: true;");
+        vboxIA.getChildren().addAll(generateAIBtn, iaHint);
         grid.add(vboxIA, 1, row++);
 
         grid.add(new Label("Image:"), 0, row);
         grid.add(imageSection, 1, row++);
 
-        // Créer le ScrollPane
         ScrollPane scrollPane = createFormScrollPane(grid);
         VBox contentBox = new VBox(10, scrollPane);
         contentBox.setPadding(new Insets(10));
@@ -919,7 +817,6 @@ public class ACTback implements Initializable {
         dialog.getDialogPane().setPrefWidth(800);
         dialog.getDialogPane().setPrefHeight(650);
 
-        // Validation avant de fermer le dialogue
         Button okButton = (Button) dialog.getDialogPane().lookupButton(ButtonType.OK);
         okButton.addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
             boolean isValid = validateNom(nomField, errorNom)
@@ -935,7 +832,6 @@ public class ACTback implements Initializable {
             }
         });
 
-        // Convertir le résultat
         dialog.setResultConverter(dialogButton -> {
             if (dialogButton == ButtonType.OK) {
                 try {
@@ -956,7 +852,6 @@ public class ACTback implements Initializable {
                         activite.setCategorieId(0);
                     }
 
-                    // Gestion de l'image
                     if (selectedImageFile != null) {
                         try {
                             String imagePath = FileManager.saveImage(selectedImageFile);
@@ -984,16 +879,38 @@ public class ACTback implements Initializable {
                 loadActivites();
                 selectedImageFile = null;
             } catch (SQLException e) {
-                showError("Erreur d'ajout",
-                        "Impossible d'ajouter l'activité : " + e.getMessage());
+                showError("Erreur d'ajout", "Impossible d'ajouter l'activité : " + e.getMessage());
                 e.printStackTrace();
             }
         });
     }
 
-    /**
-     * Modifier l'activité sélectionnée
-     */
+    private Button createAIGenerateButton(TextField nomField, ComboBox<String> difficulteCombo,
+                                          TextField lieuField, TextArea descriptionField) {
+        Button generateBtn = new Button("🤖 Générer description avec IA");
+        generateBtn.setStyle("-fx-background-color: #6366f1; -fx-text-fill: white; -fx-font-weight: 600; " +
+                "-fx-background-radius: 10; -fx-padding: 10 20; -fx-cursor: hand; -fx-font-size: 12;");
+
+        final boolean[] isGenerating = {false};
+
+        generateBtn.setOnAction(e -> {
+            if (nomField.getText().trim().isEmpty() ||
+                    difficulteCombo.getValue() == null ||
+                    lieuField.getText().trim().isEmpty()) {
+                showWarning("Champs manquants",
+                        "Veuillez remplir le nom, la difficulté et le lieu d'abord.");
+                return;
+            }
+
+            if (!isGenerating[0]) {
+                isGenerating[0] = true;
+                generateAttractiveDescription(nomField, difficulteCombo, lieuField, descriptionField, isGenerating);
+            }
+        });
+
+        return generateBtn;
+    }
+
     @FXML
     private void handleModifier() {
         Activites selectedActivite = tableActivites.getSelectionModel().getSelectedItem();
@@ -1029,7 +946,6 @@ public class ACTback implements Initializable {
         statutCombo.getItems().addAll("Active", "Inactive", "En attente");
         statutCombo.setValue(selectedActivite.getStatut());
 
-        // Section image
         ImageView imagePreview = new ImageView();
         Button chooseImageButton = new Button();
         Label imageNameLabel = new Label();
@@ -1037,7 +953,6 @@ public class ACTback implements Initializable {
 
         chooseImageButton.setOnAction(e -> handleChooseImage(imagePreview, imageNameLabel));
 
-        // Labels d'erreur
         Label errorNom = createErrorLabel();
         Label errorDescription = createErrorLabel();
         Label errorBudget = createErrorLabel();
@@ -1090,7 +1005,7 @@ public class ACTback implements Initializable {
             e.printStackTrace();
         }
 
-        // Configuration de la génération automatique par IA (pour la modification)
+        // Configuration de la génération automatique par IA
         setupAutoDescriptionGeneration(nomField, difficulteCombo, lieuField, descriptionField);
 
         // Bouton de génération manuelle
@@ -1142,11 +1057,11 @@ public class ACTback implements Initializable {
         vboxCategorie.getChildren().addAll(categorieCombo, new Label());
         grid.add(vboxCategorie, 1, row++);
 
-        // Ajouter la section IA
         grid.add(new Label("IA:"), 0, row);
         VBox vboxIA = new VBox(10);
-        vboxIA.getChildren().addAll(generateAIBtn, new Label("(Génération automatique quand les 3 champs sont modifiés)"));
-        vboxIA.setStyle("-fx-padding: 5;");
+        Label iaHint = new Label("✨ La description sera régénérée automatiquement si vous modifiez les champs et quittez le champ lieu");
+        iaHint.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 11; -fx-wrap-text: true;");
+        vboxIA.getChildren().addAll(generateAIBtn, iaHint);
         grid.add(vboxIA, 1, row++);
 
         grid.add(new Label("Image:"), 0, row);
@@ -1195,7 +1110,6 @@ public class ACTback implements Initializable {
                         selectedActivite.setCategorieId(0);
                     }
 
-                    // Gestion de l'image
                     if (selectedImageFile != null) {
                         if (currentImagePath != null && !currentImagePath.isEmpty()) {
                             FileManager.deleteImage(currentImagePath);
@@ -1228,16 +1142,12 @@ public class ACTback implements Initializable {
                 loadActivites();
                 selectedImageFile = null;
             } catch (SQLException e) {
-                showError("Erreur de modification",
-                        "Impossible de modifier l'activité : " + e.getMessage());
+                showError("Erreur de modification", "Impossible de modifier l'activité : " + e.getMessage());
                 e.printStackTrace();
             }
         });
     }
 
-    /**
-     * Supprimer l'activité sélectionnée
-     */
     @FXML
     private void handleSupprimer() {
         Activites selectedActivite = tableActivites.getSelectionModel().getSelectedItem();
@@ -1260,25 +1170,18 @@ public class ACTback implements Initializable {
                 showInfo("Succès", "Activité supprimée avec succès !");
                 loadActivites();
             } catch (SQLException e) {
-                showError("Erreur de suppression",
-                        "Impossible de supprimer l'activité : " + e.getMessage());
+                showError("Erreur de suppression", "Impossible de supprimer l'activité : " + e.getMessage());
                 e.printStackTrace();
             }
         }
     }
 
-    /**
-     * Actualiser la liste des activités
-     */
     @FXML
     private void handleActualiser() {
         loadActivites();
         showInfo("Actualisation", "Liste des activités actualisée !");
     }
 
-    /**
-     * Naviguer vers l'interface des catégories
-     */
     @FXML
     private void handleVersCategories() {
         try {
@@ -1290,15 +1193,11 @@ public class ACTback implements Initializable {
             stage.setTitle("TravelMate - Gestion des Catégories");
             stage.show();
         } catch (IOException e) {
-            showError("Erreur de navigation",
-                    "Impossible de charger l'interface des catégories : " + e.getMessage());
+            showError("Erreur de navigation", "Impossible de charger l'interface des catégories : " + e.getMessage());
             e.printStackTrace();
         }
     }
 
-    /**
-     * Naviguer vers l'interface front office
-     */
     @FXML
     private void handleFrontOffice() {
         try {
@@ -1310,13 +1209,10 @@ public class ACTback implements Initializable {
             stage.setTitle("TravelMate - Front Office Activités");
             stage.show();
         } catch (IOException e) {
-            showError("Erreur de navigation",
-                    "Impossible de charger le front office : " + e.getMessage());
+            showError("Erreur de navigation", "Impossible de charger le front office : " + e.getMessage());
             e.printStackTrace();
         }
     }
-
-    // ==================== MÉTHODES UTILITAIRES ====================
 
     private void showInfo(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
