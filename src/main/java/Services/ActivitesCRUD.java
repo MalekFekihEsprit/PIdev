@@ -41,7 +41,7 @@ public class ActivitesCRUD implements IntrefaceCRUD<Activites> {
             activite.setId(rs.getInt(1));
         }
 
-        System.out.println("Activité ajoutée !");
+        System.out.println("✅ Activité ajoutée !");
     }
 
     @Override
@@ -63,7 +63,7 @@ public class ActivitesCRUD implements IntrefaceCRUD<Activites> {
         pst.setInt(11, activite.getId());
 
         pst.executeUpdate();
-        System.out.println("Activité modifiée");
+        System.out.println("✅ Activité modifiée");
     }
 
     @Override
@@ -93,7 +93,7 @@ public class ActivitesCRUD implements IntrefaceCRUD<Activites> {
         PreparedStatement pst = conn.prepareStatement(req);
         pst.setInt(1, id);
         pst.executeUpdate();
-        System.out.println("Activité supprimée");
+        System.out.println("✅ Activité supprimée");
     }
 
     @Override
@@ -120,7 +120,16 @@ public class ActivitesCRUD implements IntrefaceCRUD<Activites> {
             p.setStatut(rs.getString("statut"));
             p.setDuree(rs.getInt("duree"));
             p.setCategorieId(rs.getInt("categorie_id"));
-            p.setImagePath(rs.getString("image_path")); // NOUVEAU
+            p.setImagePath(rs.getString("image_path"));
+
+            // LOG POUR DÉBOGUER - À AJOUTER TEMPORAIREMENT
+            System.out.println("🔍 Activité chargée: " + p.getNom());
+            System.out.println("   Budget: " + p.getBudget());
+            System.out.println("   Durée: " + p.getDuree());
+            System.out.println("   Difficulté: " + p.getNiveaudifficulte());
+            System.out.println("   Âge min: " + p.getAgemin());
+            System.out.println("   Statut: " + p.getStatut());
+            System.out.println("   Catégorie ID: " + p.getCategorieId());
 
             // Créer et associer l'objet Catégorie si elle existe
             if (rs.getObject("cat_id") != null) {
@@ -132,6 +141,9 @@ public class ActivitesCRUD implements IntrefaceCRUD<Activites> {
                 cat.setNiveauintensite(rs.getString("cat_intensite"));
                 cat.setPubliccible(rs.getString("cat_public"));
                 p.setCategorie(cat);
+                System.out.println("   Catégorie: " + cat.getNom());
+            } else {
+                System.out.println("   ⚠️ Pas de catégorie associée");
             }
 
             listeActivites.add(p);
@@ -161,7 +173,7 @@ public class ActivitesCRUD implements IntrefaceCRUD<Activites> {
             p.setStatut(rs.getString("statut"));
             p.setDuree(rs.getInt("duree"));
             p.setCategorieId(rs.getInt("categorie_id"));
-            p.setImagePath(rs.getString("image_path")); // NOUVEAU
+            p.setImagePath(rs.getString("image_path"));
 
             listeActivites.add(p);
         }
@@ -170,7 +182,11 @@ public class ActivitesCRUD implements IntrefaceCRUD<Activites> {
 
     // NOUVELLE METHODE : Récupérer une activité par ID (pour modification)
     public Activites getOne(int id) throws SQLException {
-        String req = "SELECT * FROM Activites WHERE id = ?";
+        String req = "SELECT a.*, c.id as cat_id, c.nom as cat_nom, c.type as cat_type " +
+                "FROM Activites a " +
+                "LEFT JOIN Categories c ON a.categorie_id = c.id " +
+                "WHERE a.id = ?";
+
         PreparedStatement pst = conn.prepareStatement(req);
         pst.setInt(1, id);
         ResultSet rs = pst.executeQuery();
@@ -188,6 +204,16 @@ public class ActivitesCRUD implements IntrefaceCRUD<Activites> {
             a.setDuree(rs.getInt("duree"));
             a.setCategorieId(rs.getInt("categorie_id"));
             a.setImagePath(rs.getString("image_path"));
+
+            // Charger la catégorie si elle existe
+            if (rs.getObject("cat_id") != null) {
+                Categories cat = new Categories();
+                cat.setId(rs.getInt("cat_id"));
+                cat.setNom(rs.getString("cat_nom"));
+                cat.setType(rs.getString("cat_type"));
+                a.setCategorie(cat);
+            }
+
             return a;
         }
         return null;

@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressIndicator?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.web.WebView?>
+
+<BorderPane prefHeight="900" prefWidth="1400" style="-fx-background-color: #f0f4f0;" stylesheets="@activitesfront.css, @activitydetail.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controlles.ActivityDetailController">
+    <!-- NAVBAR -->
+    <top>
+        <VBox>
+            <HBox alignment="CENTER_LEFT" spacing="0" style="-fx-background-color:#f5a623;-fx-padding:0 30 0 20;-fx-min-height:60;-fx-pref-height:60;">
+
+                <!-- Logo -->
+                <HBox alignment="CENTER" spacing="8" style="-fx-padding:0 30 0 0;">
+                    <Circle fill="#ff6b00" radius="14" />
+                    <Label style="-fx-font-size:22;-fx-font-weight:bold;-fx-text-fill:#1a1a1a;" text="TravelMate" />
+                    <Label style="-fx-background-color:#ff6b00;-fx-text-fill:white;-fx-background-radius:10;-fx-padding:2 8;-fx-font-size:9;-fx-font-weight:bold;" text="PRO" />
+                </HBox>
+
+                <!-- Nav links -->
+                <HBox alignment="CENTER" spacing="5">
+                    <HBox alignment="CENTER" spacing="6" style="-fx-padding:8 14;-fx-cursor:hand;">
+                        <Label style="-fx-font-size:13;" text="🏠" />
+                        <Label style="-fx-text-fill:#1a1a1a;-fx-font-size:13;" text="Destinations" />
+                    </HBox>
+                    <HBox alignment="CENTER" spacing="6" style="-fx-padding:8 14;-fx-cursor:hand;">
+                        <Label style="-fx-font-size:13;" text="🗺" />
+                        <Label style="-fx-text-fill:#1a1a1a;-fx-font-size:13;" text="Itinéraires" />
+                    </HBox>
+
+                    <!-- Activités - ACTIVE -->
+                    <HBox fx:id="btnVersActivites" alignment="CENTER" onMouseClicked="#handleVersActivites" spacing="6" style="-fx-background-color:white;-fx-background-radius:20;-fx-padding:8 18;-fx-cursor:hand;">
+                        <Label style="-fx-font-size:13;" text="🎯" />
+                        <Label style="-fx-text-fill:#ff6b00;-fx-font-weight:bold;-fx-font-size:13;" text="Activités" />
+                    </HBox>
+
+                    <!-- Catégories -->
+                    <HBox fx:id="btnVersCategories" alignment="CENTER" onMouseClicked="#handleVersCategories" spacing="6" style="-fx-padding:8 14;-fx-cursor:hand;">
+                        <Label style="-fx-font-size:13;" text="📑" />
+                        <Label style="-fx-text-fill:#1a1a1a;-fx-font-size:13;" text="Catégories" />
+                    </HBox>
+
+                    <HBox alignment="CENTER" spacing="6" style="-fx-padding:8 14;-fx-cursor:hand;">
+                        <Label style="-fx-font-size:13;" text="✈" />
+                        <Label style="-fx-text-fill:#1a1a1a;-fx-font-size:13;" text="Voyages" />
+                    </HBox>
+
+                    <HBox alignment="CENTER" spacing="6" style="-fx-background-color:#ff6b00;-fx-background-radius:20;-fx-padding:8 18;-fx-cursor:hand;">
+                        <Label style="-fx-font-size:13;" text="💰" />
+                        <Label style="-fx-text-fill:white;-fx-font-weight:bold;-fx-font-size:13;" text="Budgets" />
+                    </HBox>
+                </HBox>
+
+                <Region HBox.hgrow="ALWAYS" />
+
+                <HBox alignment="CENTER" style="-fx-padding:0 14;">
+                    <Label style="-fx-font-size:18;-fx-text-fill:#1a1a1a;-fx-cursor:hand;" text="🔔" />
+                </HBox>
+
+                <!-- User -->
+                <HBox alignment="CENTER" spacing="8" style="-fx-padding:6 0;-fx-cursor:hand;">
+                    <Circle fill="#ff6b00" radius="16" />
+                    <VBox spacing="0">
+                        <Label style="-fx-text-fill:#1a1a1a;-fx-font-weight:bold;-fx-font-size:12;" text="Yosr Boutaieb" />
+                        <Label style="-fx-text-fill:#5a3a00;-fx-font-size:10;" text="Utilisateur" />
+                    </VBox>
+                    <Label style="-fx-text-fill:#333;-fx-font-size:11;" text="▼" />
+                </HBox>
+            </HBox>
+
+            <!-- Breadcrumb -->
+            <HBox alignment="CENTER_LEFT" spacing="6" style="-fx-background-color:#f0f4f0;-fx-padding:10 30;">
+                <Label style="-fx-text-fill:#888;-fx-font-size:12;" text="🏠 Accueil" />
+                <Label style="-fx-text-fill:#aaa;-fx-font-size:12;" text="&gt;" />
+                <Label style="-fx-text-fill:#888;-fx-font-size:12;-fx-cursor:hand;" onMouseClicked="#handleBack" text="Activités" />
+                <Label style="-fx-text-fill:#aaa;-fx-font-size:12;" text="&gt;" />
+                <Label style="-fx-background-color:#ff6b00;-fx-text-fill:white;-fx-background-radius:15;-fx-padding:4 14;-fx-font-size:12;" fx:id="lblNomBreadcrumb" text="Détail" />
+                <Region HBox.hgrow="ALWAYS" />
+                <Label fx:id="lblDate" style="-fx-text-fill:#888;-fx-font-size:12;" text="📅 Mars 2026" />
+
+                <Button fx:id="btnTranslate" onAction="#handleTranslate" style="-fx-background-color:#10b981;-fx-text-fill:white;-fx-background-radius:15;-fx-padding:5 16;-fx-font-size:12;-fx-cursor:hand;-fx-border-width:0;-fx-font-weight:bold;" text="🌐 Traduire" />
+
+                <Button fx:id="btnBack" onAction="#handleBack" style="-fx-background-color:#6366f1;-fx-text-fill:white;-fx-background-radius:15;-fx-padding:5 16;-fx-font-size:12;-fx-cursor:hand;-fx-border-width:0;-fx-font-weight:bold;" text="← Retour" />
+            </HBox>
+        </VBox>
+    </top>
+
+    <!-- CENTRE -->
+    <center>
+        <ScrollPane fitToWidth="true" style="-fx-background:transparent;-fx-background-color:transparent;-fx-border-color:transparent;">
+            <VBox spacing="20" style="-fx-padding:20 30;">
+
+                <!-- Titre -->
+                <Label style="-fx-font-size:28;-fx-font-weight:bold;-fx-text-fill:#1a1a1a;" fx:id="lblNom" text="" />
+
+                <!-- Grille principale 2 colonnes -->
+                <GridPane hgap="20" vgap="20">
+                    <columnConstraints>
+                        <ColumnConstraints percentWidth="60" />
+                        <ColumnConstraints percentWidth="40" />
+                    </columnConstraints>
+
+                    <!-- Colonne gauche : Image et description -->
+                    <VBox spacing="15" GridPane.columnIndex="0">
+                        <!-- Image -->
+                        <ImageView fx:id="imageView" fitHeight="300" fitWidth="600" preserveRatio="true" style="-fx-background-color:#0a0e27;-fx-background-radius:16;-fx-effect:dropshadow(three-pass-box,rgba(0,0,0,0.1),10,0,0,5);" />
+
+                        <!-- Description -->
+                        <VBox style="-fx-background-color:white;-fx-background-radius:16;-fx-padding:20;-fx-effect:dropshadow(three-pass-box,rgba(0,0,0,0.06),8,0,0,2);">
+                            <Label style="-fx-font-size:16;-fx-font-weight:bold;-fx-text-fill:#1a1a1a;" text="Description" />
+                            <Separator style="-fx-padding:10 0;" />
+                            <Label fx:id="lblDescription" style="-fx-font-size:14;-fx-text-fill:#555;-fx-wrap-text:true;" text="" />
+                        </VBox>
+
+                        <!-- Adresse complète -->
+                        <VBox style="-fx-background-color:white;-fx-background-radius:16;-fx-padding:20;-fx-effect:dropshadow(three-pass-box,rgba(0,0,0,0.06),8,0,0,2);">
+                            <Label style="-fx-font-size:16;-fx-font-weight:bold;-fx-text-fill:#1a1a1a;" text="Adresse de l'activité" />
+                            <Separator style="-fx-padding:10 0;" />
+                            <HBox spacing="8" alignment="CENTER_LEFT">
+                                <Label style="-fx-font-size:18;" text="📍" />
+                                <Label fx:id="lblAdresseComplete" style="-fx-font-size:14;-fx-text-fill:#ff6b00;-fx-wrap-text:true;" text="" />
+                            </HBox>
+                        </VBox>
+                    </VBox>
+
+                    <!-- Colonne droite : Détails et map -->
+                    <VBox spacing="15" GridPane.columnIndex="1">
+                        <!-- Détails -->
+                        <VBox style="-fx-background-color:white;-fx-background-radius:16;-fx-padding:20;-fx-effect:dropshadow(three-pass-box,rgba(0,0,0,0.06),8,0,0,2);">
+                            <Label style="-fx-font-size:16;-fx-font-weight:bold;-fx-text-fill:#1a1a1a;" text="Détails de l'activité" />
+                            <Separator style="-fx-padding:10 0;" />
+
+                            <GridPane hgap="10" vgap="12">
+                                <!-- Budget -->
+                                <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Budget :" GridPane.rowIndex="0" GridPane.columnIndex="0" />
+                                <HBox alignment="CENTER_LEFT" spacing="5" GridPane.rowIndex="0" GridPane.columnIndex="1">
+                                    <Label style="-fx-font-size:16;" text="💰" />
+                                    <Label fx:id="lblBudget" style="-fx-text-fill:#ff6b00;-fx-font-weight:bold;" text="" />
+                                </HBox>
+
+                                <!-- Durée -->
+                                <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Durée :" GridPane.rowIndex="1" GridPane.columnIndex="0" />
+                                <Label fx:id="lblDuree" GridPane.rowIndex="1" GridPane.columnIndex="1" text="" style="-fx-text-fill: #333; -fx-font-weight: normal;" />
+
+                                <!-- Difficulté -->
+                                <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Difficulté :" GridPane.rowIndex="2" GridPane.columnIndex="0" />
+                                <Label fx:id="lblDifficulte" GridPane.rowIndex="2" GridPane.columnIndex="1" text="" style="-fx-text-fill: #333; -fx-font-weight: normal;" />
+
+                                <!-- Âge minimum -->
+                                <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Âge minimum :" GridPane.rowIndex="3" GridPane.columnIndex="0" />
+                                <Label fx:id="lblAgeMin" GridPane.rowIndex="3" GridPane.columnIndex="1" text="" style="-fx-text-fill: #333; -fx-font-weight: normal;" />
+
+                                <!-- Statut -->
+                                <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Statut :" GridPane.rowIndex="4" GridPane.columnIndex="0" />
+                                <Label fx:id="lblStatut" GridPane.rowIndex="4" GridPane.columnIndex="1" text="" style="-fx-text-fill: #333; -fx-font-weight: normal;" />
+
+                                <!-- Catégorie -->
+                                <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Catégorie :" GridPane.rowIndex="5" GridPane.columnIndex="0" />
+                                <Label fx:id="lblCategorie" GridPane.rowIndex="5" GridPane.columnIndex="1" text="" style="-fx-text-fill: #333; -fx-font-weight: normal;" />
+                            </GridPane>
+                        </VBox>
+
+                        <!-- Carte et Localisation -->
+                        <VBox style="-fx-background-color:white;-fx-background-radius:16;-fx-padding:20;-fx-effect:dropshadow(three-pass-box,rgba(0,0,0,0.06),8,0,0,2);">
+                            <Label style="-fx-font-size:16;-fx-font-weight:bold;-fx-text-fill:#1a1a1a;" text="Localisation" />
+                            <Separator style="-fx-padding:10 0;" />
+
+                            <!-- Zone de la carte -->
+                            <StackPane prefHeight="250" style="-fx-background-color: #f0f0f0; -fx-background-radius: 8;">
+                                <WebView fx:id="webViewMap" prefHeight="250" />
+                                <ProgressIndicator fx:id="mapLoadingIndicator" visible="false" />
+                            </StackPane>
+
+                            <!-- Détails de localisation -->
+                            <GridPane hgap="10" vgap="8" style="-fx-padding:15 0 0 0;">
+                                <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Ville :" GridPane.rowIndex="0" GridPane.columnIndex="0" />
+                                <Label fx:id="lblVille" GridPane.rowIndex="0" GridPane.columnIndex="1" text="-" style="-fx-text-fill: #ff6b00; -fx-font-weight: bold;" />
+
+                                <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Pays :" GridPane.rowIndex="1" GridPane.columnIndex="0" />
+                                <Label fx:id="lblPays" GridPane.rowIndex="1" GridPane.columnIndex="1" text="-" style="-fx-text-fill: #ff6b00; -fx-font-weight: bold;" />
+
+                                <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Code postal :" GridPane.rowIndex="2" GridPane.columnIndex="0" />
+                                <Label fx:id="lblCodePostal" GridPane.rowIndex="2" GridPane.columnIndex="1" text="-" style="-fx-text-fill: #ff6b00; -fx-font-weight: bold;" />
+
+                                <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Rue :" GridPane.rowIndex="3" GridPane.columnIndex="0" />
+                                <Label fx:id="lblRue" GridPane.rowIndex="3" GridPane.columnIndex="1" text="-" wrapText="true" style="-fx-text-fill: #ff6b00; -fx-font-weight: bold;" />
+
+                                <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Coordonnées :" GridPane.rowIndex="4" GridPane.columnIndex="0" />
+                                <Label fx:id="lblCoordonnees" GridPane.rowIndex="4" GridPane.columnIndex="1" text="-" style="-fx-text-fill: #ff6b00; -fx-font-weight: bold;" />
+                            </GridPane>
+                        </VBox>
+                    </VBox>
+                </GridPane>
+            </VBox>
+        </ScrollPane>
+    </center>
+
+    <!-- Bottom -->
+    <bottom>
+        <Rectangle fill="linear-gradient(to right,#f5a623,#ff6b00,#6366f1)" height="5" width="1400" />
+    </bottom>
+</BorderPane>

@@ -21,7 +21,6 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
-import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 
 import java.io.File;
@@ -32,7 +31,6 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.ResourceBundle;
 
 public class ACTfront implements Initializable {
 
@@ -56,6 +54,7 @@ public class ACTfront implements Initializable {
     @FXML private ProgressBar progressTop;
     @FXML private Label lblSelectedDate;
     @FXML private Label lblSelectedBudget;
+    @FXML private Label lblSelectedNom;
     @FXML private Circle dotColor;
     @FXML private Label lblDate;
     @FXML private TextField searchField;
@@ -248,10 +247,11 @@ public class ACTfront implements Initializable {
 
         HBox lieuBox = new HBox(4);
         lieuBox.setAlignment(Pos.CENTER_LEFT);
-        Label lieuIcon = new Label(isLocationIcon(activite) ? "📍" : "📋");
+        Label lieuIcon = new Label("📍");
         lieuIcon.setStyle("-fx-font-size: 11;");
         Label lieuLabel = new Label(activite.getLieu() != null ? activite.getLieu() : "");
         lieuLabel.getStyleClass().add("card-location");
+        lieuLabel.setWrapText(true);
         lieuBox.getChildren().addAll(lieuIcon, lieuLabel);
 
         HBox bottomRow = new HBox(8);
@@ -273,7 +273,7 @@ public class ACTfront implements Initializable {
 
         card.getChildren().addAll(imageContainer, infoBox);
 
-        card.setOnMouseClicked(e -> selectActivite(activite));
+        card.setOnMouseClicked(e -> openActivityDetail(activite));
 
         card.setOnMouseEntered(e -> {
             card.setEffect(new DropShadow(16, Color.web("#f5a62355")));
@@ -352,10 +352,6 @@ public class ACTfront implements Initializable {
         if (progressTop != null && maxBudget > 0) {
             progressTop.setProgress((double) top.getBudget() / maxBudget);
         }
-
-        if (selectedActivite == null && !list.isEmpty()) {
-            selectActivite(list.get(0));
-        }
     }
 
     private void updatePieChart(ObservableList<Activites> list) {
@@ -383,21 +379,25 @@ public class ACTfront implements Initializable {
             });
             colorIdx++;
         }
-
-        if (selectedActivite != null && list.size() > 0) {
-            double pct = 100.0 / list.size();
-            lblSelectedBudget.setText(selectedActivite.getBudget() + "€ (" +
-                    String.format("%.1f", pct) + "%)");
-        }
     }
 
-    private void selectActivite(Activites activite) {
-        selectedActivite = activite;
-        lblSelectedDate.setText(LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
-        if (lblSelectedBudget != null) {
-            int total = activitesList.isEmpty() ? 1 : activitesList.stream().mapToInt(Activites::getBudget).sum();
-            double pct = total > 0 ? (activite.getBudget() * 100.0 / total) : 0;
-            lblSelectedBudget.setText(activite.getBudget() + "€ (" + String.format("%.1f", pct) + "%)");
+    private void openActivityDetail(Activites activite) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/activitydetail.fxml"));
+            Parent root = loader.load();
+
+            ActivityDetailController controller = loader.getController();
+            controller.setActivite(activite);
+
+            Scene scene = new Scene(root);
+            Stage stage = (Stage) activitesGrid.getScene().getWindow();
+            stage.setScene(scene);
+            stage.setTitle("TravelMate - " + activite.getNom());
+            stage.show();
+        } catch (Exception e) {
+            showError("Erreur de navigation",
+                    "Impossible d'ouvrir les détails: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -518,12 +518,12 @@ public class ACTfront implements Initializable {
         String type = activite.getCategorie().getType();
         if (type == null) return "🎯";
         switch (type.toLowerCase()) {
-            case "aventure":    return "🏔";
+            case "aventure":    return "🏔️";
             case "détente":     return "🧘";
-            case "culturel":    return "🏛";
+            case "culturel":    return "🏛️";
             case "sportif":     return "⚽";
-            case "gastronomique": return "🍽";
-            case "famille":     return "👨‍👩‍👧";
+            case "gastronomique": return "🍽️";
+            case "famille":     return "👨‍👩‍👧‍👦";
             case "nature":      return "🌿";
             default:            return "🎯";
         }
@@ -538,10 +538,6 @@ public class ACTfront implements Initializable {
             case "expert":  return "#7c3aed";
             default:        return "#888888";
         }
-    }
-
-    private boolean isLocationIcon(Activites activite) {
-        return activite.getCategorie() != null;
     }
 
     private void showError(String title, String message) {

@@ -1,0 +1,52 @@
+/* activitydetail.css - Styles spécifiques pour la page de détail */
+
+.root {
+    -fx-background-color: #f0f4f0;
+}
+
+/* ===== STYLES POUR LES LABELS DE DÉTAILS ===== */
+/* Tous les labels qui affichent les valeurs (Budget, Durée, Difficulté, Âge, Statut, Catégorie) */
+#lblBudget, #lblDuree, #lblDifficulte, #lblAgeMin, #lblStatut, #lblCategorie {
+    -fx-text-fill: #ff6b00 !important;  /* Orange comme le budget */
+    -fx-font-weight: bold !important;    /* Gras */
+    -fx-font-size: 13px;
+}
+
+/* Style spécifique pour le budget (déjà en orange, mais on renforce) */
+#lblBudget {
+    -fx-text-fill: #ff6b00 !important;
+    -fx-font-weight: bold !important;
+}
+
+/* ===== STYLES POUR LES LABELS DE LOCALISATION ===== */
+#lblVille, #lblPays, #lblCodePostal, #lblRue, #lblCoordonnees {
+    -fx-text-fill: #ff6b00 !important;
+    -fx-font-weight: bold !important;
+    -fx-font-size: 13px;
+    -fx-background-color: transparent;
+    -fx-padding: 2 5;
+}
+
+/* Style pour les titres des champs (Budget:, Durée:, etc.) */
+.grid-pane .label {
+    -fx-text-fill: #1a1a1a;
+}
+
+/* Style spécifique pour les titres dans la grille de détails */
+.grid-pane .label[text*=":"] {
+    -fx-font-weight: normal;
+    -fx-text-fill: #888;
+}
+
+/* Conteneur de la carte */
+.stack-pane {
+    -fx-background-color: #f0f0f0;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+}
+
+/* WebView */
+.web-view {
+    -fx-background-color: white;
+    -fx-background-radius: 8;
+}
