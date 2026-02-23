@@ -52,7 +52,19 @@ public class ACTback implements Initializable {
     @FXML private Button btnModifier;
     @FXML private Button btnSupprimer;
     @FXML private TextField searchField;
+    // Sidebar : badge compteur sur l'item actif du menu
     @FXML private Label lblTotalActivites;
+    // KPI Cards (zone centrale)
+    @FXML private Label lblKpiTotal;
+    @FXML private Label lblKpiActives;
+    @FXML private Label lblKpiInactives;
+    @FXML private Label lblKpiBudget;
+    // Statistiques sidebar
+    @FXML private Label lblStatActivites;
+    @FXML private Label lblStatActives;
+    @FXML private Label lblStatInactives;
+    // Badge liste
+    @FXML private Label lblCountBadge;
     @FXML private Button btnVersCategories;
     @FXML private Button btnFrontOffice;
 
@@ -229,8 +241,29 @@ public class ACTback implements Initializable {
             activitesData.addAll(listeActivites);
             tableActivites.setItems(activitesData);
 
-            // Mettre à jour le compteur
-            lblTotalActivites.setText(String.valueOf(activitesData.size()));
+            int total = activitesData.size();
+            long actives = activitesData.stream()
+                    .filter(a -> "active".equalsIgnoreCase(a.getStatut()))
+                    .count();
+            long inactives = total - actives;
+            double budgetMoyen = activitesData.stream()
+                    .mapToInt(Activites::getBudget)
+                    .average()
+                    .orElse(0);
+
+            // Sidebar badge (item actif menu)
+            if (lblTotalActivites != null) lblTotalActivites.setText(String.valueOf(total));
+            // KPI Cards
+            if (lblKpiTotal != null) lblKpiTotal.setText(String.valueOf(total));
+            if (lblKpiActives != null) lblKpiActives.setText(String.valueOf(actives));
+            if (lblKpiInactives != null) lblKpiInactives.setText(String.valueOf(inactives));
+            if (lblKpiBudget != null) lblKpiBudget.setText(String.format("%.0f", budgetMoyen));
+            // Statistiques sidebar
+            if (lblStatActivites != null) lblStatActivites.setText(String.valueOf(total));
+            if (lblStatActives != null) lblStatActives.setText(String.valueOf(actives));
+            if (lblStatInactives != null) lblStatInactives.setText(String.valueOf(inactives));
+            // Badge liste
+            if (lblCountBadge != null) lblCountBadge.setText(total + " activité" + (total > 1 ? "s" : ""));
 
         } catch (SQLException e) {
             showError("Erreur de chargement",

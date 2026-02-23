@@ -40,8 +40,21 @@ public class CATback implements Initializable {
     @FXML private Button btnModifier;
     @FXML private Button btnSupprimer;
     @FXML private TextField searchField;
+    // Sidebar : badge compteur sur l'item actif du menu
     @FXML private Label lblTotalCategories;
+    // KPI Cards (zone centrale)
+    @FXML private Label lblKpiTotal;
+    @FXML private Label lblKpiTypes;
+    @FXML private Label lblKpiSaisons;
+    @FXML private Label lblKpiIntensite;
+    // Statistiques sidebar
+    @FXML private Label lblStatCategories;
+    @FXML private Label lblStatTypes;
+    @FXML private Label lblStatSaisons;
+    // Badge liste
+    @FXML private Label lblCountBadge;
     @FXML private Button btnFrontOffice;
+    @FXML private Button btnVersActivites;
 
     // Patterns de validation
     private static final Pattern NOM_PATTERN = Pattern.compile("^[a-zA-ZÀ-ÿ\\s\\-']+$");
@@ -173,8 +186,36 @@ public class CATback implements Initializable {
             categoriesData.addAll(listeCategories);
             tableCategories.setItems(categoriesData);
 
-            // Mettre à jour le compteur
-            lblTotalCategories.setText(String.valueOf(categoriesData.size()));
+            int total = categoriesData.size();
+            long typesDistincts = categoriesData.stream()
+                    .map(Categories::getType)
+                    .filter(t -> t != null && !t.isEmpty())
+                    .distinct()
+                    .count();
+            long saisonsDistinctes = categoriesData.stream()
+                    .map(Categories::getSaison)
+                    .filter(s -> s != null && !s.isEmpty())
+                    .distinct()
+                    .count();
+            long niveauxDistincts = categoriesData.stream()
+                    .map(Categories::getNiveauintensite)
+                    .filter(n -> n != null && !n.isEmpty())
+                    .distinct()
+                    .count();
+
+            // Sidebar badge (item actif menu)
+            if (lblTotalCategories != null) lblTotalCategories.setText(String.valueOf(total));
+            // KPI Cards
+            if (lblKpiTotal != null) lblKpiTotal.setText(String.valueOf(total));
+            if (lblKpiTypes != null) lblKpiTypes.setText(String.valueOf(typesDistincts));
+            if (lblKpiSaisons != null) lblKpiSaisons.setText(String.valueOf(saisonsDistinctes));
+            if (lblKpiIntensite != null) lblKpiIntensite.setText(String.valueOf(niveauxDistincts));
+            // Statistiques sidebar
+            if (lblStatCategories != null) lblStatCategories.setText(String.valueOf(total));
+            if (lblStatTypes != null) lblStatTypes.setText(String.valueOf(typesDistincts));
+            if (lblStatSaisons != null) lblStatSaisons.setText(String.valueOf(saisonsDistinctes));
+            // Badge liste
+            if (lblCountBadge != null) lblCountBadge.setText(total + " catégorie" + (total > 1 ? "s" : ""));
 
         } catch (SQLException e) {
             showError("Erreur de chargement",
@@ -629,6 +670,26 @@ public class CATback implements Initializable {
     private void handleActualiser() {
         loadCategories();
         showInfo("Actualisation", "Liste des catégories actualisée !");
+    }
+
+    /**
+     * Naviguer vers l'interface back office des activités
+     */
+    @FXML
+    private void handleVersActivites() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/activitesback.fxml"));
+            Parent root = loader.load();
+            Scene scene = new Scene(root);
+            Stage stage = (Stage) btnVersActivites.getScene().getWindow();
+            stage.setScene(scene);
+            stage.setTitle("TravelMate - Gestion des Activités");
+            stage.show();
+        } catch (IOException e) {
+            showError("Erreur de navigation",
+                    "Impossible de charger l'interface des activités : " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     /**
