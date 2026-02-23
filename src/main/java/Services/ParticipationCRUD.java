@@ -91,4 +91,42 @@ public class ParticipationCRUD implements InterfaceCRUD<Participation>{
         }
         return listepersonnes;
     }
+
+    // Ajoutez ces méthodes dans ParticipationCRUD.java
+
+    public List<Participation> rechercherParIdParticipation(int id) throws SQLException {
+        List<Participation> liste = new ArrayList<>();
+        String req = "SELECT * FROM participation WHERE id_participation = ?";
+        PreparedStatement pst = conn.prepareStatement(req);
+        pst.setInt(1, id);
+        ResultSet rs = pst.executeQuery();
+
+        while (rs.next()) {
+            Participation p = new Participation();
+            p.setId_participation(rs.getInt("id_participation"));
+            p.setId(rs.getInt("id"));
+            p.setRole_participation(rs.getString("role_participation"));
+            p.setId_voyage(rs.getInt("id_voyage"));
+            liste.add(p);
+        }
+        return liste;
+    }
+
+    public List<Participation> rechercherParRole(String role) throws SQLException {
+        List<Participation> liste = new ArrayList<>();
+        String req = "SELECT * FROM participation WHERE role_participation = ?";
+        PreparedStatement pst = conn.prepareStatement(req);
+        pst.setString(1, role);
+        ResultSet rs = pst.executeQuery();
+
+        while (rs.next()) {
+            Participation p = new Participation();
+            p.setId_participation(rs.getInt("id_participation"));
+            p.setId(rs.getInt("id"));
+            p.setRole_participation(rs.getString("role_participation"));
+            p.setId_voyage(rs.getInt("id_voyage"));
+            liste.add(p);
+        }
+        return liste;
+    }
 }
