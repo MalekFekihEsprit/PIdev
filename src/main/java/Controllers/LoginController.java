@@ -25,7 +25,7 @@ public class LoginController {
     private UserCRUD userCRUD = new UserCRUD();
 
     @FXML
-    private void handleLogin() { // Gérer la connexion de l'utilisateur après validation des champs
+    private void handleLogin() throws SQLException { // Gérer la connexion de l'utilisateur après validation des champs
         String email = emailField.getText().trim();
         String password = passwordField.getText();
 
@@ -37,6 +37,11 @@ public class LoginController {
         // Validation si l'email et le mot de passe correspondent à un utilisateur existant
         if (!userCRUD.validateEmailAndPassword(email, password)) {
             showAlert(Alert.AlertType.ERROR, "Mot de passe ou email incorrect", "Le mot de passe ou email incorrect.");
+            return;
+        }
+        if (!userCRUD.isEmailVerified(email)) {
+            showAlert(Alert.AlertType.WARNING, "Email non vérifié", "Veuillez vérifier votre email avant de vous connecter.");
+            goToVerifyEmail(email);
             return;
         }
         
@@ -57,6 +62,14 @@ public class LoginController {
                     Stage stage = (Stage) loginButton.getScene().getWindow();
                     stage.setScene(new Scene(root));
                 } else { // Sinon, rediriger vers profile
+                    String ip = null;
+                    try {
+                        ip = userCRUD.getPublicIp() != null ? userCRUD.getPublicIp() : "IP non disponible";
+                        String location = userCRUD.getLocationFromIp(ip) != null ? userCRUD.getLocationFromIp(ip) : "Localisation non disponible";
+                        userCRUD.updateLastLogin(user.getId(), ip, location);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
                     showAlert(Alert.AlertType.INFORMATION, "Succès", "Bienvenue " + user.getPrenom() + " !");
                     // rediriger vers profile
                     FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/profile.fxml"));
@@ -77,6 +90,23 @@ public class LoginController {
             throw new RuntimeException(e);
         }
     }
+
+    private void goToVerifyEmail(String email) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/verify_email.fxml"));
+            Parent root = loader.load();
+            VerifyEmailController controller = loader.getController();
+            if (controller != null) {
+                controller.setEmail(email);
+            }
+            Stage stage = (Stage) loginButton.getScene().getWindow();
+            stage.setScene(new Scene(root));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        
+    }
+
     @FXML
     private void redirectToHome(User user) {
         try {

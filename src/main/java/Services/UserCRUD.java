@@ -2,6 +2,12 @@ package Services;
 
 import Entities.User;
 import Utils.MyBD;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -94,6 +100,7 @@ public class UserCRUD implements InterfaceCRUD<User> {
         u.setMotDePasse(rs.getString("mot_de_passe"));
         u.setRole(rs.getString("role"));
         u.setPhotoUrl(rs.getString("photo_url"));
+        u.setCreatedAt(rs.getTimestamp("created_at") != null ? rs.getTimestamp("created_at").toLocalDateTime() : null);
         return u;
     }
 
@@ -106,6 +113,17 @@ public class UserCRUD implements InterfaceCRUD<User> {
         ResultSet rs = pst.executeQuery();
         if (rs.next()) {
             System.out.println("Utilisateur trouvé : " + rs.getString("email"));
+            return mapResultSetToUser(rs);
+        }
+        return null;
+    }
+
+    public User getUserByEmail(String email) throws SQLException {
+        String req = "SELECT * FROM user WHERE email = ?";
+        PreparedStatement pst = conn.prepareStatement(req);
+        pst.setString(1, email);
+        ResultSet rs = pst.executeQuery();
+        if (rs.next()) {
             return mapResultSetToUser(rs);
         }
         return null;
@@ -142,5 +160,80 @@ public class UserCRUD implements InterfaceCRUD<User> {
             e.printStackTrace();
             return false;
         }
+    }
+
+    public void saveVerificationCode(int userId, String code) throws SQLException {
+    String req = "UPDATE user SET verification_code = ? WHERE id = ?";
+    PreparedStatement pst = conn.prepareStatement(req);
+    pst.setString(1, code);
+    pst.setInt(2, userId);
+    pst.executeUpdate();
+}
+
+    public boolean verifyEmail(int userId, String code) throws SQLException {
+        String req = "SELECT id FROM user WHERE id = ? AND verification_code = ?";
+        PreparedStatement pst = conn.prepareStatement(req);
+        pst.setInt(1, userId);
+        pst.setString(2, code);
+        ResultSet rs = pst.executeQuery();
+        if (rs.next()) {
+            // Marquer comme vérifié et effacer le code
+            String update = "UPDATE user SET is_verified = TRUE, verification_code = NULL WHERE id = ?";
+            PreparedStatement pst2 = conn.prepareStatement(update);
+            pst2.setInt(1, userId);
+            pst2.executeUpdate();
+            return true;
+        }
+        return false;
+    }
+
+    public boolean isEmailVerified(String email) throws SQLException {
+        String req = "SELECT is_verified FROM user WHERE email = ?";
+        PreparedStatement pst = conn.prepareStatement(req);
+        pst.setString(1, email);
+        ResultSet rs = pst.executeQuery();
+        return rs.next() && rs.getBoolean("is_verified");
+    }
+
+    public static String getPublicIp() throws Exception {
+        URL whatismyip = new URL("http://checkip.amazonaws.com");
+        BufferedReader in = new BufferedReader(new InputStreamReader(whatismyip.openStream()));
+        return in.readLine();
+    }
+
+    public static String getLocationFromIp(String ip) throws Exception {
+        String url = "http://ip-api.com/json/" + ip + "?fields=status,country,city";
+        HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
+        conn.setRequestMethod("GET");
+
+        if (conn.getResponseCode() != 200) {
+            return "Inconnu";
+        }
+
+        BufferedReader in = new BufferedReader(
+                new InputStreamReader(conn.getInputStream()));
+        StringBuilder response = new StringBuilder();
+        String line;
+        while ((line = in.readLine()) != null) {
+            response.append(line);
+        }
+        in.close();
+
+        JSONObject json = new JSONObject(response.toString());
+
+        if ("success".equals(json.optString("status"))) {
+            return json.optString("city") + ", " + json.optString("country");
+        }
+
+        return "Inconnu";
+    }
+
+    public void updateLastLogin(int userId, String ip, String location) throws SQLException {
+        String req = "UPDATE user SET last_login_ip = ?, last_login_location = ? WHERE id = ?";
+        PreparedStatement pst = conn.prepareStatement(req);
+        pst.setString(1, ip);
+        pst.setString(2, location);
+        pst.setInt(3, userId);
+        pst.executeUpdate();
     }
 }

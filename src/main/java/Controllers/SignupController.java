@@ -2,6 +2,7 @@ package Controllers;
 
 import Entities.User;
 import Services.UserCRUD;
+import Utils.EmailSender;
 import Utils.ValidationUtils;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -10,9 +11,11 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 
+import javax.mail.MessagingException;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.Random;
 
 public class SignupController {
 
@@ -101,11 +104,44 @@ public class SignupController {
         try {
             userCRUD.ajouter(newUser);
             showAlert(Alert.AlertType.INFORMATION, "Succès", "Compte créé avec succès ! Vous pouvez maintenant vous connecter.");
-            // Rediriger vers login
-            goToLogin();
+
+            // Après avoir créé l'utilisateur et récupéré son ID (ou après l'ajout)
+            User created = userCRUD.getUserByEmail(email); // assure-toi que cette méthode existe
+            if (created != null) {
+                String code = String.format("%06d", new Random().nextInt(999999));
+                userCRUD.saveVerificationCode(created.getId(), code);
+                try {
+                    EmailSender.sendVerificationEmail(email, code);
+                } catch (MessagingException e) {
+                    throw new RuntimeException(e);
+                }
+
+                showAlert(Alert.AlertType.INFORMATION, "Inscription réussie",
+                        "Un code de vérification a été envoyé à votre adresse email.");
+
+                // Rediriger vers la page de vérification
+                goToVerifyEmail(email);
+            } else {
+                showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible de récupérer l'utilisateur créé.");
+            }
         } catch (SQLException e) {
             e.printStackTrace();
             showAlert(Alert.AlertType.ERROR, "Erreur", "Échec de la création du compte : " + e.getMessage());
+        }
+    }
+
+    private void goToVerifyEmail(String email) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/verify_email.fxml"));
+            Parent root = loader.load();
+            VerifyEmailController controller = loader.getController();
+            if (controller != null) {
+                controller.setEmail(email);
+            }
+            Stage stage = (Stage) signupButton.getScene().getWindow();
+            stage.setScene(new Scene(root));
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

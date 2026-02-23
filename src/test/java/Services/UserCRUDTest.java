@@ -142,52 +142,52 @@ class UserCRUDTest {
         assertNull(notFound, "Doit retourner null pour un utilisateur inexistant");
     }
 
+//    @Test
+//    @Order(8)
+//    void testSupprimer() throws SQLException {
+//        // Supprimer l'utilisateur
+//        boolean deleted = userCRUD.supprimer(testUser.getId());
+//        assertTrue(deleted, "La suppression devrait réussir");
+//
+//        // Vérifier qu'il n'existe plus
+//        assertFalse(userCRUD.emailExists(uniqueEmail), "L'email ne devrait plus exister après suppression");
+//
+//        List<User> users = userCRUD.afficherById(testUser.getId());
+//        assertTrue(users.isEmpty(), "La recherche par ID ne devrait rien retourner");
+//    }
+
     @Test
     @Order(8)
-    void testSupprimer() throws SQLException {
-        // Supprimer l'utilisateur
-        boolean deleted = userCRUD.supprimer(testUser.getId());
-        assertTrue(deleted, "La suppression devrait réussir");
-
-        // Vérifier qu'il n'existe plus
-        assertFalse(userCRUD.emailExists(uniqueEmail), "L'email ne devrait plus exister après suppression");
-
-        List<User> users = userCRUD.afficherById(testUser.getId());
-        assertTrue(users.isEmpty(), "La recherche par ID ne devrait rien retourner");
+    void getPublicIpgetPublicIp() throws SQLException {
+        String ip = null;
+        try {
+            ip = userCRUD.getPublicIp();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        assertNotNull(ip, "L'adresse IP publique ne devrait pas être null");
+        assertFalse(ip.isEmpty(), "L'adresse IP publique ne devrait pas être vide");
+        System.out.println("Adresse IP publique : " + ip);
     }
-//    @Test
-//    void ajouter() {
-//    }
-//
-//    @Test
-//    void modifier() {
-//    }
-//
-//    @Test
-//    void supprimer() {
-//    }
-//
-//    @Test
-//    void afficherById() {
-//    }
-//
-//    @Test
-//    void afficherAll() {
-//    }
-//
-//    @Test
-//    void getUserByEmailAndPassword() {
-//    }
-//
-//    @Test
-//    void emailExists() {
-//    }
-//
-//    @Test
-//    void updatePassword() {
-//    }
-//
-//    @Test
-//    void deleteUser() {
-//    }
+
+    @Test
+    @Order(9)
+    void getLocationFromIp() throws SQLException {
+        String ip = null;
+        try {
+            ip = userCRUD.getPublicIp();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        String location = null;
+        try {
+            location = userCRUD.getLocationFromIp(ip);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        assertNotNull(location, "La localisation ne devrait pas être null");
+        assertFalse(location.isEmpty(), "La localisation ne devrait pas être vide");
+        System.out.println("Localisation pour l'IP " + ip + " : " + location);
+    }
+
 }

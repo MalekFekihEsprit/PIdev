@@ -122,7 +122,7 @@
 
                         <!-- Carte : Évolution des inscriptions (simulée avec bar chart) -->
                         <VBox spacing="16" style="-fx-background-color: #1e2749; -fx-background-radius: 24; -fx-padding: 28; -fx-border-color: #ff8c42; -fx-border-width: 1; -fx-border-radius: 24;" GridPane.columnIndex="1" GridPane.rowIndex="0">
-                            <Label style="-fx-font-size: 18; -fx-font-weight: 600; -fx-text-fill: white;" text="Inscriptions par mois (simulé)" />
+                            <Label style="-fx-font-size: 18; -fx-font-weight: 600; -fx-text-fill: white;" text="Inscriptions par jours (simulé)" />
                             <BarChart fx:id="inscriptionsBarChart" style="-fx-background-color: transparent;">
                                 <xAxis><CategoryAxis side="BOTTOM" /></xAxis>
                                 <yAxis><NumberAxis side="LEFT" /></yAxis>

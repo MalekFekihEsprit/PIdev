@@ -35,14 +35,14 @@ public class AdminStatsController {
         try {
             List<User> users = userCRUD.afficherAll();
 
-            // Totaux
+            // Totaux (inchangé)
             totalUsersStat.setText(String.valueOf(users.size()));
             long adminCount = users.stream().filter(u -> "ADMIN".equals(u.getRole())).count();
             long userCount = users.stream().filter(u -> "USER".equals(u.getRole())).count();
             totalAdminsStat.setText(String.valueOf(adminCount));
             totalUsersOnlyStat.setText(String.valueOf(userCount));
 
-            // Pie chart des rôles
+            // Pie chart des rôles (inchangé)
             ObservableList<PieChart.Data> pieData = FXCollections.observableArrayList(
                     new PieChart.Data("Administrateurs", adminCount),
                     new PieChart.Data("Utilisateurs", userCount)
@@ -50,19 +50,29 @@ public class AdminStatsController {
             rolePieChart.setData(pieData);
             rolePieChart.setTitle("Rôles");
 
-            // Bar chart simulé (mois)
-            // On pourrait compter par mois de création (si on avait une date d'inscription)
-            // Ici on simule des données
+            // Bar chart dynamique des inscriptions par jour (30 derniers jours ou toutes les dates)
             XYChart.Series<String, Number> series = new XYChart.Series<>();
             series.setName("Inscriptions");
-            series.getData().add(new XYChart.Data<>("Jan", 5));
-            series.getData().add(new XYChart.Data<>("Fév", 8));
-            series.getData().add(new XYChart.Data<>("Mar", 12));
-            series.getData().add(new XYChart.Data<>("Avr", 7));
-            series.getData().add(new XYChart.Data<>("Mai", 10));
-            series.getData().add(new XYChart.Data<>("Juin", 6));
+
+            // Grouper par date (sans l'heure)
+            java.util.Map<String, Integer> dailyCount = new java.util.TreeMap<>(); // TreeMap pour tri automatique
+            java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+            for (User u : users) {
+                if (u.getCreatedAt() != null) {
+                    String day = u.getCreatedAt().format(formatter);
+                    dailyCount.put(day, dailyCount.getOrDefault(day, 0) + 1);
+                }
+            }
+
+            // Ajouter les données dans l'ordre (déjà trié par TreeMap)
+            for (java.util.Map.Entry<String, Integer> entry : dailyCount.entrySet()) {
+                series.getData().add(new XYChart.Data<>(entry.getKey(), entry.getValue()));
+            }
+
             inscriptionsBarChart.getData().clear();
             inscriptionsBarChart.getData().add(series);
+
 
         } catch (SQLException e) {
             e.printStackTrace();

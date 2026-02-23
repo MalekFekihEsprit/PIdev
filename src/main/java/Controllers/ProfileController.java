@@ -2,6 +2,7 @@ package Controllers;
 
 import Entities.User;
 import Services.UserCRUD;
+import Utils.GravatarUtil;
 import Utils.ValidationUtils;
 import Utils.UserSession;
 import javafx.fxml.FXML;
@@ -12,7 +13,6 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
-import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -22,6 +22,8 @@ import java.time.LocalDate;
 public class ProfileController {
 
     @FXML private Label userNameLabel, fullNameLabel, emailLabel, avatarLabel;
+    @FXML private ImageView avatarImageView;
+
     @FXML private TextField nomField, prenomField, emailField, telephoneField, photoUrlField;
     @FXML private DatePicker dateNaissancePicker;
     @FXML private PasswordField newPasswordField, confirmPasswordField;
@@ -30,8 +32,6 @@ public class ProfileController {
     @FXML private Button editModeButton, saveButton, cancelButton, deleteButton;
     @FXML private Hyperlink logoutLink;
     @FXML private Label statsVoyages, statsDepenses;
-    @FXML private VBox headerAvatarContainer;
-    @FXML private Label headerAvatarLabel;
     @FXML private VBox avatarContainer;
 
     private UserCRUD userCRUD = new UserCRUD();
@@ -39,30 +39,76 @@ public class ProfileController {
     private boolean editMode = false;
 
     private void loadUserAvatar(User user) {
-
         avatarContainer.getChildren().clear();
 
-        if (user.getPhotoUrl() != null && !user.getPhotoUrl().isEmpty()) {
-            try {
+        // always show a placeholder label first so the container isn't empty
+        avatarLabel.setText("👤");
+        avatarLabel.setVisible(true);
+        avatarLabel.setManaged(true);
+        avatarImageView.setVisible(false);
+        avatarImageView.setManaged(false);
+        avatarContainer.getChildren().add(avatarLabel);
 
-                // Anti-cache
-                String imageUrl = user.getPhotoUrl() + "?v=" + System.currentTimeMillis();
+        // Choose URL: photoUrl if present, otherwise gravatar based on email
+        String url = user.getPhotoUrl();
+        if (url == null || url.isEmpty()) {
+            url = GravatarUtil.getGravatarUrl(user.getEmail(), 64);
+        }
 
-                Image image = new Image(imageUrl, 64, 64, true, true, false);
-                ImageView imageView = new ImageView(image);
-                imageView.setFitWidth(64);
-                imageView.setFitHeight(64);
-                imageView.setPreserveRatio(true);
+        String imageUrl = url.contains("?")
+                ? url + "&v=" + System.currentTimeMillis()
+                : url + "?v=" + System.currentTimeMillis();
 
-                avatarContainer.getChildren().add(imageView);
+        // load in background; swap to image view only when loading succeeds
+        Image image = new Image(imageUrl, 64, 64, true, true, true);
+        avatarImageView.setImage(image);
 
-            } catch (Exception e) {
-                avatarLabel.setText("👤");
-                avatarContainer.getChildren().add(avatarLabel);
+        // debug output
+        System.out.println("Loading avatar from: " + imageUrl);
+
+        // listen for any exception and retry with http if needed
+        image.exceptionProperty().addListener((obs, oldEx, newEx) -> {
+            if (newEx != null) {
+                System.err.println("Avatar image exception:");
+                newEx.printStackTrace();
+                // if the URL used https and we haven't retried yet, try http
+                if (imageUrl.startsWith("https://")) {
+                    String altUrl = "http://" + imageUrl.substring(8);
+                    System.out.println("Retrying avatar load with HTTP: " + altUrl);
+                    Image altImage = new Image(altUrl, 64, 64, true, true, true);
+                    avatarImageView.setImage(altImage);
+                    altImage.progressProperty().addListener((pObs, oProg, nProg) -> {
+                        if (nProg.doubleValue() >= 1.0 && !altImage.isError()) {
+                            avatarContainer.getChildren().clear();
+                            avatarImageView.setVisible(true);
+                            avatarImageView.setManaged(true);
+                            avatarLabel.setVisible(false);
+                            avatarLabel.setManaged(false);
+                            avatarContainer.getChildren().add(avatarImageView);
+                        }
+                    });
+                }
             }
-        } else {
-            avatarLabel.setText("👤");
-            avatarContainer.getChildren().add(avatarLabel);
+        });
+
+        // progress listener to detect full load
+        image.progressProperty().addListener((obs, oldProg, newProg) -> {
+            if (newProg.doubleValue() >= 1.0) {
+                if (!image.isError()) {
+                    avatarContainer.getChildren().clear();
+                    avatarImageView.setVisible(true);
+                    avatarImageView.setManaged(true);
+                    avatarLabel.setVisible(false);
+                    avatarLabel.setManaged(false);
+                    avatarContainer.getChildren().add(avatarImageView);
+                } else {
+                    System.err.println("Avatar image reported error after progress completion");
+                }
+            }
+        });
+        // also detect synchronous error
+        if (image.isError()) {
+            System.err.println("Synchronous error loading avatar");
         }
     }
 
@@ -70,18 +116,15 @@ public class ProfileController {
     
     @FXML
     public void initialize() {
-        // Récupérer l'utilisateur connecté depuis la session
         if (currentUser == null) {
             currentUser = UserSession.getInstance().getCurrentUser();
         }
         if (currentUser == null) {
-            // Si pas d'utilisateur, rediriger vers login
             goToLogin();
             return;
         }
         loadUserData();
         loadUserAvatar(currentUser);
-        // Initialiser les statistiques (pour l'instant à 0)
         statsVoyages.setText("0");
         statsDepenses.setText("0 €");
     }

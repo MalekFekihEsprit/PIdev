@@ -3,6 +3,11 @@ package Controllers;
 import Entities.User;
 import Services.UserCRUD;
 import Utils.ValidationUtils;
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.layout.Document;
+import com.itextpdf.layout.element.Paragraph;
+import com.itextpdf.layout.element.Table;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -19,6 +24,7 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.List;
 
 public class AdminUsersController {
     // FXML components
@@ -36,6 +42,7 @@ public class AdminUsersController {
     @FXML private Label formTitle;
     @FXML private Button saveButton, updateButton, deleteButton, clearButton;
     @FXML private Label totalUsersLabel, sidebarTotalLabel, statsAdmins, statsUsers;
+    @FXML private Button filterAllButton, filterAdminsButton, filterUsersButton;
 
     private UserCRUD userCRUD = new UserCRUD();
     private ObservableList<User> userList = FXCollections.observableArrayList();  // pour stocker les utilisateurs chargés
@@ -109,6 +116,9 @@ public class AdminUsersController {
 
         // Mise à jour des compteurs
         updateStats();
+        
+        // Initialize filter buttons appearance
+        updateFilterButtonAppearance("all");
     }
 
     private void loadUsers() { // Charger les utilisateurs depuis la base de données et les mettre dans userList
@@ -128,6 +138,33 @@ public class AdminUsersController {
         long userCount = userList.stream().filter(u -> "USER".equals(u.getRole())).count();
         statsAdmins.setText(String.valueOf(adminCount));
         statsUsers.setText(String.valueOf(userCount));
+    }
+
+    @FXML
+    private void filterAll() {
+        filteredData.setPredicate(user -> true);
+        updateFilterButtonAppearance("all");
+    }
+
+    @FXML
+    private void filterAdmins() {
+        filteredData.setPredicate(user -> "ADMIN".equals(user.getRole()));
+        updateFilterButtonAppearance("admins");
+    }
+
+    @FXML
+    private void filterUsers() {
+        filteredData.setPredicate(user -> "USER".equals(user.getRole()));
+        updateFilterButtonAppearance("users");
+    }
+
+    private void updateFilterButtonAppearance(String active) {
+        String activeStyle = "-fx-background-color: rgba(255,140,66,0.15); -fx-text-fill: #ff8c42; -fx-background-radius: 16; -fx-padding: 4 12; -fx-font-size: 11; -fx-cursor: hand; -fx-border-color: #ff8c42; -fx-border-width: 1; -fx-border-radius: 16; -fx-border-insets: 0;";
+        String inactiveStyle = "-fx-background-color: #1e2749; -fx-text-fill: #94a3b8; -fx-background-radius: 16; -fx-padding: 4 12; -fx-font-size: 11; -fx-cursor: hand; -fx-border-color: transparent; -fx-border-width: 1; -fx-border-radius: 16; -fx-border-insets: 0;";
+        
+        filterAllButton.setStyle("all".equals(active) ? activeStyle : inactiveStyle);
+        filterAdminsButton.setStyle("admins".equals(active) ? activeStyle : inactiveStyle);
+        filterUsersButton.setStyle("users".equals(active) ? activeStyle : inactiveStyle);
     }
 
     @FXML
@@ -324,6 +361,45 @@ public class AdminUsersController {
             }
         }
         return true;
+    }
+
+    @FXML
+    private void exportToPDF() {
+        try {
+            // Get only the currently displayed (filtered and sorted) users from the table
+            List<User> users = userTable.getItems();
+            
+            if (users.isEmpty()) {
+                showAlert(Alert.AlertType.WARNING, "Aucune donnée", "Aucun utilisateur à exporter.");
+                return;
+            }
+            
+            PdfWriter writer = new PdfWriter("utilisateurs.pdf");
+            PdfDocument pdf = new PdfDocument(writer);
+            Document document = new Document(pdf);
+            document.add(new Paragraph("Liste des utilisateurs").setFontSize(18).setBold());
+            
+            Table table = new Table(new float[]{1, 3, 3, 5, 2});
+            table.addHeaderCell("ID");
+            table.addHeaderCell("Nom");
+            table.addHeaderCell("Prénom");
+            table.addHeaderCell("Email");
+            table.addHeaderCell("Rôle");
+            
+            for (User u : users) {
+                table.addCell(String.valueOf(u.getId()));
+                table.addCell(u.getNom());
+                table.addCell(u.getPrenom());
+                table.addCell(u.getEmail());
+                table.addCell(u.getRole());
+            }
+            document.add(table);
+            document.close();
+            showAlert(Alert.AlertType.INFORMATION, "Export réussi", "PDF généré : utilisateurs.pdf (" + users.size() + " utilisateurs)");
+        } catch (Exception e) {
+            e.printStackTrace();
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Échec de l'export : " + e.getMessage());
+        }
     }
 
     @FXML

@@ -12,6 +12,7 @@ public class User {
     private String motDePasse;
     private String role;        // "USER" ou "ADMIN"
     private String photoUrl;
+    private java.time.LocalDateTime createdAt;
 
 
     // Constructeurs
@@ -113,4 +114,9 @@ public class User {
     public void setPhotoUrl(String photoUrl) {
         this.photoUrl = photoUrl;
     }
+
+
+    // Getter et setter
+    public java.time.LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(java.time.LocalDateTime createdAt) { this.createdAt = createdAt; }
 }
