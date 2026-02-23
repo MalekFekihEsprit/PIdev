@@ -2,6 +2,9 @@ package Controllers;
 
 import Entities.Voyage;
 import Services.VoyageCRUD;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -12,6 +15,7 @@ import java.sql.Date;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.function.Predicate;
 
 public class VoyageController {
 
@@ -23,6 +27,8 @@ public class VoyageController {
     private Button btnConfirmerModification;
     @FXML
     private Button btnAjouter;
+    @FXML
+    private Button btnModifierFormulaire;
 
     @FXML
     private DatePicker fxdated;
@@ -35,23 +41,48 @@ public class VoyageController {
     @FXML
     private TextField fxtitre;
 
+    // Nouveaux éléments pour la recherche
+    @FXML
+    private TextField tfSearchTitre;
+    @FXML
+    private ComboBox<String> cbFilterStatut;
+    @FXML
+    private Button btnSearch;
+    @FXML
+    private Button btnReset;
+    @FXML
+    private Label lblResultatsRecherche;
+    @FXML
+    private Label lblVoyagesActifsFooter;
+
     @FXML
     private Label lblVoyagesCount;
     @FXML
     private VBox voyagesContainer;
 
     private int voyageEnCoursDeModification = -1;
+    private VoyageCRUD voyageCRUD = new VoyageCRUD();
+    private ObservableList<Voyage> voyageList = FXCollections.observableArrayList();
+    private FilteredList<Voyage> filteredData;
 
     @FXML
     public void initialize() {
         instance = this;
 
-        // Initialiser la ComboBox des statuts avec la valeur par défaut de la BD
+        // Initialiser la ComboBox des statuts
         fxstatut.getItems().addAll("a venir", "En cours", "Terminé", "Annulé");
-        fxstatut.setValue("a venir"); // Valeur par défaut
+        fxstatut.setValue("a venir");
+
+        // Initialiser la ComboBox de filtre
+        cbFilterStatut.getItems().addAll("Tous", "a venir", "En cours", "Terminé", "Annulé");
+        cbFilterStatut.setValue("Tous");
 
         // Configurer les validateurs de dates
         configurerDatePickers();
+
+        // Configurer les boutons de recherche
+        btnSearch.setOnAction(this::rechercherVoyages);
+        btnReset.setOnAction(this::resetRecherche);
 
         // Charger les voyages
         chargerVoyages();
@@ -96,13 +127,105 @@ public class VoyageController {
     }
 
     @FXML
+    private void rechercherVoyages(ActionEvent event) {
+        String titreRecherche = tfSearchTitre.getText().toLowerCase();
+        String statutFiltre = cbFilterStatut.getValue();
+
+        // Créer un prédicat pour filtrer les voyages
+        Predicate<Voyage> predicate = voyage -> {
+            boolean matchTitre = true;
+            boolean matchStatut = true;
+
+            // Filtre par titre
+            if (titreRecherche != null && !titreRecherche.isEmpty()) {
+                matchTitre = voyage.getTitre_voyage().toLowerCase().contains(titreRecherche);
+            }
+
+            // Filtre par statut
+            if (statutFiltre != null && !statutFiltre.equals("Tous")) {
+                matchStatut = voyage.getStatut().equals(statutFiltre);
+            }
+
+            return matchTitre && matchStatut;
+        };
+
+        // Appliquer le filtre
+        filteredData = new FilteredList<>(voyageList, predicate);
+
+        // Afficher les résultats
+        afficherVoyagesFiltres();
+
+        // Mettre à jour le label de résultat
+        int resultCount = filteredData.size();
+        if (resultCount == 0) {
+            lblResultatsRecherche.setText("Aucun résultat trouvé");
+        } else {
+            lblResultatsRecherche.setText(resultCount + " résultat(s) trouvé(s)");
+        }
+    }
+
+    @FXML
+    private void resetRecherche(ActionEvent event) {
+        tfSearchTitre.clear();
+        cbFilterStatut.setValue("Tous");
+        filteredData = null;
+        lblResultatsRecherche.setText("");
+        chargerVoyages();
+    }
+
+    private void afficherVoyagesFiltres() {
+        try {
+            voyagesContainer.getChildren().clear();
+
+            List<Voyage> voyagesAfficher;
+            if (filteredData != null) {
+                voyagesAfficher = filteredData;
+            } else {
+                voyagesAfficher = voyageList;
+            }
+
+            int nbVoyages = voyagesAfficher.size();
+            lblVoyagesCount.setText(nbVoyages + " voyage" + (nbVoyages > 1 ? "s" : ""));
+
+            // Compter les voyages actifs (En cours ou à venir)
+            long actifs = voyagesAfficher.stream()
+                    .filter(v -> "En cours".equals(v.getStatut()) || "a venir".equals(v.getStatut()))
+                    .count();
+            lblVoyagesActifsFooter.setText(actifs + " voyage" + (actifs > 1 ? "s" : "") + " actif" + (actifs > 1 ? "s" : ""));
+
+            if (voyagesAfficher.isEmpty()) {
+                Label aucunVoyage = new Label("Aucun voyage trouvé");
+                aucunVoyage.setStyle("-fx-text-fill: #64748b; -fx-font-size: 14; -fx-padding: 20;");
+                voyagesContainer.getChildren().add(aucunVoyage);
+                return;
+            }
+
+            for (Voyage voyage : voyagesAfficher) {
+                String nomDestination = voyageCRUD.getNomDestination(voyage.getId_destination());
+
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/CarteVoyage.fxml"));
+                VBox carte = loader.load();
+
+                CarteVoyageController carteController = loader.getController();
+                carteController.setDonnees(voyage, nomDestination);
+
+                voyagesContainer.getChildren().add(carte);
+            }
+
+        } catch (SQLException | IOException e) {
+            System.err.println("ERREUR affichage voyages: " + e.getMessage());
+            e.printStackTrace();
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'afficher les voyages: " + e.getMessage());
+        }
+    }
+
+    @FXML
     void saveVoyage(ActionEvent event) {
         if (!validerFormulaire()) return;
 
         try {
             Voyage v = construireVoyageFromFormulaire();
-            VoyageCRUD vc = new VoyageCRUD();
-            vc.ajouter(v);
+            voyageCRUD.ajouter(v);
 
             showAlert(Alert.AlertType.INFORMATION, "Succès", "Voyage ajouté avec succès!");
             chargerVoyages();
@@ -134,8 +257,7 @@ public class VoyageController {
             Voyage v = construireVoyageFromFormulaire();
             v.setId_voyage(voyageEnCoursDeModification);
 
-            VoyageCRUD vc = new VoyageCRUD();
-            vc.modifier(v);
+            voyageCRUD.modifier(v);
 
             showAlert(Alert.AlertType.INFORMATION, "Succès", "Voyage modifié avec succès!");
             resetForm();
@@ -187,7 +309,6 @@ public class VoyageController {
         LocalDate dateDebutLocal = fxdated.getValue();
         LocalDate dateFinLocal = fxdatef.getValue();
 
-        // Convertir LocalDate en java.sql.Date
         Date dateDebut = Date.valueOf(dateDebutLocal);
         Date dateFin = Date.valueOf(dateFinLocal);
 
@@ -205,14 +326,12 @@ public class VoyageController {
         fxdestination.clear();
         fxdated.setValue(null);
         fxdatef.setValue(null);
-        fxstatut.setValue("a venir"); // Remettre la valeur par défaut
+        fxstatut.setValue("a venir");
 
         voyageEnCoursDeModification = -1;
 
-        // Réinitialiser les boutons
         btnAjouter.setVisible(true);
         btnAjouter.setManaged(true);
-        btnAjouter.setText("Ajouter Voyage");
         btnAjouter.setOnAction(this::saveVoyage);
 
         btnConfirmerModification.setVisible(false);
@@ -221,42 +340,27 @@ public class VoyageController {
         btnAnnulerModification.setVisible(false);
         btnAnnulerModification.setManaged(false);
 
+        btnModifierFormulaire.setVisible(false);
+        btnModifierFormulaire.setManaged(false);
+
         fxtitre.requestFocus();
     }
 
     public void chargerVoyages() {
         try {
             System.out.println("=== CHARGEMENT DES VOYAGES ===");
-            voyagesContainer.getChildren().clear();
 
-            VoyageCRUD vc = new VoyageCRUD();
-            List<Voyage> voyages = vc.afficher();
+            List<Voyage> voyages = voyageCRUD.afficher();
+            voyageList.clear();
+            voyageList.addAll(voyages);
 
-            int nbVoyages = voyages.size();
-            lblVoyagesCount.setText(nbVoyages + " voyage" + (nbVoyages > 1 ? "s" : ""));
-
-            if (voyages.isEmpty()) {
-                Label aucunVoyage = new Label("Aucun voyage trouvé");
-                aucunVoyage.setStyle("-fx-text-fill: #64748b; -fx-font-size: 14; -fx-padding: 20;");
-                voyagesContainer.getChildren().add(aucunVoyage);
-                return;
-            }
-
-            for (Voyage voyage : voyages) {
-                String nomDestination = vc.getNomDestination(voyage.getId_destination());
-
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/CarteVoyage.fxml"));
-                VBox carte = loader.load();
-
-                CarteVoyageController carteController = loader.getController();
-                carteController.setDonnees(voyage, nomDestination);
-
-                voyagesContainer.getChildren().add(carte);
-            }
+            filteredData = null;
+            lblResultatsRecherche.setText("");
+            afficherVoyagesFiltres();
 
             System.out.println("=== CHARGEMENT TERMINÉ: " + voyages.size() + " voyages ===");
 
-        } catch (SQLException | IOException e) {
+        } catch (SQLException e) {
             System.err.println("ERREUR chargement voyages: " + e.getMessage());
             e.printStackTrace();
             showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible de charger les voyages: " + e.getMessage());
@@ -266,11 +370,9 @@ public class VoyageController {
     public void chargerVoyagePourModification(Voyage voyage) {
         this.voyageEnCoursDeModification = voyage.getId_voyage();
 
-        // Remplir le formulaire
         fxtitre.setText(voyage.getTitre_voyage());
         fxdestination.setText(String.valueOf(voyage.getId_destination()));
 
-        // Convertir java.sql.Date en LocalDate
         LocalDate dateDebut = voyage.getDate_debut().toLocalDate();
         LocalDate dateFin = voyage.getDate_fin().toLocalDate();
 
@@ -278,7 +380,6 @@ public class VoyageController {
         fxdatef.setValue(dateFin);
         fxstatut.setValue(voyage.getStatut());
 
-        // Afficher les boutons de modification
         btnAjouter.setVisible(false);
         btnAjouter.setManaged(false);
 
@@ -288,9 +389,18 @@ public class VoyageController {
         btnAnnulerModification.setVisible(true);
         btnAnnulerModification.setManaged(true);
 
+        btnModifierFormulaire.setVisible(false);
+        btnModifierFormulaire.setManaged(false);
+
         fxtitre.requestFocus();
 
         System.out.println("Voyage chargé pour modification ID: " + voyage.getId_voyage());
+    }
+
+    @FXML
+    void ouvrirFormulaireModification(ActionEvent event) {
+        showAlert(Alert.AlertType.INFORMATION, "Info",
+                "Sélectionnez un voyage à modifier en cliquant sur le bouton 'Modifier' dans sa carte");
     }
 
     private void showAlert(Alert.AlertType type, String title, String message) {
@@ -299,11 +409,5 @@ public class VoyageController {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
-    }
-    @FXML
-    void ouvrirFormulaireModification(ActionEvent event) {
-        // Cette méthode est appelée quand on clique sur "✏️ Modifier un voyage"
-        showAlert(Alert.AlertType.INFORMATION, "Info",
-                "Sélectionnez un voyage à modifier en cliquant sur le bouton 'Modifier' dans sa carte");
     }
 }
