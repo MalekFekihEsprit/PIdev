@@ -2,6 +2,7 @@ package Controllers;
 
 import Entities.User;
 import Services.UserCRUD;
+import Utils.FileUtil;
 import Utils.ValidationUtils;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
@@ -18,9 +19,12 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 
+import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -30,7 +34,7 @@ public class AdminUsersController {
     // FXML components
     @FXML private TableView<User> userTable;
     @FXML private TableColumn<User, Integer> colId;
-    @FXML private TableColumn<User, String> colNom, colPrenom, colEmail, colRole, colTelephone;
+    @FXML private TableColumn<User, String> colNom, colPrenom, colEmail, colRole, colTelephone, colPhoto;
     @FXML private TableColumn<User, LocalDate> colDateNaissance;
     @FXML private TableColumn<User, Void> colActions;
 
@@ -59,6 +63,26 @@ public class AdminUsersController {
         colRole.setCellValueFactory(new PropertyValueFactory<>("role"));
         colDateNaissance.setCellValueFactory(new PropertyValueFactory<>("dateNaissance"));
         colTelephone.setCellValueFactory(new PropertyValueFactory<>("telephone"));
+        // Dans AdminUsersController, lors du remplissage du tableau
+        colPhoto.setCellFactory(column -> new TableCell<User, String>() {
+            private final ImageView imageView = new ImageView();
+            @Override
+            protected void updateItem(String fileName, boolean empty) {
+                super.updateItem(fileName, empty);
+                if (empty || fileName == null) {
+                    setGraphic(null);
+                } else {
+                    File file = FileUtil.getImageFile(fileName);
+                    if (file != null && file.exists()) {
+                        Image image = new Image(file.toURI().toString(), 30, 30, true, true);
+                        imageView.setImage(image);
+                        setGraphic(imageView);
+                    } else {
+                        setGraphic(null);
+                    }
+                }
+            }
+        });
 
         // Colonne Actions avec boutons
         colActions.setCellFactory(param -> new TableCell<>() {

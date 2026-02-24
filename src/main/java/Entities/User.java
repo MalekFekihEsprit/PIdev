@@ -13,6 +13,7 @@ public class User {
     private String role;        // "USER" ou "ADMIN"
     private String photoUrl;
     private java.time.LocalDateTime createdAt;
+    private String photoFileName;
 
 
     // Constructeurs
@@ -119,4 +120,8 @@ public class User {
     // Getter et setter
     public java.time.LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(java.time.LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    // Getter et setter
+    public String getPhotoFileName() { return photoFileName; }
+    public void setPhotoFileName(String photoFileName) { this.photoFileName = photoFileName; }
 }

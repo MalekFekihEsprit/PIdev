@@ -2,6 +2,8 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+## ignore all files in upload directory
+uploads/
 
 ### IntelliJ IDEA ###
 .idea/modules.xml

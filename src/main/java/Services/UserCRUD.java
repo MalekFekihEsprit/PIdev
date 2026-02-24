@@ -21,7 +21,7 @@ public class UserCRUD implements InterfaceCRUD<User> {
 
     @Override
     public void ajouter(User user) throws SQLException {
-        String req = "INSERT INTO user (nom, prenom, date_naissance, email, telephone, mot_de_passe, role, photo_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        String req = "INSERT INTO user (nom, prenom, date_naissance, email, telephone, mot_de_passe, role, photo_url, photo_file_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         PreparedStatement pst = conn.prepareStatement(req);
         pst.setString(1, user.getNom());
         pst.setString(2, user.getPrenom());
@@ -31,14 +31,16 @@ public class UserCRUD implements InterfaceCRUD<User> {
         pst.setString(6, user.getMotDePasse());
         pst.setString(7, user.getRole());
         pst.setString(8, user.getPhotoUrl());
+        pst.setString(9, user.getPhotoFileName());
         pst.executeUpdate();
         System.out.println("Utilisateur ajouté !");
     }
 
     @Override
     public void modifier(User user) throws SQLException {
-        String req = "UPDATE user SET nom=?, prenom=?, date_naissance=?, email=?, telephone=?, mot_de_passe=?, role=?, photo_url=? WHERE id=?";
+        String req = "UPDATE user SET nom=?, prenom=?, date_naissance=?, email=?, telephone=?, mot_de_passe=?, role=?, photo_url=?, photo_file_name=? WHERE id=?";
         PreparedStatement pst = conn.prepareStatement(req);
+        pst.setString(9, user.getPhotoFileName());
         pst.setString(1, user.getNom());
         pst.setString(2, user.getPrenom());
         pst.setDate(3, user.getDateNaissance() != null ? Date.valueOf(user.getDateNaissance()) : null);
@@ -47,7 +49,7 @@ public class UserCRUD implements InterfaceCRUD<User> {
         pst.setString(6, user.getMotDePasse());
         pst.setString(7, user.getRole());
         pst.setString(8, user.getPhotoUrl());
-        pst.setInt(9, user.getId());
+        pst.setInt(10, user.getId());
         pst.executeUpdate();
         System.out.println("Utilisateur modifié !");
     }
@@ -101,6 +103,7 @@ public class UserCRUD implements InterfaceCRUD<User> {
         u.setRole(rs.getString("role"));
         u.setPhotoUrl(rs.getString("photo_url"));
         u.setCreatedAt(rs.getTimestamp("created_at") != null ? rs.getTimestamp("created_at").toLocalDateTime() : null);
+        u.setPhotoFileName(rs.getString("photo_file_name"));
         return u;
     }
 

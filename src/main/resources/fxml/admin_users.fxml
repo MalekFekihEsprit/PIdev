@@ -166,6 +166,7 @@
                             <TableColumn fx:id="colRole" prefWidth="100" text="Rôle" />
                             <TableColumn fx:id="colDateNaissance" prefWidth="120" text="Date naiss." />
                             <TableColumn fx:id="colTelephone" prefWidth="120" text="Téléphone" />
+                            <TableColumn fx:id="colPhoto" prefWidth="100" text="Photo" />   
                             <TableColumn fx:id="colActions" prefWidth="120" text="Actions" />
                         </columns>
                         <placeholder>
