@@ -277,7 +277,7 @@ public class ACTback implements Initializable {
 
         final boolean[] isGenerating = {false};
 
-        // Écouteur pour le champ lieu (dernier champ)
+        // Écouteur pour le champ lieu (dernier champ des 3 essentiels)
         lieuField.focusedProperty().addListener((obs, oldVal, newVal) -> {
             if (!newVal && !isGenerating[0]) {
                 if (!nomField.getText().trim().isEmpty() &&
@@ -667,8 +667,16 @@ public class ACTback implements Initializable {
 
         GridPane grid = createFormGrid();
 
+        // Champs du formulaire
         TextField nomField = new TextField();
         nomField.setPromptText("Nom de l'activité (min " + NOM_MIN_LENGTH + " caractères)");
+
+        ComboBox<String> difficulteCombo = new ComboBox<>();
+        difficulteCombo.getItems().addAll("Facile", "Moyen", "Difficile", "Expert");
+        difficulteCombo.setPromptText("Niveau de difficulté");
+
+        TextField lieuField = new TextField();
+        lieuField.setPromptText("Lieu (min " + LIEU_MIN_LENGTH + " caractères)");
 
         TextArea descriptionField = new TextArea();
         descriptionField.setPromptText("Description (min " + DESCRIPTION_MIN_LENGTH + " caractères)");
@@ -680,13 +688,6 @@ public class ACTback implements Initializable {
         TextField dureeField = new TextField();
         dureeField.setPromptText("Durée en heures (min " + DUREE_MIN + " h)");
 
-        ComboBox<String> difficulteCombo = new ComboBox<>();
-        difficulteCombo.getItems().addAll("Facile", "Moyen", "Difficile", "Expert");
-        difficulteCombo.setPromptText("Niveau de difficulté");
-
-        TextField lieuField = new TextField();
-        lieuField.setPromptText("Lieu (min " + LIEU_MIN_LENGTH + " caractères)");
-
         TextField ageMinField = new TextField();
         ageMinField.setPromptText("Âge minimum (entre " + AGE_MIN + " et " + AGE_MAX + ")");
 
@@ -696,6 +697,7 @@ public class ACTback implements Initializable {
 
         ComboBox<Categories> categorieCombo = new ComboBox<>();
 
+        // Section image
         ImageView imagePreview = new ImageView();
         Button chooseImageButton = new Button();
         Label imageNameLabel = new Label();
@@ -703,14 +705,16 @@ public class ACTback implements Initializable {
 
         chooseImageButton.setOnAction(e -> handleChooseImage(imagePreview, imageNameLabel));
 
+        // Labels d'erreur
         Label errorNom = createErrorLabel();
+        Label errorDifficulte = createErrorLabel();
+        Label errorLieu = createErrorLabel();
         Label errorDescription = createErrorLabel();
         Label errorBudget = createErrorLabel();
         Label errorDuree = createErrorLabel();
-        Label errorDifficulte = createErrorLabel();
-        Label errorLieu = createErrorLabel();
         Label errorAgeMin = createErrorLabel();
 
+        // Charger les catégories
         try {
             CategoriesCRUD categoriesCRUD = new CategoriesCRUD();
             List<Categories> categoriesList = categoriesCRUD.afficher();
@@ -752,52 +756,64 @@ public class ACTback implements Initializable {
         // Bouton de génération manuelle
         Button generateAIBtn = createAIGenerateButton(nomField, difficulteCombo, lieuField, descriptionField);
 
+        // Ajout des champs dans l'ordre LOGIQUE : Nom, Difficulté, Lieu, Description, puis les autres
         int row = 0;
+
+        // 1. NOM
         grid.add(new Label("Nom:*"), 0, row);
         VBox vboxNom = new VBox(3);
         vboxNom.getChildren().addAll(nomField, errorNom);
         grid.add(vboxNom, 1, row++);
 
-        grid.add(new Label("Description:*"), 0, row);
-        VBox vboxDescription = new VBox(3);
-        vboxDescription.getChildren().addAll(descriptionField, errorDescription);
-        grid.add(vboxDescription, 1, row++);
-
-        grid.add(new Label("Budget (€):*"), 0, row);
-        VBox vboxBudget = new VBox(3);
-        vboxBudget.getChildren().addAll(budgetField, errorBudget);
-        grid.add(vboxBudget, 1, row++);
-
-        grid.add(new Label("Durée (h):*"), 0, row);
-        VBox vboxDuree = new VBox(3);
-        vboxDuree.getChildren().addAll(dureeField, errorDuree);
-        grid.add(vboxDuree, 1, row++);
-
+        // 2. DIFFICULTÉ
         grid.add(new Label("Difficulté:*"), 0, row);
         VBox vboxDifficulte = new VBox(3);
         vboxDifficulte.getChildren().addAll(difficulteCombo, errorDifficulte);
         grid.add(vboxDifficulte, 1, row++);
 
+        // 3. LIEU
         grid.add(new Label("Lieu:*"), 0, row);
         VBox vboxLieu = new VBox(3);
         vboxLieu.getChildren().addAll(lieuField, errorLieu);
         grid.add(vboxLieu, 1, row++);
 
+        // 4. DESCRIPTION (juste après les 3 champs essentiels)
+        grid.add(new Label("Description:*"), 0, row);
+        VBox vboxDescription = new VBox(3);
+        vboxDescription.getChildren().addAll(descriptionField, errorDescription);
+        grid.add(vboxDescription, 1, row++);
+
+        // 5. BUDGET
+        grid.add(new Label("Budget (€):*"), 0, row);
+        VBox vboxBudget = new VBox(3);
+        vboxBudget.getChildren().addAll(budgetField, errorBudget);
+        grid.add(vboxBudget, 1, row++);
+
+        // 6. DURÉE
+        grid.add(new Label("Durée (h):*"), 0, row);
+        VBox vboxDuree = new VBox(3);
+        vboxDuree.getChildren().addAll(dureeField, errorDuree);
+        grid.add(vboxDuree, 1, row++);
+
+        // 7. ÂGE MINIMUM
         grid.add(new Label("Âge minimum:*"), 0, row);
         VBox vboxAgeMin = new VBox(3);
         vboxAgeMin.getChildren().addAll(ageMinField, errorAgeMin);
         grid.add(vboxAgeMin, 1, row++);
 
+        // 8. STATUT
         grid.add(new Label("Statut:*"), 0, row);
         VBox vboxStatut = new VBox(3);
         vboxStatut.getChildren().addAll(statutCombo, new Label());
         grid.add(vboxStatut, 1, row++);
 
+        // 9. CATÉGORIE
         grid.add(new Label("Catégorie:"), 0, row);
         VBox vboxCategorie = new VBox(3);
         vboxCategorie.getChildren().addAll(categorieCombo, new Label());
         grid.add(vboxCategorie, 1, row++);
 
+        // 10. IA (bouton et info)
         grid.add(new Label("IA:"), 0, row);
         VBox vboxIA = new VBox(10);
         Label iaHint = new Label("✨ La description sera générée automatiquement quand vous aurez rempli les 3 champs (nom, difficulté, lieu) et quitté le champ lieu");
@@ -805,6 +821,7 @@ public class ACTback implements Initializable {
         vboxIA.getChildren().addAll(generateAIBtn, iaHint);
         grid.add(vboxIA, 1, row++);
 
+        // 11. IMAGE
         grid.add(new Label("Image:"), 0, row);
         grid.add(imageSection, 1, row++);
 
@@ -820,11 +837,11 @@ public class ACTback implements Initializable {
         Button okButton = (Button) dialog.getDialogPane().lookupButton(ButtonType.OK);
         okButton.addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
             boolean isValid = validateNom(nomField, errorNom)
+                    && validateDifficulte(difficulteCombo, errorDifficulte)
+                    && validateLieu(lieuField, errorLieu)
                     && validateDescription(descriptionField, errorDescription)
                     && validateBudget(budgetField, errorBudget)
                     && validateDuree(dureeField, errorDuree)
-                    && validateDifficulte(difficulteCombo, errorDifficulte)
-                    && validateLieu(lieuField, errorLieu)
                     && validateAgeMin(ageMinField, errorAgeMin);
 
             if (!isValid) {
@@ -929,23 +946,27 @@ public class ACTback implements Initializable {
 
         GridPane grid = createFormGrid();
 
+        // Champs pré-remplis
         TextField nomField = new TextField(selectedActivite.getNom());
-        TextArea descriptionField = new TextArea(selectedActivite.getDescription());
-        descriptionField.setPrefRowCount(3);
-        TextField budgetField = new TextField(String.valueOf(selectedActivite.getBudget()));
-        TextField dureeField = new TextField(String.valueOf(selectedActivite.getDuree()));
 
         ComboBox<String> difficulteCombo = new ComboBox<>();
         difficulteCombo.getItems().addAll("Facile", "Moyen", "Difficile", "Expert");
         difficulteCombo.setValue(selectedActivite.getNiveaudifficulte());
 
         TextField lieuField = new TextField(selectedActivite.getLieu());
+
+        TextArea descriptionField = new TextArea(selectedActivite.getDescription());
+        descriptionField.setPrefRowCount(3);
+
+        TextField budgetField = new TextField(String.valueOf(selectedActivite.getBudget()));
+        TextField dureeField = new TextField(String.valueOf(selectedActivite.getDuree()));
         TextField ageMinField = new TextField(String.valueOf(selectedActivite.getAgemin()));
 
         ComboBox<String> statutCombo = new ComboBox<>();
         statutCombo.getItems().addAll("Active", "Inactive", "En attente");
         statutCombo.setValue(selectedActivite.getStatut());
 
+        // Section image
         ImageView imagePreview = new ImageView();
         Button chooseImageButton = new Button();
         Label imageNameLabel = new Label();
@@ -953,12 +974,13 @@ public class ACTback implements Initializable {
 
         chooseImageButton.setOnAction(e -> handleChooseImage(imagePreview, imageNameLabel));
 
+        // Labels d'erreur
         Label errorNom = createErrorLabel();
+        Label errorDifficulte = createErrorLabel();
+        Label errorLieu = createErrorLabel();
         Label errorDescription = createErrorLabel();
         Label errorBudget = createErrorLabel();
         Label errorDuree = createErrorLabel();
-        Label errorDifficulte = createErrorLabel();
-        Label errorLieu = createErrorLabel();
         Label errorAgeMin = createErrorLabel();
 
         ComboBox<Categories> categorieCombo = new ComboBox<>();
@@ -1011,52 +1033,64 @@ public class ACTback implements Initializable {
         // Bouton de génération manuelle
         Button generateAIBtn = createAIGenerateButton(nomField, difficulteCombo, lieuField, descriptionField);
 
+        // Ajout des champs dans l'ordre LOGIQUE
         int row = 0;
+
+        // 1. NOM
         grid.add(new Label("Nom:*"), 0, row);
         VBox vboxNom = new VBox(3);
         vboxNom.getChildren().addAll(nomField, errorNom);
         grid.add(vboxNom, 1, row++);
 
-        grid.add(new Label("Description:*"), 0, row);
-        VBox vboxDescription = new VBox(3);
-        vboxDescription.getChildren().addAll(descriptionField, errorDescription);
-        grid.add(vboxDescription, 1, row++);
-
-        grid.add(new Label("Budget (€):*"), 0, row);
-        VBox vboxBudget = new VBox(3);
-        vboxBudget.getChildren().addAll(budgetField, errorBudget);
-        grid.add(vboxBudget, 1, row++);
-
-        grid.add(new Label("Durée (h):*"), 0, row);
-        VBox vboxDuree = new VBox(3);
-        vboxDuree.getChildren().addAll(dureeField, errorDuree);
-        grid.add(vboxDuree, 1, row++);
-
+        // 2. DIFFICULTÉ
         grid.add(new Label("Difficulté:*"), 0, row);
         VBox vboxDifficulte = new VBox(3);
         vboxDifficulte.getChildren().addAll(difficulteCombo, errorDifficulte);
         grid.add(vboxDifficulte, 1, row++);
 
+        // 3. LIEU
         grid.add(new Label("Lieu:*"), 0, row);
         VBox vboxLieu = new VBox(3);
         vboxLieu.getChildren().addAll(lieuField, errorLieu);
         grid.add(vboxLieu, 1, row++);
 
+        // 4. DESCRIPTION
+        grid.add(new Label("Description:*"), 0, row);
+        VBox vboxDescription = new VBox(3);
+        vboxDescription.getChildren().addAll(descriptionField, errorDescription);
+        grid.add(vboxDescription, 1, row++);
+
+        // 5. BUDGET
+        grid.add(new Label("Budget (€):*"), 0, row);
+        VBox vboxBudget = new VBox(3);
+        vboxBudget.getChildren().addAll(budgetField, errorBudget);
+        grid.add(vboxBudget, 1, row++);
+
+        // 6. DURÉE
+        grid.add(new Label("Durée (h):*"), 0, row);
+        VBox vboxDuree = new VBox(3);
+        vboxDuree.getChildren().addAll(dureeField, errorDuree);
+        grid.add(vboxDuree, 1, row++);
+
+        // 7. ÂGE MINIMUM
         grid.add(new Label("Âge minimum:*"), 0, row);
         VBox vboxAgeMin = new VBox(3);
         vboxAgeMin.getChildren().addAll(ageMinField, errorAgeMin);
         grid.add(vboxAgeMin, 1, row++);
 
+        // 8. STATUT
         grid.add(new Label("Statut:*"), 0, row);
         VBox vboxStatut = new VBox(3);
         vboxStatut.getChildren().addAll(statutCombo, new Label());
         grid.add(vboxStatut, 1, row++);
 
+        // 9. CATÉGORIE
         grid.add(new Label("Catégorie:"), 0, row);
         VBox vboxCategorie = new VBox(3);
         vboxCategorie.getChildren().addAll(categorieCombo, new Label());
         grid.add(vboxCategorie, 1, row++);
 
+        // 10. IA
         grid.add(new Label("IA:"), 0, row);
         VBox vboxIA = new VBox(10);
         Label iaHint = new Label("✨ La description sera régénérée automatiquement si vous modifiez les champs et quittez le champ lieu");
@@ -1064,6 +1098,7 @@ public class ACTback implements Initializable {
         vboxIA.getChildren().addAll(generateAIBtn, iaHint);
         grid.add(vboxIA, 1, row++);
 
+        // 11. IMAGE
         grid.add(new Label("Image:"), 0, row);
         grid.add(imageSection, 1, row++);
 
@@ -1079,11 +1114,11 @@ public class ACTback implements Initializable {
         Button okButton = (Button) dialog.getDialogPane().lookupButton(ButtonType.OK);
         okButton.addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
             boolean isValid = validateNom(nomField, errorNom)
+                    && validateDifficulte(difficulteCombo, errorDifficulte)
+                    && validateLieu(lieuField, errorLieu)
                     && validateDescription(descriptionField, errorDescription)
                     && validateBudget(budgetField, errorBudget)
                     && validateDuree(dureeField, errorDuree)
-                    && validateDifficulte(difficulteCombo, errorDifficulte)
-                    && validateLieu(lieuField, errorLieu)
                     && validateAgeMin(ageMinField, errorAgeMin);
 
             if (!isValid) {

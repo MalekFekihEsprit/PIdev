@@ -2,6 +2,7 @@ package Controlles;
 
 import Entites.Activites;
 import Services.ActivitesCRUD;
+import Services.CategoriesCRUD;
 import Utils.TranslationManager;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -59,12 +60,15 @@ public class ACTfront implements Initializable {
     @FXML private Label lblDate;
     @FXML private TextField searchField;
     @FXML private Button btnTranslate;
+    @FXML private Label titleLabel;
+    @FXML private Button btnAllActivities;
 
     // ─── State ─────────────────────────────────────────────────────────
     private ActivitesCRUD activitesCRUD;
     private ObservableList<Activites> activitesList;
     private FilteredList<Activites> filteredData;
     private Activites selectedActivite = null;
+    private String currentCategorieFiltre = null;
 
     // ─── Couleurs pour le PieChart ──────────────────────────────────────
     private static final String[] PIE_COLORS = {
@@ -83,12 +87,31 @@ public class ACTfront implements Initializable {
 
         setupFilters();
         setupSearch();
-        loadActivites();
+
+        // Vérifier si on vient d'une catégorie
+        currentCategorieFiltre = CategorieContext.categorieFiltre;
+        if (currentCategorieFiltre != null && !currentCategorieFiltre.isEmpty()) {
+            System.out.println("🔍 Filtrage par catégorie: " + currentCategorieFiltre);
+            if (titleLabel != null) {
+                titleLabel.setText("Activités de la catégorie : " + currentCategorieFiltre);
+            }
+            if (searchField != null) {
+                searchField.setPromptText("Rechercher dans " + currentCategorieFiltre + "...");
+            }
+            if (btnAllActivities != null) {
+                btnAllActivities.setVisible(true);
+                btnAllActivities.setManaged(true);
+            }
+        } else {
+            if (btnAllActivities != null) {
+                btnAllActivities.setVisible(false);
+                btnAllActivities.setManaged(false);
+            }
+        }
+
+        loadActivitesWithFilter();
     }
 
-    // ═══════════════════════════════════════════════════════════════════
-    // SETUP SEARCH
-    // ═══════════════════════════════════════════════════════════════════
     private void setupSearch() {
         if (searchField != null) {
             searchField.textProperty().addListener((observable, oldValue, newValue) -> {
@@ -99,9 +122,6 @@ public class ACTfront implements Initializable {
         }
     }
 
-    // ═══════════════════════════════════════════════════════════════════
-    // SETUP FILTERS
-    // ═══════════════════════════════════════════════════════════════════
     private void setupFilters() {
         filterTypeCombo.getItems().addAll("Tous les types", "Aventure", "Détente", "Culturel", "Sportif", "Gastronomique", "Famille", "Nature");
         filterTypeCombo.setValue("Tous les types");
@@ -116,20 +136,30 @@ public class ACTfront implements Initializable {
         filterDifficulteCombo.setOnAction(e -> applyFilters());
     }
 
-    // ═══════════════════════════════════════════════════════════════════
-    // LOAD & DISPLAY ACTIVITIES
-    // ═══════════════════════════════════════════════════════════════════
-    private void loadActivites() {
+    private void loadActivitesWithFilter() {
         try {
-            List<Activites> liste = activitesCRUD.afficher();
+            List<Activites> liste;
+
+            // Vérifier si une catégorie est spécifiée dans le contexte
+            if (currentCategorieFiltre != null && !currentCategorieFiltre.isEmpty()) {
+                // Charger uniquement les activités de cette catégorie
+                liste = activitesCRUD.afficherParCategorie(currentCategorieFiltre);
+                System.out.println("📊 " + liste.size() + " activités trouvées pour la catégorie: " + currentCategorieFiltre);
+            } else {
+                // Charger toutes les activités
+                liste = activitesCRUD.afficher();
+            }
+
             activitesList.clear();
             activitesList.addAll(liste);
             filteredData = new FilteredList<>(activitesList, p -> true);
-            displayActivites(filteredData);
-            updateStats(filteredData);
-            updatePieChart(filteredData);
+
+            // Appliquer les filtres existants
+            applyFilters();
+
         } catch (SQLException e) {
             showError("Erreur de chargement", "Impossible de charger les activités: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -169,9 +199,6 @@ public class ACTfront implements Initializable {
         updatePieChart(filteredData);
     }
 
-    // ═══════════════════════════════════════════════════════════════════
-    // DISPLAY: Grid of Image Cards
-    // ═══════════════════════════════════════════════════════════════════
     private void displayActivites(ObservableList<Activites> activites) {
         activitesGrid.getChildren().clear();
         activitesGrid.getColumnConstraints().clear();
@@ -273,7 +300,10 @@ public class ACTfront implements Initializable {
 
         card.getChildren().addAll(imageContainer, infoBox);
 
-        card.setOnMouseClicked(e -> openActivityDetail(activite));
+        card.setOnMouseClicked(e -> {
+            selectedActivite = activite;
+            updateSelectedDetail(activite);
+        });
 
         card.setOnMouseEntered(e -> {
             card.setEffect(new DropShadow(16, Color.web("#f5a62355")));
@@ -287,6 +317,15 @@ public class ACTfront implements Initializable {
         });
 
         return card;
+    }
+
+    private void updateSelectedDetail(Activites activite) {
+        if (activite != null) {
+            lblSelectedNom.setText(activite.getNom());
+            lblSelectedBudget.setText(activite.getBudget() + " €");
+            lblSelectedDate.setText("ID: " + activite.getId() + " · " +
+                    (activite.getCategorie() != null ? activite.getCategorie().getNom() : "Sans catégorie"));
+        }
     }
 
     private ImageView tryLoadImage(Activites activite) {
@@ -381,26 +420,6 @@ public class ACTfront implements Initializable {
         }
     }
 
-    private void openActivityDetail(Activites activite) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/activitydetail.fxml"));
-            Parent root = loader.load();
-
-            ActivityDetailController controller = loader.getController();
-            controller.setActivite(activite);
-
-            Scene scene = new Scene(root);
-            Stage stage = (Stage) activitesGrid.getScene().getWindow();
-            stage.setScene(scene);
-            stage.setTitle("TravelMate - " + activite.getNom());
-            stage.show();
-        } catch (Exception e) {
-            showError("Erreur de navigation",
-                    "Impossible d'ouvrir les détails: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
     @FXML
     private void handleTranslate() {
         Button translateBtn = TranslationManager.createTranslationButton(() -> {
@@ -414,46 +433,6 @@ public class ACTfront implements Initializable {
             parent.getChildren().set(index, translateBtn);
             btnTranslate = translateBtn;
         }
-    }
-
-    @FXML
-    private void handleModifier() {
-        if (selectedActivite == null) {
-            showInfo("Sélection requise", "Veuillez cliquer sur une activité pour la sélectionner.");
-            return;
-        }
-        handleBackOffice();
-    }
-
-    @FXML
-    private void handleSupprimer() {
-        if (selectedActivite == null) {
-            showInfo("Sélection requise", "Veuillez cliquer sur une activité pour la sélectionner.");
-            return;
-        }
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-        confirm.setTitle("Confirmation");
-        confirm.setHeaderText("Supprimer l'activité");
-        confirm.setContentText("Voulez-vous supprimer \"" + selectedActivite.getNom() + "\" ?");
-        Optional<ButtonType> result = confirm.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
-            try {
-                activitesCRUD.supprimer(selectedActivite.getId());
-                selectedActivite = null;
-                loadActivites();
-            } catch (SQLException e) {
-                showError("Erreur suppression", e.getMessage());
-            }
-        }
-    }
-
-    @FXML
-    private void handleFavoris() {
-        if (selectedActivite == null) {
-            showInfo("Sélection requise", "Veuillez cliquer sur une activité pour la sélectionner.");
-            return;
-        }
-        showInfo("Favoris", "\"" + selectedActivite.getNom() + "\" ajouté aux favoris !");
     }
 
     @FXML
@@ -473,6 +452,9 @@ public class ACTfront implements Initializable {
 
     @FXML
     private void handleVersCategories() {
+        // Réinitialiser le filtre avant de partir
+        CategorieContext.categorieFiltre = null;
+
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/categoriesfront.fxml"));
             Parent root = loader.load();
@@ -495,6 +477,28 @@ public class ACTfront implements Initializable {
             searchField.clear();
         }
         applyFilters();
+    }
+
+    @FXML
+    private void handleShowAllActivities() {
+        // Réinitialiser le filtre de catégorie
+        CategorieContext.categorieFiltre = null;
+        currentCategorieFiltre = null;
+
+        // Mettre à jour l'interface
+        if (titleLabel != null) {
+            titleLabel.setText("Explorez les Activités");
+        }
+        if (searchField != null) {
+            searchField.setPromptText("Rechercher une activité...");
+        }
+        if (btnAllActivities != null) {
+            btnAllActivities.setVisible(false);
+            btnAllActivities.setManaged(false);
+        }
+
+        // Recharger toutes les activités
+        loadActivitesWithFilter();
     }
 
     private String getCardGradient(Activites activite) {

@@ -80,4 +80,50 @@ public class CategoriesCRUD implements IntrefaceCRUD<Categories> {
         }
         return listeCategories;
     }
+
+    /**
+     * Récupère une catégorie par son ID
+     */
+    public Categories getById(int id) throws SQLException {
+        String req = "SELECT * FROM Categories WHERE id = ?";
+        PreparedStatement pst = conn.prepareStatement(req);
+        pst.setInt(1, id);
+        ResultSet rs = pst.executeQuery();
+
+        if (rs.next()) {
+            Categories c = new Categories();
+            c.setId(rs.getInt("id"));
+            c.setNom(rs.getString("nom"));
+            c.setDescription(rs.getString("description"));
+            c.setType(rs.getString("type"));
+            c.setSaison(rs.getString("saison"));
+            c.setNiveauintensite(rs.getString("niveauintensite"));
+            c.setPubliccible(rs.getString("publiccible"));
+            return c;
+        }
+        return null;
+    }
+
+    /**
+     * Récupère une catégorie par son NOM
+     */
+    public Categories getByNom(String nom) throws SQLException {
+        String req = "SELECT * FROM Categories WHERE nom = ?";
+        PreparedStatement pst = conn.prepareStatement(req);
+        pst.setString(1, nom);
+        ResultSet rs = pst.executeQuery();
+
+        if (rs.next()) {
+            Categories c = new Categories();
+            c.setId(rs.getInt("id"));
+            c.setNom(rs.getString("nom"));
+            c.setDescription(rs.getString("description"));
+            c.setType(rs.getString("type"));
+            c.setSaison(rs.getString("saison"));
+            c.setNiveauintensite(rs.getString("niveauintensite"));
+            c.setPubliccible(rs.getString("publiccible"));
+            return c;
+        }
+        return null;
+    }
 }

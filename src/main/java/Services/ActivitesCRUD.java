@@ -35,7 +35,6 @@ public class ActivitesCRUD implements IntrefaceCRUD<Activites> {
 
         pst.executeUpdate();
 
-        // Récupérer l'ID généré
         ResultSet rs = pst.getGeneratedKeys();
         if (rs.next()) {
             activite.setId(rs.getInt(1));
@@ -68,7 +67,6 @@ public class ActivitesCRUD implements IntrefaceCRUD<Activites> {
 
     @Override
     public void supprimer(int id) throws SQLException {
-        // D'abord récupérer le chemin de l'image pour pouvoir la supprimer du disque
         String selectReq = "SELECT image_path FROM Activites WHERE id=?";
         PreparedStatement selectPst = conn.prepareStatement(selectReq);
         selectPst.setInt(1, id);
@@ -76,7 +74,6 @@ public class ActivitesCRUD implements IntrefaceCRUD<Activites> {
         if (rs.next()) {
             String imagePath = rs.getString("image_path");
             if (imagePath != null && !imagePath.isEmpty()) {
-                // Supprimer le fichier image du disque
                 try {
                     java.io.File file = new java.io.File(imagePath);
                     if (file.exists()) {
@@ -88,7 +85,6 @@ public class ActivitesCRUD implements IntrefaceCRUD<Activites> {
             }
         }
 
-        // Ensuite supprimer l'activité
         String req = "DELETE FROM Activites WHERE id=?";
         PreparedStatement pst = conn.prepareStatement(req);
         pst.setInt(1, id);
@@ -98,7 +94,6 @@ public class ActivitesCRUD implements IntrefaceCRUD<Activites> {
 
     @Override
     public List<Activites> afficher() throws SQLException {
-        // Requête avec jointure pour récupérer toutes les informations de la catégorie
         String req = "SELECT a.*, c.id as cat_id, c.nom as cat_nom, c.type as cat_type, " +
                 "c.saison as cat_saison, c.niveauintensite as cat_intensite, c.publiccible as cat_public " +
                 "FROM Activites a " +
@@ -122,16 +117,6 @@ public class ActivitesCRUD implements IntrefaceCRUD<Activites> {
             p.setCategorieId(rs.getInt("categorie_id"));
             p.setImagePath(rs.getString("image_path"));
 
-            // LOG POUR DÉBOGUER - À AJOUTER TEMPORAIREMENT
-            System.out.println("🔍 Activité chargée: " + p.getNom());
-            System.out.println("   Budget: " + p.getBudget());
-            System.out.println("   Durée: " + p.getDuree());
-            System.out.println("   Difficulté: " + p.getNiveaudifficulte());
-            System.out.println("   Âge min: " + p.getAgemin());
-            System.out.println("   Statut: " + p.getStatut());
-            System.out.println("   Catégorie ID: " + p.getCategorieId());
-
-            // Créer et associer l'objet Catégorie si elle existe
             if (rs.getObject("cat_id") != null) {
                 Categories cat = new Categories();
                 cat.setId(rs.getInt("cat_id"));
@@ -141,9 +126,6 @@ public class ActivitesCRUD implements IntrefaceCRUD<Activites> {
                 cat.setNiveauintensite(rs.getString("cat_intensite"));
                 cat.setPubliccible(rs.getString("cat_public"));
                 p.setCategorie(cat);
-                System.out.println("   Catégorie: " + cat.getNom());
-            } else {
-                System.out.println("   ⚠️ Pas de catégorie associée");
             }
 
             listeActivites.add(p);
@@ -151,7 +133,52 @@ public class ActivitesCRUD implements IntrefaceCRUD<Activites> {
         return listeActivites;
     }
 
-    // Nouvelle méthode : Récupérer les activités par catégorie
+    /**
+     * Récupère les activités d'une catégorie spécifique par son NOM
+     */
+    public List<Activites> afficherParCategorie(String nomCategorie) throws SQLException {
+        String req = "SELECT a.*, c.id as cat_id, c.nom as cat_nom, c.type as cat_type, " +
+                "c.saison as cat_saison, c.niveauintensite as cat_intensite, c.publiccible as cat_public " +
+                "FROM Activites a " +
+                "LEFT JOIN Categories c ON a.categorie_id = c.id " +
+                "WHERE c.nom = ?";
+
+        PreparedStatement pst = conn.prepareStatement(req);
+        pst.setString(1, nomCategorie);
+        ResultSet rs = pst.executeQuery();
+
+        List<Activites> listeActivites = new ArrayList<>();
+
+        while(rs.next()){
+            Activites p = new Activites();
+            p.setId(rs.getInt("id"));
+            p.setNom(rs.getString("nom"));
+            p.setDescription(rs.getString("description"));
+            p.setBudget(rs.getInt("budget"));
+            p.setNiveaudifficulte(rs.getString("niveaudifficulte"));
+            p.setLieu(rs.getString("lieu"));
+            p.setAgemin(rs.getInt("agemin"));
+            p.setStatut(rs.getString("statut"));
+            p.setDuree(rs.getInt("duree"));
+            p.setCategorieId(rs.getInt("categorie_id"));
+            p.setImagePath(rs.getString("image_path"));
+
+            if (rs.getObject("cat_id") != null) {
+                Categories cat = new Categories();
+                cat.setId(rs.getInt("cat_id"));
+                cat.setNom(rs.getString("cat_nom"));
+                cat.setType(rs.getString("cat_type"));
+                cat.setSaison(rs.getString("cat_saison"));
+                cat.setNiveauintensite(rs.getString("cat_intensite"));
+                cat.setPubliccible(rs.getString("cat_public"));
+                p.setCategorie(cat);
+            }
+
+            listeActivites.add(p);
+        }
+        return listeActivites;
+    }
+
     public List<Activites> getActivitesByCategorie(int categorieId) throws SQLException {
         String req = "SELECT * FROM Activites WHERE categorie_id = ?";
 
@@ -180,7 +207,6 @@ public class ActivitesCRUD implements IntrefaceCRUD<Activites> {
         return listeActivites;
     }
 
-    // NOUVELLE METHODE : Récupérer une activité par ID (pour modification)
     public Activites getOne(int id) throws SQLException {
         String req = "SELECT a.*, c.id as cat_id, c.nom as cat_nom, c.type as cat_type " +
                 "FROM Activites a " +
@@ -205,7 +231,6 @@ public class ActivitesCRUD implements IntrefaceCRUD<Activites> {
             a.setCategorieId(rs.getInt("categorie_id"));
             a.setImagePath(rs.getString("image_path"));
 
-            // Charger la catégorie si elle existe
             if (rs.getObject("cat_id") != null) {
                 Categories cat = new Categories();
                 cat.setId(rs.getInt("cat_id"));
