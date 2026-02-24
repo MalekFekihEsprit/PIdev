@@ -18,7 +18,7 @@
 <?import javafx.scene.shape.Circle?>
 <?import javafx.scene.shape.Rectangle?>
 
-<BorderPane prefHeight="600" prefWidth="550" style="-fx-background-color: #0a0e27;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.AjouterDestinationController">
+<BorderPane prefHeight="650" prefWidth="550" style="-fx-background-color: #0a0e27;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.AjouterDestinationController">
 
     <!-- TOP HEADER -->
     <top>
@@ -87,10 +87,17 @@
                             <Label fx:id="lblCityValidation" style="-fx-text-fill: #f59e0b; -fx-font-size: 10;" text="" />
                         </VBox>
 
-                        <!-- Description -->
+                        <!-- Description with AI Generate Button -->
                         <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 13; -fx-font-weight: 500;" text="Description" GridPane.columnIndex="0" GridPane.rowIndex="2" />
                         <VBox spacing="4" GridPane.columnIndex="1" GridPane.rowIndex="2">
-                            <TextArea fx:id="taDescription" prefRowCount="3" promptText="Description détaillée..." style="-fx-background-color: #1e2749; -fx-text-fill: white; -fx-prompt-text-fill: #94a3b8; -fx-background-radius: 12; -fx-border-color: #2d3a5f; -fx-border-width: 1; -fx-border-radius: 12; -fx-padding: 10;" wrapText="true" />
+                            <HBox spacing="5">
+                                <TextArea fx:id="taDescription" HBox.hgrow="ALWAYS" prefRowCount="3"
+                                          promptText="Description détaillée..."
+                                          style="-fx-background-color: #1e2749; -fx-text-fill: black; -fx-prompt-text-fill: #94a3b8; -fx-background-radius: 12; -fx-border-color: #2d3a5f; -fx-border-width: 1; -fx-border-radius: 12; -fx-padding: 10;"
+                                          wrapText="true" />
+                                <Button fx:id="btnGenerateDescription" text="🤖 Générer"
+                                        style="-fx-background-color: #8b5cf6; -fx-text-fill: white; -fx-font-weight: 600; -fx-font-size: 12; -fx-padding: 8 12; -fx-background-radius: 12; -fx-cursor: hand;" />
+                            </HBox>
                             <Label fx:id="lblDescCounter" alignment="CENTER_RIGHT" style="-fx-text-fill: #94a3b8; -fx-font-size: 10;" text="0/1000" />
                         </VBox>
 
@@ -112,11 +119,19 @@
                             </HBox>
                         </VBox>
 
+                        <!-- Score (Optional) -->
+                        <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 13; -fx-font-weight: 500;" text="Score (optionnel)" GridPane.columnIndex="0" GridPane.rowIndex="5" />
+                        <VBox spacing="4" GridPane.columnIndex="1" GridPane.rowIndex="5">
+                            <TextField fx:id="tfScore" promptText="Ex: 4.5 (optionnel)"
+                                       style="-fx-background-color: #1e2749; -fx-text-fill: white; -fx-prompt-text-fill: #94a3b8; -fx-background-radius: 12; -fx-padding: 10 15; -fx-border-color: #2d3a5f; -fx-border-width: 1; -fx-border-radius: 12;" />
+                            <Label fx:id="lblScoreValidation" style="-fx-text-fill: #f59e0b; -fx-font-size: 10;" text="Laissez vide pour 0.0" />
+                        </VBox>
+
                         <!-- Separator -->
-                        <Separator style="-fx-background-color: #1e2749;" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="5" />
+                        <Separator style="-fx-background-color: #1e2749;" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="6" />
 
                         <!-- Validation Rules -->
-                        <GridPane hgap="10" vgap="5" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="6">
+                        <GridPane hgap="10" vgap="5" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="7">
                             <columnConstraints>
                                 <ColumnConstraints percentWidth="50" />
                                 <ColumnConstraints percentWidth="50" />
@@ -132,6 +147,10 @@
                             <HBox alignment="CENTER_LEFT" spacing="5" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="1">
                                 <Label style="-fx-font-size: 12; -fx-text-fill: #10b981;" text="✓" />
                                 <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 10;" text="Description: max 1000 caractères" />
+                            </HBox>
+                            <HBox alignment="CENTER_LEFT" spacing="5" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="2">
+                                <Label style="-fx-font-size: 12; -fx-text-fill: #f59e0b;" text="ℹ️" />
+                                <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 10;" text="Score: entre 0 et 10 (optionnel)" />
                             </HBox>
                         </GridPane>
                     </GridPane>

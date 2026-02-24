@@ -28,15 +28,18 @@ public class AjouterDestinationController implements Initializable {
     @FXML private ComboBox<CityService.CitySuggestion> cbCitySuggestions; // Hidden dropdown for suggestions
     @FXML private Label lblCityValidation; // Validation message for city
     @FXML private TextArea taDescription;
+    @FXML private Button btnGenerateDescription; // AI Generate button
     @FXML private ComboBox<String> cbClimat;
     @FXML private ComboBox<String> cbSaison;
+    @FXML private Button btnDetectSeason; // Season detection button
+    @FXML private TextField tfScore; // Optional score input
+    @FXML private Label lblScoreValidation; // Score validation message
     @FXML private Label lblNomCounter;
     @FXML private Label lblPaysCounter;
     @FXML private Label lblDescCounter;
     @FXML private Label lblUniquenessWarning;
     @FXML private Button btnSave;
     @FXML private Button btnCancel;
-    @FXML private Button btnDetectSeason; // Season detection button
 
     private DestinationCRUD destinationCRUD;
     private DestinationBackController parentController;
@@ -46,13 +49,17 @@ public class AjouterDestinationController implements Initializable {
     private CountryCodeService countryCodeService;
     private LocalCityFallbackService fallbackService;
     private SeasonService seasonService;
+    private AIService aiService;
     private String currentCountryCode;
     private CityCoordinates validatedCityCoordinates;
 
     private boolean hasSearched = false;
+    private long lastApiCall = 0;
+    private static final long MIN_TIME_BETWEEN_CALLS = 1000;
 
     Dotenv dotenv = Dotenv.load();
-    String apiKey = dotenv.get("CITIES_API_KEY");
+    String citiesApiKey = dotenv.get("CITIES_API_KEY");
+    String openRouterKey = dotenv.get("OPENROUTER_API_KEY");
 
     private final String[] climats = {"Méditerranéen", "Tropical", "Continental", "Désertique", "Montagnard", "Océanique", "Polaire"};
     private final String[] saisons = {"Printemps", "Été", "Automne", "Hiver", "Toute l'année"};
@@ -60,10 +67,24 @@ public class AjouterDestinationController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         destinationCRUD = new DestinationCRUD();
-        cityService = new CityService(apiKey);
+        cityService = new CityService(citiesApiKey);
         countryCodeService = new CountryCodeService();
         fallbackService = new LocalCityFallbackService();
         seasonService = new SeasonService();
+
+        // Initialize AI service with key from .env
+        try {
+            if (openRouterKey != null && !openRouterKey.isEmpty()) {
+                aiService = new AIService(openRouterKey);
+                System.out.println("AI Service initialized successfully");
+            } else {
+                System.err.println("OPENROUTER_API_KEY not found in .env file");
+                aiService = null;
+            }
+        } catch (IllegalArgumentException e) {
+            System.err.println("AI Service initialization failed: " + e.getMessage());
+            aiService = null;
+        }
 
         // Load existing destinations for uniqueness check
         loadExistingDestinations();
@@ -76,9 +97,11 @@ public class AjouterDestinationController implements Initializable {
         setComboBoxTextWhite(cbClimat);
         setComboBoxTextWhite(cbSaison);
 
-        // Setup city suggestions and season detection
+        // Setup city suggestions
         setupCitySuggestions();
         setupSeasonDetection();
+        setupAIDescriptionGenerator();
+        setupScoreValidation();
 
         setupValidation();
         setupCounters();
@@ -102,6 +125,12 @@ public class AjouterDestinationController implements Initializable {
         // Disable season detection button initially
         if (btnDetectSeason != null) {
             btnDetectSeason.setDisable(true);
+        }
+
+        // Disable AI button if service not available
+        if (aiService == null && btnGenerateDescription != null) {
+            btnGenerateDescription.setDisable(true);
+            btnGenerateDescription.setText("🤖 Clé API manquante");
         }
     }
 
@@ -193,6 +222,97 @@ public class AjouterDestinationController implements Initializable {
         });
     }
 
+    private void setupScoreValidation() {
+        tfScore.textProperty().addListener((obs, old, newVal) -> {
+            if (newVal == null || newVal.trim().isEmpty()) {
+                lblScoreValidation.setText("✓ Vide (0.0 par défaut)");
+                lblScoreValidation.setStyle("-fx-text-fill: #10b981;");
+                validateForm();
+                return;
+            }
+
+            try {
+                double score = Double.parseDouble(newVal.trim());
+                if (score < 0 || score > 10) {
+                    lblScoreValidation.setText("⚠️ Doit être entre 0 et 10");
+                    lblScoreValidation.setStyle("-fx-text-fill: #ef4444;");
+                } else {
+                    lblScoreValidation.setText("✓ Score valide");
+                    lblScoreValidation.setStyle("-fx-text-fill: #10b981;");
+                }
+            } catch (NumberFormatException e) {
+                lblScoreValidation.setText("⚠️ Entrez un nombre valide");
+                lblScoreValidation.setStyle("-fx-text-fill: #ef4444;");
+            }
+            validateForm();
+        });
+    }
+
+    private void setupAIDescriptionGenerator() {
+        if (btnGenerateDescription == null) return;
+
+        // Disable if AI service not available
+        if (aiService == null) {
+            btnGenerateDescription.setDisable(true);
+            btnGenerateDescription.setText("🤖 Service indisponible");
+            return;
+        }
+
+        btnGenerateDescription.setOnAction(event -> {
+            String city = tfNom.getText().trim();
+            String country = tfPays.getText().trim();
+
+            if (city.isEmpty()) {
+                showValidationAlert("Veuillez d'abord saisir une ville");
+                return;
+            }
+
+            if (country.isEmpty()) {
+                showValidationAlert("Veuillez d'abord saisir un pays");
+                return;
+            }
+
+            // Disable button during generation
+            btnGenerateDescription.setDisable(true);
+            String originalText = btnGenerateDescription.getText();
+            btnGenerateDescription.setText("🤖 Génération...");
+
+            // Run in background thread
+            javafx.concurrent.Task<String> generateTask = new javafx.concurrent.Task<>() {
+                @Override
+                protected String call() throws Exception {
+                    return aiService.generateDescription(city, country);
+                }
+            };
+
+            generateTask.setOnSucceeded(e -> {
+                String description = generateTask.getValue();
+                taDescription.setText(description);
+                // Force text color to be visible
+                taDescription.setStyle("-fx-text-fill: black; -fx-background-color: white;");
+                btnGenerateDescription.setText(originalText);
+                btnGenerateDescription.setDisable(false);
+
+                if (lblDescCounter != null) {
+                    lblDescCounter.setText(description.length() + "/1000");
+                }
+            });
+
+            generateTask.setOnFailed(e -> {
+                Throwable error = generateTask.getException();
+                if (error instanceof AIService.AIException) {
+                    showErrorAlert("Erreur IA", error.getMessage());
+                } else {
+                    showErrorAlert("Erreur", "Impossible de générer la description: " + error.getMessage());
+                }
+                btnGenerateDescription.setText(originalText);
+                btnGenerateDescription.setDisable(false);
+            });
+
+            new Thread(generateTask).start();
+        });
+    }
+
     private void setupSeasonDetection() {
         if (btnDetectSeason == null) return;
 
@@ -227,8 +347,10 @@ public class AjouterDestinationController implements Initializable {
             });
 
             seasonTask.setOnFailed(e -> {
-                lblCityValidation.setText("⚠️ Impossible de détecter la saison");
-                lblCityValidation.setStyle("-fx-text-fill: #ef4444;");
+                Throwable error = seasonTask.getException();
+                System.err.println("Season detection failed: " + error.getMessage());
+                lblCityValidation.setText("⚠️ Utilisez la sélection manuelle");
+                lblCityValidation.setStyle("-fx-text-fill: #f59e0b;");
                 btnDetectSeason.setText(originalText);
                 btnDetectSeason.setDisable(false);
             });
@@ -512,6 +634,20 @@ public class AjouterDestinationController implements Initializable {
                         .anyMatch(d -> d.getNom_destination().equalsIgnoreCase(nom)
                                 && d.getPays_destination().equalsIgnoreCase(pays));
 
+        // Validate score if not empty
+        boolean scoreValid = true;
+        String scoreText = tfScore.getText().trim();
+        if (!scoreText.isEmpty()) {
+            try {
+                double score = Double.parseDouble(scoreText);
+                if (score < 0 || score > 10) {
+                    scoreValid = false;
+                }
+            } catch (NumberFormatException e) {
+                scoreValid = false;
+            }
+        }
+
         // Country must be valid, city validation is optional (coordinates default to 0,0)
         boolean isValid = !nom.isEmpty() && nom.length() <= 30 &&
                 !pays.isEmpty() && pays.length() <= 30 &&
@@ -519,7 +655,8 @@ public class AjouterDestinationController implements Initializable {
                 cbClimat.getValue() != null &&
                 cbSaison.getValue() != null &&
                 taDescription.getText().length() <= 1000 &&
-                !isDuplicate;
+                !isDuplicate &&
+                scoreValid;
 
         btnSave.setDisable(!isValid);
     }
@@ -539,6 +676,18 @@ public class AjouterDestinationController implements Initializable {
             if (exists) {
                 showValidationAlert("Une destination avec ce nom et ce pays existe déjà!");
                 return;
+            }
+        }
+
+        // Parse score (optional)
+        double score = 0.0;
+        String scoreText = tfScore.getText().trim();
+        if (!scoreText.isEmpty()) {
+            try {
+                score = Double.parseDouble(scoreText);
+            } catch (NumberFormatException e) {
+                // Should not happen due to validation
+                score = 0.0;
             }
         }
 
@@ -595,7 +744,9 @@ public class AjouterDestinationController implements Initializable {
             // Set coordinates
             newDestination.setLatitude_destination(latitude);
             newDestination.setLongitude_destination(longitude);
-            newDestination.setScore_destination(0.0);
+
+            // Set score (user-provided or default 0.0)
+            newDestination.setScore_destination(score);
 
             // Set the country information from API
             newDestination.setCurrency_destination(countryInfo.getCurrency());
@@ -605,10 +756,8 @@ public class AjouterDestinationController implements Initializable {
             // Use the CRUD's ajouter method
             destinationCRUD.ajouter(newDestination);
 
-            // Show success message
-            String seasonMsg = (bestSeason != null && !bestSeason.isEmpty() && !bestSeason.equals(cbClimat.getValue()))
-                    ? "\nClimat détecté: " + bestSeason
-                    : "";
+            // Show success message with only city and country
+            String scoreMsg = score > 0 ? " (score: " + score + ")" : "";
             showSuccessAlert("Destination ajoutée avec succès!\n" + nom + ", " + pays);
 
             if (parentController != null) parentController.refreshAfterModification();
@@ -643,6 +792,22 @@ public class AjouterDestinationController implements Initializable {
             showValidationAlert("La description ne peut pas dépasser 1000 caractères");
             return false;
         }
+
+        // Validate score if provided
+        String scoreText = tfScore.getText().trim();
+        if (!scoreText.isEmpty()) {
+            try {
+                double score = Double.parseDouble(scoreText);
+                if (score < 0 || score > 10) {
+                    showValidationAlert("Le score doit être entre 0 et 10");
+                    return false;
+                }
+            } catch (NumberFormatException e) {
+                showValidationAlert("Le score doit être un nombre valide");
+                return false;
+            }
+        }
+
         return true;
     }
 

@@ -10,137 +10,183 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class SeasonService {
 
     private static final String OPEN_METEO_URL = "https://archive-api.open-meteo.com/v1/archive";
-    private static final String DATE_RANGE = "2023-01-01,2023-12-31";
-    private static final double IDEAL_TEMP_MIN = 18.0; // Celsius
-    private static final double IDEAL_TEMP_MAX = 30.0; // Celsius
-    private static final double MAX_PRECIPITATION = 100.0; // mm per month
+    private static final double IDEAL_TEMP_MIN = 18.0;
+    private static final double IDEAL_TEMP_MAX = 30.0;
+    private static final double MAX_PRECIPITATION = 100.0;
 
-    /**
-     * Determines the best season to visit based on climate data
-     * @param latitude Latitude of the city
-     * @param longitude Longitude of the city
-     * @return Best season as String ("Printemps", "Été", "Automne", "Hiver")
-     */
     public String getBestSeason(double latitude, double longitude) {
         try {
-            // Fetch climate data from Open-Meteo
-            String jsonResponse = fetchClimateData(latitude, longitude);
+            // Use daily API which we know works
+            String jsonResponse = fetchDailyClimateData(latitude, longitude);
 
-            // Parse monthly data
-            List<MonthlyClimate> monthlyData = parseClimateData(jsonResponse);
+            // Parse daily data and aggregate to monthly
+            List<MonthlyClimate> monthlyData = aggregateDailyToMonthly(jsonResponse);
 
-            // Log data for debugging
-            System.out.println("=== Climate Data for " + latitude + ", " + longitude + " ===");
-            for (MonthlyClimate mc : monthlyData) {
-                System.out.println(mc.monthName + ": " + mc.temperature + "°C, " + mc.precipitation + "mm");
+            if (monthlyData.isEmpty()) {
+                System.out.println("No climate data available, using hemisphere fallback");
+                return getHemisphereSeason(latitude);
             }
 
-            // Calculate best season
+            // Log the aggregated monthly data
+            System.out.println("=== Aggregated Monthly Climate Data for " + latitude + ", " + longitude + " ===");
+            for (MonthlyClimate mc : monthlyData) {
+                System.out.println(mc.monthName + ": " +
+                        String.format("%.1f", mc.temperature) + "°C, " +
+                        String.format("%.1f", mc.precipitation) + "mm");
+            }
+
             return calculateBestSeason(monthlyData, latitude);
 
         } catch (Exception e) {
             System.err.println("Error determining best season: " + e.getMessage());
             e.printStackTrace();
-            // Default fallback based on hemisphere
             return getHemisphereSeason(latitude);
         }
     }
 
     /**
-     * Makes API call to Open-Meteo
+     * Fetch daily climate data (which works reliably)
      */
-    private String fetchClimateData(double latitude, double longitude) throws Exception {
-        // Build URL with parameters - Open-Meteo returns Celsius by default
+    private String fetchDailyClimateData(double latitude, double longitude) throws Exception {
         String urlString = OPEN_METEO_URL +
                 "?latitude=" + latitude +
                 "&longitude=" + longitude +
-                "&start_date=2023-01-01&end_date=2023-12-31" +
-                "&monthly=temperature_2m_mean,precipitation_sum" +
+                "&start_date=2023-01-01" +
+                "&end_date=2023-12-31" +
+                "&daily=temperature_2m_mean,precipitation_sum" +
                 "&timezone=auto";
 
-        System.out.println("Fetching climate data from: " + urlString);
+        System.out.println("Fetching daily climate data from: " + urlString);
 
         URL url = new URL(urlString);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("GET");
         conn.setConnectTimeout(10000);
         conn.setReadTimeout(10000);
+        conn.setRequestProperty("Accept", "application/json");
 
         int responseCode = conn.getResponseCode();
         if (responseCode != 200) {
-            throw new Exception("API returned error code: " + responseCode);
+            String errorResponse = readResponse(conn.getErrorStream());
+            throw new Exception("API returned error code: " + responseCode + " - " + errorResponse);
         }
 
-        // Read response
-        BufferedReader reader = new BufferedReader(
-                new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
-        StringBuilder response = new StringBuilder();
-        String line;
-        while ((line = reader.readLine()) != null) {
-            response.append(line);
-        }
-        reader.close();
+        String response = readResponse(conn.getInputStream());
         conn.disconnect();
 
+        return response;
+    }
+
+    private String readResponse(InputStream inputStream) throws Exception {
+        if (inputStream == null) return "";
+
+        StringBuilder response = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                response.append(line);
+            }
+        }
         return response.toString();
     }
 
     /**
-     * Parses JSON response into list of MonthlyClimate objects
+     * Aggregate daily data into monthly averages
      */
-    private List<MonthlyClimate> parseClimateData(String jsonResponse) {
+    private List<MonthlyClimate> aggregateDailyToMonthly(String jsonResponse) {
         List<MonthlyClimate> monthlyData = new ArrayList<>();
 
-        JSONObject root = new JSONObject(jsonResponse);
+        try {
+            JSONObject root = new JSONObject(jsonResponse);
 
-        // Check if monthly data exists
-        if (!root.has("monthly")) {
-            System.err.println("No monthly data in response");
-            return monthlyData;
-        }
+            if (!root.has("daily")) {
+                System.err.println("No daily data in response");
+                return monthlyData;
+            }
 
-        JSONObject monthly = root.getJSONObject("monthly");
+            JSONObject daily = root.getJSONObject("daily");
 
-        // Check if required arrays exist
-        if (!monthly.has("temperature_2m_mean") || !monthly.has("precipitation_sum")) {
-            System.err.println("Missing temperature or precipitation data");
-            return monthlyData;
-        }
+            if (!daily.has("time") || !daily.has("temperature_2m_mean") || !daily.has("precipitation_sum")) {
+                System.err.println("Missing required daily data fields");
+                return monthlyData;
+            }
 
-        JSONArray temperatures = monthly.getJSONArray("temperature_2m_mean");
-        JSONArray precipitations = monthly.getJSONArray("precipitation_sum");
+            JSONArray times = daily.getJSONArray("time");
+            JSONArray temperatures = daily.getJSONArray("temperature_2m_mean");
+            JSONArray precipitations = daily.getJSONArray("precipitation_sum");
 
-        // Month names (1 = January)
-        String[] monthNames = {
-                "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
-                "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"
-        };
+            // Map to store monthly aggregates
+            Map<Integer, MonthAggregate> monthMap = new HashMap<>();
 
-        for (int i = 0; i < temperatures.length(); i++) {
-            double temp = temperatures.getDouble(i);
-            double precip = precipitations.getDouble(i);
+            String[] monthNames = {
+                    "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
+                    "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"
+            };
 
-            monthlyData.add(new MonthlyClimate(
-                    monthNames[i],
-                    i + 1, // month number
-                    temp,
-                    precip
-            ));
+            for (int i = 0; i < times.length(); i++) {
+                String dateStr = times.getString(i);
+                // Parse date to get month (format: "2023-01-01")
+                String[] dateParts = dateStr.split("-");
+                if (dateParts.length < 2) continue;
+
+                int month = Integer.parseInt(dateParts[1]); // 1-12
+
+                double temp = temperatures.getDouble(i);
+                double precip = precipitations.getDouble(i);
+
+                MonthAggregate agg = monthMap.getOrDefault(month, new MonthAggregate());
+                agg.sumTemp += temp;
+                agg.sumPrecip += precip;
+                agg.count++;
+                monthMap.put(month, agg);
+            }
+
+            // Calculate averages and create MonthlyClimate objects
+            for (int month = 1; month <= 12; month++) {
+                MonthAggregate agg = monthMap.get(month);
+                if (agg != null && agg.count > 0) {
+                    double avgTemp = agg.sumTemp / agg.count;
+                    double totalPrecip = agg.sumPrecip; // Precipitation is sum, not average
+
+                    monthlyData.add(new MonthlyClimate(
+                            monthNames[month-1],
+                            month,
+                            avgTemp,
+                            totalPrecip
+                    ));
+                } else {
+                    // If no data for a month, add placeholder
+                    monthlyData.add(new MonthlyClimate(
+                            monthNames[month-1],
+                            month,
+                            15.0, // Default mild temperature
+                            50.0  // Default moderate precipitation
+                    ));
+                }
+            }
+
+        } catch (Exception e) {
+            System.err.println("Error aggregating daily data: " + e.getMessage());
+            e.printStackTrace();
         }
 
         return monthlyData;
     }
 
     /**
-     * Calculates best season based on climate data and hemisphere
+     * Calculate best season based on monthly climate data
      */
     private String calculateBestSeason(List<MonthlyClimate> monthlyData, double latitude) {
-        if (monthlyData.isEmpty()) {
+        if (monthlyData.size() < 12) {
             return getHemisphereSeason(latitude);
         }
 
@@ -192,7 +238,7 @@ public class SeasonService {
                 seasonScores[s] = (double) goodMonthsCount[s] / totalMonthsCount[s];
             }
 
-            System.out.println(seasonNames[s] + " score: " + seasonScores[s] +
+            System.out.println(seasonNames[s] + " score: " + String.format("%.2f", seasonScores[s]) +
                     " (" + goodMonthsCount[s] + "/" + totalMonthsCount[s] + " good months)");
         }
 
@@ -271,12 +317,19 @@ public class SeasonService {
      */
     private String getHemisphereSeason(double latitude) {
         if (latitude >= 0) {
-            // Northern hemisphere
-            return "Été";
+            return "Été"; // Northern hemisphere
         } else {
-            // Southern hemisphere
-            return "Hiver";
+            return "Hiver"; // Southern hemisphere
         }
+    }
+
+    /**
+     * Helper class for monthly aggregation
+     */
+    private static class MonthAggregate {
+        double sumTemp = 0;
+        double sumPrecip = 0;
+        int count = 0;
     }
 
     /**
