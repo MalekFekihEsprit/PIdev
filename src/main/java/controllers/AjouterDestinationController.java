@@ -6,6 +6,7 @@ import services.CityService.CityCoordinates;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
 import javafx.collections.FXCollections;
@@ -35,6 +36,7 @@ public class AjouterDestinationController implements Initializable {
     @FXML private Label lblUniquenessWarning;
     @FXML private Button btnSave;
     @FXML private Button btnCancel;
+    @FXML private Button btnDetectSeason; // Season detection button
 
     private DestinationCRUD destinationCRUD;
     private DestinationBackController parentController;
@@ -43,11 +45,11 @@ public class AjouterDestinationController implements Initializable {
     private CityService cityService;
     private CountryCodeService countryCodeService;
     private LocalCityFallbackService fallbackService;
+    private SeasonService seasonService;
     private String currentCountryCode;
     private CityCoordinates validatedCityCoordinates;
 
     private boolean hasSearched = false;
-
 
     Dotenv dotenv = Dotenv.load();
     String apiKey = dotenv.get("CITIES_API_KEY");
@@ -61,6 +63,7 @@ public class AjouterDestinationController implements Initializable {
         cityService = new CityService(apiKey);
         countryCodeService = new CountryCodeService();
         fallbackService = new LocalCityFallbackService();
+        seasonService = new SeasonService();
 
         // Load existing destinations for uniqueness check
         loadExistingDestinations();
@@ -69,8 +72,13 @@ public class AjouterDestinationController implements Initializable {
         cbClimat.getItems().addAll(climats);
         cbSaison.getItems().addAll(saisons);
 
-        // Setup city suggestions
+        // Set white text for ComboBoxes
+        setComboBoxTextWhite(cbClimat);
+        setComboBoxTextWhite(cbSaison);
+
+        // Setup city suggestions and season detection
         setupCitySuggestions();
+        setupSeasonDetection();
 
         setupValidation();
         setupCounters();
@@ -90,6 +98,48 @@ public class AjouterDestinationController implements Initializable {
 
         // Disable search button initially
         btnSearchCity.setDisable(true);
+
+        // Disable season detection button initially
+        if (btnDetectSeason != null) {
+            btnDetectSeason.setDisable(true);
+        }
+    }
+
+    /**
+     * Forces white text in ComboBox dropdown and selected value
+     */
+    private void setComboBoxTextWhite(ComboBox<String> comboBox) {
+        // Set cell factory for dropdown items
+        comboBox.setCellFactory(lv -> new ListCell<String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setStyle("-fx-background-color: #1e2749;");
+                } else {
+                    setText(item);
+                    setTextFill(Color.WHITE);
+                    setStyle("-fx-background-color: #1e2749;");
+                }
+            }
+        });
+
+        // Set button cell for selected value
+        comboBox.setButtonCell(new ListCell<String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setStyle("-fx-background-color: #1e2749; -fx-text-fill: #94a3b8;");
+                } else {
+                    setText(item);
+                    setTextFill(Color.WHITE);
+                    setStyle("-fx-background-color: #1e2749;");
+                }
+            }
+        });
     }
 
     private void setupCitySuggestions() {
@@ -117,6 +167,10 @@ public class AjouterDestinationController implements Initializable {
                 tfNom.setText(selected.getName());
                 // Validate and store coordinates
                 validateSelectedCity(selected);
+                // Enable season detection button
+                if (btnDetectSeason != null) {
+                    btnDetectSeason.setDisable(false);
+                }
                 // Hide suggestions
                 cbCitySuggestions.setVisible(false);
                 cbCitySuggestions.setManaged(false);
@@ -136,6 +190,50 @@ public class AjouterDestinationController implements Initializable {
                 });
                 pause.play();
             }
+        });
+    }
+
+    private void setupSeasonDetection() {
+        if (btnDetectSeason == null) return;
+
+        btnDetectSeason.setOnAction(event -> {
+            if (validatedCityCoordinates == null) {
+                showValidationAlert("Veuillez d'abord sélectionner une ville valide");
+                return;
+            }
+
+            btnDetectSeason.setDisable(true);
+            String originalText = btnDetectSeason.getText();
+            btnDetectSeason.setText("🔍");
+
+            javafx.concurrent.Task<String> seasonTask = new javafx.concurrent.Task<>() {
+                @Override
+                protected String call() throws Exception {
+                    return seasonService.getBestSeason(
+                            validatedCityCoordinates.getLatitude(),
+                            validatedCityCoordinates.getLongitude()
+                    );
+                }
+            };
+
+            seasonTask.setOnSucceeded(e -> {
+                String bestSeason = seasonTask.getValue();
+                cbSaison.setValue(bestSeason);
+                lblCityValidation.setText("✓ Meilleure saison détectée: " + bestSeason);
+                lblCityValidation.setStyle("-fx-text-fill: #10b981;");
+                btnDetectSeason.setText(originalText);
+                btnDetectSeason.setDisable(false);
+                validateForm();
+            });
+
+            seasonTask.setOnFailed(e -> {
+                lblCityValidation.setText("⚠️ Impossible de détecter la saison");
+                lblCityValidation.setStyle("-fx-text-fill: #ef4444;");
+                btnDetectSeason.setText(originalText);
+                btnDetectSeason.setDisable(false);
+            });
+
+            new Thread(seasonTask).start();
         });
     }
 
@@ -232,6 +330,10 @@ public class AjouterDestinationController implements Initializable {
             validatedCityCoordinates = new CityCoordinates(city.getLatitude(), city.getLongitude());
             lblCityValidation.setText("✓ Ville valide: " + city.getName());
             lblCityValidation.setStyle("-fx-text-fill: #10b981;");
+            // Enable season detection button
+            if (btnDetectSeason != null) {
+                btnDetectSeason.setDisable(false);
+            }
         }
     }
 
@@ -265,10 +367,18 @@ public class AjouterDestinationController implements Initializable {
                 lblCityValidation.setText("✓ Ville valide (base locale): " + cityName);
             }
             lblCityValidation.setStyle("-fx-text-fill: #10b981;");
+            // Enable season detection button
+            if (btnDetectSeason != null) {
+                btnDetectSeason.setDisable(false);
+            }
         } else {
             validatedCityCoordinates = null;
             lblCityValidation.setText("⚠️ Ville non trouvée: " + cityName);
             lblCityValidation.setStyle("-fx-text-fill: #ef4444;");
+            // Disable season detection button
+            if (btnDetectSeason != null) {
+                btnDetectSeason.setDisable(true);
+            }
         }
 
         validateForm();
@@ -298,6 +408,10 @@ public class AjouterDestinationController implements Initializable {
             if (!newVal.equals(old) && validatedCityCoordinates != null) {
                 validatedCityCoordinates = null;
                 lblCityValidation.setText("");
+                // Disable season detection button
+                if (btnDetectSeason != null) {
+                    btnDetectSeason.setDisable(true);
+                }
             }
         });
 
@@ -308,6 +422,10 @@ public class AjouterDestinationController implements Initializable {
             } else {
                 currentCountryCode = null;
                 lblCityValidation.setText("");
+                // Disable season detection button
+                if (btnDetectSeason != null) {
+                    btnDetectSeason.setDisable(true);
+                }
             }
             // Update search button state
             btnSearchCity.setDisable(tfNom.getText().length() < 2 || currentCountryCode == null);
@@ -424,6 +542,25 @@ public class AjouterDestinationController implements Initializable {
             }
         }
 
+        // Get coordinates
+        double latitude = 0.0;
+        double longitude = 0.0;
+        if (validatedCityCoordinates != null) {
+            latitude = validatedCityCoordinates.getLatitude();
+            longitude = validatedCityCoordinates.getLongitude();
+        }
+
+        // Try to detect best season if coordinates available
+        String bestSeason = null;
+        if (latitude != 0.0 || longitude != 0.0) {
+            try {
+                bestSeason = seasonService.getBestSeason(latitude, longitude);
+                System.out.println("Best season for " + nom + ": " + bestSeason);
+            } catch (Exception e) {
+                System.err.println("Could not determine best season: " + e.getMessage());
+            }
+        }
+
         // Fetch country information from API
         CountryService.CountryInfo countryInfo = null;
         try {
@@ -444,17 +581,20 @@ public class AjouterDestinationController implements Initializable {
             newDestination.setNom_destination(nom);
             newDestination.setPays_destination(pays);
             newDestination.setDescription_destination(taDescription.getText().trim());
-            newDestination.setClimat_destination(cbClimat.getValue());
+
+            // Use detected best season for climat if available, otherwise use user selection
+            if (bestSeason != null && !bestSeason.isEmpty()) {
+                newDestination.setClimat_destination(bestSeason);
+            } else {
+                newDestination.setClimat_destination(cbClimat.getValue());
+            }
+
+            // Keep user's saison selection
             newDestination.setSaison_destination(cbSaison.getValue());
 
-            // Set coordinates from validated city (or default 0,0 if not validated)
-            if (validatedCityCoordinates != null) {
-                newDestination.setLatitude_destination(validatedCityCoordinates.getLatitude());
-                newDestination.setLongitude_destination(validatedCityCoordinates.getLongitude());
-            } else {
-                newDestination.setLatitude_destination(0.0);
-                newDestination.setLongitude_destination(0.0);
-            }
+            // Set coordinates
+            newDestination.setLatitude_destination(latitude);
+            newDestination.setLongitude_destination(longitude);
             newDestination.setScore_destination(0.0);
 
             // Set the country information from API
@@ -465,7 +605,10 @@ public class AjouterDestinationController implements Initializable {
             // Use the CRUD's ajouter method
             destinationCRUD.ajouter(newDestination);
 
-            // Show only destination name and pays in success message
+            // Show success message
+            String seasonMsg = (bestSeason != null && !bestSeason.isEmpty() && !bestSeason.equals(cbClimat.getValue()))
+                    ? "\nClimat détecté: " + bestSeason
+                    : "";
             showSuccessAlert("Destination ajoutée avec succès!\n" + nom + ", " + pays);
 
             if (parentController != null) parentController.refreshAfterModification();

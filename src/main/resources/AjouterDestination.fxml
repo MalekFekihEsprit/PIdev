@@ -90,17 +90,27 @@
                         <!-- Description -->
                         <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 13; -fx-font-weight: 500;" text="Description" GridPane.columnIndex="0" GridPane.rowIndex="2" />
                         <VBox spacing="4" GridPane.columnIndex="1" GridPane.rowIndex="2">
-                            <TextArea fx:id="taDescription" prefRowCount="3" promptText="Description détaillée..." style="-fx-background-color: #1e2749; -fx-text-fill: black; -fx-prompt-text-fill: #94a3b8; -fx-background-radius: 12; -fx-border-color: #2d3a5f; -fx-border-width: 1; -fx-border-radius: 12; -fx-padding: 10;" wrapText="true" />
+                            <TextArea fx:id="taDescription" prefRowCount="3" promptText="Description détaillée..." style="-fx-background-color: #1e2749; -fx-text-fill: white; -fx-prompt-text-fill: #94a3b8; -fx-background-radius: 12; -fx-border-color: #2d3a5f; -fx-border-width: 1; -fx-border-radius: 12; -fx-padding: 10;" wrapText="true" />
                             <Label fx:id="lblDescCounter" alignment="CENTER_RIGHT" style="-fx-text-fill: #94a3b8; -fx-font-size: 10;" text="0/1000" />
                         </VBox>
 
                         <!-- Climat -->
                         <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 13; -fx-font-weight: 500;" text="Climat *" GridPane.columnIndex="0" GridPane.rowIndex="3" />
-                        <ComboBox fx:id="cbClimat" maxWidth="Infinity" promptText="Sélectionner un climat" style="-fx-background-color: #1e2749; -fx-text-fill: white; -fx-prompt-text-fill: #94a3b8; -fx-background-radius: 12; -fx-border-color: #2d3a5f; -fx-border-width: 1; -fx-border-radius: 12;" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                        <ComboBox fx:id="cbClimat" maxWidth="Infinity" promptText="Sélectionner un climat"
+                                  style="-fx-background-color: #1e2749; -fx-text-fill: white; -fx-prompt-text-fill: #94a3b8; -fx-background-radius: 12; -fx-border-color: #2d3a5f; -fx-border-width: 1; -fx-border-radius: 12;"
+                                  GridPane.columnIndex="1" GridPane.rowIndex="3" />
 
-                        <!-- Saison -->
+                        <!-- Saison with Season Detection Button -->
                         <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 13; -fx-font-weight: 500;" text="Saison idéale *" GridPane.columnIndex="0" GridPane.rowIndex="4" />
-                        <ComboBox fx:id="cbSaison" maxWidth="Infinity" promptText="Sélectionner une saison" style="-fx-background-color: #1e2749; -fx-text-fill: white; -fx-prompt-text-fill: #94a3b8; -fx-background-radius: 12; -fx-border-color: #2d3a5f; -fx-border-width: 1; -fx-border-radius: 12;" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                        <VBox spacing="4" GridPane.columnIndex="1" GridPane.rowIndex="4">
+                            <HBox spacing="5">
+                                <ComboBox fx:id="cbSaison" HBox.hgrow="ALWAYS" maxWidth="Infinity"
+                                          promptText="Sélectionner une saison"
+                                          style="-fx-background-color: #1e2749; -fx-text-fill: white; -fx-prompt-text-fill: #94a3b8; -fx-background-radius: 12; -fx-border-color: #2d3a5f; -fx-border-width: 1; -fx-border-radius: 12;" />
+                                <Button fx:id="btnDetectSeason" text="🌤️"
+                                        style="-fx-background-color: #10b981; -fx-text-fill: white; -fx-font-size: 16; -fx-background-radius: 12; -fx-min-width: 40; -fx-cursor: hand;" />
+                            </HBox>
+                        </VBox>
 
                         <!-- Separator -->
                         <Separator style="-fx-background-color: #1e2749;" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="5" />
