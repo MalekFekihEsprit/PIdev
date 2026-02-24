@@ -5,6 +5,8 @@
 <?import javafx.scene.control.ProgressIndicator?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
@@ -136,72 +138,110 @@
                         </VBox>
                     </VBox>
 
-                    <!-- Colonne droite : Détails et map -->
-                    <VBox spacing="15" GridPane.columnIndex="1">
-                        <!-- Détails -->
+                    <!-- Colonne droite : Détails de base + TabPane -->
+                    <VBox spacing="15" GridPane.columnIndex="1" VBox.vgrow="ALWAYS">
+                        <!-- Détails de base - TOUS EN ORANGE -->
                         <VBox style="-fx-background-color:white;-fx-background-radius:16;-fx-padding:20;-fx-effect:dropshadow(three-pass-box,rgba(0,0,0,0.06),8,0,0,2);">
                             <Label style="-fx-font-size:16;-fx-font-weight:bold;-fx-text-fill:#1a1a1a;" text="Détails de l'activité" />
-                            <Separator style="-fx-padding:10 0;" />
+                            <Separator style="-fx-padding:5 0;" />
 
-                            <GridPane hgap="10" vgap="12">
+                            <GridPane hgap="15" vgap="8">
                                 <!-- Budget -->
                                 <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Budget :" GridPane.rowIndex="0" GridPane.columnIndex="0" />
                                 <HBox alignment="CENTER_LEFT" spacing="5" GridPane.rowIndex="0" GridPane.columnIndex="1">
                                     <Label style="-fx-font-size:16;" text="💰" />
-                                    <Label fx:id="lblBudget" style="-fx-text-fill:#ff6b00;-fx-font-weight:bold;" text="" />
+                                    <Label fx:id="lblBudget" style="-fx-text-fill:#ff6b00;-fx-font-weight:bold;-fx-font-size:13px;" text="" />
                                 </HBox>
 
                                 <!-- Durée -->
                                 <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Durée :" GridPane.rowIndex="1" GridPane.columnIndex="0" />
-                                <Label fx:id="lblDuree" GridPane.rowIndex="1" GridPane.columnIndex="1" text="" style="-fx-text-fill: #333; -fx-font-weight: normal;" />
+                                <Label fx:id="lblDuree" GridPane.rowIndex="1" GridPane.columnIndex="1" text="" style="-fx-text-fill:#ff6b00;-fx-font-weight:bold;-fx-font-size:13px;" />
 
                                 <!-- Difficulté -->
                                 <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Difficulté :" GridPane.rowIndex="2" GridPane.columnIndex="0" />
-                                <Label fx:id="lblDifficulte" GridPane.rowIndex="2" GridPane.columnIndex="1" text="" style="-fx-text-fill: #333; -fx-font-weight: normal;" />
+                                <Label fx:id="lblDifficulte" GridPane.rowIndex="2" GridPane.columnIndex="1" text="" style="-fx-text-fill:#ff6b00;-fx-font-weight:bold;-fx-font-size:13px;" />
 
                                 <!-- Âge minimum -->
                                 <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Âge minimum :" GridPane.rowIndex="3" GridPane.columnIndex="0" />
-                                <Label fx:id="lblAgeMin" GridPane.rowIndex="3" GridPane.columnIndex="1" text="" style="-fx-text-fill: #333; -fx-font-weight: normal;" />
+                                <Label fx:id="lblAgeMin" GridPane.rowIndex="3" GridPane.columnIndex="1" text="" style="-fx-text-fill:#ff6b00;-fx-font-weight:bold;-fx-font-size:13px;" />
 
                                 <!-- Statut -->
                                 <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Statut :" GridPane.rowIndex="4" GridPane.columnIndex="0" />
-                                <Label fx:id="lblStatut" GridPane.rowIndex="4" GridPane.columnIndex="1" text="" style="-fx-text-fill: #333; -fx-font-weight: normal;" />
+                                <Label fx:id="lblStatut" GridPane.rowIndex="4" GridPane.columnIndex="1" text="" style="-fx-text-fill:#ff6b00;-fx-font-weight:bold;-fx-font-size:13px;" />
 
                                 <!-- Catégorie -->
                                 <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Catégorie :" GridPane.rowIndex="5" GridPane.columnIndex="0" />
-                                <Label fx:id="lblCategorie" GridPane.rowIndex="5" GridPane.columnIndex="1" text="" style="-fx-text-fill: #333; -fx-font-weight: normal;" />
+                                <Label fx:id="lblCategorie" GridPane.rowIndex="5" GridPane.columnIndex="1" text="" style="-fx-text-fill:#ff6b00;-fx-font-weight:bold;-fx-font-size:13px;" />
                             </GridPane>
                         </VBox>
 
-                        <!-- Carte et Localisation -->
-                        <VBox style="-fx-background-color:white;-fx-background-radius:16;-fx-padding:20;-fx-effect:dropshadow(three-pass-box,rgba(0,0,0,0.06),8,0,0,2);">
-                            <Label style="-fx-font-size:16;-fx-font-weight:bold;-fx-text-fill:#1a1a1a;" text="Localisation" />
-                            <Separator style="-fx-padding:10 0;" />
+                        <!-- TabPane pour Météo et Localisation -->
+                        <TabPane tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS" prefHeight="400">
+                            <!-- Onglet Météo -->
+                            <Tab text="🌤️ Météo">
+                                <VBox fx:id="weatherContainer" spacing="12" style="-fx-padding:15;" visible="true" managed="true">
+                                    <Label fx:id="lblDatePrevue" style="-fx-text-fill:#ff6b00;-fx-font-weight:bold;-fx-font-size:14;" text="Prévisions pour le ..." />
 
-                            <!-- Zone de la carte -->
-                            <StackPane prefHeight="250" style="-fx-background-color: #f0f0f0; -fx-background-radius: 8;">
-                                <WebView fx:id="webViewMap" prefHeight="250" />
-                                <ProgressIndicator fx:id="mapLoadingIndicator" visible="false" />
-                            </StackPane>
+                                    <GridPane hgap="15" vgap="10">
+                                        <!-- Icône et description -->
+                                        <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Météo :" GridPane.rowIndex="0" GridPane.columnIndex="0" />
+                                        <HBox alignment="CENTER_LEFT" spacing="8" GridPane.rowIndex="0" GridPane.columnIndex="1">
+                                            <Label fx:id="lblWeatherIcon" style="-fx-font-size:28;" text="🌡️" />
+                                            <Label fx:id="lblWeatherDescription" style="-fx-text-fill:#555;" text="—" />
+                                        </HBox>
 
-                            <!-- Détails de localisation -->
-                            <GridPane hgap="10" vgap="8" style="-fx-padding:15 0 0 0;">
-                                <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Ville :" GridPane.rowIndex="0" GridPane.columnIndex="0" />
-                                <Label fx:id="lblVille" GridPane.rowIndex="0" GridPane.columnIndex="1" text="-" style="-fx-text-fill: #ff6b00; -fx-font-weight: bold;" />
+                                        <!-- Température -->
+                                        <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Température :" GridPane.rowIndex="1" GridPane.columnIndex="0" />
+                                        <Label fx:id="lblWeatherTemp" GridPane.rowIndex="1" GridPane.columnIndex="1"
+                                               style="-fx-text-fill:#ff6b00;-fx-font-weight:bold;" text="—" />
 
-                                <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Pays :" GridPane.rowIndex="1" GridPane.columnIndex="0" />
-                                <Label fx:id="lblPays" GridPane.rowIndex="1" GridPane.columnIndex="1" text="-" style="-fx-text-fill: #ff6b00; -fx-font-weight: bold;" />
+                                        <!-- Précipitations -->
+                                        <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Précipitations :" GridPane.rowIndex="2" GridPane.columnIndex="0" />
+                                        <Label fx:id="lblWeatherPrecip" GridPane.rowIndex="2" GridPane.columnIndex="1"
+                                               style="-fx-text-fill:#555;" text="—" />
 
-                                <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Code postal :" GridPane.rowIndex="2" GridPane.columnIndex="0" />
-                                <Label fx:id="lblCodePostal" GridPane.rowIndex="2" GridPane.columnIndex="1" text="-" style="-fx-text-fill: #ff6b00; -fx-font-weight: bold;" />
+                                        <!-- Vent -->
+                                        <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Vent :" GridPane.rowIndex="3" GridPane.columnIndex="0" />
+                                        <Label fx:id="lblWeatherWind" GridPane.rowIndex="3" GridPane.columnIndex="1"
+                                               style="-fx-text-fill:#555;" text="—" />
+                                    </GridPane>
 
-                                <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Rue :" GridPane.rowIndex="3" GridPane.columnIndex="0" />
-                                <Label fx:id="lblRue" GridPane.rowIndex="3" GridPane.columnIndex="1" text="-" wrapText="true" style="-fx-text-fill: #ff6b00; -fx-font-weight: bold;" />
+                                    <!-- Conseils selon météo -->
+                                    <HBox alignment="CENTER" style="-fx-background-color:#fff3e8;-fx-background-radius:8;-fx-padding:10;-fx-margin:10 0 0 0;">
+                                        <Label fx:id="lblWeatherAdvice" style="-fx-text-fill:#ff6b00;-fx-font-size:13;" text="🌤️ Conditions idéales pour cette activité !" />
+                                    </HBox>
+                                </VBox>
+                            </Tab>
 
-                                <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Coordonnées :" GridPane.rowIndex="4" GridPane.columnIndex="0" />
-                                <Label fx:id="lblCoordonnees" GridPane.rowIndex="4" GridPane.columnIndex="1" text="-" style="-fx-text-fill: #ff6b00; -fx-font-weight: bold;" />
-                            </GridPane>
-                        </VBox>
+                            <!-- Onglet Localisation -->
+                            <Tab text="📍 Localisation">
+                                <VBox spacing="12" style="-fx-padding:15;">
+                                    <!-- Carte -->
+                                    <StackPane prefHeight="200" style="-fx-background-color: #f0f0f0; -fx-background-radius: 8;">
+                                        <WebView fx:id="webViewMap" prefHeight="200" />
+                                        <ProgressIndicator fx:id="mapLoadingIndicator" visible="false" />
+                                    </StackPane>
+
+                                    <!-- Détails de localisation -->
+                                    <GridPane hgap="15" vgap="8">
+                                        <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Ville :" GridPane.rowIndex="0" GridPane.columnIndex="0" />
+                                        <Label fx:id="lblVille" GridPane.rowIndex="0" GridPane.columnIndex="1" text="-" style="-fx-text-fill: #ff6b00; -fx-font-weight: bold;" />
+
+                                        <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Pays :" GridPane.rowIndex="1" GridPane.columnIndex="0" />
+                                        <Label fx:id="lblPays" GridPane.rowIndex="1" GridPane.columnIndex="1" text="-" style="-fx-text-fill: #ff6b00; -fx-font-weight: bold;" />
+
+                                        <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Code postal :" GridPane.rowIndex="2" GridPane.columnIndex="0" />
+                                        <Label fx:id="lblCodePostal" GridPane.rowIndex="2" GridPane.columnIndex="1" text="-" style="-fx-text-fill: #ff6b00; -fx-font-weight: bold;" />
+
+                                        <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Rue :" GridPane.rowIndex="3" GridPane.columnIndex="0" />
+                                        <Label fx:id="lblRue" GridPane.rowIndex="3" GridPane.columnIndex="1" text="-" wrapText="true" style="-fx-text-fill: #ff6b00; -fx-font-weight: bold;" />
+
+                                        <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Coordonnées :" GridPane.rowIndex="4" GridPane.columnIndex="0" />
+                                        <Label fx:id="lblCoordonnees" GridPane.rowIndex="4" GridPane.columnIndex="1" text="-" style="-fx-text-fill: #ff6b00; -fx-font-weight: bold;" />
+                                    </GridPane>
+                                </VBox>
+                            </Tab>
+                        </TabPane>
                     </VBox>
                 </GridPane>
             </VBox>

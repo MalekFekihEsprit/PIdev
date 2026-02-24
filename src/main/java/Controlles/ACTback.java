@@ -32,6 +32,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
@@ -691,6 +692,11 @@ public class ACTback implements Initializable {
         TextField ageMinField = new TextField();
         ageMinField.setPromptText("Âge minimum (entre " + AGE_MIN + " et " + AGE_MAX + ")");
 
+        // NOUVEAU : DatePicker pour la date prévue
+        DatePicker datePicker = new DatePicker();
+        datePicker.setPromptText("Date prévue de l'activité");
+        datePicker.setValue(LocalDate.now().plusDays(7)); // Par défaut dans 7 jours
+
         ComboBox<String> statutCombo = new ComboBox<>();
         statutCombo.getItems().addAll("Active", "Inactive", "En attente");
         statutCombo.setValue("Active");
@@ -713,6 +719,7 @@ public class ACTback implements Initializable {
         Label errorBudget = createErrorLabel();
         Label errorDuree = createErrorLabel();
         Label errorAgeMin = createErrorLabel();
+        Label errorDate = createErrorLabel(); // NOUVEAU
 
         // Charger les catégories
         try {
@@ -756,7 +763,7 @@ public class ACTback implements Initializable {
         // Bouton de génération manuelle
         Button generateAIBtn = createAIGenerateButton(nomField, difficulteCombo, lieuField, descriptionField);
 
-        // Ajout des champs dans l'ordre LOGIQUE : Nom, Difficulté, Lieu, Description, puis les autres
+        // Ajout des champs dans l'ordre LOGIQUE
         int row = 0;
 
         // 1. NOM
@@ -777,7 +784,7 @@ public class ACTback implements Initializable {
         vboxLieu.getChildren().addAll(lieuField, errorLieu);
         grid.add(vboxLieu, 1, row++);
 
-        // 4. DESCRIPTION (juste après les 3 champs essentiels)
+        // 4. DESCRIPTION
         grid.add(new Label("Description:*"), 0, row);
         VBox vboxDescription = new VBox(3);
         vboxDescription.getChildren().addAll(descriptionField, errorDescription);
@@ -801,19 +808,25 @@ public class ACTback implements Initializable {
         vboxAgeMin.getChildren().addAll(ageMinField, errorAgeMin);
         grid.add(vboxAgeMin, 1, row++);
 
-        // 8. STATUT
+        // 8. DATE PREVUE (NOUVEAU)
+        grid.add(new Label("Date prévue:*"), 0, row);
+        VBox vboxDate = new VBox(3);
+        vboxDate.getChildren().addAll(datePicker, errorDate);
+        grid.add(vboxDate, 1, row++);
+
+        // 9. STATUT
         grid.add(new Label("Statut:*"), 0, row);
         VBox vboxStatut = new VBox(3);
         vboxStatut.getChildren().addAll(statutCombo, new Label());
         grid.add(vboxStatut, 1, row++);
 
-        // 9. CATÉGORIE
+        // 10. CATÉGORIE
         grid.add(new Label("Catégorie:"), 0, row);
         VBox vboxCategorie = new VBox(3);
         vboxCategorie.getChildren().addAll(categorieCombo, new Label());
         grid.add(vboxCategorie, 1, row++);
 
-        // 10. IA (bouton et info)
+        // 11. IA
         grid.add(new Label("IA:"), 0, row);
         VBox vboxIA = new VBox(10);
         Label iaHint = new Label("✨ La description sera générée automatiquement quand vous aurez rempli les 3 champs (nom, difficulté, lieu) et quitté le champ lieu");
@@ -821,7 +834,7 @@ public class ACTback implements Initializable {
         vboxIA.getChildren().addAll(generateAIBtn, iaHint);
         grid.add(vboxIA, 1, row++);
 
-        // 11. IMAGE
+        // 12. IMAGE
         grid.add(new Label("Image:"), 0, row);
         grid.add(imageSection, 1, row++);
 
@@ -832,17 +845,28 @@ public class ACTback implements Initializable {
         dialog.getDialogPane().setContent(contentBox);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
         dialog.getDialogPane().setPrefWidth(800);
-        dialog.getDialogPane().setPrefHeight(650);
+        dialog.getDialogPane().setPrefHeight(700); // Légèrement plus haut pour la date
 
         Button okButton = (Button) dialog.getDialogPane().lookupButton(ButtonType.OK);
         okButton.addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
+            // Validation de la date
+            boolean isDateValid = datePicker.getValue() != null;
+            if (!isDateValid) {
+                datePicker.setStyle("-fx-border-color: #ef4444; -fx-border-width: 2;");
+                errorDate.setText("Date : Ce champ est obligatoire");
+            } else {
+                datePicker.setStyle("-fx-border-color: #2d3a5f; -fx-border-width: 1;");
+                errorDate.setText("");
+            }
+
             boolean isValid = validateNom(nomField, errorNom)
                     && validateDifficulte(difficulteCombo, errorDifficulte)
                     && validateLieu(lieuField, errorLieu)
                     && validateDescription(descriptionField, errorDescription)
                     && validateBudget(budgetField, errorBudget)
                     && validateDuree(dureeField, errorDuree)
-                    && validateAgeMin(ageMinField, errorAgeMin);
+                    && validateAgeMin(ageMinField, errorAgeMin)
+                    && isDateValid;
 
             if (!isValid) {
                 event.consume();
@@ -861,6 +885,9 @@ public class ACTback implements Initializable {
                     activite.setLieu(lieuField.getText().trim());
                     activite.setAgemin(Integer.parseInt(ageMinField.getText().trim()));
                     activite.setStatut(statutCombo.getValue());
+
+                    // NOUVEAU : Ajouter la date
+                    activite.setDatePrevue(datePicker.getValue());
 
                     Categories selectedCategorie = categorieCombo.getValue();
                     if (selectedCategorie != null) {
@@ -962,6 +989,11 @@ public class ACTback implements Initializable {
         TextField dureeField = new TextField(String.valueOf(selectedActivite.getDuree()));
         TextField ageMinField = new TextField(String.valueOf(selectedActivite.getAgemin()));
 
+        // NOUVEAU : DatePicker avec la date existante
+        DatePicker datePicker = new DatePicker();
+        datePicker.setValue(selectedActivite.getDatePrevue());
+        datePicker.setPromptText("Date prévue de l'activité");
+
         ComboBox<String> statutCombo = new ComboBox<>();
         statutCombo.getItems().addAll("Active", "Inactive", "En attente");
         statutCombo.setValue(selectedActivite.getStatut());
@@ -982,6 +1014,7 @@ public class ACTback implements Initializable {
         Label errorBudget = createErrorLabel();
         Label errorDuree = createErrorLabel();
         Label errorAgeMin = createErrorLabel();
+        Label errorDate = createErrorLabel(); // NOUVEAU
 
         ComboBox<Categories> categorieCombo = new ComboBox<>();
         try {
@@ -1078,19 +1111,25 @@ public class ACTback implements Initializable {
         vboxAgeMin.getChildren().addAll(ageMinField, errorAgeMin);
         grid.add(vboxAgeMin, 1, row++);
 
-        // 8. STATUT
+        // 8. DATE PREVUE (NOUVEAU)
+        grid.add(new Label("Date prévue:*"), 0, row);
+        VBox vboxDate = new VBox(3);
+        vboxDate.getChildren().addAll(datePicker, errorDate);
+        grid.add(vboxDate, 1, row++);
+
+        // 9. STATUT
         grid.add(new Label("Statut:*"), 0, row);
         VBox vboxStatut = new VBox(3);
         vboxStatut.getChildren().addAll(statutCombo, new Label());
         grid.add(vboxStatut, 1, row++);
 
-        // 9. CATÉGORIE
+        // 10. CATÉGORIE
         grid.add(new Label("Catégorie:"), 0, row);
         VBox vboxCategorie = new VBox(3);
         vboxCategorie.getChildren().addAll(categorieCombo, new Label());
         grid.add(vboxCategorie, 1, row++);
 
-        // 10. IA
+        // 11. IA
         grid.add(new Label("IA:"), 0, row);
         VBox vboxIA = new VBox(10);
         Label iaHint = new Label("✨ La description sera régénérée automatiquement si vous modifiez les champs et quittez le champ lieu");
@@ -1098,7 +1137,7 @@ public class ACTback implements Initializable {
         vboxIA.getChildren().addAll(generateAIBtn, iaHint);
         grid.add(vboxIA, 1, row++);
 
-        // 11. IMAGE
+        // 12. IMAGE
         grid.add(new Label("Image:"), 0, row);
         grid.add(imageSection, 1, row++);
 
@@ -1109,17 +1148,28 @@ public class ACTback implements Initializable {
         dialog.getDialogPane().setContent(contentBox);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
         dialog.getDialogPane().setPrefWidth(800);
-        dialog.getDialogPane().setPrefHeight(650);
+        dialog.getDialogPane().setPrefHeight(700); // Légèrement plus haut pour la date
 
         Button okButton = (Button) dialog.getDialogPane().lookupButton(ButtonType.OK);
         okButton.addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
+            // Validation de la date
+            boolean isDateValid = datePicker.getValue() != null;
+            if (!isDateValid) {
+                datePicker.setStyle("-fx-border-color: #ef4444; -fx-border-width: 2;");
+                errorDate.setText("Date : Ce champ est obligatoire");
+            } else {
+                datePicker.setStyle("-fx-border-color: #2d3a5f; -fx-border-width: 1;");
+                errorDate.setText("");
+            }
+
             boolean isValid = validateNom(nomField, errorNom)
                     && validateDifficulte(difficulteCombo, errorDifficulte)
                     && validateLieu(lieuField, errorLieu)
                     && validateDescription(descriptionField, errorDescription)
                     && validateBudget(budgetField, errorBudget)
                     && validateDuree(dureeField, errorDuree)
-                    && validateAgeMin(ageMinField, errorAgeMin);
+                    && validateAgeMin(ageMinField, errorAgeMin)
+                    && isDateValid;
 
             if (!isValid) {
                 event.consume();
@@ -1137,6 +1187,9 @@ public class ACTback implements Initializable {
                     selectedActivite.setLieu(lieuField.getText().trim());
                     selectedActivite.setAgemin(Integer.parseInt(ageMinField.getText().trim()));
                     selectedActivite.setStatut(statutCombo.getValue());
+
+                    // NOUVEAU : Mettre à jour la date
+                    selectedActivite.setDatePrevue(datePicker.getValue());
 
                     Categories selectedCategorie = categorieCombo.getValue();
                     if (selectedCategorie != null) {

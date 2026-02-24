@@ -1,5 +1,7 @@
 package Entites;
 
+import java.time.LocalDate;
+
 public class Activites {
     private int id;
     private String nom;
@@ -15,15 +17,19 @@ public class Activites {
     private int categorieId;
     private Categories categorie;
 
-    // NOUVEL ATTRIBUT POUR L'IMAGE
+    // Attribut pour l'image
     private String imagePath;
+
+    // NOUVEL ATTRIBUT POUR LA DATE
+    private LocalDate datePrevue;
 
     public Activites() {
     }
 
-    // Constructeur avec tous les champs (optionnel)
+    // Constructeur avec tous les champs
     public Activites(String nom, String description, int budget, String niveaudifficulte,
-                     String lieu, int agemin, String statut, int duree, int categorieId, String imagePath) {
+                     String lieu, int agemin, String statut, int duree, int categorieId,
+                     String imagePath, LocalDate datePrevue) {
         this.nom = nom;
         this.description = description;
         this.budget = budget;
@@ -34,6 +40,7 @@ public class Activites {
         this.duree = duree;
         this.categorieId = categorieId;
         this.imagePath = imagePath;
+        this.datePrevue = datePrevue;
     }
 
     // Getters et Setters existants
@@ -125,13 +132,21 @@ public class Activites {
         this.categorie = categorie;
     }
 
-    // NOUVEAUX getter/setter pour imagePath
     public String getImagePath() {
         return imagePath;
     }
 
     public void setImagePath(String imagePath) {
         this.imagePath = imagePath;
+    }
+
+    // NOUVEAUX GETTER/SETTER POUR LA DATE
+    public LocalDate getDatePrevue() {
+        return datePrevue;
+    }
+
+    public void setDatePrevue(LocalDate datePrevue) {
+        this.datePrevue = datePrevue;
     }
 
     @Override

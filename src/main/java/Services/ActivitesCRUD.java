@@ -5,6 +5,7 @@ import Entites.Categories;
 import Utils.MyBD;
 
 import java.sql.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,8 +19,8 @@ public class ActivitesCRUD implements IntrefaceCRUD<Activites> {
 
     @Override
     public void ajouter(Activites activite) throws SQLException {
-        String req = "INSERT INTO Activites (nom, description, budget, niveaudifficulte, lieu, agemin, statut, duree, categorie_id, image_path) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String req = "INSERT INTO Activites (nom, description, budget, niveaudifficulte, lieu, agemin, statut, duree, categorie_id, image_path, date_prevue) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         PreparedStatement pst = conn.prepareStatement(req, Statement.RETURN_GENERATED_KEYS);
         pst.setString(1, activite.getNom());
@@ -32,6 +33,13 @@ public class ActivitesCRUD implements IntrefaceCRUD<Activites> {
         pst.setInt(8, activite.getDuree());
         pst.setInt(9, activite.getCategorieId());
         pst.setString(10, activite.getImagePath());
+
+        // Gestion de la date
+        if (activite.getDatePrevue() != null) {
+            pst.setDate(11, Date.valueOf(activite.getDatePrevue()));
+        } else {
+            pst.setNull(11, Types.DATE);
+        }
 
         pst.executeUpdate();
 
@@ -46,7 +54,7 @@ public class ActivitesCRUD implements IntrefaceCRUD<Activites> {
     @Override
     public void modifier(Activites activite) throws SQLException {
         String req = "UPDATE Activites SET nom=?, description=?, budget=?, niveaudifficulte=?, " +
-                "lieu=?, agemin=?, statut=?, duree=?, categorie_id=?, image_path=? WHERE id=?";
+                "lieu=?, agemin=?, statut=?, duree=?, categorie_id=?, image_path=?, date_prevue=? WHERE id=?";
 
         PreparedStatement pst = conn.prepareStatement(req);
         pst.setString(1, activite.getNom());
@@ -59,7 +67,15 @@ public class ActivitesCRUD implements IntrefaceCRUD<Activites> {
         pst.setInt(8, activite.getDuree());
         pst.setInt(9, activite.getCategorieId());
         pst.setString(10, activite.getImagePath());
-        pst.setInt(11, activite.getId());
+
+        // Gestion de la date
+        if (activite.getDatePrevue() != null) {
+            pst.setDate(11, Date.valueOf(activite.getDatePrevue()));
+        } else {
+            pst.setNull(11, Types.DATE);
+        }
+
+        pst.setInt(12, activite.getId());
 
         pst.executeUpdate();
         System.out.println("✅ Activité modifiée");
@@ -117,6 +133,12 @@ public class ActivitesCRUD implements IntrefaceCRUD<Activites> {
             p.setCategorieId(rs.getInt("categorie_id"));
             p.setImagePath(rs.getString("image_path"));
 
+            // Récupération de la date
+            Date dateSql = rs.getDate("date_prevue");
+            if (dateSql != null) {
+                p.setDatePrevue(dateSql.toLocalDate());
+            }
+
             if (rs.getObject("cat_id") != null) {
                 Categories cat = new Categories();
                 cat.setId(rs.getInt("cat_id"));
@@ -163,6 +185,12 @@ public class ActivitesCRUD implements IntrefaceCRUD<Activites> {
             p.setCategorieId(rs.getInt("categorie_id"));
             p.setImagePath(rs.getString("image_path"));
 
+            // Récupération de la date
+            Date dateSql = rs.getDate("date_prevue");
+            if (dateSql != null) {
+                p.setDatePrevue(dateSql.toLocalDate());
+            }
+
             if (rs.getObject("cat_id") != null) {
                 Categories cat = new Categories();
                 cat.setId(rs.getInt("cat_id"));
@@ -202,6 +230,12 @@ public class ActivitesCRUD implements IntrefaceCRUD<Activites> {
             p.setCategorieId(rs.getInt("categorie_id"));
             p.setImagePath(rs.getString("image_path"));
 
+            // Récupération de la date
+            Date dateSql = rs.getDate("date_prevue");
+            if (dateSql != null) {
+                p.setDatePrevue(dateSql.toLocalDate());
+            }
+
             listeActivites.add(p);
         }
         return listeActivites;
@@ -230,6 +264,12 @@ public class ActivitesCRUD implements IntrefaceCRUD<Activites> {
             a.setDuree(rs.getInt("duree"));
             a.setCategorieId(rs.getInt("categorie_id"));
             a.setImagePath(rs.getString("image_path"));
+
+            // Récupération de la date
+            Date dateSql = rs.getDate("date_prevue");
+            if (dateSql != null) {
+                a.setDatePrevue(dateSql.toLocalDate());
+            }
 
             if (rs.getObject("cat_id") != null) {
                 Categories cat = new Categories();

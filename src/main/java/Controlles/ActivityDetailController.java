@@ -3,6 +3,8 @@ package Controlles;
 import Entites.Activites;
 import Services.ActivitesCRUD;
 import Services.GeocodingService;
+import Services.WeatherService;
+import Services.WeatherService.WeatherForecast;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -54,8 +56,19 @@ public class ActivityDetailController implements Initializable {
     @FXML private Label lblCoordonnees;
     @FXML private ProgressIndicator mapLoadingIndicator;
 
+    // Météo
+    @FXML private VBox weatherContainer;
+    @FXML private Label lblDatePrevue;
+    @FXML private Label lblWeatherIcon;
+    @FXML private Label lblWeatherDescription;
+    @FXML private Label lblWeatherTemp;
+    @FXML private Label lblWeatherPrecip;
+    @FXML private Label lblWeatherWind;
+    @FXML private Label lblWeatherAdvice;
+
     private Activites activite;
     private WebEngine webEngine;
+    private GeocodingService.LocationResult locationResult;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -89,57 +102,35 @@ public class ActivityDetailController implements Initializable {
         }
 
         System.out.println("📝 Chargement des détails pour: " + activite.getNom());
-
-        // Afficher toutes les valeurs dans la console
-        System.out.println("   📊 VALEURS REÇUES:");
-        System.out.println("      Nom: " + activite.getNom());
-        System.out.println("      Description: " + activite.getDescription());
-        System.out.println("      Budget: " + activite.getBudget());
-        System.out.println("      Durée: " + activite.getDuree());
-        System.out.println("      Difficulté: " + activite.getNiveaudifficulte());
-        System.out.println("      Âge min: " + activite.getAgemin());
-        System.out.println("      Statut: " + activite.getStatut());
-        System.out.println("      Catégorie ID: " + activite.getCategorieId());
-
-        if (activite.getCategorie() != null) {
-            System.out.println("      Catégorie nom: " + activite.getCategorie().getNom());
-            System.out.println("      Catégorie type: " + activite.getCategorie().getType());
-        } else {
-            System.out.println("      ⚠️ Catégorie est NULL");
-        }
+        System.out.println("   Date prévue: " + activite.getDatePrevue());
 
         // Mettre à jour les labels
         lblNom.setText(activite.getNom() != null ? activite.getNom() : "");
         lblDescription.setText(activite.getDescription() != null ? activite.getDescription() : "");
         lblBudget.setText(activite.getBudget() + " €");
 
-        // FORCER l'affichage des valeurs même si elles sont nulles
         if (activite.getDuree() > 0) {
             lblDuree.setText(activite.getDuree() + " heures");
         } else {
             lblDuree.setText("Non spécifié");
-            System.out.println("⚠️ Durée est 0 ou non définie");
         }
 
         if (activite.getNiveaudifficulte() != null && !activite.getNiveaudifficulte().isEmpty()) {
             lblDifficulte.setText(activite.getNiveaudifficulte());
         } else {
             lblDifficulte.setText("Non spécifié");
-            System.out.println("⚠️ Difficulté est null ou vide");
         }
 
         if (activite.getAgemin() > 0) {
             lblAgeMin.setText(activite.getAgemin() + " ans et plus");
         } else {
             lblAgeMin.setText("Tous âges");
-            System.out.println("⚠️ Âge min est 0");
         }
 
         if (activite.getStatut() != null && !activite.getStatut().isEmpty()) {
             lblStatut.setText(activite.getStatut());
         } else {
             lblStatut.setText("Non spécifié");
-            System.out.println("⚠️ Statut est null ou vide");
         }
 
         // Afficher la catégorie
@@ -151,7 +142,6 @@ public class ActivityDetailController implements Initializable {
             lblCategorie.setText(catText);
         } else {
             lblCategorie.setText("Non catégorisé");
-            System.out.println("⚠️ Catégorie est null");
         }
 
         lblAdresseComplete.setText(activite.getLieu() != null ? activite.getLieu() : "");
@@ -197,6 +187,8 @@ public class ActivityDetailController implements Initializable {
                     System.out.println("   Lat: " + result.getLatitude());
                     System.out.println("   Lon: " + result.getLongitude());
 
+                    locationResult = result; // Stocker pour la météo
+
                     // Mettre à jour les labels
                     lblVille.setText(result.getCity() != null && !result.getCity().isEmpty() ?
                             result.getCity() : "Non spécifié");
@@ -214,6 +206,10 @@ public class ActivityDetailController implements Initializable {
                     System.out.println("✅ Labels mis à jour");
 
                     displayMap(result);
+
+                    // Charger la météo
+                    loadWeatherForActivity();
+
                 } else {
                     System.out.println("❌ Aucun résultat de géocodage");
                     showMapWithMessage("Impossible de localiser cette adresse");
@@ -236,7 +232,6 @@ public class ActivityDetailController implements Initializable {
             return;
         }
 
-        // Version simplifiée avec iframe
         String html = "<!DOCTYPE html>\n" +
                 "<html>\n" +
                 "<head>\n" +
@@ -293,6 +288,106 @@ public class ActivityDetailController implements Initializable {
                 "</html>";
 
         webEngine.loadContent(html);
+    }
+
+    private void loadWeatherForActivity() {
+        System.out.println("🔍 Tentative de chargement météo");
+        System.out.println("   Date activité: " + activite.getDatePrevue());
+        System.out.println("   Location result: " + (locationResult != null ? "OK" : "NULL"));
+
+        if (activite.getDatePrevue() == null) {
+            System.out.println("⚠️ Pas de date prévue pour cette activité");
+            weatherContainer.setVisible(false);
+            return;
+        }
+
+        if (locationResult == null) {
+            System.out.println("⚠️ Pas de localisation disponible");
+            showWeatherUnavailable("Localisation inconnue");
+            return;
+        }
+
+        // Afficher la date
+        String dateFormatted = activite.getDatePrevue().format(
+                DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale.FRENCH));
+        lblDatePrevue.setText("Prévisions pour le " + dateFormatted);
+
+        // Afficher le chargement
+        weatherContainer.setVisible(true);
+        lblWeatherIcon.setText("⏳");
+        lblWeatherDescription.setText("Chargement météo...");
+        lblWeatherTemp.setText("—");
+        lblWeatherPrecip.setText("—");
+        lblWeatherWind.setText("—");
+
+        // Lancer dans un thread séparé
+        new Thread(() -> {
+            WeatherForecast forecast = WeatherService.getForecast(
+                    locationResult.getLatitude(),
+                    locationResult.getLongitude(),
+                    activite.getDatePrevue()
+            );
+
+            javafx.application.Platform.runLater(() -> {
+                if (forecast != null) {
+                    displayWeather(forecast);
+                } else {
+                    showWeatherUnavailable("Prévisions non disponibles (date trop lointaine?)");
+                }
+            });
+        }).start();
+    }
+
+    private void displayWeather(WeatherForecast forecast) {
+        lblWeatherIcon.setText(forecast.getWeatherIcon());
+        lblWeatherDescription.setText(forecast.getWeatherDescription());
+        lblWeatherTemp.setText(forecast.getFormattedTemp());
+        lblWeatherPrecip.setText(String.format("💧 %.1f mm", forecast.getPrecipitation()));
+        lblWeatherWind.setText(String.format("💨 %.0f km/h", forecast.getWindSpeed()));
+
+        // Ajouter un conseil selon la météo
+        String advice = getWeatherAdvice(forecast);
+        lblWeatherAdvice.setText(advice);
+
+        // Colorer selon les conditions
+        if (forecast.getPrecipitation() > 5) {
+            lblWeatherPrecip.setStyle("-fx-text-fill: #3b82f6; -fx-font-weight: bold;");
+        } else {
+            lblWeatherPrecip.setStyle("-fx-text-fill: #555;");
+        }
+
+        if (forecast.getWindSpeed() > 30) {
+            lblWeatherWind.setStyle("-fx-text-fill: #ef4444; -fx-font-weight: bold;");
+        } else {
+            lblWeatherWind.setStyle("-fx-text-fill: #555;");
+        }
+    }
+
+    private void showWeatherUnavailable(String message) {
+        lblWeatherIcon.setText("🌡️");
+        lblWeatherDescription.setText(message);
+        lblWeatherTemp.setText("—");
+        lblWeatherPrecip.setText("—");
+        lblWeatherWind.setText("—");
+        lblWeatherAdvice.setText("ℹ️ " + message);
+    }
+
+    private String getWeatherAdvice(WeatherForecast forecast) {
+        if (forecast.getPrecipitation() > 10) {
+            return "☔ Fortes pluies prévues - Prévoyez un équipement imperméable !";
+        } else if (forecast.getPrecipitation() > 2) {
+            return "🌦️ Quelques averses possibles - Un parapluie peut être utile";
+        } else if (forecast.getWindSpeed() > 40) {
+            return "💨 Vents forts - Attention aux activités en extérieur";
+        } else if (forecast.getTemperatureMax() > 30) {
+            return "☀️ Forte chaleur - Pensez à vous hydrater et vous protéger du soleil";
+        } else if (forecast.getTemperatureMin() < 5) {
+            return "❄️ Températures froides - Habillez-vous chaudement !";
+        } else if (forecast.getWeatherCode() == 0 || forecast.getWeatherCode() == 1) {
+            return "☀️ Conditions idéales pour profiter de cette activité !";
+        } else {
+            return "🌤️ Conditions météo acceptables pour l'activité";
+        }
     }
 
     @FXML

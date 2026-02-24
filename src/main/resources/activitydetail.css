@@ -1,52 +1,123 @@
-/* activitydetail.css - Styles spécifiques pour la page de détail */
+/* activitydetail.css - Version harmonisée */
 
 .root {
     -fx-background-color: #f0f4f0;
 }
 
-/* ===== STYLES POUR LES LABELS DE DÉTAILS ===== */
-/* Tous les labels qui affichent les valeurs (Budget, Durée, Difficulté, Âge, Statut, Catégorie) */
+/* ===== STYLES POUR LES LABELS DE DÉTAILS - TOUS EN ORANGE ===== */
 #lblBudget, #lblDuree, #lblDifficulte, #lblAgeMin, #lblStatut, #lblCategorie {
-    -fx-text-fill: #ff6b00 !important;  /* Orange comme le budget */
-    -fx-font-weight: bold !important;    /* Gras */
+    -fx-text-fill: #ff6b00;
+    -fx-font-weight: bold;
     -fx-font-size: 13px;
-}
-
-/* Style spécifique pour le budget (déjà en orange, mais on renforce) */
-#lblBudget {
-    -fx-text-fill: #ff6b00 !important;
-    -fx-font-weight: bold !important;
 }
 
 /* ===== STYLES POUR LES LABELS DE LOCALISATION ===== */
 #lblVille, #lblPays, #lblCodePostal, #lblRue, #lblCoordonnees {
-    -fx-text-fill: #ff6b00 !important;
-    -fx-font-weight: bold !important;
+    -fx-text-fill: #ff6b00;
+    -fx-font-weight: bold;
     -fx-font-size: 13px;
-    -fx-background-color: transparent;
-    -fx-padding: 2 5;
 }
 
-/* Style pour les titres des champs (Budget:, Durée:, etc.) */
-.grid-pane .label {
-    -fx-text-fill: #1a1a1a;
+/* ===== STYLES POUR LA SECTION MÉTÉO ===== */
+#lblDatePrevue {
+    -fx-text-fill: #ff6b00;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
 }
 
-/* Style spécifique pour les titres dans la grille de détails */
-.grid-pane .label[text*=":"] {
-    -fx-font-weight: normal;
-    -fx-text-fill: #888;
+#lblWeatherIcon {
+    -fx-font-size: 28px;
 }
 
-/* Conteneur de la carte */
+#lblWeatherDescription {
+    -fx-text-fill: #555;
+    -fx-font-size: 13px;
+}
+
+#lblWeatherTemp {
+    -fx-text-fill: #ff6b00;
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+}
+
+#lblWeatherPrecip, #lblWeatherWind {
+    -fx-text-fill: #555;
+    -fx-font-size: 13px;
+}
+
+#lblWeatherAdvice {
+    -fx-text-fill: #ff6b00;
+    -fx-font-size: 13px;
+}
+
+/* ===== STYLES POUR LA GRILLE ===== */
+.grid-pane {
+    -fx-hgap: 15;
+    -fx-vgap: 8;
+}
+
+/* ===== STYLES POUR LES SÉPARATEURS ===== */
+.separator {
+    -fx-padding: 5 0;
+}
+
+.separator .line {
+    -fx-border-color: #e0e0e0;
+    -fx-border-width: 1;
+}
+
+/* ===== STYLES POUR LA CARTE ===== */
 .stack-pane {
     -fx-background-color: #f0f0f0;
     -fx-background-radius: 8;
-    -fx-border-radius: 8;
 }
 
-/* WebView */
 .web-view {
     -fx-background-color: white;
     -fx-background-radius: 8;
+}
+
+/* ===== STYLES POUR LE TITRE PRINCIPAL ===== */
+#lblNom {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1a1a1a;
+}
+
+/* ===== STYLES POUR LES IMAGES ===== */
+#imageView {
+    -fx-background-color: #0a0e27;
+    -fx-background-radius: 16;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);
+}
+
+/* ===== STYLES POUR LE TABPANE ===== */
+.tab-pane {
+    -fx-background-color: white;
+    -fx-background-radius: 16;
+    -fx-tab-min-height: 40;
+    -fx-tab-max-height: 40;
+}
+
+.tab-pane .tab-header-area {
+    -fx-padding: 5 5 0 5;
+}
+
+.tab-pane .tab {
+    -fx-background-color: #f0f0f0;
+    -fx-background-radius: 10 10 0 0;
+    -fx-padding: 5 15;
+}
+
+.tab-pane .tab:selected {
+    -fx-background-color: #ff6b00;
+}
+
+.tab-pane .tab:selected .tab-label {
+    -fx-text-fill: white;
+}
+
+.tab-pane .tab .tab-label {
+    -fx-font-weight: bold;
+    -fx-text-fill: #555;
 }

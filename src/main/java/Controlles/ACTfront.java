@@ -300,9 +300,11 @@ public class ACTfront implements Initializable {
 
         card.getChildren().addAll(imageContainer, infoBox);
 
+        // MODIFICATION : Ajout de la navigation vers la page de détail
         card.setOnMouseClicked(e -> {
             selectedActivite = activite;
             updateSelectedDetail(activite);
+            openActivityDetail(activite); // Navigation vers la page de détail
         });
 
         card.setOnMouseEntered(e -> {
@@ -317,6 +319,30 @@ public class ACTfront implements Initializable {
         });
 
         return card;
+    }
+
+    // NOUVELLE MÉTHODE : Navigation vers la page de détail
+    private void openActivityDetail(Activites activite) {
+        try {
+            // Charger le fichier FXML de détail
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/activitydetail.fxml"));
+            Parent root = loader.load();
+
+            // Récupérer le contrôleur et lui passer l'activité sélectionnée
+            ActivityDetailController controller = loader.getController();
+            controller.setActivite(activite);
+
+            // Créer la scène et changer de fenêtre
+            Scene scene = new Scene(root);
+            Stage stage = (Stage) activitesGrid.getScene().getWindow();
+            stage.setScene(scene);
+            stage.setTitle("TravelMate - Détail de l'activité");
+            stage.show();
+
+        } catch (IOException e) {
+            showError("Erreur de navigation", "Impossible d'ouvrir les détails de l'activité: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     private void updateSelectedDetail(Activites activite) {
