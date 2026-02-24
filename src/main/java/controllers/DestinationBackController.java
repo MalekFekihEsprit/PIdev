@@ -48,7 +48,6 @@ public class DestinationBackController implements Initializable {
     @FXML private Label lblSaisonsTotal;
     @FXML private Label lblPaysTotal;
 
-
     // Table Section
     @FXML private Label lblDestinationCount;
     @FXML private TableView<Destination> tableDestinations;
@@ -63,15 +62,16 @@ public class DestinationBackController implements Initializable {
     // Buttons
     @FXML private Button btnAjouter;
     @FXML private Button btnSupprimer;
+    @FXML private Button btnSuggestHotels; // NEW BUTTON
     @FXML private HBox btnExport;
     @FXML private HBox btnSearch;
     @FXML private HBox btnFilter;
     @FXML private HBox btnHome;
+    @FXML private HBox btnHebergement;
 
     // Pagination
     @FXML private Label lblPaginationInfo;
     @FXML private HBox paginationContainer;
-    @FXML private HBox btnHebergement;
 
     // ============== CLASS VARIABLES ==============
 
@@ -124,60 +124,6 @@ public class DestinationBackController implements Initializable {
 
         // Enable multiple selection for bulk delete
         tableDestinations.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-    }
-    private void navigateToHebergement() {
-        try {
-            // Load the HebergementBack FXML
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/HebergementBack.fxml"));
-            Parent root = loader.load();
-
-            // Get the current stage and set the new scene
-            Stage stage = (Stage) btnHebergement.getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.setTitle("TravelMate - Gestion des Hébergements");
-            stage.setMaximized(true);
-
-        } catch (IOException e) {
-            showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir la gestion des hébergements: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
-    private void setupHebergementButton() {
-        if (btnHebergement == null) return;
-
-        // Click handler
-        btnHebergement.setOnMouseClicked(event -> navigateToHebergement());
-
-        // Hover effects
-        btnHebergement.setOnMouseEntered(event -> {
-            if (!isCurrentPageHebergement) {
-                btnHebergement.setStyle("-fx-background-color: rgba(255,140,66,0.15); -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;");
-                // Change text color of both labels
-                btnHebergement.lookupAll(".label").forEach(label -> {
-                    if (label instanceof Label) {
-                        ((Label) label).setStyle("-fx-text-fill: #ff8c42; -fx-font-weight: 600; -fx-font-size: 14;");
-                    }
-                });
-            }
-        });
-
-        btnHebergement.setOnMouseExited(event -> {
-            if (!isCurrentPageHebergement) {
-                btnHebergement.setStyle("-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;");
-                // Reset text color
-                btnHebergement.lookupAll(".label").forEach(label -> {
-                    if (label instanceof Label) {
-                        Label lbl = (Label) label;
-                        if (lbl.getText().equals("🏨")) {
-                            lbl.setStyle("-fx-font-size: 16;");
-                        } else {
-                            lbl.setStyle("-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;");
-                        }
-                    }
-                });
-            }
-        });
     }
 
     private void setupActionsColumn() {
@@ -242,6 +188,40 @@ public class DestinationBackController implements Initializable {
         });
     }
 
+    // ============== HOTEL SUGGESTION FEATURE ==============
+
+    private void handleSuggestHotels() {
+        // Get selected destination from table
+        Destination selectedDestination = tableDestinations.getSelectionModel().getSelectedItem();
+
+        if (selectedDestination == null) {
+            showAlert(Alert.AlertType.WARNING, "Attention",
+                    "Veuillez sélectionner une destination dans le tableau pour suggérer des hôtels.");
+            return;
+        }
+
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/HotelSuggestionDialog.fxml"));
+            Parent root = loader.load();
+
+            HotelSuggestionController controller = loader.getController();
+            controller.setDestination(selectedDestination);
+            controller.setParentController(this);
+
+            Stage stage = new Stage();
+            stage.setTitle("Suggérer des hôtels - " + selectedDestination.getNom_destination());
+            stage.setScene(new Scene(root));
+            stage.setResizable(false);
+            stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+            stage.showAndWait();
+
+        } catch (IOException e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur",
+                    "Impossible d'ouvrir la suggestion d'hôtels: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
     private void setupButtonActions() {
         // Ajouter button
         if (btnAjouter != null) {
@@ -251,6 +231,11 @@ public class DestinationBackController implements Initializable {
         // Supprimer button (bulk delete)
         if (btnSupprimer != null) {
             btnSupprimer.setOnAction(event -> handleBulkDelete());
+        }
+
+        // Suggest Hotels button
+        if (btnSuggestHotels != null) {
+            btnSuggestHotels.setOnAction(event -> handleSuggestHotels());
         }
 
         // Export button
@@ -272,7 +257,55 @@ public class DestinationBackController implements Initializable {
         if (btnHome != null) {
             btnHome.setOnMouseClicked(event -> navigateToHome());
         }
+    }
 
+    private void setupHebergementButton() {
+        if (btnHebergement == null) return;
+
+        btnHebergement.setOnMouseClicked(event -> navigateToHebergement());
+
+        btnHebergement.setOnMouseEntered(event -> {
+            if (!isCurrentPageHebergement) {
+                btnHebergement.setStyle("-fx-background-color: rgba(255,140,66,0.15); -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;");
+                btnHebergement.lookupAll(".label").forEach(label -> {
+                    if (label instanceof Label) {
+                        ((Label) label).setStyle("-fx-text-fill: #ff8c42; -fx-font-weight: 600; -fx-font-size: 14;");
+                    }
+                });
+            }
+        });
+
+        btnHebergement.setOnMouseExited(event -> {
+            if (!isCurrentPageHebergement) {
+                btnHebergement.setStyle("-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;");
+                btnHebergement.lookupAll(".label").forEach(label -> {
+                    if (label instanceof Label) {
+                        Label lbl = (Label) label;
+                        if (lbl.getText().equals("🏨")) {
+                            lbl.setStyle("-fx-font-size: 16;");
+                        } else {
+                            lbl.setStyle("-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;");
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    private void navigateToHebergement() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/HebergementBack.fxml"));
+            Parent root = loader.load();
+
+            Stage stage = (Stage) btnHebergement.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("TravelMate - Gestion des Hébergements");
+            stage.setMaximized(true);
+
+        } catch (IOException e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir la gestion des hébergements: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     // ============== CRUD OPERATIONS ==============
@@ -292,7 +325,7 @@ public class DestinationBackController implements Initializable {
             stage.showAndWait();
 
         } catch (IOException e) {
-            e.printStackTrace(); // ADD THIS LINE
+            e.printStackTrace();
             showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir le formulaire: " + e.getMessage());
         }
     }
@@ -345,7 +378,6 @@ public class DestinationBackController implements Initializable {
             return;
         }
 
-        // Build a string with all destination names
         StringBuilder namesList = new StringBuilder();
         for (Destination d : selectedItems) {
             namesList.append("• ").append(d.getNom_destination())
@@ -381,7 +413,7 @@ public class DestinationBackController implements Initializable {
 
             if (failCount == 0) {
                 showAlert(Alert.AlertType.INFORMATION, "Succès",
-                        successCount + " destination(s) supprimée(s) avec succès !\n\n" + namesList.toString());
+                        successCount + " destination(s) supprimée(s) avec succès !");
             } else {
                 StringBuilder failedList = new StringBuilder();
                 for (String name : failedNames) {
@@ -396,28 +428,19 @@ public class DestinationBackController implements Initializable {
 
     private void handleConsulter(Destination destination) {
         try {
-            // Load the AfficherDestinationBack FXML
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/AfficherDestinationBack.fxml"));
             Parent root = loader.load();
 
-            // Get the controller and pass the destination
             AfficherDestinationBackController controller = loader.getController();
             controller.setDestination(destination);
             controller.setParentController(this);
 
-            // Create a new stage for the details window
             Stage stage = new Stage();
             stage.setTitle("Détails - " + destination.getNom_destination());
             stage.setScene(new Scene(root));
-
-            // Make it modal (blocks interaction with parent window)
             stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
-
-            // Center on parent window
             stage.initOwner(tableDestinations.getScene().getWindow());
             stage.setResizable(false);
-
-            // Show and wait (makes it modal)
             stage.showAndWait();
 
         } catch (IOException e) {
@@ -448,13 +471,11 @@ public class DestinationBackController implements Initializable {
     private void updateStats() {
         int total = allDestinations.size();
 
-        // Update all total labels
         lblDestinationsTotal.setText(String.valueOf(total));
         lblTotalDestinations.setText(String.valueOf(total));
         lblSidebarDestinationCount.setText(String.valueOf(total));
         lblDestinationCount.setText(total + " destination" + (total > 1 ? "s" : ""));
 
-        // Count unique countries
         long paysCount = allDestinations.stream()
                 .map(Destination::getPays_destination)
                 .filter(Objects::nonNull)
@@ -463,8 +484,6 @@ public class DestinationBackController implements Initializable {
         lblPaysCount.setText(String.valueOf(paysCount));
         lblPaysTotal.setText(String.valueOf(paysCount));
 
-
-        // Count unique climates
         long climatesCount = allDestinations.stream()
                 .map(Destination::getClimat_destination)
                 .filter(Objects::nonNull)
@@ -473,7 +492,6 @@ public class DestinationBackController implements Initializable {
         lblClimatsCount.setText(String.valueOf(climatesCount));
         lblClimatsTotal.setText(String.valueOf(climatesCount));
 
-        // Count unique seasons
         long seasonsCount = allDestinations.stream()
                 .map(Destination::getSaison_destination)
                 .filter(Objects::nonNull)
@@ -493,7 +511,6 @@ public class DestinationBackController implements Initializable {
             return;
         }
 
-        // Calculate pagination
         int fromIndex = (currentPage - 1) * rowsPerPage;
         int toIndex = Math.min(fromIndex + rowsPerPage, total);
 
@@ -520,13 +537,11 @@ public class DestinationBackController implements Initializable {
 
         lblPaginationInfo.setText(total == 0 ? "0-0 sur 0 destinations" : start + "-" + end + " sur " + total + " destinations");
 
-        // Update pagination buttons
         paginationContainer.getChildren().clear();
         int totalPages = (int) Math.ceil((double) total / rowsPerPage);
 
         if (totalPages <= 1) return;
 
-        // Previous button
         if (currentPage > 1) {
             Label prevLabel = createPageLabel("◀", false);
             prevLabel.setOnMouseClicked(event -> {
@@ -536,7 +551,6 @@ public class DestinationBackController implements Initializable {
             paginationContainer.getChildren().add(prevLabel);
         }
 
-        // Page numbers
         int startPage = Math.max(1, currentPage - 2);
         int endPage = Math.min(totalPages, startPage + 4);
 
@@ -550,7 +564,6 @@ public class DestinationBackController implements Initializable {
             paginationContainer.getChildren().add(pageLabel);
         }
 
-        // Next button
         if (currentPage < totalPages) {
             Label nextLabel = createPageLabel("▶", false);
             nextLabel.setOnMouseClicked(event -> {
@@ -653,18 +666,7 @@ public class DestinationBackController implements Initializable {
     }
 
     private void handleExport() {
-        // TODO: Implement export functionality
         showAlert(Alert.AlertType.INFORMATION, "Export", "Fonctionnalité d'export à implémenter");
-    }
-
-    // ============== UTILITY METHODS ==============
-
-    void showAlert(Alert.AlertType type, String title, String message) {
-        Alert alert = new Alert(type);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
     }
 
     private void navigateToHome() {
@@ -680,5 +682,15 @@ public class DestinationBackController implements Initializable {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    // ============== UTILITY METHODS ==============
+
+    void showAlert(Alert.AlertType type, String title, String message) {
+        Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 }
