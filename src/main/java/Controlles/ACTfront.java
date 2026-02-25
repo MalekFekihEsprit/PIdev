@@ -235,10 +235,12 @@ public class ACTfront implements Initializable {
         card.setPrefWidth(200);
         card.setMinWidth(160);
 
+        // ===== CONTENEUR IMAGE AVEC QR CODE INTÉGRÉ =====
         StackPane imageContainer = new StackPane();
         imageContainer.setPrefHeight(140);
         imageContainer.setMinHeight(140);
 
+        // Image principale
         ImageView imageView = tryLoadImage(activite);
 
         if (imageView != null) {
@@ -259,14 +261,40 @@ public class ACTfront implements Initializable {
             imageContainer.getChildren().addAll(placeholder, icon);
         }
 
-        // Badge de difficulté
+        // Badge de difficulté (en haut à gauche)
         Label badgeDiff = new Label(activite.getNiveaudifficulte() != null ? activite.getNiveaudifficulte() : "");
         badgeDiff.setStyle("-fx-background-color: " + getDifficultyBgColor(activite.getNiveaudifficulte()) +
                 "; -fx-text-fill: white; -fx-background-radius: 8; -fx-padding: 2 8; -fx-font-size: 10; -fx-font-weight: bold;");
-        StackPane.setAlignment(badgeDiff, Pos.TOP_RIGHT);
-        StackPane.setMargin(badgeDiff, new Insets(8, 8, 0, 0));
+        StackPane.setAlignment(badgeDiff, Pos.TOP_LEFT);
+        StackPane.setMargin(badgeDiff, new Insets(8, 0, 0, 8));
         imageContainer.getChildren().add(badgeDiff);
 
+        // QR CODE (en haut à droite, plus petit et intégré)
+        try {
+            ImageView qrCode = QRCodeService.generateQRCode(activite.getId(), activite.getNom());
+            if (qrCode != null) {
+                qrCode.setFitWidth(40); // Plus petit
+                qrCode.setFitHeight(40);
+                qrCode.getStyleClass().add("qr-image-card");
+
+                Tooltip tooltip = new Tooltip("📱 Scanner pour voir sur mobile");
+                tooltip.setStyle("-fx-background-color: #ff6b00; -fx-text-fill: white; -fx-font-size: 10;");
+                Tooltip.install(qrCode, tooltip);
+
+                qrCode.setOnMouseClicked(event -> {
+                    event.consume();
+                    openActivityDetail(activite);
+                });
+
+                StackPane.setAlignment(qrCode, Pos.TOP_RIGHT);
+                StackPane.setMargin(qrCode, new Insets(8, 8, 0, 0));
+                imageContainer.getChildren().add(qrCode);
+            }
+        } catch (Exception ex) {
+            // Silencieux - pas de QR code
+        }
+
+        // ===== INFOBOX (sans QR code en bas) =====
         VBox infoBox = new VBox(4);
         infoBox.setStyle("-fx-padding: 10 12 12 12; -fx-background-color: white;" +
                 "-fx-background-radius: 0 0 14 14;");
@@ -302,59 +330,12 @@ public class ACTfront implements Initializable {
 
         infoBox.getChildren().addAll(nameLabel, lieuBox, bottomRow);
 
-        // ===== CONTENEUR QR CODE =====
-        HBox qrContainer = new HBox(8);
-        qrContainer.getStyleClass().add("qr-container");
-        qrContainer.setAlignment(Pos.CENTER);
+        card.getChildren().addAll(imageContainer, infoBox);
 
-        // Générer le QR code - CORRECTION : appel avec 2 paramètres au lieu de 3
-        try {
-            // Utilisation de la méthode à 2 paramètres
-            ImageView qrCode = QRCodeService.generateQRCode(activite.getId(), activite.getNom());
-
-            if (qrCode != null) {
-                qrCode.getStyleClass().add("qr-image");
-
-                // Tooltip pour informer l'utilisateur
-                Tooltip tooltip = new Tooltip("📱 Scannez ce QR code pour voir les détails sur mobile");
-                tooltip.setStyle("-fx-background-color: #ff6b00; -fx-text-fill: white; -fx-font-size: 11;");
-                Tooltip.install(qrCode, tooltip);
-
-                // Clic sur le QR code ouvre aussi les détails
-                qrCode.setOnMouseClicked(event -> {
-                    event.consume();
-                    openActivityDetail(activite);
-                });
-
-                // Label indicatif
-                Label qrLabel = new Label("Scanner");
-                qrLabel.getStyleClass().add("qr-label");
-
-                qrContainer.getChildren().addAll(qrCode, qrLabel);
-            } else {
-                // Fallback: bouton texte si le QR code ne peut pas être généré
-                Button viewDetailsBtn = new Button("🔍 Voir détails");
-                viewDetailsBtn.getStyleClass().add("qr-fallback-button");
-                viewDetailsBtn.setOnAction(event -> openActivityDetail(activite));
-                qrContainer.getChildren().add(viewDetailsBtn);
-            }
-        } catch (Exception ex) {
-            System.err.println("Erreur génération QR code: " + ex.getMessage());
-            // Fallback silencieux
-            Button viewDetailsBtn = new Button("🔍 Détails");
-            viewDetailsBtn.getStyleClass().add("qr-fallback-button");
-            viewDetailsBtn.setOnAction(event -> openActivityDetail(activite));
-            qrContainer.getChildren().add(viewDetailsBtn);
-        }
-
-        card.getChildren().addAll(imageContainer, infoBox, qrContainer);
-
-        // Clic sur la carte (optionnel)
+        // Clic sur la carte
         card.setOnMouseClicked(event -> {
             selectedActivite = activite;
             updateSelectedDetail(activite);
-            // Décommentez la ligne suivante si vous voulez que le clic sur la carte ouvre aussi les détails
-            // openActivityDetail(activite);
         });
 
         // Effets de survol
@@ -377,22 +358,17 @@ public class ACTfront implements Initializable {
      */
     private void openActivityDetail(Activites activite) {
         try {
-            // Sauvegarder l'activité sélectionnée
             selectedActivite = activite;
 
-            // Charger le fichier FXML de détail
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/activitydetail.fxml"));
             Parent root = loader.load();
 
-            // Récupérer le contrôleur et lui passer l'activité sélectionnée
             ActivityDetailController controller = loader.getController();
             controller.setActivite(activite);
 
-            // Créer la scène et changer de fenêtre
             Scene scene = new Scene(root);
             Stage stage = (Stage) activitesGrid.getScene().getWindow();
 
-            // Mettre à jour le DeepLinkHandler avec le stage principal
             DeepLinkHandler.getInstance().setPrimaryStage(stage);
 
             stage.setScene(scene);
@@ -538,7 +514,6 @@ public class ACTfront implements Initializable {
 
     @FXML
     private void handleVersCategories() {
-        // Réinitialiser le filtre avant de partir
         CategorieContext.categorieFiltre = null;
 
         try {
@@ -567,11 +542,9 @@ public class ACTfront implements Initializable {
 
     @FXML
     private void handleShowAllActivities() {
-        // Réinitialiser le filtre de catégorie
         CategorieContext.categorieFiltre = null;
         currentCategorieFiltre = null;
 
-        // Mettre à jour l'interface
         if (titleLabel != null) {
             titleLabel.setText("Explorez les Activités");
         }
@@ -583,13 +556,11 @@ public class ACTfront implements Initializable {
             btnAllActivities.setManaged(false);
         }
 
-        // Recharger toutes les activités
         loadActivitesWithFilter();
     }
 
     @FXML
     private void handleSimulateQR() {
-        // Boîte de dialogue pour simuler le scan d'un QR code
         TextInputDialog dialog = new TextInputDialog();
         dialog.setTitle("Simulateur QR Code");
         dialog.setHeaderText("📱 Scanner un QR Code");
@@ -600,7 +571,6 @@ public class ACTfront implements Initializable {
             try {
                 int activityId = Integer.parseInt(input);
 
-                // Chercher l'activité dans la liste
                 Optional<Activites> activite = activitesList.stream()
                         .filter(a -> a.getId() == activityId)
                         .findFirst();
@@ -608,7 +578,6 @@ public class ACTfront implements Initializable {
                 if (activite.isPresent()) {
                     openActivityDetail(activite.get());
                 } else {
-                    // Essayer de charger depuis la BD
                     try {
                         Activites a = activitesCRUD.getOne(activityId);
                         if (a != null) {
