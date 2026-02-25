@@ -6,27 +6,24 @@ import Services.ActivitesCRUD;
 import Services.AIService;
 import Services.CategoriesCRUD;
 import Utils.FileManager;
-import javafx.animation.PauseTransition;
 import javafx.application.Platform;
-import javafx.beans.binding.Bindings;
-import javafx.beans.binding.BooleanBinding;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.geometry.Insets;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.util.Duration;
 
 import java.io.File;
 import java.io.IOException;
@@ -72,15 +69,12 @@ public class ACTback implements Initializable {
 
     // Patterns de validation
     private static final Pattern NOM_PATTERN = Pattern.compile("^[a-zA-ZÀ-ÿ\\s\\-']+$");
-    private static final Pattern LIEU_PATTERN = Pattern.compile("^[a-zA-ZÀ-ÿ\\s\\-',0-9]+$");
 
     // Constantes de validation
     private static final int NOM_MIN_LENGTH = 3;
     private static final int NOM_MAX_LENGTH = 100;
     private static final int DESCRIPTION_MIN_LENGTH = 15;
     private static final int DESCRIPTION_MAX_LENGTH = 500;
-    private static final int LIEU_MIN_LENGTH = 3;
-    private static final int LIEU_MAX_LENGTH = 100;
     private static final int BUDGET_MIN = 1;
     private static final int BUDGET_MAX = 1000000;
     private static final int DUREE_MIN = 1;
@@ -269,16 +263,11 @@ public class ACTback implements Initializable {
         }).start();
     }
 
-    /**
-     * Configure la génération automatique de description par IA
-     * Déclenchement uniquement à la perte de focus du dernier champ
-     */
     private void setupAutoDescriptionGeneration(TextField nomField, ComboBox<String> difficulteCombo,
                                                 TextField lieuField, TextArea descriptionField) {
 
         final boolean[] isGenerating = {false};
 
-        // Écouteur pour le champ lieu (dernier champ des 3 essentiels)
         lieuField.focusedProperty().addListener((obs, oldVal, newVal) -> {
             if (!newVal && !isGenerating[0]) {
                 if (!nomField.getText().trim().isEmpty() &&
@@ -292,7 +281,6 @@ public class ACTback implements Initializable {
             }
         });
 
-        // Aussi déclencher quand l'utilisateur appuie sur Entrée dans le champ lieu
         lieuField.setOnAction(event -> {
             if (!isGenerating[0]) {
                 if (!nomField.getText().trim().isEmpty() &&
@@ -307,9 +295,6 @@ public class ACTback implements Initializable {
         });
     }
 
-    /**
-     * Génère une description attrayante et professionnelle
-     */
     private void generateAttractiveDescription(TextField nomField, ComboBox<String> difficulteCombo,
                                                TextField lieuField, TextArea descriptionField,
                                                boolean[] isGenerating) {
@@ -354,9 +339,6 @@ public class ACTback implements Initializable {
         }).start();
     }
 
-    /**
-     * Description de secours attrayante (quand l'API ne répond pas)
-     */
     private String getFallbackAttractiveDescription(String nom, String difficulte, String lieu) {
         String[] templates = {
                 "✨ Préparez-vous pour une aventure inoubliable ! %s vous attend à %s. Une activité de niveau %s qui vous fera vibrer et créer des souvenirs magiques !",
@@ -373,6 +355,32 @@ public class ACTback implements Initializable {
         String template = templates[rand.nextInt(templates.length)];
 
         return String.format(template, nom, lieu, difficulte.toLowerCase());
+    }
+
+    private Button createAIGenerateButton(TextField nomField, ComboBox<String> difficulteCombo,
+                                          TextField lieuField, TextArea descriptionField) {
+        Button generateBtn = new Button("🤖 Générer description avec IA");
+        generateBtn.setStyle("-fx-background-color: #6366f1; -fx-text-fill: white; -fx-font-weight: 600; " +
+                "-fx-background-radius: 10; -fx-padding: 10 20; -fx-cursor: hand; -fx-font-size: 12;");
+
+        final boolean[] isGenerating = {false};
+
+        generateBtn.setOnAction(e -> {
+            if (nomField.getText().trim().isEmpty() ||
+                    difficulteCombo.getValue() == null ||
+                    lieuField.getText().trim().isEmpty()) {
+                showWarning("Champs manquants",
+                        "Veuillez remplir le nom, la difficulté et le lieu d'abord.");
+                return;
+            }
+
+            if (!isGenerating[0]) {
+                isGenerating[0] = true;
+                generateAttractiveDescription(nomField, difficulteCombo, lieuField, descriptionField, isGenerating);
+            }
+        });
+
+        return generateBtn;
     }
 
     private Label createErrorLabel() {
@@ -519,39 +527,6 @@ public class ACTback implements Initializable {
         return true;
     }
 
-    private boolean validateLieu(TextField champ, Label errorLabel) {
-        String texte = champ.getText();
-        champ.setStyle("-fx-border-color: #2d3a5f; -fx-border-width: 1;");
-        errorLabel.setText("");
-
-        if (texte == null || texte.trim().isEmpty()) {
-            champ.setStyle("-fx-border-color: #ef4444; -fx-border-width: 2;");
-            errorLabel.setText("Lieu : Ce champ est obligatoire");
-            return false;
-        }
-
-        String trimmed = texte.trim();
-        if (trimmed.length() < LIEU_MIN_LENGTH) {
-            champ.setStyle("-fx-border-color: #ef4444; -fx-border-width: 2;");
-            errorLabel.setText("Lieu : doit contenir au moins " + LIEU_MIN_LENGTH + " caractères");
-            return false;
-        }
-
-        if (trimmed.length() > LIEU_MAX_LENGTH) {
-            champ.setStyle("-fx-border-color: #ef4444; -fx-border-width: 2;");
-            errorLabel.setText("Lieu : ne doit pas dépasser " + LIEU_MAX_LENGTH + " caractères");
-            return false;
-        }
-
-        if (!LIEU_PATTERN.matcher(trimmed).matches()) {
-            champ.setStyle("-fx-border-color: #ef4444; -fx-border-width: 2;");
-            errorLabel.setText("Lieu : format invalide (lettres, chiffres, espaces et tirets uniquement)");
-            return false;
-        }
-
-        return true;
-    }
-
     private boolean validateAgeMin(TextField champ, Label errorLabel) {
         String texte = champ.getText();
         champ.setStyle("-fx-border-color: #2d3a5f; -fx-border-width: 1;");
@@ -676,8 +651,60 @@ public class ACTback implements Initializable {
         difficulteCombo.getItems().addAll("Facile", "Moyen", "Difficile", "Expert");
         difficulteCombo.setPromptText("Niveau de difficulté");
 
+        // CHAMP LIEU AMÉLIORÉ AVEC CARTE
+        HBox lieuBox = new HBox(10);
         TextField lieuField = new TextField();
-        lieuField.setPromptText("Lieu (min " + LIEU_MIN_LENGTH + " caractères)");
+        lieuField.setPromptText("Cliquez sur le bouton pour choisir sur la carte");
+        lieuField.setEditable(false);
+        lieuField.setStyle("-fx-background-color: #2d3a5f; -fx-text-fill: white; -fx-font-weight: bold;");
+        lieuField.setPrefWidth(400);
+
+        Button btnChoisirLieu = new Button("🗺️ Choisir sur la carte");
+        btnChoisirLieu.setStyle("-fx-background-color: #ff8c42; -fx-text-fill: white; -fx-font-weight: 600; -fx-background-radius: 10; -fx-padding: 8 15; -fx-cursor: hand;");
+
+        // Variables pour stocker les coordonnées
+        final double[] selectedLat = {0};
+        final double[] selectedLon = {0};
+        final String[] selectedAddress = {""};
+
+        btnChoisirLieu.setOnAction(e -> {
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/locationpicker.fxml"));
+                Parent root = loader.load();
+
+                LocationPickerController controller = loader.getController();
+                controller.setOnLocationSelected(() -> {
+                    LocationPickerController.LocationResult result = controller.getSelectedLocation();
+                    if (result != null) {
+                        String formattedAddress = result.getFormattedAddress();
+                        lieuField.setText(formattedAddress);
+                        selectedLat[0] = result.getLatitude();
+                        selectedLon[0] = result.getLongitude();
+                        selectedAddress[0] = formattedAddress;
+
+                        // Confirmation visuelle
+                        lieuField.setStyle("-fx-background-color: #2d3a5f; -fx-text-fill: #34d399; -fx-font-weight: bold;");
+
+                        showInfo("Localisation sélectionnée",
+                                "✅ Adresse : " + formattedAddress + "\n" +
+                                        "📍 Coordonnées : " + String.format("%.6f, %.6f", result.getLatitude(), result.getLongitude()));
+                    }
+                });
+
+                Scene scene = new Scene(root);
+                Stage stage = new Stage();
+                stage.setTitle("Choisir la localisation de l'activité");
+                stage.setScene(scene);
+                stage.initModality(Modality.APPLICATION_MODAL);
+                stage.show();
+
+            } catch (IOException ex) {
+                showError("Erreur", "Impossible d'ouvrir le sélecteur de carte : " + ex.getMessage());
+                ex.printStackTrace();
+            }
+        });
+
+        lieuBox.getChildren().addAll(lieuField, btnChoisirLieu);
 
         TextArea descriptionField = new TextArea();
         descriptionField.setPromptText("Description (min " + DESCRIPTION_MIN_LENGTH + " caractères)");
@@ -692,10 +719,9 @@ public class ACTback implements Initializable {
         TextField ageMinField = new TextField();
         ageMinField.setPromptText("Âge minimum (entre " + AGE_MIN + " et " + AGE_MAX + ")");
 
-        // NOUVEAU : DatePicker pour la date prévue
         DatePicker datePicker = new DatePicker();
         datePicker.setPromptText("Date prévue de l'activité");
-        datePicker.setValue(LocalDate.now().plusDays(7)); // Par défaut dans 7 jours
+        datePicker.setValue(LocalDate.now().plusDays(7));
 
         ComboBox<String> statutCombo = new ComboBox<>();
         statutCombo.getItems().addAll("Active", "Inactive", "En attente");
@@ -708,7 +734,6 @@ public class ACTback implements Initializable {
         Button chooseImageButton = new Button();
         Label imageNameLabel = new Label();
         VBox imageSection = createImageSection(imagePreview, chooseImageButton, imageNameLabel, null);
-
         chooseImageButton.setOnAction(e -> handleChooseImage(imagePreview, imageNameLabel));
 
         // Labels d'erreur
@@ -719,7 +744,7 @@ public class ACTback implements Initializable {
         Label errorBudget = createErrorLabel();
         Label errorDuree = createErrorLabel();
         Label errorAgeMin = createErrorLabel();
-        Label errorDate = createErrorLabel(); // NOUVEAU
+        Label errorDate = createErrorLabel();
 
         // Charger les catégories
         try {
@@ -763,78 +788,66 @@ public class ACTback implements Initializable {
         // Bouton de génération manuelle
         Button generateAIBtn = createAIGenerateButton(nomField, difficulteCombo, lieuField, descriptionField);
 
-        // Ajout des champs dans l'ordre LOGIQUE
+        // Ajout des champs dans l'ordre
         int row = 0;
 
-        // 1. NOM
         grid.add(new Label("Nom:*"), 0, row);
         VBox vboxNom = new VBox(3);
         vboxNom.getChildren().addAll(nomField, errorNom);
         grid.add(vboxNom, 1, row++);
 
-        // 2. DIFFICULTÉ
         grid.add(new Label("Difficulté:*"), 0, row);
         VBox vboxDifficulte = new VBox(3);
         vboxDifficulte.getChildren().addAll(difficulteCombo, errorDifficulte);
         grid.add(vboxDifficulte, 1, row++);
 
-        // 3. LIEU
         grid.add(new Label("Lieu:*"), 0, row);
         VBox vboxLieu = new VBox(3);
-        vboxLieu.getChildren().addAll(lieuField, errorLieu);
+        vboxLieu.getChildren().addAll(lieuBox, errorLieu);
         grid.add(vboxLieu, 1, row++);
 
-        // 4. DESCRIPTION
         grid.add(new Label("Description:*"), 0, row);
         VBox vboxDescription = new VBox(3);
         vboxDescription.getChildren().addAll(descriptionField, errorDescription);
         grid.add(vboxDescription, 1, row++);
 
-        // 5. BUDGET
         grid.add(new Label("Budget (€):*"), 0, row);
         VBox vboxBudget = new VBox(3);
         vboxBudget.getChildren().addAll(budgetField, errorBudget);
         grid.add(vboxBudget, 1, row++);
 
-        // 6. DURÉE
         grid.add(new Label("Durée (h):*"), 0, row);
         VBox vboxDuree = new VBox(3);
         vboxDuree.getChildren().addAll(dureeField, errorDuree);
         grid.add(vboxDuree, 1, row++);
 
-        // 7. ÂGE MINIMUM
         grid.add(new Label("Âge minimum:*"), 0, row);
         VBox vboxAgeMin = new VBox(3);
         vboxAgeMin.getChildren().addAll(ageMinField, errorAgeMin);
         grid.add(vboxAgeMin, 1, row++);
 
-        // 8. DATE PREVUE (NOUVEAU)
         grid.add(new Label("Date prévue:*"), 0, row);
         VBox vboxDate = new VBox(3);
         vboxDate.getChildren().addAll(datePicker, errorDate);
         grid.add(vboxDate, 1, row++);
 
-        // 9. STATUT
         grid.add(new Label("Statut:*"), 0, row);
         VBox vboxStatut = new VBox(3);
         vboxStatut.getChildren().addAll(statutCombo, new Label());
         grid.add(vboxStatut, 1, row++);
 
-        // 10. CATÉGORIE
         grid.add(new Label("Catégorie:"), 0, row);
         VBox vboxCategorie = new VBox(3);
         vboxCategorie.getChildren().addAll(categorieCombo, new Label());
         grid.add(vboxCategorie, 1, row++);
 
-        // 11. IA
         grid.add(new Label("IA:"), 0, row);
         VBox vboxIA = new VBox(10);
-        Label iaHint = new Label("✨ La description sera générée automatiquement quand vous aurez rempli les 3 champs (nom, difficulté, lieu) et quitté le champ lieu");
+        Label iaHint = new Label("✨ La description sera générée automatiquement quand vous aurez rempli les 3 champs (nom, difficulté, lieu)");
         iaHint.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 11; -fx-wrap-text: true;");
         vboxIA.getChildren().addAll(generateAIBtn, iaHint);
         grid.add(vboxIA, 1, row++);
 
-        // 12. IMAGE
         grid.add(new Label("Image:"), 0, row);
         grid.add(imageSection, 1, row++);
 
@@ -844,12 +857,11 @@ public class ACTback implements Initializable {
 
         dialog.getDialogPane().setContent(contentBox);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
-        dialog.getDialogPane().setPrefWidth(800);
-        dialog.getDialogPane().setPrefHeight(700); // Légèrement plus haut pour la date
+        dialog.getDialogPane().setPrefWidth(900);
+        dialog.getDialogPane().setPrefHeight(700);
 
         Button okButton = (Button) dialog.getDialogPane().lookupButton(ButtonType.OK);
         okButton.addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
-            // Validation de la date
             boolean isDateValid = datePicker.getValue() != null;
             if (!isDateValid) {
                 datePicker.setStyle("-fx-border-color: #ef4444; -fx-border-width: 2;");
@@ -859,9 +871,18 @@ public class ACTback implements Initializable {
                 errorDate.setText("");
             }
 
+            boolean isLieuValid = !lieuField.getText().trim().isEmpty();
+            if (!isLieuValid) {
+                lieuField.setStyle("-fx-border-color: #ef4444; -fx-border-width: 2;");
+                errorLieu.setText("Lieu : Veuillez sélectionner un lieu sur la carte");
+            } else {
+                lieuField.setStyle("-fx-background-color: #2d3a5f; -fx-text-fill: white; -fx-border-color: #2d3a5f;");
+                errorLieu.setText("");
+            }
+
             boolean isValid = validateNom(nomField, errorNom)
                     && validateDifficulte(difficulteCombo, errorDifficulte)
-                    && validateLieu(lieuField, errorLieu)
+                    && isLieuValid
                     && validateDescription(descriptionField, errorDescription)
                     && validateBudget(budgetField, errorBudget)
                     && validateDuree(dureeField, errorDuree)
@@ -885,8 +906,6 @@ public class ACTback implements Initializable {
                     activite.setLieu(lieuField.getText().trim());
                     activite.setAgemin(Integer.parseInt(ageMinField.getText().trim()));
                     activite.setStatut(statutCombo.getValue());
-
-                    // NOUVEAU : Ajouter la date
                     activite.setDatePrevue(datePicker.getValue());
 
                     Categories selectedCategorie = categorieCombo.getValue();
@@ -919,7 +938,7 @@ public class ACTback implements Initializable {
         result.ifPresent(activite -> {
             try {
                 activitesCRUD.ajouter(activite);
-                showInfo("Succès", "Activité ajoutée avec succès !");
+                showInfo("Succès", "✅ Activité ajoutée avec succès !\n📍 Lieu: " + activite.getLieu());
                 loadActivites();
                 selectedImageFile = null;
             } catch (SQLException e) {
@@ -927,32 +946,6 @@ public class ACTback implements Initializable {
                 e.printStackTrace();
             }
         });
-    }
-
-    private Button createAIGenerateButton(TextField nomField, ComboBox<String> difficulteCombo,
-                                          TextField lieuField, TextArea descriptionField) {
-        Button generateBtn = new Button("🤖 Générer description avec IA");
-        generateBtn.setStyle("-fx-background-color: #6366f1; -fx-text-fill: white; -fx-font-weight: 600; " +
-                "-fx-background-radius: 10; -fx-padding: 10 20; -fx-cursor: hand; -fx-font-size: 12;");
-
-        final boolean[] isGenerating = {false};
-
-        generateBtn.setOnAction(e -> {
-            if (nomField.getText().trim().isEmpty() ||
-                    difficulteCombo.getValue() == null ||
-                    lieuField.getText().trim().isEmpty()) {
-                showWarning("Champs manquants",
-                        "Veuillez remplir le nom, la difficulté et le lieu d'abord.");
-                return;
-            }
-
-            if (!isGenerating[0]) {
-                isGenerating[0] = true;
-                generateAttractiveDescription(nomField, difficulteCombo, lieuField, descriptionField, isGenerating);
-            }
-        });
-
-        return generateBtn;
     }
 
     @FXML
@@ -980,7 +973,53 @@ public class ACTback implements Initializable {
         difficulteCombo.getItems().addAll("Facile", "Moyen", "Difficile", "Expert");
         difficulteCombo.setValue(selectedActivite.getNiveaudifficulte());
 
+        // CHAMP LIEU AMÉLIORÉ AVEC CARTE POUR MODIFICATION
+        HBox lieuBox = new HBox(10);
         TextField lieuField = new TextField(selectedActivite.getLieu());
+        lieuField.setEditable(false);
+        lieuField.setStyle("-fx-background-color: #2d3a5f; -fx-text-fill: white; -fx-font-weight: bold;");
+        lieuField.setPrefWidth(400);
+
+        Button btnChoisirLieu = new Button("🗺️ Changer sur la carte");
+        btnChoisirLieu.setStyle("-fx-background-color: #ff8c42; -fx-text-fill: white; -fx-font-weight: 600; -fx-background-radius: 10; -fx-padding: 8 15; -fx-cursor: hand;");
+
+        final double[] selectedLat = {0};
+        final double[] selectedLon = {0};
+        final String[] selectedAddress = {selectedActivite.getLieu()};
+
+        btnChoisirLieu.setOnAction(e -> {
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/locationpicker.fxml"));
+                Parent root = loader.load();
+
+                LocationPickerController controller = loader.getController();
+                controller.setOnLocationSelected(() -> {
+                    LocationPickerController.LocationResult result = controller.getSelectedLocation();
+                    if (result != null) {
+                        String formattedAddress = result.getFormattedAddress();
+                        lieuField.setText(formattedAddress);
+                        selectedLat[0] = result.getLatitude();
+                        selectedLon[0] = result.getLongitude();
+                        selectedAddress[0] = formattedAddress;
+
+                        lieuField.setStyle("-fx-background-color: #2d3a5f; -fx-text-fill: #34d399; -fx-font-weight: bold;");
+                    }
+                });
+
+                Scene scene = new Scene(root);
+                Stage stage = new Stage();
+                stage.setTitle("Changer la localisation de l'activité");
+                stage.setScene(scene);
+                stage.initModality(Modality.APPLICATION_MODAL);
+                stage.show();
+
+            } catch (IOException ex) {
+                showError("Erreur", "Impossible d'ouvrir le sélecteur de carte : " + ex.getMessage());
+                ex.printStackTrace();
+            }
+        });
+
+        lieuBox.getChildren().addAll(lieuField, btnChoisirLieu);
 
         TextArea descriptionField = new TextArea(selectedActivite.getDescription());
         descriptionField.setPrefRowCount(3);
@@ -989,7 +1028,6 @@ public class ACTback implements Initializable {
         TextField dureeField = new TextField(String.valueOf(selectedActivite.getDuree()));
         TextField ageMinField = new TextField(String.valueOf(selectedActivite.getAgemin()));
 
-        // NOUVEAU : DatePicker avec la date existante
         DatePicker datePicker = new DatePicker();
         datePicker.setValue(selectedActivite.getDatePrevue());
         datePicker.setPromptText("Date prévue de l'activité");
@@ -1003,7 +1041,6 @@ public class ACTback implements Initializable {
         Button chooseImageButton = new Button();
         Label imageNameLabel = new Label();
         VBox imageSection = createImageSection(imagePreview, chooseImageButton, imageNameLabel, currentImagePath);
-
         chooseImageButton.setOnAction(e -> handleChooseImage(imagePreview, imageNameLabel));
 
         // Labels d'erreur
@@ -1014,7 +1051,7 @@ public class ACTback implements Initializable {
         Label errorBudget = createErrorLabel();
         Label errorDuree = createErrorLabel();
         Label errorAgeMin = createErrorLabel();
-        Label errorDate = createErrorLabel(); // NOUVEAU
+        Label errorDate = createErrorLabel();
 
         ComboBox<Categories> categorieCombo = new ComboBox<>();
         try {
@@ -1066,78 +1103,66 @@ public class ACTback implements Initializable {
         // Bouton de génération manuelle
         Button generateAIBtn = createAIGenerateButton(nomField, difficulteCombo, lieuField, descriptionField);
 
-        // Ajout des champs dans l'ordre LOGIQUE
+        // Ajout des champs dans l'ordre
         int row = 0;
 
-        // 1. NOM
         grid.add(new Label("Nom:*"), 0, row);
         VBox vboxNom = new VBox(3);
         vboxNom.getChildren().addAll(nomField, errorNom);
         grid.add(vboxNom, 1, row++);
 
-        // 2. DIFFICULTÉ
         grid.add(new Label("Difficulté:*"), 0, row);
         VBox vboxDifficulte = new VBox(3);
         vboxDifficulte.getChildren().addAll(difficulteCombo, errorDifficulte);
         grid.add(vboxDifficulte, 1, row++);
 
-        // 3. LIEU
         grid.add(new Label("Lieu:*"), 0, row);
         VBox vboxLieu = new VBox(3);
-        vboxLieu.getChildren().addAll(lieuField, errorLieu);
+        vboxLieu.getChildren().addAll(lieuBox, errorLieu);
         grid.add(vboxLieu, 1, row++);
 
-        // 4. DESCRIPTION
         grid.add(new Label("Description:*"), 0, row);
         VBox vboxDescription = new VBox(3);
         vboxDescription.getChildren().addAll(descriptionField, errorDescription);
         grid.add(vboxDescription, 1, row++);
 
-        // 5. BUDGET
         grid.add(new Label("Budget (€):*"), 0, row);
         VBox vboxBudget = new VBox(3);
         vboxBudget.getChildren().addAll(budgetField, errorBudget);
         grid.add(vboxBudget, 1, row++);
 
-        // 6. DURÉE
         grid.add(new Label("Durée (h):*"), 0, row);
         VBox vboxDuree = new VBox(3);
         vboxDuree.getChildren().addAll(dureeField, errorDuree);
         grid.add(vboxDuree, 1, row++);
 
-        // 7. ÂGE MINIMUM
         grid.add(new Label("Âge minimum:*"), 0, row);
         VBox vboxAgeMin = new VBox(3);
         vboxAgeMin.getChildren().addAll(ageMinField, errorAgeMin);
         grid.add(vboxAgeMin, 1, row++);
 
-        // 8. DATE PREVUE (NOUVEAU)
         grid.add(new Label("Date prévue:*"), 0, row);
         VBox vboxDate = new VBox(3);
         vboxDate.getChildren().addAll(datePicker, errorDate);
         grid.add(vboxDate, 1, row++);
 
-        // 9. STATUT
         grid.add(new Label("Statut:*"), 0, row);
         VBox vboxStatut = new VBox(3);
         vboxStatut.getChildren().addAll(statutCombo, new Label());
         grid.add(vboxStatut, 1, row++);
 
-        // 10. CATÉGORIE
         grid.add(new Label("Catégorie:"), 0, row);
         VBox vboxCategorie = new VBox(3);
         vboxCategorie.getChildren().addAll(categorieCombo, new Label());
         grid.add(vboxCategorie, 1, row++);
 
-        // 11. IA
         grid.add(new Label("IA:"), 0, row);
         VBox vboxIA = new VBox(10);
-        Label iaHint = new Label("✨ La description sera régénérée automatiquement si vous modifiez les champs et quittez le champ lieu");
+        Label iaHint = new Label("✨ La description sera régénérée automatiquement si vous modifiez les champs");
         iaHint.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 11; -fx-wrap-text: true;");
         vboxIA.getChildren().addAll(generateAIBtn, iaHint);
         grid.add(vboxIA, 1, row++);
 
-        // 12. IMAGE
         grid.add(new Label("Image:"), 0, row);
         grid.add(imageSection, 1, row++);
 
@@ -1147,12 +1172,11 @@ public class ACTback implements Initializable {
 
         dialog.getDialogPane().setContent(contentBox);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
-        dialog.getDialogPane().setPrefWidth(800);
-        dialog.getDialogPane().setPrefHeight(700); // Légèrement plus haut pour la date
+        dialog.getDialogPane().setPrefWidth(900);
+        dialog.getDialogPane().setPrefHeight(700);
 
         Button okButton = (Button) dialog.getDialogPane().lookupButton(ButtonType.OK);
         okButton.addEventFilter(javafx.event.ActionEvent.ACTION, event -> {
-            // Validation de la date
             boolean isDateValid = datePicker.getValue() != null;
             if (!isDateValid) {
                 datePicker.setStyle("-fx-border-color: #ef4444; -fx-border-width: 2;");
@@ -1162,9 +1186,15 @@ public class ACTback implements Initializable {
                 errorDate.setText("");
             }
 
+            boolean isLieuValid = !lieuField.getText().trim().isEmpty();
+            if (!isLieuValid) {
+                lieuField.setStyle("-fx-border-color: #ef4444; -fx-border-width: 2;");
+                errorLieu.setText("Lieu : Veuillez sélectionner un lieu sur la carte");
+            }
+
             boolean isValid = validateNom(nomField, errorNom)
                     && validateDifficulte(difficulteCombo, errorDifficulte)
-                    && validateLieu(lieuField, errorLieu)
+                    && isLieuValid
                     && validateDescription(descriptionField, errorDescription)
                     && validateBudget(budgetField, errorBudget)
                     && validateDuree(dureeField, errorDuree)
@@ -1187,8 +1217,6 @@ public class ACTback implements Initializable {
                     selectedActivite.setLieu(lieuField.getText().trim());
                     selectedActivite.setAgemin(Integer.parseInt(ageMinField.getText().trim()));
                     selectedActivite.setStatut(statutCombo.getValue());
-
-                    // NOUVEAU : Mettre à jour la date
                     selectedActivite.setDatePrevue(datePicker.getValue());
 
                     Categories selectedCategorie = categorieCombo.getValue();
@@ -1226,7 +1254,7 @@ public class ACTback implements Initializable {
         result.ifPresent(activite -> {
             try {
                 activitesCRUD.modifier(activite);
-                showInfo("Succès", "Activité modifiée avec succès !");
+                showInfo("Succès", "✅ Activité modifiée avec succès !");
                 loadActivites();
                 selectedImageFile = null;
             } catch (SQLException e) {
@@ -1255,7 +1283,7 @@ public class ACTback implements Initializable {
         if (result.isPresent() && result.get() == ButtonType.OK) {
             try {
                 activitesCRUD.supprimer(selectedActivite.getId());
-                showInfo("Succès", "Activité supprimée avec succès !");
+                showInfo("Succès", "✅ Activité supprimée avec succès !");
                 loadActivites();
             } catch (SQLException e) {
                 showError("Erreur de suppression", "Impossible de supprimer l'activité : " + e.getMessage());
