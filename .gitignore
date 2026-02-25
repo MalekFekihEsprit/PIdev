@@ -1,3 +1,62 @@
+### Fichiers de configuration sensibles - TOUS LES EMPLACEMENTS ###
+# Source principal
+src/main/resources/config.properties
+src/test/resources/config.properties
+
+# Dossier de build (target) - tout le dossier
 target/
+**/target/
+
+# Fichiers de config dans target
+target/classes/config.properties
+target/test-classes/config.properties
+
+# Fichiers de propriétés sensibles
+*.properties
+!*.css
+!*.fxml
+!*.xml
+!*.json
+
+### IDEs - Fichiers de configuration d'IDE ###
 .idea/
+*.iml
+.classpath
+.project
+.settings/
+.vscode/
+nbproject/
+nbactions.xml
+nb-configuration.xml
+
+### Système - Fichiers cachés ###
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*.swo
+*~
+
+### Logs ###
+*.log
+logs/
+**/logs/
+
+### Environnements spécifiques ###
+.env
+.env.local
+*.env
+
+### Fichiers temporaires ###
+*.tmp
+*.temp
+*.bak
+*.old
+
+### Build ###
+build/
+out/
 *.class
+*.jar
+*.war
+*.ear
