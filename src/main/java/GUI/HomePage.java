@@ -1,5 +1,6 @@
 package GUI;
 
+import Server.QRServer;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -16,7 +17,10 @@ public class HomePage extends Application {
     @Override
     public void start(Stage primaryStage) {
         try {
-            // Lancer le front office des activités par défaut
+            // DÉMARRER LE SERVEUR QR CODE
+            QRServer.startServer();
+
+            // Lancer le front office des activités
             Parent root = FXMLLoader.load(getClass().getResource("/activitesfront.fxml"));
 
             Scene scene = new Scene(root);
@@ -24,9 +28,21 @@ public class HomePage extends Application {
             primaryStage.setScene(scene);
             primaryStage.show();
 
+            // Ajouter un hook pour arrêter le serveur à la fermeture
+            primaryStage.setOnCloseRequest(event -> {
+                QRServer.stopServer();
+            });
+
         } catch (IOException e) {
             System.err.println("Erreur lors du chargement du fichier FXML : " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void stop() throws Exception {
+        // Arrêter le serveur proprement
+        QRServer.stopServer();
+        super.stop();
     }
 }
