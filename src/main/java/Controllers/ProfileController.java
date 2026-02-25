@@ -1,6 +1,7 @@
 package Controllers;
 
 import Entities.User;
+import Services.CountryService;
 import Services.UserCRUD;
 import Utils.*;
 import javafx.fxml.FXML;
@@ -20,6 +21,9 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 public class ProfileController {
@@ -34,7 +38,9 @@ public class ProfileController {
     @FXML private Button editModeButton, saveButton, cancelButton, deleteButton, uploadPhotoButton;
     @FXML private Hyperlink logoutLink;
     @FXML private Label statsVoyages, statsDepenses;
-
+    @FXML private ComboBox<Country> countryCodeCombo; // Country object holds iso + dial + flag
+    
+    private final Map<String, Image> flagCache = new HashMap<>();
     private File selectedImageFile;
     private UserCRUD userCRUD = new UserCRUD();
     private User currentUser;
@@ -48,6 +54,7 @@ public class ProfileController {
             return;
         }
         loadUserData();
+        setupCountryCodeCombo();
         loadAvatar();
         statsVoyages.setText("0");
         statsDepenses.setText("0 €");
@@ -71,10 +78,107 @@ public class ProfileController {
         nomField.setText(currentUser.getNom());
         prenomField.setText(currentUser.getPrenom());
         emailField.setText(currentUser.getEmail());
-        telephoneField.setText(currentUser.getTelephone() != null ? currentUser.getTelephone() : "");
+
+        // Split full telephone into dial + number
+        if (currentUser.getTelephone() != null && !currentUser.getTelephone().isEmpty()) {
+            String phone = currentUser.getTelephone();
+            String dial = phone.replaceAll("\\d+", "");
+            String number = phone.substring(dial.length());
+            telephoneField.setText(number);
+
+            countryCodeCombo.getItems().stream()
+                    .filter(c -> c.getDialCode().equals(dial))
+                    .findFirst()
+                    .ifPresent(countryCodeCombo::setValue);
+        } else {
+            telephoneField.setText("");
+        }
+
         dateNaissancePicker.setValue(currentUser.getDateNaissance());
         photoUrlField.setText(currentUser.getPhotoUrl() != null ? currentUser.getPhotoUrl() : "");
     }
+    
+        private void setupCountryCodeCombo() {
+            List<Country> countries = null; // Same as signup
+            try {
+                countries = CountryService.getAllCountries();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+
+            for (Country c : countries) {
+                countryCodeCombo.getItems().add(c);
+
+                // Preload flag asynchronously
+                new Thread(() -> {
+                    try {
+                        Image img = new Image(c.getFlagUrl(), 24, 16, true, true, true);
+                        flagCache.put(c.getIsoCode(), img);
+                    } catch (Exception ignored) {}
+                }).start();
+            }
+
+            // Cell factory to show flag + dial
+            countryCodeCombo.setCellFactory(lv -> new ListCell<Country>() {
+                private final ImageView imageView = new ImageView();
+
+                @Override
+                protected void updateItem(Country country, boolean empty) {
+                    super.updateItem(country, empty);
+                    if (empty || country == null) {
+                        setText(null);
+                        setGraphic(null);
+                    } else {
+                        imageView.setFitWidth(24);
+                        imageView.setFitHeight(16);
+                        imageView.setPreserveRatio(true);
+                        imageView.setImage(flagCache.get(country.getIsoCode()));
+                        setText(" " + country.getDialCode());
+                        setGraphic(imageView);
+                    }
+                }
+            });
+
+            countryCodeCombo.setButtonCell(new ListCell<Country>() {
+                private final ImageView imageView = new ImageView();
+
+                @Override
+                protected void updateItem(Country country, boolean empty) {
+                    super.updateItem(country, empty);
+                    if (empty || country == null) {
+                        setText(null);
+                        setGraphic(null);
+                    } else {
+                        imageView.setFitWidth(24);
+                        imageView.setFitHeight(16);
+                        imageView.setPreserveRatio(true);
+                        imageView.setImage(flagCache.get(country.getIsoCode()));
+                        setText(" " + country.getDialCode());
+                        setGraphic(imageView);
+                    }
+                }
+            });
+
+            // Auto-select current user's country code
+            if (currentUser.getTelephone() != null && !currentUser.getTelephone().isEmpty()) {
+                String userDial = currentUser.getTelephone().substring(0, currentUser.getTelephone().indexOf(currentUser.getTelephone().replaceAll("\\D+", "")));
+                countries.stream()
+                        .filter(c -> c.getDialCode().equals(userDial))
+                        .findFirst()
+                        .ifPresent(countryCodeCombo::setValue);
+            } else {
+                // fallback to IP-detection like signup
+                try {
+                    String iso = PhoneCodeUtil.getCountryCodeFromIP();
+                    countries.stream().filter(c -> c.getIsoCode().equals(iso))
+                            .findFirst()
+                            .ifPresent(countryCodeCombo::setValue);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    countryCodeCombo.setValue(countries.get(0)); // default
+                }
+            }
+        }
 
     private void loadAvatar() {
         Image image = null;
@@ -152,7 +256,11 @@ public class ProfileController {
     private void handleSave() {
         String nom = nomField.getText().trim();
         String prenom = prenomField.getText().trim();
-        String telephone = telephoneField.getText().trim();
+        
+        String dial = countryCodeCombo.getValue() != null ? countryCodeCombo.getValue().getDialCode() : "";
+        String phoneNumber = telephoneField.getText().trim();
+        currentUser.setTelephone(phoneNumber.isEmpty() ? null : dial + phoneNumber);
+
         LocalDate dateNaissance = dateNaissancePicker.getValue();
         String photoUrl = photoUrlField.getText().trim();
         String newPassword = newPasswordField.getText();
@@ -175,7 +283,7 @@ public class ProfileController {
             showAlert(Alert.AlertType.ERROR, "Validation", "Vous devez avoir au moins 18 ans.");
             return;
         }
-        if (!telephone.isEmpty() && !ValidationUtils.isValidPhone(telephone)) {
+        if (!phoneNumber.isEmpty() && !ValidationUtils.isValidPhone(phoneNumber)) {
             showAlert(Alert.AlertType.ERROR, "Validation", "Le téléphone doit contenir 8 à 15 chiffres.");
             return;
         }
@@ -205,7 +313,7 @@ public class ProfileController {
         // Mise à jour des champs texte
         currentUser.setNom(nom);
         currentUser.setPrenom(prenom);
-        currentUser.setTelephone(telephone.isEmpty() ? null : telephone);
+        currentUser.setTelephone(phoneNumber.isEmpty() ? null : phoneNumber);
         currentUser.setDateNaissance(dateNaissance);
 
         try {

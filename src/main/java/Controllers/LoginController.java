@@ -2,6 +2,7 @@ package Controllers;
 
 import Entities.User;
 import Services.UserCRUD;
+import Utils.Country;
 import Utils.UserSession;
 import Utils.ValidationUtils;
 import javafx.fxml.FXML;
@@ -21,6 +22,7 @@ public class LoginController {
     @FXML private Hyperlink forgotPasswordLink;
     @FXML private Hyperlink signupLink;
     @FXML private Button loginButton;
+    @FXML private ComboBox<Country> countryCodeCombo;
 
     private UserCRUD userCRUD = new UserCRUD();
 

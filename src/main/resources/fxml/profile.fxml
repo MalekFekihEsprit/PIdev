@@ -20,6 +20,7 @@
 <?import javafx.scene.shape.Circle?>
 <?import javafx.scene.shape.Rectangle?>
 
+<?import javafx.scene.control.ComboBox?>
 <AnchorPane prefHeight="900" prefWidth="1400" style="-fx-background-color: #f8fafc;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.ProfileController">
 
     <!-- TOP NAV (copiée de interfaceFront.txt) -->
@@ -98,8 +99,8 @@
                 <!-- Contenu principal : deux colonnes -->
                 <GridPane hgap="20" vgap="20">
                     <columnConstraints>
-                        <ColumnConstraints percentWidth="60" />
-                        <ColumnConstraints percentWidth="40" />
+                        <ColumnConstraints percentWidth="70" />
+                        <ColumnConstraints percentWidth="30" />
                     </columnConstraints>
 
                     <!-- Colonne gauche : formulaire -->
@@ -119,8 +120,13 @@
                             <Label style="-fx-font-size: 14; -fx-font-weight: 500; -fx-text-fill: #475569;" text="Email" GridPane.columnIndex="0" GridPane.rowIndex="2" />
                             <TextField fx:id="emailField" editable="false" style="-fx-background-color: #f1f5f9; -fx-background-radius: 16; -fx-padding: 10 14; -fx-font-size: 14;" GridPane.columnIndex="1" GridPane.rowIndex="2" />
 
-                            <Label style="-fx-font-size: 14; -fx-font-weight: 500; -fx-text-fill: #475569;" text="Téléphone" GridPane.columnIndex="0" GridPane.rowIndex="3" />
-                            <TextField fx:id="telephoneField" editable="false" style="-fx-background-color: #f1f5f9; -fx-background-radius: 16; -fx-padding: 10 14; -fx-font-size: 14;" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                            <!-- Téléphone avec indicatif et flag -->
+                            <VBox spacing="4" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                                <HBox spacing="10">
+                                    <ComboBox fx:id="countryCodeCombo" prefWidth="150" style="-fx-background-color: #f1f5f9; -fx-background-radius: 16; -fx-padding: 4;" />
+                                    <TextField fx:id="telephoneField" promptText="12345678" HBox.hgrow="ALWAYS" style="-fx-background-color: #f1f5f9; -fx-background-radius: 16; -fx-padding: 10 14; -fx-font-size: 14;" />
+                                </HBox>
+                            </VBox>
 
                             <Label style="-fx-font-size: 14; -fx-font-weight: 500; -fx-text-fill: #475569;" text="Date naissance" GridPane.columnIndex="0" GridPane.rowIndex="4" />
                             <DatePicker fx:id="dateNaissancePicker" editable="false" style="-fx-background-color: #f1f5f9; -fx-background-radius: 16; -fx-padding: 8 14; -fx-font-size: 14;" GridPane.columnIndex="1" GridPane.rowIndex="4" />

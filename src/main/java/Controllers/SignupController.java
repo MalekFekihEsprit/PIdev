@@ -1,20 +1,27 @@
 package Controllers;
 
 import Entities.User;
+import Services.CountryService;
 import Services.UserCRUD;
+import Utils.Country;
 import Utils.EmailSender;
+import Utils.PhoneCodeUtil;
 import Utils.ValidationUtils;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
 
 import javax.mail.MessagingException;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 public class SignupController {
@@ -29,8 +36,114 @@ public class SignupController {
     @FXML private TextField photoUrlField;
     @FXML private Button signupButton;
     @FXML private Hyperlink loginLink;
-
+    @FXML private ComboBox<Country> countryCodeCombo;
+    private final Map<String, Image> flagCache = new HashMap<>();
     private UserCRUD userCRUD = new UserCRUD();
+// make the ComboBox unclickable and uneditable
+    @FXML
+    public void initialize() {
+
+        try {
+            // 1️⃣ Load countries (this fills the ComboBox)
+            countryCodeCombo.getItems().addAll(CountryService.getAllCountries());
+            for (Country c : CountryService.getAllCountries()) {
+                countryCodeCombo.getItems().add(c);
+
+                // Preload flag images asynchronously
+                new Thread(() -> {
+                    try {
+                        Image img = new Image(c.getFlagUrl(), 24, 16, true, true, true);
+                        flagCache.put(c.getIsoCode(), img);
+                    } catch (Exception e) {
+                        // ignore failed flags
+                    }
+                }).start();
+            }
+            countryCodeCombo.setCellFactory(lv -> new ListCell<Country>() {
+
+                private final ImageView imageView = new ImageView();
+
+                @Override
+                protected void updateItem(Country country, boolean empty) {
+                    super.updateItem(country, empty);
+
+                    if (empty || country == null) {
+                        setText(null);
+                        setGraphic(null);
+                    } else {
+                        imageView.setFitWidth(24);
+                        imageView.setFitHeight(16);
+                        imageView.setPreserveRatio(true);
+
+                        Image cached = flagCache.get(country.getIsoCode());
+                        imageView.setImage(cached);
+                        setText(country.getName() + " " + country.getDialCode());
+                        setGraphic(imageView);
+                    }
+                }
+            });
+            // 2️⃣ Auto-detect country from IP
+            String iso = PhoneCodeUtil.getCountryCodeFromIP();
+
+            for (Country c : countryCodeCombo.getItems()) {
+                if (c.getIsoCode().equalsIgnoreCase(iso)) {
+                    countryCodeCombo.setValue(c);
+                    break;
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // 3️⃣ Set flag rendering (this part stays as before)
+        countryCodeCombo.setCellFactory(listView -> new ListCell<Country>() {
+            private final ImageView imageView = new ImageView();
+
+            @Override
+            protected void updateItem(Country country, boolean empty) {
+                super.updateItem(country, empty);
+
+                if (empty || country == null) {
+                    setText(null);
+                    setGraphic(null);
+                } else {
+                    imageView.setFitWidth(24);
+                    imageView.setFitHeight(16);
+                    imageView.setPreserveRatio(true);
+
+                    Image cached = flagCache.get(country.getIsoCode());
+                    imageView.setImage(cached);
+                    setText(country.getName() + " " + country.getDialCode());
+                    setGraphic(imageView);
+
+                }
+            }
+        });
+        countryCodeCombo.setButtonCell(new ListCell<Country>() {
+
+            private final ImageView imageView = new ImageView();
+
+            @Override
+            protected void updateItem(Country country, boolean empty) {
+                super.updateItem(country, empty);
+
+                if (empty || country == null) {
+                    setText(null);
+                    setGraphic(null);
+                } else {
+                    imageView.setFitWidth(24);
+                    imageView.setFitHeight(16);
+                    imageView.setPreserveRatio(true);
+
+                    Image cached = flagCache.get(country.getIsoCode());
+                    imageView.setImage(cached);
+                    setText(country.getName() + " " + country.getDialCode());
+                    setGraphic(imageView);
+                }
+            }
+        });
+    }
 
     @FXML
     private void handleSignup() {
@@ -38,7 +151,16 @@ public class SignupController {
         String nom = nomField.getText().trim();
         String prenom = prenomField.getText().trim();
         String email = emailField.getText().trim();
-        String telephone = telephoneField.getText().trim();
+
+        Country selectedCountry = countryCodeCombo.getValue();
+        String localPhone = telephoneField.getText().trim();
+
+        String telephone = "";
+
+        if (selectedCountry != null && !localPhone.isEmpty()) {
+            telephone = selectedCountry.getDialCode() + localPhone;
+        }
+
         LocalDate dateNaissance = dateNaissancePicker.getValue();
         String password = passwordField.getText();
         String confirm = confirmPasswordField.getText();
@@ -57,8 +179,9 @@ public class SignupController {
             showAlert(Alert.AlertType.ERROR, "Validation", "L'email n'est pas valide.");
             return;
         }
-        if (!ValidationUtils.isValidPhone(telephone) && !telephone.isEmpty()) {
-            showAlert(Alert.AlertType.ERROR, "Validation", "Le téléphone doit contenir 8 à 15 chiffres.");
+        if (!localPhone.isEmpty() && !ValidationUtils.isValidPhone(localPhone)) {
+            showAlert(Alert.AlertType.ERROR, "Validation",
+                    "Le téléphone doit contenir uniquement des chiffres (8 à 15).");
             return;
         }
         if (dateNaissance == null) {
