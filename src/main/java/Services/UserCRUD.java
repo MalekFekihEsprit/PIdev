@@ -11,6 +11,7 @@ import java.net.URL;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import org.mindrot.jbcrypt.BCrypt;
 
 public class UserCRUD implements InterfaceCRUD<User> {
     private Connection conn;
@@ -19,38 +20,71 @@ public class UserCRUD implements InterfaceCRUD<User> {
         conn = MyBD.getInstance().getConn();
     }
 
+    // ================= PASSWORD UTILS =================
+
+    private String hashPassword(String plainPassword) {
+        return BCrypt.hashpw(plainPassword, BCrypt.gensalt(12));
+    }
+
+    private boolean verifyPassword(String plainPassword, String hashedPassword) {
+        return BCrypt.checkpw(plainPassword, hashedPassword);
+    }
+
     @Override
     public void ajouter(User user) throws SQLException {
+
         String req = "INSERT INTO user (nom, prenom, date_naissance, email, telephone, mot_de_passe, role, photo_url, photo_file_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        PreparedStatement pst = conn.prepareStatement(req);
-        pst.setString(1, user.getNom());
-        pst.setString(2, user.getPrenom());
-        pst.setDate(3, user.getDateNaissance() != null ? Date.valueOf(user.getDateNaissance()) : null);
-        pst.setString(4, user.getEmail());
-        pst.setString(5, user.getTelephone());
-        pst.setString(6, user.getMotDePasse());
-        pst.setString(7, user.getRole());
-        pst.setString(8, user.getPhotoUrl());
-        pst.setString(9, user.getPhotoFileName());
-        pst.executeUpdate();
+
+        try (PreparedStatement pst = conn.prepareStatement(req)) {
+
+            pst.setString(1, user.getNom());
+            pst.setString(2, user.getPrenom());
+            pst.setDate(3, user.getDateNaissance() != null ? Date.valueOf(user.getDateNaissance()) : null);
+            pst.setString(4, user.getEmail());
+            pst.setString(5, user.getTelephone());
+
+            // 🔥 Hash obligatoire
+            pst.setString(6, hashPassword(user.getMotDePasse()));
+
+            pst.setString(7, user.getRole());
+            pst.setString(8, user.getPhotoUrl());
+            pst.setString(9, user.getPhotoFileName());
+
+            pst.executeUpdate();
+        }
+
         System.out.println("Utilisateur ajouté !");
     }
 
     @Override
     public void modifier(User user) throws SQLException {
-        String req = "UPDATE user SET nom=?, prenom=?, date_naissance=?, email=?, telephone=?, mot_de_passe=?, role=?, photo_url=?, photo_file_name=? WHERE id=?";
-        PreparedStatement pst = conn.prepareStatement(req);
-        pst.setString(9, user.getPhotoFileName());
-        pst.setString(1, user.getNom());
-        pst.setString(2, user.getPrenom());
-        pst.setDate(3, user.getDateNaissance() != null ? Date.valueOf(user.getDateNaissance()) : null);
-        pst.setString(4, user.getEmail());
-        pst.setString(5, user.getTelephone());
-        pst.setString(6, user.getMotDePasse());
-        pst.setString(7, user.getRole());
-        pst.setString(8, user.getPhotoUrl());
-        pst.setInt(10, user.getId());
-        pst.executeUpdate();
+
+        String req = "UPDATE user SET nom=?, prenom=?, date_naissance=?, email=?, telephone=?, role=?, photo_url=?, photo_file_name=?"
+                + (user.getMotDePasse() != null && !user.getMotDePasse().isEmpty() ? ", mot_de_passe=?" : "")
+                + " WHERE id=?";
+
+        try (PreparedStatement pst = conn.prepareStatement(req)) {
+
+            int index = 1;
+
+            pst.setString(index++, user.getNom());
+            pst.setString(index++, user.getPrenom());
+            pst.setDate(index++, user.getDateNaissance() != null ? Date.valueOf(user.getDateNaissance()) : null);
+            pst.setString(index++, user.getEmail());
+            pst.setString(index++, user.getTelephone());
+            pst.setString(index++, user.getRole());
+            pst.setString(index++, user.getPhotoUrl());
+            pst.setString(index++, user.getPhotoFileName());
+
+            if (user.getMotDePasse() != null && !user.getMotDePasse().isEmpty()) {
+                pst.setString(index++, hashPassword(user.getMotDePasse()));
+            }
+
+            pst.setInt(index, user.getId());
+
+            pst.executeUpdate();
+        }
+
         System.out.println("Utilisateur modifié !");
     }
 
@@ -107,17 +141,38 @@ public class UserCRUD implements InterfaceCRUD<User> {
         return u;
     }
 
-
-    public User getUserByEmailAndPassword(String email, String password) throws SQLException {
-        String req = "SELECT * FROM user WHERE email = ? AND mot_de_passe = ?";
+    // Méthode de vérification du mot de passe
+    public boolean checkPassword(String email, String plainPassword) throws SQLException {
+        String req = "SELECT mot_de_passe FROM user WHERE email = ?";
         PreparedStatement pst = conn.prepareStatement(req);
         pst.setString(1, email);
-        pst.setString(2, password);
         ResultSet rs = pst.executeQuery();
         if (rs.next()) {
-            System.out.println("Utilisateur trouvé : " + rs.getString("email"));
-            return mapResultSetToUser(rs);
+            String hashed = rs.getString("mot_de_passe");
+            return BCrypt.checkpw(plainPassword, hashed);
         }
+        return false;
+    }
+
+    public User getUserByEmailAndPassword(String email, String plainPassword) throws SQLException {
+
+        String req = "SELECT * FROM user WHERE email = ?";
+
+        try (PreparedStatement pst = conn.prepareStatement(req)) {
+
+            pst.setString(1, email);
+            ResultSet rs = pst.executeQuery();
+
+            if (rs.next()) {
+
+                String hashedPassword = rs.getString("mot_de_passe");
+
+                if (BCrypt.checkpw(plainPassword, hashedPassword)) {
+                    return mapResultSetToUser(rs);
+                }
+            }
+        }
+
         return null;
     }
 
@@ -143,28 +198,24 @@ public class UserCRUD implements InterfaceCRUD<User> {
 
     public boolean updatePassword(String email, String newPassword) throws SQLException {
         String req = "UPDATE user SET mot_de_passe = ? WHERE email = ?";
-        PreparedStatement pst = conn.prepareStatement(req);
-        pst.setString(1, newPassword);
-        pst.setString(2, email);
-        System.out.println("Mise à jour du mot de passe pour : " + email);
-        return pst.executeUpdate() > 0;
+
+        try (PreparedStatement pst = conn.prepareStatement(req)) {
+
+            pst.setString(1, hashPassword(newPassword));
+            pst.setString(2, email);
+
+            return pst.executeUpdate() > 0;
+        }
     }
 
     public boolean validateEmailAndPassword(String email, String password) {
         try {
-            String req = "SELECT id FROM user WHERE email = ? AND mot_de_passe = ?";
-            PreparedStatement pst = conn.prepareStatement(req);
-            pst.setString(1, email);
-            pst.setString(2, password);
-            ResultSet rs = pst.executeQuery();
-            System.out.println("Validation de l'email et du mot de passe pour : " + email);
-            return rs.next();
+            return getUserByEmailAndPassword(email, password) != null;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
         }
     }
-
     public void saveVerificationCode(int userId, String code) throws SQLException {
     String req = "UPDATE user SET verification_code = ? WHERE id = ?";
     PreparedStatement pst = conn.prepareStatement(req);
@@ -205,7 +256,7 @@ public class UserCRUD implements InterfaceCRUD<User> {
     }
 
     public static String getLocationFromIp(String ip) throws Exception {
-        String url = "http://ip-api.com/json/" + ip + "?fields=status,country,city";
+        String url = "http://ip-api.com/json/" + ip + "?fields=status,country,city,district";
         HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
         conn.setRequestMethod("GET");
 
@@ -225,7 +276,7 @@ public class UserCRUD implements InterfaceCRUD<User> {
         JSONObject json = new JSONObject(response.toString());
 
         if ("success".equals(json.optString("status"))) {
-            return json.optString("city") + ", " + json.optString("country");
+            return json.optString("city") + ", " + json.optString("country") + ", " + json.optString("district");
         }
 
         return "Inconnu";

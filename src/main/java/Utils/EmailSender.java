@@ -10,8 +10,8 @@ public class EmailSender {
     // 🔥 REMPLACE CES INFORMATIONS PAR CELLES DE MAILTRAP 🔥
     private static final String SMTP_HOST = "smtp.gmail.com";
     private static final String SMTP_PORT = "587"; // Port TLS
-    private static final String SMTP_USERNAME = "malekfekih01@gmail.com"; // C'est souvent "api"
-    private static final String SMTP_PASSWORD = "lvog vjig bcof avrw"; // Le long mot de passe unique
+    private static final String SMTP_USERNAME = "malekfekih01@gmail.com";
+    private static final String SMTP_PASSWORD = "lvog vjig bcof avrw"; //cftj tefy tnei eapz
 
 
     public static void sendResetCode(String recipientEmail, String code) throws MessagingException {
