@@ -2,9 +2,7 @@ package Controllers;
 
 import Entities.User;
 import Services.UserCRUD;
-import Utils.Country;
-import Utils.UserSession;
-import Utils.ValidationUtils;
+import Utils.*;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -12,8 +10,11 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 
+import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class LoginController {
 
@@ -25,73 +26,104 @@ public class LoginController {
     @FXML private ComboBox<Country> countryCodeCombo;
 
     private UserCRUD userCRUD = new UserCRUD();
+private Map<String, Integer> failedAttempts = new HashMap<>();
 
-    @FXML
-    private void handleLogin() throws SQLException { // Gérer la connexion de l'utilisateur après validation des champs
-        String email = emailField.getText().trim();
-        String password = passwordField.getText();
+@FXML
+private void handleLogin() { // Gérer la connexion de l'utilisateur après validation des champs
+    String email = emailField.getText().trim();
+    String password = passwordField.getText();
 
-        // Validation basique
-        if (!ValidationUtils.isNotEmpty(email) || !ValidationUtils.isNotEmpty(password)) {
-            showAlert(Alert.AlertType.ERROR, "Champs requis", "Veuillez remplir tous les champs.");
-            return;
-        }
-        // Validation si l'email et le mot de passe correspondent à un utilisateur existant
-        if (!userCRUD.validateEmailAndPassword(email, password)) {
+    // Validation basique
+    if (!ValidationUtils.isNotEmpty(email) || !ValidationUtils.isNotEmpty(password)) {
+        showAlert(Alert.AlertType.ERROR, "Champs requis", "Veuillez remplir tous les champs.");
+        return;
+    }
+    if (!ValidationUtils.isValidEmail(email)) {
+        showAlert(Alert.AlertType.ERROR, "Email invalide", "L'adresse email n'est pas valide.");
+        return;
+    }
+
+    try {
+        // Vérifier si l'email existe (pour savoir si on compte les tentatives)
+        boolean emailExists = userCRUD.emailExists(email);
+        if (!emailExists) {
+            // On ne veut pas donner d'indice sur l'existence de l'email, donc on simule un échec
             showAlert(Alert.AlertType.ERROR, "Mot de passe ou email incorrect", "Le mot de passe ou email incorrect.");
             return;
         }
-        if (!userCRUD.isEmailVerified(email)) {
-            showAlert(Alert.AlertType.WARNING, "Email non vérifié", "Veuillez vérifier votre email avant de vous connecter.");
-            goToVerifyEmail(email);
-            return;
-        }
-        
-        if (!ValidationUtils.isValidEmail(email)) {
-            showAlert(Alert.AlertType.ERROR, "Email invalide", "L'adresse email n'est pas valide.");
-            return;
-        }
 
-        try {
-            User user = userCRUD.getUserByEmailAndPassword(email, password);
-            if (user != null) {
-                UserSession.getInstance().setCurrentUser(user);
-                if ("ADMIN".equals(user.getRole())) { // Si l'utilisateur est admin, rediriger vers admin_users
-                    showAlert(Alert.AlertType.INFORMATION, "Succès", "Bienvenue " + user.getPrenom() + " (Admin) !");
-                    // rediriger vers admin_users
-                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/admin_users.fxml"));
-                    Parent root = loader.load();
-                    Stage stage = (Stage) loginButton.getScene().getWindow();
-                    stage.setScene(new Scene(root));
-                } else { // Sinon, rediriger vers profile
-                    String ip = null;
-                    try {
-                        ip = userCRUD.getPublicIp() != null ? userCRUD.getPublicIp() : "IP non disponible";
-                        String location = userCRUD.getLocationFromIp(ip) != null ? userCRUD.getLocationFromIp(ip) : "Localisation non disponible";
-                        userCRUD.updateLastLogin(user.getId(), ip, location);
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                    showAlert(Alert.AlertType.INFORMATION, "Succès", "Bienvenue " + user.getPrenom() + " !");
-                    // rediriger vers profile
-                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/profile.fxml"));
-                    Parent root = loader.load();
-                    ProfileController profileController = loader.getController();
-                    if (profileController != null) {
-                        profileController.setUser(user);
-                    }
-                    Stage stage = (Stage) loginButton.getScene().getWindow();
-                    stage.setScene(new Scene(root));
+        // Vérifier le mot de passe avec BCrypt
+        boolean passwordCorrect = userCRUD.checkPassword(email, password);
+        if (passwordCorrect) {
+            // Réinitialiser les tentatives
+            failedAttempts.remove(email);
 
-                }
+            // Vérifier si l'email est vérifié
+            if (!userCRUD.isEmailVerified(email)) {
+                showAlert(Alert.AlertType.WARNING, "Email non vérifié", "Veuillez vérifier votre email avant de vous connecter.");
+                goToVerifyEmail(email);
+                return;
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur de base de données : " + e.getMessage());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+
+            User user = userCRUD.getUserByEmail(email);
+            UserSession.getInstance().setCurrentUser(user);
+
+            if ("ADMIN".equals(user.getRole())) {
+                showAlert(Alert.AlertType.INFORMATION, "Succès", "Bienvenue " + user.getPrenom() + " (Admin) !");
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/admin_users.fxml"));
+                Parent root = loader.load();
+                Stage stage = (Stage) loginButton.getScene().getWindow();
+                stage.setScene(new Scene(root));
+            } else {
+                // Enregistrer la dernière connexion (IP, localisation)
+                try {
+                    String ip = userCRUD.getPublicIp() != null ? userCRUD.getPublicIp() : "IP non disponible";
+                    String location = userCRUD.getLocationFromIp(ip) != null ? userCRUD.getLocationFromIp(ip) : "Localisation non disponible";
+                    userCRUD.updateLastLogin(user.getId(), ip, location);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                showAlert(Alert.AlertType.INFORMATION, "Succès", "Bienvenue " + user.getPrenom() + " !");
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/profile.fxml"));
+                Parent root = loader.load();
+                ProfileController profileController = loader.getController();
+                if (profileController != null) {
+                    profileController.setUser(user);
+                }
+                Stage stage = (Stage) loginButton.getScene().getWindow();
+                stage.setScene(new Scene(root));
+            }
+        } else {
+            // Mot de passe incorrect
+            int attempts = failedAttempts.getOrDefault(email, 0) + 1;
+            failedAttempts.put(email, attempts);
+
+            if (attempts >= 3) {
+                // Capture photo et envoi email
+                try {
+                    File photo = WebcamUtil.captureImage(email);
+                    // Envoyer l'alerte
+                    EmailSender.sendWarningEmailWithAttachment(email, photo);
+                    showAlert(Alert.AlertType.WARNING, "Alerte de sécurité",
+                            "Trois tentatives échouées. Une photo a été prise et un email d'alerte a été envoyé au propriétaire du compte.");
+                    // Supprimer le fichier temporaire après envoi
+                    photo.delete();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible de capturer la photo ou d'envoyer l'email : " + e.getMessage());
+                }
+                // Réinitialiser le compteur pour cet email pour éviter de spammer
+                failedAttempts.remove(email);
+            } else {
+                showAlert(Alert.AlertType.ERROR, "Mot de passe ou email incorrect",
+                        "Le mot de passe ou email incorrect. Tentative " + attempts + "/3.");
+            }
         }
+    } catch (SQLException | IOException e) {
+        e.printStackTrace();
+        showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur de base de données : " + e.getMessage());
     }
+}
 
     private void goToVerifyEmail(String email) {
         try {
