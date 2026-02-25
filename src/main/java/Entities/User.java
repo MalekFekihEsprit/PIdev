@@ -12,8 +12,13 @@ public class User {
     private String motDePasse;
     private String role;        // "USER" ou "ADMIN"
     private String photoUrl;
+    private String verification_code;
+    private boolean verified;
+    private String lastLoginIp;
+    private String lastLoginLocation;
     private java.time.LocalDateTime createdAt;
     private String photoFileName;
+    private String faceEmbedding; // Stocké en JSON (liste de doubles)
 
 
     // Constructeurs
@@ -124,4 +129,18 @@ public class User {
     // Getter et setter
     public String getPhotoFileName() { return photoFileName; }
     public void setPhotoFileName(String photoFileName) { this.photoFileName = photoFileName; }
+
+    // Getter et setter
+    public String getFaceEmbedding() { return faceEmbedding; }
+    public void setFaceEmbedding(String faceEmbedding) { this.faceEmbedding = faceEmbedding; }
+
+    public String getVerificationCode() { return verification_code; }
+    public void setVerificationCode(String verification_code) { this.verification_code = verification_code; }
+    public boolean isVerified() { return verified; }
+    public void setVerified(boolean verified) { this.verified = verified; }
+    public String getLastLoginIp() { return lastLoginIp; }
+    public void setLastLoginIp(String lastLoginIp) { this.lastLoginIp = lastLoginIp; }
+    public String getLastLoginLocation() { return lastLoginLocation; }
+    public void setLastLoginLocation(String lastLoginLocation) { this.lastLoginLocation = lastLoginLocation; }
+
 }

@@ -282,7 +282,7 @@ public class AdminUsersController {
         }
 
         try { // Mettre à jour l'utilisateur dans la base de données
-            userCRUD.modifier(selectedUser);
+            userCRUD.modifier(selectedUser, false);
             showAlert(Alert.AlertType.INFORMATION, "Succès", "Utilisateur modifié avec succès.");
             loadUsers();
             updateStats();

@@ -29,7 +29,6 @@ public class PersCRUD implements InterfaceCRUD<Pers> {
     }
 
 
-    @Override
     public void modifier(Pers pers) throws SQLException {
         String req = "UPDATE pers SET nom = '" + pers.getNom() + "', prenom = '" + pers.getPrenom() + "', age = " + pers.getAge() + " WHERE id = " + pers.getId() + ";"; // requete SQL avec valeurs de l'objet pers
         Statement st = conn.createStatement(); // création d'un objet Statement pour exécuter la requête

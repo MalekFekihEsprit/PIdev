@@ -13,7 +13,9 @@ import javafx.stage.Stage;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class LoginController {
@@ -26,8 +28,110 @@ public class LoginController {
     @FXML private ComboBox<Country> countryCodeCombo;
 
     private UserCRUD userCRUD = new UserCRUD();
-private Map<String, Integer> failedAttempts = new HashMap<>();
+    private Map<String, Integer> failedAttempts = new HashMap<>();
 
+    @FXML private Button faceLoginButton;
+    private FaceRecognitionClient faceClient = new FaceRecognitionClient();
+
+    @FXML
+    private void handleFaceLogin() {
+        // 1. Capturer le visage
+        File faceImage = FaceCaptureDialog.captureFace((Stage) loginButton.getScene().getWindow());
+        if (faceImage == null) return;
+
+        try {
+            // 2. Extraire l'embedding du visage capturé
+            List<Double> currentEmbedding = faceClient.extractEmbedding(faceImage);
+            if (currentEmbedding == null) {
+                showAlert(Alert.AlertType.ERROR, "Erreur", "Aucun visage détecté");
+                faceImage.delete();
+                return;
+            }
+
+            // 3. Récupérer tous les utilisateurs avec embeddings
+            List<User> users = userCRUD.afficherAll();
+            User bestMatch = null;
+
+            for (User user : users) {
+                if (user.getFaceEmbedding() != null) {
+                    List<Double> storedEmbedding = EmbeddingConverter.fromJson(user.getFaceEmbedding());
+                    boolean match = faceClient.compareEmbeddings(currentEmbedding, storedEmbedding);
+                    if (match) {
+                        bestMatch = user;
+                        break;
+                    }
+                }
+            }
+
+            faceImage.delete();
+
+            if (bestMatch != null) {
+                // 4. Mettre à jour la dernière connexion (IP, localisation)
+                try {
+                    String ip = userCRUD.getPublicIp() != null ? userCRUD.getPublicIp() : "IP non disponible";
+                    String location = userCRUD.getLocationFromIp(ip) != null ? userCRUD.getLocationFromIp(ip) : "Localisation non disponible";
+                    userCRUD.updateLastLogin(bestMatch.getId(), ip, location);
+                } catch (Exception e) {
+                    e.printStackTrace(); // Ne pas bloquer la connexion
+                }
+
+                // 5. Stocker l'utilisateur en session
+                UserSession.getInstance().setCurrentUser(bestMatch);
+
+                // 6. Apprentissage incrémental
+                trainIncremental(bestMatch, currentEmbedding);
+
+                // 7. Redirection
+                redirectUser(bestMatch);
+            } else {
+                showAlert(Alert.AlertType.ERROR, "Échec", "Visage non reconnu");
+            }
+
+        } catch (IOException | SQLException e) {
+            e.printStackTrace();
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur communication service IA");
+        }
+    }
+
+    private void redirectUser(User user) throws IOException {
+        if ("ADMIN".equals(user.getRole())) {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/admin_users.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) loginButton.getScene().getWindow();
+            stage.setScene(new Scene(root));
+        } else {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/profile.fxml"));
+            Parent root = loader.load();
+            ProfileController profileController = loader.getController();
+            if (profileController != null) {
+                profileController.setUser(user);
+            }
+            Stage stage = (Stage) loginButton.getScene().getWindow();
+            stage.setScene(new Scene(root));
+        }
+    }
+/**
+ * Apprentissage incrémental : moyenne mobile des embeddings
+ */
+private void trainIncremental(User user, List<Double> newEmbedding) {
+    try {
+        String updatedEmbedding;
+        if (user.getFaceEmbedding() == null) {
+            updatedEmbedding = EmbeddingConverter.toJson(newEmbedding);
+        } else {
+            List<Double> oldEmbedding = EmbeddingConverter.fromJson(user.getFaceEmbedding());
+            List<Double> updated = new ArrayList<>();
+            for (int i = 0; i < oldEmbedding.size(); i++) {
+                updated.add(0.7 * oldEmbedding.get(i) + 0.3 * newEmbedding.get(i));
+            }
+            updatedEmbedding = EmbeddingConverter.toJson(updated);
+        }
+        // Utiliser la nouvelle méthode au lieu de modifier(user)
+        userCRUD.updateFaceEmbedding(user.getId(), updatedEmbedding);
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+}
 @FXML
 private void handleLogin() { // Gérer la connexion de l'utilisateur après validation des champs
     String email = emailField.getText().trim();

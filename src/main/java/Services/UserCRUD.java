@@ -9,6 +9,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import org.mindrot.jbcrypt.BCrypt;
@@ -32,61 +33,66 @@ public class UserCRUD implements InterfaceCRUD<User> {
 
     @Override
     public void ajouter(User user) throws SQLException {
-
-        String req = "INSERT INTO user (nom, prenom, date_naissance, email, telephone, mot_de_passe, role, photo_url, photo_file_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-        try (PreparedStatement pst = conn.prepareStatement(req)) {
-
-            pst.setString(1, user.getNom());
-            pst.setString(2, user.getPrenom());
-            pst.setDate(3, user.getDateNaissance() != null ? Date.valueOf(user.getDateNaissance()) : null);
-            pst.setString(4, user.getEmail());
-            pst.setString(5, user.getTelephone());
-
-            // 🔥 Hash obligatoire
-            pst.setString(6, hashPassword(user.getMotDePasse()));
-
-            pst.setString(7, user.getRole());
-            pst.setString(8, user.getPhotoUrl());
-            pst.setString(9, user.getPhotoFileName());
-
-            pst.executeUpdate();
-        }
-
-        System.out.println("Utilisateur ajouté !");
+        String req = "INSERT INTO user (nom, prenom, date_naissance, email, telephone, mot_de_passe, role, photo_url, photo_file_name, face_embedding, verification_code, is_verified, last_login_ip, last_login_location, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        PreparedStatement pst = conn.prepareStatement(req);
+        pst.setString(1, user.getNom());
+        pst.setString(2, user.getPrenom());
+        pst.setDate(3, user.getDateNaissance() != null ? Date.valueOf(user.getDateNaissance()) : null);
+        pst.setString(4, user.getEmail());
+        pst.setString(5, user.getTelephone());
+        pst.setString(6, hashPassword(user.getMotDePasse()));
+        pst.setString(7, user.getRole());
+        pst.setString(8, user.getPhotoUrl());
+        pst.setString(9, user.getPhotoFileName());
+        pst.setString(10, user.getFaceEmbedding());
+        pst.setString(11, null); // verification_code
+        pst.setBoolean(12, false); // is_verified
+        pst.setString(13, null); // last_login_ip
+        pst.setString(14, null); // last_login_location
+        pst.setTimestamp(15, Timestamp.valueOf(LocalDateTime.now())); // created_at
+        pst.executeUpdate();
     }
 
-    @Override
-    public void modifier(User user) throws SQLException {
-
-        String req = "UPDATE user SET nom=?, prenom=?, date_naissance=?, email=?, telephone=?, role=?, photo_url=?, photo_file_name=?"
-                + (user.getMotDePasse() != null && !user.getMotDePasse().isEmpty() ? ", mot_de_passe=?" : "")
-                + " WHERE id=?";
-
-        try (PreparedStatement pst = conn.prepareStatement(req)) {
-
-            int index = 1;
-
-            pst.setString(index++, user.getNom());
-            pst.setString(index++, user.getPrenom());
-            pst.setDate(index++, user.getDateNaissance() != null ? Date.valueOf(user.getDateNaissance()) : null);
-            pst.setString(index++, user.getEmail());
-            pst.setString(index++, user.getTelephone());
-            pst.setString(index++, user.getRole());
-            pst.setString(index++, user.getPhotoUrl());
-            pst.setString(index++, user.getPhotoFileName());
-
-            if (user.getMotDePasse() != null && !user.getMotDePasse().isEmpty()) {
-                pst.setString(index++, hashPassword(user.getMotDePasse()));
-            }
-
-            pst.setInt(index, user.getId());
-
-            pst.executeUpdate();
-        }
-
-        System.out.println("Utilisateur modifié !");
+    public void modifier(User user, boolean updatePassword) throws SQLException {
+    if (updatePassword) {
+        String req = "UPDATE user SET nom=?, prenom=?, date_naissance=?, email=?, telephone=?, mot_de_passe=?, role=?, photo_url=?, photo_file_name=?, face_embedding=?, verification_code=?, is_verified=?, last_login_ip=?, last_login_location=? WHERE id=?";
+        PreparedStatement pst = conn.prepareStatement(req);
+        pst.setString(1, user.getNom());
+        pst.setString(2, user.getPrenom());
+        pst.setDate(3, user.getDateNaissance() != null ? Date.valueOf(user.getDateNaissance()) : null);
+        pst.setString(4, user.getEmail());
+        pst.setString(5, user.getTelephone());
+        pst.setString(6, user.getMotDePasse()); // déjà haché
+        pst.setString(7, user.getRole());
+        pst.setString(8, user.getPhotoUrl());
+        pst.setString(9, user.getPhotoFileName());
+        pst.setString(10, user.getFaceEmbedding());
+        pst.setString(11, user.getVerificationCode());
+        pst.setBoolean(12, user.isVerified());
+        pst.setString(13, user.getLastLoginIp());
+        pst.setString(14, user.getLastLoginLocation());
+        pst.setInt(15, user.getId());
+        pst.executeUpdate();
+    } else {
+        String req = "UPDATE user SET nom=?, prenom=?, date_naissance=?, email=?, telephone=?, role=?, photo_url=?, photo_file_name=?, face_embedding=?, verification_code=?, is_verified=?, last_login_ip=?, last_login_location=? WHERE id=?";
+        PreparedStatement pst = conn.prepareStatement(req);
+        pst.setString(1, user.getNom());
+        pst.setString(2, user.getPrenom());
+        pst.setDate(3, user.getDateNaissance() != null ? Date.valueOf(user.getDateNaissance()) : null);
+        pst.setString(4, user.getEmail());
+        pst.setString(5, user.getTelephone());
+        pst.setString(6, user.getRole());
+        pst.setString(7, user.getPhotoUrl());
+        pst.setString(8, user.getPhotoFileName());
+        pst.setString(9, user.getFaceEmbedding());
+        pst.setString(10, user.getVerificationCode());
+        pst.setBoolean(11, user.isVerified());
+        pst.setString(12, user.getLastLoginIp());
+        pst.setString(13, user.getLastLoginLocation());
+        pst.setInt(14, user.getId());
+        pst.executeUpdate();
     }
+}
 
     @Override
     public boolean supprimer(int id) throws SQLException {
@@ -136,8 +142,13 @@ public class UserCRUD implements InterfaceCRUD<User> {
         u.setMotDePasse(rs.getString("mot_de_passe"));
         u.setRole(rs.getString("role"));
         u.setPhotoUrl(rs.getString("photo_url"));
-        u.setCreatedAt(rs.getTimestamp("created_at") != null ? rs.getTimestamp("created_at").toLocalDateTime() : null);
         u.setPhotoFileName(rs.getString("photo_file_name"));
+        u.setFaceEmbedding(rs.getString("face_embedding")); // <-- AJOUT
+        u.setVerificationCode(rs.getString("verification_code"));
+        u.setVerified(rs.getBoolean("is_verified"));
+        u.setLastLoginIp(rs.getString("last_login_ip"));
+        u.setLastLoginLocation(rs.getString("last_login_location"));
+        u.setCreatedAt(rs.getTimestamp("created_at") != null ? rs.getTimestamp("created_at").toLocalDateTime() : null);
         return u;
     }
 
@@ -290,4 +301,13 @@ public class UserCRUD implements InterfaceCRUD<User> {
         pst.setInt(3, userId);
         pst.executeUpdate();
     }
+
+    public void updateFaceEmbedding(int userId, String embeddingJson) throws SQLException {
+    String sql = "UPDATE user SET face_embedding = ? WHERE id = ?";
+    try (PreparedStatement pst = conn.prepareStatement(sql)) {
+        pst.setString(1, embeddingJson);
+        pst.setInt(2, userId);
+        pst.executeUpdate();
+    }
+}
 }

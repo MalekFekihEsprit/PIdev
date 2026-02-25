@@ -15,6 +15,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import org.mindrot.jbcrypt.BCrypt;
 
 import javax.mail.MessagingException;
 import java.io.File;
@@ -45,6 +46,46 @@ public class ProfileController {
     private UserCRUD userCRUD = new UserCRUD();
     private User currentUser;
     private boolean editMode = false;
+    @FXML private Button enrollFaceButton;
+    private FaceRecognitionClient faceClient = new FaceRecognitionClient();
+
+    @FXML
+    private void handleFaceEnrollment() {
+        if (currentUser == null) return;
+
+        // 1. Capturer le visage via la webcam
+        File faceImage = FaceCaptureDialog.captureFace((Stage) enrollFaceButton.getScene().getWindow());
+        if (faceImage == null) return;
+
+        try {
+            // 2. Extraire l'embedding
+            List<Double> embedding = faceClient.extractEmbedding(faceImage);
+            if (embedding == null) {
+                showAlert(Alert.AlertType.ERROR, "Erreur", "Aucun visage détecté. Veuillez réessayer.");
+                faceImage.delete();
+                return;
+            }
+
+            // 3. Convertir en JSON et sauvegarder dans l'utilisateur
+            String embeddingJson = EmbeddingConverter.toJson(embedding);
+            currentUser.setFaceEmbedding(embeddingJson);
+
+            // 4. Mettre à jour en base
+            userCRUD.modifier(currentUser, false);
+
+            showAlert(Alert.AlertType.INFORMATION, "Succès", "Visage enregistré avec succès !");
+
+            // Optionnel : afficher un message dans l'interface
+            faceImage.delete();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur de communication avec le service de reconnaissance faciale.");
+        } catch (SQLException e) {
+            e.printStackTrace();
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur lors de la sauvegarde en base.");
+        }
+    }
 
     @FXML
     public void initialize() {
@@ -58,6 +99,11 @@ public class ProfileController {
         loadAvatar();
         statsVoyages.setText("0");
         statsDepenses.setText("0 €");
+        if (currentUser.getFaceEmbedding() != null) {
+            enrollFaceButton.setText("🔄 Mettre à jour mon visage");
+        } else {
+            enrollFaceButton.setText("👤 Enregistrer mon visage");
+        }
     }
 
     public void setUser(User user) {
@@ -253,97 +299,103 @@ public class ProfileController {
     }
 
     @FXML
-    private void handleSave() {
-        String nom = nomField.getText().trim();
-        String prenom = prenomField.getText().trim();
-        
-        String dial = countryCodeCombo.getValue() != null ? countryCodeCombo.getValue().getDialCode() : "";
-        String phoneNumber = telephoneField.getText().trim();
-        currentUser.setTelephone(phoneNumber.isEmpty() ? null : dial + phoneNumber);
+private void handleSave() {
+    String nom = nomField.getText().trim();
+    String prenom = prenomField.getText().trim();
 
-        LocalDate dateNaissance = dateNaissancePicker.getValue();
-        String photoUrl = photoUrlField.getText().trim();
-        String newPassword = newPasswordField.getText();
-        String confirm = confirmPasswordField.getText();
+    String dial = countryCodeCombo.getValue() != null ? countryCodeCombo.getValue().getDialCode() : "";
+    String phoneNumber = telephoneField.getText().trim();
+    String fullPhone = phoneNumber.isEmpty() ? null : dial + phoneNumber;
 
-        // Validations
-        if (!ValidationUtils.isNotEmpty(nom)) {
-            showAlert(Alert.AlertType.ERROR, "Validation", "Le nom ne peut pas être vide.");
-            return;
-        }
-        if (!ValidationUtils.isNotEmpty(prenom)) {
-            showAlert(Alert.AlertType.ERROR, "Validation", "Le prénom ne peut pas être vide.");
-            return;
-        }
-        if (dateNaissance == null) {
-            showAlert(Alert.AlertType.ERROR, "Validation", "La date de naissance est obligatoire.");
-            return;
-        }
-        if (!ValidationUtils.isAdult(dateNaissance)) {
-            showAlert(Alert.AlertType.ERROR, "Validation", "Vous devez avoir au moins 18 ans.");
-            return;
-        }
-        if (!phoneNumber.isEmpty() && !ValidationUtils.isValidPhone(phoneNumber)) {
-            showAlert(Alert.AlertType.ERROR, "Validation", "Le téléphone doit contenir 8 à 15 chiffres.");
-            return;
-        }
+    LocalDate dateNaissance = dateNaissancePicker.getValue();
+    String photoUrl = photoUrlField.getText().trim();
+    String newPassword = newPasswordField.getText();
+    String confirm = confirmPasswordField.getText();
 
-        // Gestion de l'upload de photo
-        if (selectedImageFile != null) {
-            try {
-                if (currentUser.getPhotoFileName() != null) {
-                    File oldFile = FileUtil.getImageFile(currentUser.getPhotoFileName());
-                    if (oldFile != null && oldFile.exists()) oldFile.delete();
-                }
-                String fileName = FileUtil.saveImageToUploads(selectedImageFile, currentUser.getId());
-                currentUser.setPhotoFileName(fileName);
-                currentUser.setPhotoUrl(null); // on abandonne l'URL
-            } catch (IOException e) {
-                showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible de sauvegarder l'image : " + e.getMessage());
+    // Validations
+    if (!ValidationUtils.isNotEmpty(nom)) {
+        showAlert(Alert.AlertType.ERROR, "Validation", "Le nom ne peut pas être vide.");
+        return;
+    }
+    if (!ValidationUtils.isNotEmpty(prenom)) {
+        showAlert(Alert.AlertType.ERROR, "Validation", "Le prénom ne peut pas être vide.");
+        return;
+    }
+    if (dateNaissance == null) {
+        showAlert(Alert.AlertType.ERROR, "Validation", "La date de naissance est obligatoire.");
+        return;
+    }
+    if (!ValidationUtils.isAdult(dateNaissance)) {
+        showAlert(Alert.AlertType.ERROR, "Validation", "Vous devez avoir au moins 18 ans.");
+        return;
+    }
+    if (!phoneNumber.isEmpty() && !ValidationUtils.isValidPhone(phoneNumber)) {
+        showAlert(Alert.AlertType.ERROR, "Validation", "Le téléphone doit contenir 8 à 15 chiffres.");
+        return;
+    }
+
+    // Gestion de l'upload de photo
+    if (selectedImageFile != null) {
+        try {
+            if (currentUser.getPhotoFileName() != null) {
+                File oldFile = FileUtil.getImageFile(currentUser.getPhotoFileName());
+                if (oldFile != null && oldFile.exists()) oldFile.delete();
+            }
+            String fileName = FileUtil.saveImageToUploads(selectedImageFile, currentUser.getId());
+            currentUser.setPhotoFileName(fileName);
+            currentUser.setPhotoUrl(null); // on abandonne l'URL
+        } catch (IOException e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible de sauvegarder l'image : " + e.getMessage());
+            return;
+        }
+    } else if (!photoUrl.isEmpty()) {
+        // Si l'utilisateur a saisi une URL, on l'utilise
+        currentUser.setPhotoUrl(photoUrl);
+        currentUser.setPhotoFileName(null);
+    } else {
+        // Pas de nouvelle photo, on garde l'existante
+    }
+
+    // Mise à jour des champs texte
+    currentUser.setNom(nom);
+    currentUser.setPrenom(prenom);
+    currentUser.setTelephone(fullPhone);
+    currentUser.setDateNaissance(dateNaissance);
+
+    boolean passwordChanged = !newPassword.isEmpty();
+
+    try {
+        if (passwordChanged) {
+            if (!ValidationUtils.isPasswordValid(newPassword)) {
+                showAlert(Alert.AlertType.ERROR, "Validation", "Le mot de passe doit contenir au moins 6 caractères.");
                 return;
             }
-        } else if (!photoUrl.isEmpty()) {
-            // Si l'utilisateur a saisi une URL, on l'utilise
-            currentUser.setPhotoUrl(photoUrl);
-            currentUser.setPhotoFileName(null);
-        } else {
-            // Pas de nouvelle photo, on garde l'existante
-        }
-
-        // Mise à jour des champs texte
-        currentUser.setNom(nom);
-        currentUser.setPrenom(prenom);
-        currentUser.setTelephone(phoneNumber.isEmpty() ? null : phoneNumber);
-        currentUser.setDateNaissance(dateNaissance);
-
-        try {
-            if (!newPassword.isEmpty()) {
-                if (!ValidationUtils.isPasswordValid(newPassword)) {
-                    showAlert(Alert.AlertType.ERROR, "Validation", "Le mot de passe doit contenir au moins 6 caractères.");
-                    return;
-                }
-                if (!ValidationUtils.passwordsMatch(newPassword, confirm)) {
-                    showAlert(Alert.AlertType.ERROR, "Validation", "Les mots de passe ne correspondent pas.");
-                    return;
-                }
-                currentUser.setMotDePasse(newPassword);
+            if (!ValidationUtils.passwordsMatch(newPassword, confirm)) {
+                showAlert(Alert.AlertType.ERROR, "Validation", "Les mots de passe ne correspondent pas.");
+                return;
             }
-
-            userCRUD.modifier(currentUser);
-            showAlert(Alert.AlertType.INFORMATION, "Succès", "Profil mis à jour.");
-
-            // Recharger l'affichage
-            loadUserData();
-            loadAvatar();
-            toggleEditMode();
-            newPasswordField.clear();
-            confirmPasswordField.clear();
-            selectedImageFile = null;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur base de données : " + e.getMessage());
+            // Hacher le nouveau mot de passe
+            String hashed = BCrypt.hashpw(newPassword, BCrypt.gensalt());
+            currentUser.setMotDePasse(hashed);
         }
+
+        // Appeler la méthode modifier avec le flag passwordChanged
+        // (vérifiez que votre UserCRUD possède cette signature)
+        userCRUD.modifier(currentUser, passwordChanged);
+        showAlert(Alert.AlertType.INFORMATION, "Succès", "Profil mis à jour.");
+
+        // Recharger l'affichage
+        loadUserData();
+        loadAvatar();
+        toggleEditMode();
+        newPasswordField.clear();
+        confirmPasswordField.clear();
+        selectedImageFile = null;
+    } catch (SQLException e) {
+        e.printStackTrace();
+        showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur base de données : " + e.getMessage());
     }
+}
 
     @FXML
     private void cancelEdit() {

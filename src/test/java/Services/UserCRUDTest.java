@@ -102,7 +102,7 @@ class UserCRUDTest {
         testUser.setPrenom("NouveauPrenom");
         testUser.setTelephone("87654321");
 
-        userCRUD.modifier(testUser);
+        userCRUD.modifier(testUser, false);
 
         // Vérifier les modifications
         User retrieved = userCRUD.getUserByEmailAndPassword(uniqueEmail, "password123");

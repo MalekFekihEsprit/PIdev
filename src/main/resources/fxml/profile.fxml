@@ -87,6 +87,9 @@
                             
                         </ImageView>
                         <Button fx:id="uploadPhotoButton" onAction="#handleUploadPhoto" style="-fx-background-color: #ff8c42; -fx-text-fill: white; -fx-background-radius: 12; -fx-padding: 5 10;" text="📷 Changer" />
+                        <!-- Dans le header, après le bouton editModeButton, ou dans la VBox avatarContainer -->
+<!-- À l'intérieur de <VBox fx:id="avatarContainer">, après le bouton uploadPhotoButton : -->
+<Button fx:id="enrollFaceButton" onAction="#handleFaceEnrollment" style="-fx-background-color: #3b82f6; -fx-text-fill: white; -fx-background-radius: 12; -fx-padding: 5 10; -fx-margin-top: 5;" text="👤 Enregistrer mon visage" />
                     </VBox>
                     <VBox spacing="8">
                         <Label style="-fx-font-family: 'Clash Display'; -fx-font-size: 32; -fx-font-weight: bold; -fx-text-fill: #0f172a;" fx:id="fullNameLabel" text="Nom Prénom" />
