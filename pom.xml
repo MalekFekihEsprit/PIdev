@@ -70,6 +70,25 @@
             <artifactId>google-api-services-youtube</artifactId>
             <version>v3-rev222-1.25.0</version>
         </dependency>
+        <!-- JavaFX Controls -->
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-controls</artifactId>
+            <version>22.0.1</version>
+        </dependency>
+
+        <!-- JavaFX Web (needed for WebView) -->
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-web</artifactId>
+            <version>22.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-swing</artifactId>
+            <version>22.0.1</version>
+        </dependency>
+
     </dependencies>
     <build>
         <plugins>
@@ -79,6 +98,14 @@
                 <version>0.0.8</version>
                 <configuration>
                     <mainClass>GUI.HomePage</mainClass>
+                    <options>
+                        <option>-Dprism.order=sw</option>
+                        <option>-Dprism.verbose=true</option>
+                        <option>-Djavafx.web.forceTransparent=false</option>
+                        <option>--add-modules=javafx.web</option>
+                        <option>--add-exports=javafx.graphics/com.sun.javafx.web=ALL-UNNAMED</option>
+                        <option>--add-exports=javafx.web/com.sun.javafx.web=ALL-UNNAMED</option>
+                    </options>
                 </configuration>
             </plugin>
         </plugins>

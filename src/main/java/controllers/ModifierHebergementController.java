@@ -117,7 +117,9 @@ public class ModifierHebergementController implements Initializable {
             });
 
         } catch (SQLException e) {
-            parentController.showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible de charger les destinations: " + e.getMessage());
+            if (parentController != null) {
+                parentController.showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible de charger les destinations: " + e.getMessage());
+            }
             e.printStackTrace();
         }
     }
@@ -171,11 +173,6 @@ public class ModifierHebergementController implements Initializable {
             hebergementToEdit.setAdresse_hebergement(tfAdresse.getText().trim());
             hebergementToEdit.setNote_hebergement(Double.parseDouble(tfNote.getText().trim()));
             hebergementToEdit.setDestination(cbDestination.getValue());
-
-            // Keep existing coordinates and score (they remain unchanged)
-            // hebergementToEdit.setLatitude_hebergement(hebergementToEdit.getLatitude_hebergement());
-            // hebergementToEdit.setLongitude_hebergement(hebergementToEdit.getLongitude_hebergement());
-            // hebergementToEdit.setScore_hebergement(hebergementToEdit.getScore_hebergement());
 
             hebergementCRUD.modifier(hebergementToEdit);
 

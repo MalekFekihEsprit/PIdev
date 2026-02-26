@@ -616,13 +616,14 @@ public class AjouterDestinationController implements Initializable {
             longitude = validatedCityCoordinates.getLongitude();
         }
 
-        String bestSeason = null;
+        // Get season detection result (for saison_destination)
+        String detectedSeason = null;
         if (latitude != 0.0 || longitude != 0.0) {
             try {
-                bestSeason = seasonService.getBestSeason(latitude, longitude);
-                System.out.println("Best season for " + nom + ": " + bestSeason);
+                detectedSeason = seasonService.getBestSeason(latitude, longitude);
+                System.out.println("Detected season for " + nom + ": " + detectedSeason);
             } catch (Exception e) {
-                System.err.println("Could not determine best season: " + e.getMessage());
+                System.err.println("Could not determine season: " + e.getMessage());
             }
         }
 
@@ -668,13 +669,16 @@ public class AjouterDestinationController implements Initializable {
         newDestination.setPays_destination(pays);
         newDestination.setDescription_destination(fullContent);
 
-        if (bestSeason != null && !bestSeason.isEmpty()) {
-            newDestination.setClimat_destination(bestSeason);
+        // FIXED: Use user-selected climate for climat_destination
+        newDestination.setClimat_destination(cbClimat.getValue());
+
+        // FIXED: Use detected season if available, otherwise use user selection for saison_destination
+        if (detectedSeason != null && !detectedSeason.isEmpty()) {
+            newDestination.setSaison_destination(detectedSeason);
         } else {
-            newDestination.setClimat_destination(cbClimat.getValue());
+            newDestination.setSaison_destination(cbSaison.getValue());
         }
 
-        newDestination.setSaison_destination(cbSaison.getValue());
         newDestination.setLatitude_destination(latitude);
         newDestination.setLongitude_destination(longitude);
         newDestination.setScore_destination(score);
@@ -687,7 +691,7 @@ public class AjouterDestinationController implements Initializable {
             destinationCRUD.ajouter(newDestination);
 
             String videoMsg = (videoUrl != null) ? "\n✓ Vidéo ajoutée" : "";
-            showSuccessAlert("Destination ajoutée avec succès!\n" + nom + ", " + pays + videoMsg);
+            showSuccessAlert("Destination ajoutée avec succès!\n" + nom + ", " + pays);
 
             if (parentController != null) parentController.refreshAfterModification();
             closeWindow();

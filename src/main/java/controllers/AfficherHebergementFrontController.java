@@ -26,7 +26,6 @@ public class AfficherHebergementFrontController implements Initializable {
     @FXML private Label lblHebergementId;
     @FXML private Label lblHebergementType;
     @FXML private Label lblPrix;
-    @FXML private Label lblScore;
     @FXML private Label lblAdresse;
     @FXML private Label lblLatitude;
     @FXML private Label lblLongitude;
@@ -35,7 +34,6 @@ public class AfficherHebergementFrontController implements Initializable {
     @FXML private Label lblDestClimat;
     @FXML private Label lblTagType;
     @FXML private Label lblTagNote;
-    @FXML private Label lblTagScore;
     @FXML private Label lblTagPrix;
     @FXML private HBox btnClose;
     @FXML private Button btnClose2;
@@ -72,9 +70,8 @@ public class AfficherHebergementFrontController implements Initializable {
         lblHebergementType.setText(hebergement.getType_hebergement().toUpperCase());
         lblBreadcrumbHebergement.setText(hebergement.getNom_hebergement());
 
-        // Price and score
+        // Price (score removed - only price remains)
         lblPrix.setText(String.format("%.2f €", hebergement.getPrixNuit_hebergement()));
-        lblScore.setText(String.format("%.1f/10", hebergement.getScore_hebergement()));
 
         // Address
         lblAdresse.setText(hebergement.getAdresse_hebergement());
@@ -103,10 +100,9 @@ public class AfficherHebergementFrontController implements Initializable {
             lblDestClimat.setText("Non spécifié");
         }
 
-        // Tags
+        // Tags (score tag removed)
         lblTagType.setText("🏨 " + hebergement.getType_hebergement());
         lblTagNote.setText(String.format("⭐ %.1f/5", hebergement.getNote_hebergement()));
-        lblTagScore.setText(String.format("📊 Score: %.1f", hebergement.getScore_hebergement()));
         lblTagPrix.setText(String.format("💰 %.2f€/nuit", hebergement.getPrixNuit_hebergement()));
     }
 

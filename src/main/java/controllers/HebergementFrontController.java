@@ -32,6 +32,11 @@ public class HebergementFrontController implements Initializable {
     // Top Navigation
     @FXML private Label lblSearchPlaceholder;
     @FXML private HBox btnDestinations;
+    @FXML private HBox btnHebergement;
+    @FXML private HBox btnItineraires;
+    @FXML private HBox btnActivites;
+    @FXML private HBox btnVoyages;
+    @FXML private HBox btnBudgets;
     @FXML private HBox btnHome;
 
     // Bottom Status
@@ -48,7 +53,6 @@ public class HebergementFrontController implements Initializable {
     @FXML private Label lblTotalDestinationsLiees;
     @FXML private Label lblPrixMoyen;
     @FXML private Label lblNoteMoyenneKPI;
-    @FXML private Label lblScoreMoyen;
     @FXML private ProgressBar progressNote;
 
     // Table Section
@@ -63,7 +67,6 @@ public class HebergementFrontController implements Initializable {
     @FXML private TableColumn<Hebergement, Void> colActions;
 
     // Buttons
-    @FXML private HBox btnExport;
     @FXML private HBox btnRefresh;
     @FXML private HBox btnSearch;
     @FXML private HBox btnFilter;
@@ -162,7 +165,6 @@ public class HebergementFrontController implements Initializable {
                 btnConsulter.getChildren().add(consulterIcon);
                 btnConsulter.setPadding(new Insets(4, 0, 4, 0));
 
-                // Tooltip
                 Tooltip.install(btnConsulter, new Tooltip("Voir les détails"));
             }
 
@@ -183,9 +185,6 @@ public class HebergementFrontController implements Initializable {
     private void setupButtonActions() {
         if (btnRefresh != null) {
             btnRefresh.setOnMouseClicked(event -> refreshData());
-        }
-        if (btnExport != null) {
-            btnExport.setOnMouseClicked(event -> handleExport());
         }
         if (btnSearch != null) {
             btnSearch.setOnMouseClicked(event -> handleSearch());
@@ -253,6 +252,77 @@ public class HebergementFrontController implements Initializable {
                 });
             });
         }
+
+        // Itinéraires button (commented implementation)
+        setupNavButtonHover(btnItineraires, "🗺️", "Itinéraires");
+        if (btnItineraires != null) {
+            btnItineraires.setOnMouseClicked(event -> {
+                // TODO: Implement navigation to Itinéraires when ready
+                showInfoAlert("Itinéraires", "Cette fonctionnalité sera bientôt disponible");
+            });
+        }
+
+        // Activités button (commented implementation)
+        setupNavButtonHover(btnActivites, "🏄", "Activités");
+        if (btnActivites != null) {
+            btnActivites.setOnMouseClicked(event -> {
+                // TODO: Implement navigation to Activités when ready
+                showInfoAlert("Activités", "Cette fonctionnalité sera bientôt disponible");
+            });
+        }
+
+        // Voyages button (commented implementation)
+        setupNavButtonHover(btnVoyages, "✈️", "Voyages");
+        if (btnVoyages != null) {
+            btnVoyages.setOnMouseClicked(event -> {
+                // TODO: Implement navigation to Voyages when ready
+                showInfoAlert("Voyages", "Cette fonctionnalité sera bientôt disponible");
+            });
+        }
+
+        // Budgets button (commented implementation)
+        setupNavButtonHover(btnBudgets, "💰", "Budgets");
+        if (btnBudgets != null) {
+            btnBudgets.setOnMouseClicked(event -> {
+                // TODO: Implement navigation to Budgets when ready
+                showInfoAlert("Budgets", "Cette fonctionnalité sera bientôt disponible");
+            });
+        }
+    }
+
+    /**
+     * Helper method to setup hover effects for navigation buttons
+     */
+    private void setupNavButtonHover(HBox button, String icon, String text) {
+        if (button == null) return;
+
+        button.setOnMouseEntered(event -> {
+            button.setStyle("-fx-background-color: rgba(255,140,66,0.1); -fx-background-radius: 12; -fx-padding: 8 16; -fx-cursor: hand; -fx-border-color: #ff8c42; -fx-border-width: 1; -fx-border-radius: 12;");
+            button.lookupAll(".label").forEach(label -> {
+                if (label instanceof Label) {
+                    Label lbl = (Label) label;
+                    if (lbl.getText().equals(icon)) {
+                        lbl.setStyle("-fx-font-size: 16;");
+                    } else {
+                        lbl.setStyle("-fx-text-fill: #ff8c42; -fx-font-weight: 600; -fx-font-size: 14;");
+                    }
+                }
+            });
+        });
+
+        button.setOnMouseExited(event -> {
+            button.setStyle("-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 8 16; -fx-cursor: hand;");
+            button.lookupAll(".label").forEach(label -> {
+                if (label instanceof Label) {
+                    Label lbl = (Label) label;
+                    if (lbl.getText().equals(icon)) {
+                        lbl.setStyle("-fx-font-size: 16;");
+                    } else {
+                        lbl.setStyle("-fx-text-fill: #475569; -fx-font-weight: 500; -fx-font-size: 14;");
+                    }
+                }
+            });
+        });
     }
 
     private void loadHebergements() {
@@ -302,19 +372,6 @@ public class HebergementFrontController implements Initializable {
                 .orElse(0.0);
         lblPrixMoyen.setText(String.format("%.2f €", avgPrice));
 
-        // Find minimum price
-        double minPrice = allHebergements.stream()
-                .mapToDouble(Hebergement::getPrixNuit_hebergement)
-                .min()
-                .orElse(0.0);
-
-        // Update the "Prix minimum" label (you'll need to add this label in FXML or modify the existing one)
-        // For now, we'll just update the text of the label that's there
-        if (total > 0) {
-            // Find the label that shows "Prix minimum" - in your FXML it's a generic label
-            // You might want to add a specific fx:id for this label
-        }
-
         // Average note
         double avgNote = allHebergements.stream()
                 .mapToDouble(Hebergement::getNote_hebergement)
@@ -323,13 +380,6 @@ public class HebergementFrontController implements Initializable {
         lblNoteMoyenne.setText(String.format("Note moyenne: %.1f ⭐", avgNote));
         lblNoteMoyenneKPI.setText(String.format("%.1f", avgNote));
         progressNote.setProgress(avgNote / 5.0);
-
-        // Average score
-        double avgScore = allHebergements.stream()
-                .mapToDouble(Hebergement::getScore_hebergement)
-                .average()
-                .orElse(0.0);
-        lblScoreMoyen.setText(String.format("%.2f", avgScore));
     }
 
     private void refreshData() {
@@ -341,10 +391,6 @@ public class HebergementFrontController implements Initializable {
     private void updateLastUpdateTime() {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm");
         lblLastUpdate.setText("Dernière mise à jour: " + LocalDateTime.now().format(formatter));
-    }
-
-    private void handleExport() {
-        showAlert(Alert.AlertType.INFORMATION, "Export", "Fonctionnalité d'export à implémenter");
     }
 
     private void handleSearch() {
@@ -415,27 +461,18 @@ public class HebergementFrontController implements Initializable {
 
     private void handleConsulter(Hebergement hebergement) {
         try {
-            // Load the hebergement details FXML
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/AfficherHebergementFront.fxml"));
             Parent root = loader.load();
 
-            // Get the controller and pass the hebergement
             AfficherHebergementFrontController controller = loader.getController();
             controller.setHebergement(hebergement);
 
-            // Create a new stage for the details window
             Stage stage = new Stage();
             stage.setTitle("Détails - " + hebergement.getNom_hebergement());
             stage.setScene(new Scene(root));
-
-            // Make it modal (blocks interaction with parent window)
             stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
-
-            // Center on parent window
             stage.initOwner(tableHebergements.getScene().getWindow());
             stage.setResizable(false);
-
-            // Show and wait (makes it modal)
             stage.showAndWait();
 
         } catch (IOException e) {
@@ -484,37 +521,35 @@ public class HebergementFrontController implements Initializable {
         alert.showAndWait();
     }
 
+    private void showInfoAlert(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
     // Add this method to filter by destination
     public void filterByDestination(Destination destination) {
         if (destination == null) return;
 
-        // Filter the list to show only hébergements for this destination
         List<Hebergement> filtered = allHebergements.stream()
                 .filter(h -> h.getDestination() != null &&
                         h.getDestination().getId_destination() == destination.getId_destination())
                 .collect(Collectors.toList());
 
-        // Update the table with filtered results
         hebergementList.setAll(filtered);
         tableHebergements.setItems(hebergementList);
-
-        // Update the count label
         lblHebergementCount.setText(filtered.size() + " hébergement" + (filtered.size() > 1 ? "s" : "") +
                 " à " + destination.getNom_destination());
-
-        // Optionally update the header to show filter info
         lblStatut.setText("● " + filtered.size() + " hébergement" + (filtered.size() > 1 ? "s" : "") +
                 " • " + destination.getNom_destination());
-
-        // Store the original list if we want to reset later
-        // You might want to add a "Clear filter" button
     }
 
-    // Optional: Add a method to clear the filter
     public void clearFilter() {
         hebergementList.setAll(allHebergements);
         tableHebergements.setItems(hebergementList);
         lblHebergementCount.setText(allHebergements.size() + " hébergement" + (allHebergements.size() > 1 ? "s" : ""));
-        updateStats(); // Reset stats to original values
+        updateStats();
     }
 }

@@ -29,9 +29,6 @@ public class DestinationBackController implements Initializable {
 
     // ============== FXML INJECTED ELEMENTS ==============
 
-    // Top Navigation
-    @FXML private Label lblSearchPlaceholder;
-
     // Bottom Status
     @FXML private Label lblLastUpdate;
 
@@ -62,12 +59,16 @@ public class DestinationBackController implements Initializable {
     // Buttons
     @FXML private Button btnAjouter;
     @FXML private Button btnSupprimer;
-    @FXML private Button btnSuggestHotels; // NEW BUTTON
-    @FXML private HBox btnExport;
+    @FXML private Button btnSuggestHotels;
+    @FXML private Button btnShowMap; // Map button
     @FXML private HBox btnSearch;
     @FXML private HBox btnFilter;
     @FXML private HBox btnHome;
     @FXML private HBox btnHebergement;
+    @FXML private HBox btnItineraires;
+    @FXML private HBox btnActivites;
+    @FXML private HBox btnVoyages;
+    @FXML private HBox btnBudgets;
 
     // Pagination
     @FXML private Label lblPaginationInfo;
@@ -80,7 +81,6 @@ public class DestinationBackController implements Initializable {
     private List<Destination> allDestinations = new ArrayList<>();
     private int currentPage = 1;
     private final int rowsPerPage = 10;
-    private boolean isCurrentPageHebergement = false;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -101,10 +101,11 @@ public class DestinationBackController implements Initializable {
         // Setup button actions
         setupButtonActions();
 
+        // Setup navigation buttons
+        setupNavigationButtons();
+
         // Update last update time
         updateLastUpdateTime();
-
-        setupHebergementButton();
     }
 
     private void setupTableColumns() {
@@ -191,7 +192,6 @@ public class DestinationBackController implements Initializable {
     // ============== HOTEL SUGGESTION FEATURE ==============
 
     private void handleSuggestHotels() {
-        // Get selected destination from table
         Destination selectedDestination = tableDestinations.getSelectionModel().getSelectedItem();
 
         if (selectedDestination == null) {
@@ -222,6 +222,40 @@ public class DestinationBackController implements Initializable {
         }
     }
 
+    // ============== MAP FEATURE ==============
+
+    private void handleShowMap() {
+        try {
+            // Get all destinations
+            List<Destination> allDestinations = destinationCRUD.afficher();
+
+            if (allDestinations.isEmpty()) {
+                showAlert(Alert.AlertType.INFORMATION, "Information",
+                        "Aucune destination à afficher sur la carte.");
+                return;
+            }
+
+            // Filter destinations with valid coordinates
+            long validDestinations = allDestinations.stream()
+                    .filter(d -> d.getLatitude_destination() != 0.0 || d.getLongitude_destination() != 0.0)
+                    .count();
+
+            if (validDestinations == 0) {
+                showAlert(Alert.AlertType.INFORMATION, "Information",
+                        "Aucune destination avec des coordonnées valides.");
+                return;
+            }
+
+            // Create and show the map window
+            DestinationMapController mapController = new DestinationMapController(allDestinations);
+            mapController.show();
+
+        } catch (SQLException e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur",
+                    "Impossible de charger les destinations: " + e.getMessage());
+        }
+    }
+
     private void setupButtonActions() {
         // Ajouter button
         if (btnAjouter != null) {
@@ -238,9 +272,9 @@ public class DestinationBackController implements Initializable {
             btnSuggestHotels.setOnAction(event -> handleSuggestHotels());
         }
 
-        // Export button
-        if (btnExport != null) {
-            btnExport.setOnMouseClicked(event -> handleExport());
+        // Show Map button
+        if (btnShowMap != null) {
+            btnShowMap.setOnAction(event -> handleShowMap());
         }
 
         // Search button
@@ -259,36 +293,82 @@ public class DestinationBackController implements Initializable {
         }
     }
 
-    private void setupHebergementButton() {
-        if (btnHebergement == null) return;
+    private void setupNavigationButtons() {
+        // Hébergement button
+        setupSidebarButtonHover(btnHebergement, "🏨", "Hébergement");
+        if (btnHebergement != null) {
+            btnHebergement.setOnMouseClicked(event -> navigateToHebergement());
+        }
 
-        btnHebergement.setOnMouseClicked(event -> navigateToHebergement());
+        // Itinéraires button
+        setupSidebarButtonHover(btnItineraires, "🗺️", "Itinéraires");
+        if (btnItineraires != null) {
+            btnItineraires.setOnMouseClicked(event -> {
+                // TODO: Implement navigation to Itinéraires when ready
+                showInfoAlert("Itinéraires", "Cette fonctionnalité sera bientôt disponible");
+            });
+        }
 
-        btnHebergement.setOnMouseEntered(event -> {
-            if (!isCurrentPageHebergement) {
-                btnHebergement.setStyle("-fx-background-color: rgba(255,140,66,0.15); -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;");
-                btnHebergement.lookupAll(".label").forEach(label -> {
-                    if (label instanceof Label) {
-                        ((Label) label).setStyle("-fx-text-fill: #ff8c42; -fx-font-weight: 600; -fx-font-size: 14;");
+        // Activités button
+        setupSidebarButtonHover(btnActivites, "🏄", "Activités");
+        if (btnActivites != null) {
+            btnActivites.setOnMouseClicked(event -> {
+                // TODO: Implement navigation to Activités when ready
+                showInfoAlert("Activités", "Cette fonctionnalité sera bientôt disponible");
+            });
+        }
+
+        // Voyages button
+        setupSidebarButtonHover(btnVoyages, "✈️", "Voyages");
+        if (btnVoyages != null) {
+            btnVoyages.setOnMouseClicked(event -> {
+                // TODO: Implement navigation to Voyages when ready
+                showInfoAlert("Voyages", "Cette fonctionnalité sera bientôt disponible");
+            });
+        }
+
+        // Budgets button
+        setupSidebarButtonHover(btnBudgets, "💰", "Budgets");
+        if (btnBudgets != null) {
+            btnBudgets.setOnMouseClicked(event -> {
+                // TODO: Implement navigation to Budgets when ready
+                showInfoAlert("Budgets", "Cette fonctionnalité sera bientôt disponible");
+            });
+        }
+    }
+
+    /**
+     * Helper method to setup hover effects for sidebar buttons
+     */
+    private void setupSidebarButtonHover(HBox button, String icon, String text) {
+        if (button == null) return;
+
+        button.setOnMouseEntered(event -> {
+            button.setStyle("-fx-background-color: rgba(255,140,66,0.15); -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand; -fx-border-color: #ff8c42; -fx-border-width: 1; -fx-border-radius: 12;");
+            button.lookupAll(".label").forEach(label -> {
+                if (label instanceof Label) {
+                    Label lbl = (Label) label;
+                    if (lbl.getText().equals(icon)) {
+                        lbl.setStyle("-fx-font-size: 16;");
+                    } else {
+                        lbl.setStyle("-fx-text-fill: #ff8c42; -fx-font-weight: 600; -fx-font-size: 14;");
                     }
-                });
-            }
+                }
+            });
         });
 
-        btnHebergement.setOnMouseExited(event -> {
-            if (!isCurrentPageHebergement) {
-                btnHebergement.setStyle("-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;");
-                btnHebergement.lookupAll(".label").forEach(label -> {
-                    if (label instanceof Label) {
-                        Label lbl = (Label) label;
-                        if (lbl.getText().equals("🏨")) {
-                            lbl.setStyle("-fx-font-size: 16;");
-                        } else {
-                            lbl.setStyle("-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;");
-                        }
+        button.setOnMouseExited(event -> {
+            button.setStyle("-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;");
+            button.lookupAll(".label").forEach(label -> {
+                if (label instanceof Label) {
+                    Label lbl = (Label) label;
+                    if (lbl.getText().equals(icon)) {
+                        lbl.setStyle("-fx-font-size: 16;");
+                    } else {
+                        lbl.setStyle("-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;");
                     }
-                });
-            }
+                }
+            });
         });
     }
 
@@ -426,6 +506,7 @@ public class DestinationBackController implements Initializable {
         }
     }
 
+    // In DestinationBackController.java - handleConsulter method
     private void handleConsulter(Destination destination) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/AfficherDestinationBack.fxml"));
@@ -438,9 +519,10 @@ public class DestinationBackController implements Initializable {
             Stage stage = new Stage();
             stage.setTitle("Détails - " + destination.getNom_destination());
             stage.setScene(new Scene(root));
+            stage.setWidth(1100);
+            stage.setHeight(1000); // Increased height
+            stage.setResizable(true); // Allow resizing
             stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
-            stage.initOwner(tableDestinations.getScene().getWindow());
-            stage.setResizable(false);
             stage.showAndWait();
 
         } catch (IOException e) {
@@ -448,7 +530,6 @@ public class DestinationBackController implements Initializable {
             e.printStackTrace();
         }
     }
-
     // ============== DATA LOADING AND UPDATES ==============
 
     private void loadDestinations() {
@@ -665,10 +746,6 @@ public class DestinationBackController implements Initializable {
         });
     }
 
-    private void handleExport() {
-        showAlert(Alert.AlertType.INFORMATION, "Export", "Fonctionnalité d'export à implémenter");
-    }
-
     private void navigateToHome() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/HomePage.fxml"));
@@ -685,6 +762,14 @@ public class DestinationBackController implements Initializable {
     }
 
     // ============== UTILITY METHODS ==============
+
+    private void showInfoAlert(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
 
     void showAlert(Alert.AlertType type, String title, String message) {
         Alert alert = new Alert(type);

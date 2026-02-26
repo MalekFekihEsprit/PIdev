@@ -30,7 +30,11 @@ public class DestinationFrontController implements Initializable {
 
     // Top Navigation
     @FXML private Label lblSearchPlaceholder;
-    @FXML private HBox btnHebergement; // <-- ADD THIS
+    @FXML private HBox btnHebergement;
+    @FXML private HBox btnItineraires;
+    @FXML private HBox btnActivites;
+    @FXML private HBox btnVoyages;
+    @FXML private HBox btnBudgets;
 
     // Bottom Status
     @FXML private Label lblLastUpdate;
@@ -61,7 +65,6 @@ public class DestinationFrontController implements Initializable {
     @FXML private TableColumn<Destination, Void> colActions;
 
     // Buttons
-    @FXML private HBox btnExport;
     @FXML private HBox btnRefresh;
     @FXML private HBox btnSearch;
     @FXML private HBox btnFilter;
@@ -93,10 +96,7 @@ public class DestinationFrontController implements Initializable {
         updateLastUpdateTime();
 
         // Setup navigation buttons
-        btnHome.setOnMouseClicked(event -> navigateToHome());
-
-        // Setup hébergement button
-        setupHebergementButton();
+        setupNavigationButtons();
     }
 
     private void setupTableColumns() {
@@ -151,9 +151,6 @@ public class DestinationFrontController implements Initializable {
         if (btnRefresh != null) {
             btnRefresh.setOnMouseClicked(event -> refreshData());
         }
-        if (btnExport != null) {
-            btnExport.setOnMouseClicked(event -> handleExport());
-        }
         if (btnSearch != null) {
             btnSearch.setOnMouseClicked(event -> handleSearch());
         }
@@ -162,28 +159,100 @@ public class DestinationFrontController implements Initializable {
         }
     }
 
-    private void setupHebergementButton() {
-        if (btnHebergement == null) return;
+    private void setupNavigationButtons() {
+        // Home button
+        if (btnHome != null) {
+            btnHome.setOnMouseClicked(event -> navigateToHome());
 
-        // Click handler
-        btnHebergement.setOnMouseClicked(event -> navigateToHebergement());
+            // Hover effect
+            btnHome.setOnMouseEntered(event -> {
+                btnHome.setStyle("-fx-background-color: #ff8c42; -fx-background-radius: 12; -fx-min-width: 40; -fx-min-height: 40; -fx-cursor: hand;");
+                btnHome.lookupAll(".label").forEach(label -> {
+                    if (label instanceof Label) {
+                        ((Label) label).setStyle("-fx-text-fill: white; -fx-font-size: 18;");
+                    }
+                });
+            });
 
-        // Hover effect
-        btnHebergement.setOnMouseEntered(event -> {
-            btnHebergement.setStyle("-fx-background-color: rgba(255,140,66,0.1); -fx-background-radius: 12; -fx-padding: 8 16; -fx-cursor: hand; -fx-border-color: #ff8c42; -fx-border-width: 1; -fx-border-radius: 12;");
-            btnHebergement.lookupAll(".label").forEach(label -> {
+            btnHome.setOnMouseExited(event -> {
+                btnHome.setStyle("-fx-background-color: #f1f5f9; -fx-background-radius: 12; -fx-min-width: 40; -fx-min-height: 40; -fx-cursor: hand;");
+                btnHome.lookupAll(".label").forEach(label -> {
+                    if (label instanceof Label) {
+                        ((Label) label).setStyle("-fx-font-size: 18; -fx-text-fill: #475569;");
+                    }
+                });
+            });
+        }
+
+        // Hébergement button
+        setupNavButtonHover(btnHebergement, "🏨", "Hébergement");
+        if (btnHebergement != null) {
+            btnHebergement.setOnMouseClicked(event -> navigateToHebergement());
+        }
+
+        // Itinéraires button (commented implementation)
+        setupNavButtonHover(btnItineraires, "🗺️", "Itinéraires");
+        if (btnItineraires != null) {
+            btnItineraires.setOnMouseClicked(event -> {
+                // TODO: Implement navigation to Itinéraires when ready
+                showInfoAlert("Itinéraires", "Cette fonctionnalité sera bientôt disponible");
+            });
+        }
+
+        // Activités button (commented implementation)
+        setupNavButtonHover(btnActivites, "🏄", "Activités");
+        if (btnActivites != null) {
+            btnActivites.setOnMouseClicked(event -> {
+                // TODO: Implement navigation to Activités when ready
+                showInfoAlert("Activités", "Cette fonctionnalité sera bientôt disponible");
+            });
+        }
+
+        // Voyages button (commented implementation)
+        setupNavButtonHover(btnVoyages, "✈️", "Voyages");
+        if (btnVoyages != null) {
+            btnVoyages.setOnMouseClicked(event -> {
+                // TODO: Implement navigation to Voyages when ready
+                showInfoAlert("Voyages", "Cette fonctionnalité sera bientôt disponible");
+            });
+        }
+
+        // Budgets button (commented implementation)
+        setupNavButtonHover(btnBudgets, "💰", "Budgets");
+        if (btnBudgets != null) {
+            btnBudgets.setOnMouseClicked(event -> {
+                // TODO: Implement navigation to Budgets when ready
+                showInfoAlert("Budgets", "Cette fonctionnalité sera bientôt disponible");
+            });
+        }
+    }
+
+    /**
+     * Helper method to setup hover effects for navigation buttons
+     */
+    private void setupNavButtonHover(HBox button, String icon, String text) {
+        if (button == null) return;
+
+        button.setOnMouseEntered(event -> {
+            button.setStyle("-fx-background-color: rgba(255,140,66,0.1); -fx-background-radius: 12; -fx-padding: 8 16; -fx-cursor: hand; -fx-border-color: #ff8c42; -fx-border-width: 1; -fx-border-radius: 12;");
+            button.lookupAll(".label").forEach(label -> {
                 if (label instanceof Label) {
-                    ((Label) label).setStyle("-fx-text-fill: #ff8c42; -fx-font-weight: 600;");
+                    Label lbl = (Label) label;
+                    if (lbl.getText().equals(icon)) {
+                        lbl.setStyle("-fx-font-size: 16;");
+                    } else {
+                        lbl.setStyle("-fx-text-fill: #ff8c42; -fx-font-weight: 600; -fx-font-size: 14;");
+                    }
                 }
             });
         });
 
-        btnHebergement.setOnMouseExited(event -> {
-            btnHebergement.setStyle("-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 8 16; -fx-cursor: hand;");
-            btnHebergement.lookupAll(".label").forEach(label -> {
+        button.setOnMouseExited(event -> {
+            button.setStyle("-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 8 16; -fx-cursor: hand;");
+            button.lookupAll(".label").forEach(label -> {
                 if (label instanceof Label) {
                     Label lbl = (Label) label;
-                    if (lbl.getText().equals("🏨")) {
+                    if (lbl.getText().equals(icon)) {
                         lbl.setStyle("-fx-font-size: 16;");
                     } else {
                         lbl.setStyle("-fx-text-fill: #475569; -fx-font-weight: 500; -fx-font-size: 14;");
@@ -261,10 +330,6 @@ public class DestinationFrontController implements Initializable {
         lblLastUpdate.setText("Dernière mise à jour: " + LocalDateTime.now().format(formatter));
     }
 
-    private void handleExport() {
-        showAlert(Alert.AlertType.INFORMATION, "Export", "Fonctionnalité d'export à implémenter");
-    }
-
     private void handleSearch() {
         TextInputDialog dialog = new TextInputDialog();
         dialog.setTitle("Recherche");
@@ -284,7 +349,6 @@ public class DestinationFrontController implements Initializable {
                 } else {
                     destinationList.setAll(searchResults);
                     tableDestinations.setItems(destinationList);
-                    // Update count label to show filtered count
                     lblDestinationCount.setText(searchResults.size() + " destination" + (searchResults.size() > 1 ? "s" : ""));
                 }
             }
@@ -292,7 +356,6 @@ public class DestinationFrontController implements Initializable {
     }
 
     private void handleFilter() {
-        // Get unique climates from all destinations
         List<String> climates = allDestinations.stream()
                 .map(Destination::getClimat_destination)
                 .filter(Objects::nonNull)
@@ -329,20 +392,15 @@ public class DestinationFrontController implements Initializable {
 
     private void handleConsulter(Destination destination) {
         try {
-            // Load the destination details FXML
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/AfficherDestinationFront.fxml"));
             Parent root = loader.load();
 
-            // Get the controller and pass the destination
             AfficherDestinationfrontController controller = loader.getController();
             controller.setDestination(destination);
 
-            // Create a new stage for the details window
             Stage stage = new Stage();
             stage.setTitle("Détails - " + destination.getNom_destination());
             stage.setScene(new Scene(root));
-
-            // Make it modal (blocks interaction with parent window)
             stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
             stage.showAndWait();
 
@@ -354,6 +412,14 @@ public class DestinationFrontController implements Initializable {
 
     private void showAlert(Alert.AlertType type, String title, String message) {
         Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    private void showInfoAlert(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);
         alert.setHeaderText(null);
         alert.setContentText(message);
@@ -380,11 +446,9 @@ public class DestinationFrontController implements Initializable {
      */
     private void navigateToHebergement() {
         try {
-            // Load the HebergementFront FXML
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/HebergementFront.fxml"));
             Parent root = loader.load();
 
-            // Get the current stage and set the new scene
             Stage stage = (Stage) btnHebergement.getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.setTitle("TravelMate - Hébergements");
@@ -392,9 +456,6 @@ public class DestinationFrontController implements Initializable {
 
         } catch (IOException e) {
             showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir la page des hébergements: " + e.getMessage());
-            e.printStackTrace();
-        } catch (Exception e) {
-            showAlert(Alert.AlertType.ERROR, "Erreur", "Une erreur est survenue: " + e.getMessage());
             e.printStackTrace();
         }
     }

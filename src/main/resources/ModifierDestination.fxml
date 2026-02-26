@@ -18,7 +18,7 @@
 <?import javafx.scene.shape.Circle?>
 <?import javafx.scene.shape.Rectangle?>
 
-<BorderPane prefHeight="600" prefWidth="550" style="-fx-background-color: #0a0e27;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.ModifierDestinationController">
+<BorderPane prefHeight="650" prefWidth="550" style="-fx-background-color: #0a0e27;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.ModifierDestinationController">
 
     <!-- TOP HEADER -->
     <top>
@@ -69,52 +69,87 @@
                             <ColumnConstraints percentWidth="70" />
                         </columnConstraints>
 
-                        <!-- Nom -->
-                        <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 13; -fx-font-weight: 500;" text="Nom *" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                        <!-- Pays FIRST -->
+                        <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 13; -fx-font-weight: 500;" text="Pays *" GridPane.columnIndex="0" GridPane.rowIndex="0" />
                         <VBox spacing="4" GridPane.columnIndex="1" GridPane.rowIndex="0">
-                            <TextField fx:id="tfNom" promptText="Ex: Paris, Djerba, Rome..." style="-fx-background-color: #1e2749; -fx-text-fill: white; -fx-prompt-text-fill: #94a3b8; -fx-background-radius: 12; -fx-padding: 10 15; -fx-border-color: #2d3a5f; -fx-border-width: 1; -fx-border-radius: 12;" />
-                            <Label fx:id="lblNomCounter" style="-fx-text-fill: #94a3b8; -fx-font-size: 10;" text="0/30" />
-                        </VBox>
-
-                        <!-- Pays -->
-                        <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 13; -fx-font-weight: 500;" text="Pays *" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-                        <VBox spacing="4" GridPane.columnIndex="1" GridPane.rowIndex="1">
                             <TextField fx:id="tfPays" promptText="Ex: France, Tunisie, Italie..." style="-fx-background-color: #1e2749; -fx-text-fill: white; -fx-prompt-text-fill: #94a3b8; -fx-background-radius: 12; -fx-padding: 10 15; -fx-border-color: #2d3a5f; -fx-border-width: 1; -fx-border-radius: 12;" />
                             <Label fx:id="lblPaysCounter" style="-fx-text-fill: #94a3b8; -fx-font-size: 10;" text="0/30" />
                         </VBox>
 
-                        <!-- Description -->
+                        <!-- Ville SECOND with Search Button -->
+                        <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 13; -fx-font-weight: 500;" text="Ville *" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                        <VBox spacing="4" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                            <HBox spacing="5">
+                                <TextField fx:id="tfNom" promptText="Ex: Paris, Djerba, Rome..." HBox.hgrow="ALWAYS"
+                                           style="-fx-background-color: #1e2749; -fx-text-fill: white; -fx-prompt-text-fill: #94a3b8; -fx-background-radius: 12; -fx-padding: 10 15; -fx-border-color: #2d3a5f; -fx-border-width: 1; -fx-border-radius: 12;" />
+                                <Button fx:id="btnSearchCity" text="🔍" style="-fx-background-color: #10b981; -fx-text-fill: white; -fx-font-size: 16; -fx-background-radius: 12; -fx-min-width: 40; -fx-cursor: hand;" />
+                            </HBox>
+                            <ComboBox fx:id="cbCitySuggestions" visible="false" managed="false"
+                                      promptText="Suggestions..." maxWidth="Infinity"
+                                      style="-fx-background-color: #1e2749; -fx-text-fill: white; -fx-background-radius: 12; -fx-border-color: #2d3a5f; -fx-border-width: 1; -fx-border-radius: 12;" />
+                            <Label fx:id="lblCityValidation" style="-fx-text-fill: #f59e0b; -fx-font-size: 10;" text="" />
+                        </VBox>
+
+                        <!-- Description with AI Generate Button -->
                         <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 13; -fx-font-weight: 500;" text="Description" GridPane.columnIndex="0" GridPane.rowIndex="2" />
                         <VBox spacing="4" GridPane.columnIndex="1" GridPane.rowIndex="2">
-                            <TextArea fx:id="taDescription" prefRowCount="3" promptText="Description détaillée..." style="-fx-background-color: #1e2749; -fx-text-fill: black; -fx-prompt-text-fill: #94a3b8; -fx-background-radius: 12; -fx-border-color: #2d3a5f; -fx-border-width: 1; -fx-border-radius: 12; -fx-padding: 10;" wrapText="true" />
-                            <Label fx:id="lblDescCounter" alignment="CENTER_RIGHT" style="-fx-text-fill: #94a3b8; -fx-font-size: 10;" text="0/1000" />
+                            <HBox spacing="5">
+                                <TextArea fx:id="taDescription" HBox.hgrow="ALWAYS" prefRowCount="3"
+                                          promptText="Description détaillée..."
+                                          style="-fx-background-color: #1e2749; -fx-text-fill: black; -fx-prompt-text-fill: #94a3b8; -fx-background-radius: 12; -fx-border-color: #2d3a5f; -fx-border-width: 1; -fx-border-radius: 12; -fx-padding: 10;"
+                                          wrapText="true" />
+                                <Button fx:id="btnGenerateDescription" text="🤖 Générer"
+                                        style="-fx-background-color: #8b5cf6; -fx-text-fill: white; -fx-font-weight: 600; -fx-font-size: 12; -fx-padding: 8 12; -fx-background-radius: 12; -fx-cursor: hand;" />
+                            </HBox>
+                            <Label fx:id="lblDescCounter" alignment="CENTER_RIGHT" style="-fx-text-fill: #94a3b8; -fx-font-size: 10;" text="0 caractères" />
                         </VBox>
 
                         <!-- Climat -->
                         <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 13; -fx-font-weight: 500;" text="Climat *" GridPane.columnIndex="0" GridPane.rowIndex="3" />
-                        <ComboBox fx:id="cbClimat" maxWidth="Infinity" promptText="Sélectionner un climat" style="-fx-background-color: #1e2749; -fx-text-fill: white; -fx-prompt-text-fill: #94a3b8; -fx-background-radius: 12; -fx-border-color: #2d3a5f; -fx-border-width: 1; -fx-border-radius: 12;" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                        <ComboBox fx:id="cbClimat" maxWidth="Infinity" promptText="Sélectionner un climat"
+                                  style="-fx-background-color: #1e2749; -fx-text-fill: white; -fx-prompt-text-fill: #94a3b8; -fx-background-radius: 12; -fx-border-color: #2d3a5f; -fx-border-width: 1; -fx-border-radius: 12;"
+                                  GridPane.columnIndex="1" GridPane.rowIndex="3" />
 
-                        <!-- Saison -->
+                        <!-- Saison with Season Detection Button -->
                         <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 13; -fx-font-weight: 500;" text="Saison idéale *" GridPane.columnIndex="0" GridPane.rowIndex="4" />
-                        <ComboBox fx:id="cbSaison" maxWidth="Infinity" promptText="Sélectionner une saison" style="-fx-background-color: #1e2749; -fx-text-fill: white; -fx-prompt-text-fill: #94a3b8; -fx-background-radius: 12; -fx-border-color: #2d3a5f; -fx-border-width: 1; -fx-border-radius: 12;" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                        <VBox spacing="4" GridPane.columnIndex="1" GridPane.rowIndex="4">
+                            <HBox spacing="5">
+                                <ComboBox fx:id="cbSaison" HBox.hgrow="ALWAYS" maxWidth="Infinity"
+                                          promptText="Sélectionner une saison"
+                                          style="-fx-background-color: #1e2749; -fx-text-fill: white; -fx-prompt-text-fill: #94a3b8; -fx-background-radius: 12; -fx-border-color: #2d3a5f; -fx-border-width: 1; -fx-border-radius: 12;" />
+                                <Button fx:id="btnDetectSeason" text="🌤️"
+                                        style="-fx-background-color: #10b981; -fx-text-fill: white; -fx-font-size: 16; -fx-background-radius: 12; -fx-min-width: 40; -fx-cursor: hand;" />
+                            </HBox>
+                        </VBox>
+
+                        <!-- Score (Optional) -->
+                        <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 13; -fx-font-weight: 500;" text="Score (optionnel)" GridPane.columnIndex="0" GridPane.rowIndex="5" />
+                        <VBox spacing="4" GridPane.columnIndex="1" GridPane.rowIndex="5">
+                            <TextField fx:id="tfScore" promptText="Ex: 4.5 (optionnel)"
+                                       style="-fx-background-color: #1e2749; -fx-text-fill: white; -fx-prompt-text-fill: #94a3b8; -fx-background-radius: 12; -fx-padding: 10 15; -fx-border-color: #2d3a5f; -fx-border-width: 1; -fx-border-radius: 12;" />
+                            <Label fx:id="lblScoreValidation" style="-fx-text-fill: #f59e0b; -fx-font-size: 10;" text="Laissez vide pour 0.0" />
+                        </VBox>
+
+                        <!-- Video URL -->
+                        <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 13; -fx-font-weight: 500;" text="Vidéo" GridPane.columnIndex="0" GridPane.rowIndex="6" />
+                        <VBox spacing="4" GridPane.columnIndex="1" GridPane.rowIndex="6">
+                            <HBox spacing="5">
+                                <TextField fx:id="tfVideoUrl" promptText="URL YouTube (modifiable)" HBox.hgrow="ALWAYS"
+                                           style="-fx-background-color: #1e2749; -fx-text-fill: white; -fx-prompt-text-fill: #94a3b8; -fx-background-radius: 12; -fx-padding: 10 15; -fx-border-color: #2d3a5f; -fx-border-width: 1; -fx-border-radius: 12;" />
+                                <Button fx:id="btnFetchVideo" text="📹 Rechercher"
+                                        style="-fx-background-color: #ff0000; -fx-text-fill: white; -fx-font-weight: 600; -fx-font-size: 12; -fx-padding: 8 12; -fx-background-radius: 12; -fx-cursor: hand;" />
+                            </HBox>
+                            <Label fx:id="lblVideoStatus" style="-fx-text-fill: #f59e0b; -fx-font-size: 10;" text="" />
+                        </VBox>
 
                         <!-- Separator -->
-                        <Separator style="-fx-background-color: #1e2749;" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="5" />
+                        <Separator style="-fx-background-color: #1e2749;" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="7" />
 
                         <!-- Last Modified Info -->
-                        <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-background-color: rgba(245,158,11,0.1); -fx-background-radius: 12; -fx-padding: 10;" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="6">
+                        <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-background-color: rgba(245,158,11,0.1); -fx-background-radius: 12; -fx-padding: 10;" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="8">
                             <Label style="-fx-font-size: 14; -fx-text-fill: #f59e0b;" text="🕒" />
                             <Label fx:id="lblLastModified" style="-fx-text-fill: #f59e0b; -fx-font-size: 11;" text="Modification en cours" />
                         </HBox>
-                  <rowConstraints>
-                     <RowConstraints />
-                     <RowConstraints />
-                     <RowConstraints />
-                     <RowConstraints />
-                     <RowConstraints />
-                     <RowConstraints />
-                     <RowConstraints />
-                  </rowConstraints>
                     </GridPane>
 
                     <!-- Buttons -->

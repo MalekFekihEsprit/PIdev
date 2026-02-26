@@ -6,10 +6,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ProgressBar;
+import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 
@@ -28,13 +25,18 @@ public class AfficherDestinationfrontController implements Initializable {
     @FXML private Label lblDestinationScore;
     @FXML private Label lblClimate;
     @FXML private Label lblSeason;
-    @FXML private Label lblDescription;
+    @FXML private TextArea taDescription;
     @FXML private Label lblLatitude;
     @FXML private Label lblLongitude;
     @FXML private Label lblScoreValue;
     @FXML private Label lblStatClimate;
     @FXML private Label lblStatSeason;
     @FXML private Label lblStatCountry;
+    @FXML private Label lblStatId;
+    @FXML private Label lblTagCountry;
+    @FXML private Label lblTagClimate;
+    @FXML private Label lblTagSeason;
+    @FXML private Label lblTagScore;
     @FXML private ProgressBar scoreProgress;
     @FXML private HBox btnClose;
     @FXML private Button btnClose2;
@@ -50,6 +52,13 @@ public class AfficherDestinationfrontController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         // Setup button actions
         setupButtons();
+
+        // Make TextArea read-only and ensure wrapping
+        if (taDescription != null) {
+            taDescription.setEditable(false);
+            taDescription.setWrapText(true);
+            taDescription.setStyle("-fx-font-size: 15;");
+        }
     }
 
     private void setupButtons() {
@@ -116,10 +125,11 @@ public class AfficherDestinationfrontController implements Initializable {
             lblStatClimate.setText(climate);
             lblStatSeason.setText(season);
             lblStatCountry.setText(safeString(destination.getPays_destination()));
+            lblStatId.setText("#" + destination.getId_destination());
 
-            // Description
+            // Description - using TextArea with large text
             String desc = safeString(destination.getDescription_destination(), "Aucune description disponible.");
-            lblDescription.setText(desc);
+            taDescription.setText(desc);
 
             // Coordinates
             double lat = destination.getLatitude_destination();
@@ -135,8 +145,14 @@ public class AfficherDestinationfrontController implements Initializable {
             lblScoreValue.setText(scoreText);
 
             // Progress bar (score out of 5)
-            double progress = Math.min(score / 5.0, 1.0); // Cap at 1.0
+            double progress = Math.min(score / 5.0, 1.0);
             scoreProgress.setProgress(progress);
+
+            // Tags
+            lblTagCountry.setText("🇫🇷 " + safeString(destination.getPays_destination()));
+            lblTagClimate.setText("🌡️ " + climate);
+            lblTagSeason.setText("🗓️ " + season);
+            lblTagScore.setText("⭐ " + scoreText);
 
         } catch (Exception e) {
             System.err.println("Error populating destination fields: " + e.getMessage());

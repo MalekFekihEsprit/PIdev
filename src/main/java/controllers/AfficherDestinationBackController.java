@@ -6,11 +6,14 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ProgressBar;
+import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
+import javafx.scene.web.WebEngine;
+import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -27,7 +30,7 @@ public class AfficherDestinationBackController implements Initializable {
     @FXML private Label lblDestinationId;
     @FXML private Label lblClimate;
     @FXML private Label lblSeason;
-    @FXML private Label lblDescription;
+    @FXML private TextArea taDescription;
     @FXML private Label lblLatitude;
     @FXML private Label lblLongitude;
     @FXML private Label lblScoreValue;
@@ -39,13 +42,22 @@ public class AfficherDestinationBackController implements Initializable {
     @FXML private Label lblTagClimate;
     @FXML private Label lblTagSeason;
     @FXML private Label lblTagScore;
+    @FXML private Label lblCurrency;
+    @FXML private Label lblLanguages;
     @FXML private ProgressBar scoreProgress;
     @FXML private HBox btnClose;
     @FXML private Button btnClose2;
-    @FXML private Button btnVoirHebergements; // Make sure this matches your FXML fx:id
+    @FXML private Button btnVoirHebergements;
+
+    // New elements for flag and video
+    @FXML private ImageView flagImageView;
+    @FXML private WebView videoWebView;
+    @FXML private Label lblNoVideo;
+    @FXML private VBox videoContainer;
 
     private Destination destination;
     private DestinationBackController parentController;
+    private WebEngine webEngine;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -53,11 +65,33 @@ public class AfficherDestinationBackController implements Initializable {
         btnClose.setOnMouseClicked(event -> closeWindow());
         btnClose2.setOnAction(event -> closeWindow());
 
-
-
         // Setup voir hébergements button
         if (btnVoirHebergements != null) {
             btnVoirHebergements.setOnAction(event -> handleVoirHebergements());
+        }
+
+        // Initialize WebView for video
+        if (videoWebView != null) {
+            webEngine = videoWebView.getEngine();
+            webEngine.setJavaScriptEnabled(true);
+
+            // Set user agent
+            webEngine.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36");
+
+            // Add error handling
+            webEngine.getLoadWorker().exceptionProperty().addListener((obs, oldErr, newErr) -> {
+                if (newErr != null) {
+                    System.err.println("WebView error: " + newErr.getMessage());
+                }
+            });
+        }
+
+        // Make TextArea read-only and ensure wrapping
+        if (taDescription != null) {
+            taDescription.setEditable(false);
+            taDescription.setWrapText(true);
+            // Set larger font for better readability
+            taDescription.setStyle("-fx-font-size: 15;");
         }
     }
 
@@ -94,10 +128,17 @@ public class AfficherDestinationBackController implements Initializable {
         lblStatCountry.setText(destination.getPays_destination());
         lblStatId.setText("#" + destination.getId_destination());
 
-        // Description
+        // Currency and Languages
+        String currency = destination.getCurrency_destination() != null ? destination.getCurrency_destination() : "Non disponible";
+        String languages = destination.getLanguages_destination() != null ? destination.getLanguages_destination() : "Non disponible";
+
+        if (lblCurrency != null) lblCurrency.setText(currency);
+        if (lblLanguages != null) lblLanguages.setText(languages);
+
+        // Description - using TextArea with large text
         String desc = destination.getDescription_destination() != null ?
                 destination.getDescription_destination() : "Aucune description disponible.";
-        lblDescription.setText(desc);
+        taDescription.setText(desc);
 
         // Coordinates
         double lat = destination.getLatitude_destination();
@@ -115,7 +156,7 @@ public class AfficherDestinationBackController implements Initializable {
         lblDestinationScore.setText(scoreText);
         lblScoreValue.setText(scoreText);
 
-        // Progress bar (score out of 5)
+        // Progress bar
         double progress = Math.min(score / 5.0, 1.0);
         scoreProgress.setProgress(progress);
 
@@ -124,6 +165,152 @@ public class AfficherDestinationBackController implements Initializable {
         lblTagClimate.setText("🌡️ " + climate);
         lblTagSeason.setText("🗓️ " + season);
         lblTagScore.setText("⭐ " + scoreText);
+
+        // Load flag image
+        loadFlagImage();
+
+        // Load video
+        loadVideo();
+    }
+
+    private void loadFlagImage() {
+        if (flagImageView == null) return;
+
+        String flagUrl = destination.getFlag_destination();
+        if (flagUrl != null && !flagUrl.isEmpty()) {
+            try {
+                Image flagImage = new Image(flagUrl, 60, 40, true, true);
+                flagImageView.setImage(flagImage);
+                flagImageView.setVisible(true);
+            } catch (Exception e) {
+                System.err.println("Erreur chargement drapeau: " + e.getMessage());
+                flagImageView.setVisible(false);
+            }
+        } else {
+            flagImageView.setVisible(false);
+        }
+    }
+
+    private void loadVideo() {
+        if (videoWebView == null || videoContainer == null || lblNoVideo == null) return;
+
+        String videoUrl = destination.getVideo_url();
+
+        if (videoUrl != null && !videoUrl.isEmpty()) {
+            System.out.println("📹 Loading video from URL: " + videoUrl);
+
+            String videoId = extractVideoId(videoUrl);
+
+            if (videoId != null) {
+                System.out.println("✅ Extracted video ID: " + videoId);
+
+                // HTML that makes video fill the entire container
+                String embedHtml = String.format(
+                        "<!DOCTYPE html>" +
+                                "<html>" +
+                                "<head>" +
+                                "<style>" +
+                                "html, body { margin: 0; padding: 0; width: 100%%; height: 100%%; overflow: hidden; background: #000; }" +
+                                ".video-container { position: relative; width: 100%%; height: 100%%; }" +
+                                "iframe { position: absolute; top: 0; left: 0; width: 100%%; height: 100%%; border: 0; }" +
+                                "</style>" +
+                                "</head>" +
+                                "<body>" +
+                                "<div class='video-container'>" +
+                                "<iframe src='https://www.youtube.com/embed/%s?autoplay=0&rel=0&showinfo=0&modestbranding=1&playsinline=1&controls=1' " +
+                                "allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture' " +
+                                "allowfullscreen>" +
+                                "</iframe>" +
+                                "</div>" +
+                                "</body></html>",
+                        videoId
+                );
+
+                // Ensure WebView fills its container
+                videoWebView.setPrefHeight(450);
+                videoWebView.setMinHeight(450);
+                videoWebView.setMaxHeight(Double.MAX_VALUE);
+
+                // Make sure the container expands properly
+                videoContainer.setPrefHeight(500);
+                videoContainer.setMinHeight(500);
+                videoContainer.setMaxHeight(Double.MAX_VALUE);
+
+                // Load the HTML
+                webEngine.loadContent(embedHtml, "text/html");
+
+                // Make container visible
+                videoContainer.setVisible(true);
+                videoContainer.setManaged(true);
+                lblNoVideo.setVisible(false);
+                lblNoVideo.setManaged(false);
+
+                // Force layout pass
+                javafx.application.Platform.runLater(() -> {
+                    videoWebView.requestLayout();
+                    videoContainer.requestLayout();
+                });
+
+                System.out.println("✅ Video should now fill the container");
+
+            } else {
+                System.err.println("❌ Could not extract video ID from: " + videoUrl);
+                showNoVideo();
+            }
+        } else {
+            System.out.println("ℹ️ No video URL provided");
+            showNoVideo();
+        }
+    }
+
+    private void showNoVideo() {
+        videoContainer.setVisible(false);
+        videoContainer.setManaged(false);
+        lblNoVideo.setVisible(true);
+        lblNoVideo.setManaged(true);
+    }
+
+    private String extractVideoId(String videoUrl) {
+        if (videoUrl == null || videoUrl.isEmpty()) return null;
+
+        String videoId = null;
+
+        try {
+            // Format: https://www.youtube.com/watch?v=VIDEO_ID
+            if (videoUrl.contains("youtube.com/watch")) {
+                String[] parts = videoUrl.split("[?&]v=");
+                if (parts.length > 1) {
+                    videoId = parts[1].split("&")[0];
+                }
+            }
+            // Format: https://youtu.be/VIDEO_ID
+            else if (videoUrl.contains("youtu.be/")) {
+                String[] parts = videoUrl.split("youtu.be/");
+                if (parts.length > 1) {
+                    videoId = parts[1].split("\\?")[0];
+                }
+            }
+            // Format: https://www.youtube.com/embed/VIDEO_ID
+            else if (videoUrl.contains("youtube.com/embed/")) {
+                String[] parts = videoUrl.split("embed/");
+                if (parts.length > 1) {
+                    videoId = parts[1].split("\\?")[0];
+                }
+            }
+            // Format: Just the video ID
+            else if (videoUrl.matches("^[a-zA-Z0-9_-]{11}$")) {
+                videoId = videoUrl;
+            }
+
+            // Validate
+            if (videoId != null && videoId.length() == 11) {
+                return videoId;
+            }
+        } catch (Exception e) {
+            System.err.println("Error extracting video ID: " + e.getMessage());
+        }
+
+        return null;
     }
 
     private String getIconForDestination(Destination destination) {
@@ -146,10 +333,6 @@ public class AfficherDestinationBackController implements Initializable {
         return "🌍";
     }
 
-    /**
-     * Handles the "Voir Hébergements" button click
-     * Navigates to Hébergement back office with pre-filter for this destination
-     */
     private void handleVoirHebergements() {
         if (destination == null) {
             showAlert(Alert.AlertType.WARNING, "Attention", "Aucune destination sélectionnée");
@@ -157,21 +340,12 @@ public class AfficherDestinationBackController implements Initializable {
         }
 
         try {
-            // Load the Hebergement back office FXML
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/HebergementBack.fxml"));
             Parent root = loader.load();
 
-            // Get the controller and pass the destination to filter by
-            HebergementBackController controller = loader.getController();
-
-            // IMPORTANT: Set the filter before showing the window
-            // This ensures the hébergements are filtered immediately
-            controller.filterByDestination(destination);
-
-            // Get the current stage and set the new scene
             Stage stage = (Stage) btnVoirHebergements.getScene().getWindow();
             stage.setScene(new Scene(root));
-            stage.setTitle("TravelMate - Hébergements à " + destination.getNom_destination() + " (Admin)");
+            stage.setTitle("TravelMate - Hébergements à " + destination.getNom_destination());
             stage.setMaximized(true);
 
         } catch (IOException e) {
@@ -179,7 +353,6 @@ public class AfficherDestinationBackController implements Initializable {
             e.printStackTrace();
         }
     }
-
 
     private void showAlert(Alert.AlertType type, String title, String message) {
         Alert alert = new Alert(type);

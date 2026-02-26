@@ -3,7 +3,6 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ProgressBar?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.layout.BorderPane?>
@@ -96,7 +95,7 @@
                         </VBox>
                     </HBox>
 
-                    <!-- PRICE AND SCORE QUICK INFO -->
+                    <!-- PRICE CARD ONLY (SCORE CARD REMOVED) -->
                     <HBox spacing="20">
                         <!-- Price Card -->
                         <VBox spacing="12" style="-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.02), 10, 0, 0, 2); -fx-border-color: #10b981; -fx-border-width: 0 0 0 4; -fx-border-radius: 20;" HBox.hgrow="ALWAYS">
@@ -110,19 +109,8 @@
                                 </VBox>
                             </HBox>
                         </VBox>
-
-                        <!-- Score Card -->
-                        <VBox spacing="12" style="-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.02), 10, 0, 0, 2); -fx-border-color: #f59e0b; -fx-border-width: 0 0 0 4; -fx-border-radius: 20;" HBox.hgrow="ALWAYS">
-                            <HBox alignment="CENTER_LEFT" spacing="12">
-                                <VBox alignment="CENTER" style="-fx-background-color: #fff7ed; -fx-background-radius: 14; -fx-min-width: 48; -fx-min-height: 48;">
-                                    <Label style="-fx-font-size: 24;" text="📊" />
-                                </VBox>
-                                <VBox spacing="2">
-                                    <Label style="-fx-text-fill: #64748b; -fx-font-size: 12; -fx-font-weight: 500;" text="SCORE" />
-                                    <Label fx:id="lblScore" style="-fx-font-family: 'Clash Display'; -fx-font-size: 24; -fx-font-weight: bold; -fx-text-fill: #f59e0b;" text="8.5/10" />
-                                </VBox>
-                            </HBox>
-                        </VBox>
+                        <!-- Spacer to maintain layout -->
+                        <Region HBox.hgrow="ALWAYS" />
                     </HBox>
 
                     <!-- ADDRESS SECTION -->
@@ -195,11 +183,10 @@
                         </VBox>
                     </GridPane>
 
-                    <!-- TAGS / HIGHLIGHTS - REMOVED wrapText="true" from HBox -->
+                    <!-- TAGS / HIGHLIGHTS - SCORE TAG REMOVED -->
                     <HBox spacing="12" alignment="CENTER">
                         <Label style="-fx-background-color: #e6f7e6; -fx-text-fill: #10b981; -fx-background-radius: 20; -fx-padding: 8 16; -fx-font-weight: 600; -fx-font-size: 12;" fx:id="lblTagType" text="🏨 Hôtel" />
                         <Label style="-fx-background-color: #fff7ed; -fx-text-fill: #f59e0b; -fx-background-radius: 20; -fx-padding: 8 16; -fx-font-weight: 600; -fx-font-size: 12;" fx:id="lblTagNote" text="⭐ 4.5/5" />
-                        <Label style="-fx-background-color: #f1f5f9; -fx-text-fill: #3b82f6; -fx-background-radius: 20; -fx-padding: 8 16; -fx-font-weight: 600; -fx-font-size: 12;" fx:id="lblTagScore" text="📊 Score: 8.5" />
                         <Label style="-fx-background-color: #f1f5f9; -fx-text-fill: #64748b; -fx-background-radius: 20; -fx-padding: 8 16; -fx-font-weight: 600; -fx-font-size: 12;" fx:id="lblTagPrix" text="💰 120€/nuit" />
                     </HBox>
 

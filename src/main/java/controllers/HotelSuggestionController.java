@@ -239,16 +239,18 @@ public class HotelSuggestionController implements Initializable {
         details.add(addressIcon, 0, 0);
         details.add(addressLabel, 1, 0);
 
-        // Rating
+        // Rating - UPDATED to show float values
         Label ratingIcon = new Label("⭐");
         ratingIcon.setStyle("-fx-font-size: 14;");
         Label ratingLabel;
         if (hotel.getRating() != null) {
-            ratingLabel = new Label(String.format("%.1f / 5", hotel.getRating()));
-            ratingLabel.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 12;");
+            // Format to 1 decimal place
+            String ratingText = String.format("%.1f", hotel.getRating());
+            ratingLabel = new Label(ratingText + " / 5");
+            ratingLabel.setStyle("-fx-text-fill: #fbbf24; -fx-font-size: 12; -fx-font-weight: 600;");
         } else {
-            ratingLabel = new Label("No available rating for the moment");
-            ratingLabel.setStyle("-fx-text-fill: #f59e0b; -fx-font-size: 12; -fx-font-style: italic;");
+            ratingLabel = new Label("⭐ No official rating");
+            ratingLabel.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 12; -fx-font-style: italic;");
         }
         details.add(ratingIcon, 0, 1);
         details.add(ratingLabel, 1, 1);
@@ -259,10 +261,10 @@ public class HotelSuggestionController implements Initializable {
         Label priceLabel;
         if (hotel.getPrixEstime() != null) {
             priceLabel = new Label(String.format("%.2f TND / nuit (estimé)", hotel.getPrixEstime()));
-            priceLabel.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 12;");
+            priceLabel.setStyle("-fx-text-fill: #10b981; -fx-font-size: 12; -fx-font-weight: 500;");
         } else {
-            priceLabel = new Label("No available price for the moment");
-            priceLabel.setStyle("-fx-text-fill: #f59e0b; -fx-font-size: 12; -fx-font-style: italic;");
+            priceLabel = new Label("💰 No available price");
+            priceLabel.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 12; -fx-font-style: italic;");
         }
         details.add(priceIcon, 0, 2);
         details.add(priceLabel, 1, 2);
@@ -327,7 +329,6 @@ public class HotelSuggestionController implements Initializable {
 
                     hebergement.setLatitude_hebergement(hotel.getLatitude());
                     hebergement.setLongitude_hebergement(hotel.getLongitude());
-                    hebergement.setScore_hebergement(0.0);
                     hebergement.setDestination(destination);
 
                     hebergementCRUD.ajouter(hebergement);

@@ -10,13 +10,14 @@ public class Hebergement {
     private double note_hebergement;
     private double latitude_hebergement;
     private double longitude_hebergement;
-    private double score_hebergement;
     private Destination destination; // association objet
 
     public Hebergement() {
     }
 
-    public Hebergement(int id_hebergement, String nom_hebergement, String type_hebergement, double prixNuit_hebergement, String adresse_hebergement, double note_hebergement, double latitude_hebergement, double longitude_hebergement, double score_hebergement, Destination destination) {
+    public Hebergement(int id_hebergement, String nom_hebergement, String type_hebergement,
+                       double prixNuit_hebergement, String adresse_hebergement, double note_hebergement,
+                       double latitude_hebergement, double longitude_hebergement, Destination destination) {
         this.id_hebergement = id_hebergement;
         this.nom_hebergement = nom_hebergement;
         this.type_hebergement = type_hebergement;
@@ -25,10 +26,12 @@ public class Hebergement {
         this.note_hebergement = note_hebergement;
         this.latitude_hebergement = latitude_hebergement;
         this.longitude_hebergement = longitude_hebergement;
-        this.score_hebergement = score_hebergement;
         this.destination = destination;
     }
-    public Hebergement(String nom_hebergement, String type_hebergement, double prixNuit_hebergement, String adresse_hebergement, double note_hebergement, double latitude_hebergement, double longitude_hebergement, double score_hebergement, Destination destination) {
+
+    public Hebergement(String nom_hebergement, String type_hebergement, double prixNuit_hebergement,
+                       String adresse_hebergement, double note_hebergement,
+                       double latitude_hebergement, double longitude_hebergement, Destination destination) {
         this.nom_hebergement = nom_hebergement;
         this.type_hebergement = type_hebergement;
         this.prixNuit_hebergement = prixNuit_hebergement;
@@ -36,10 +39,8 @@ public class Hebergement {
         this.note_hebergement = note_hebergement;
         this.latitude_hebergement = latitude_hebergement;
         this.longitude_hebergement = longitude_hebergement;
-        this.score_hebergement = score_hebergement;
         this.destination = destination;
     }
-
 
     public int getId_hebergement() {
         return id_hebergement;
@@ -103,14 +104,6 @@ public class Hebergement {
 
     public void setLongitude_hebergement(double longitude_hebergement) {
         this.longitude_hebergement = longitude_hebergement;
-    }
-
-    public double getScore_hebergement() {
-        return score_hebergement;
-    }
-
-    public void setScore_hebergement(double score_hebergement) {
-        this.score_hebergement = score_hebergement;
     }
 
     public Destination getDestination() {

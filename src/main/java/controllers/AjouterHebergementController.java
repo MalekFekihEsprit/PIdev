@@ -104,7 +104,9 @@ public class AjouterHebergementController implements Initializable {
             });
 
         } catch (SQLException e) {
-            parentController.showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible de charger les destinations: " + e.getMessage());
+            if (parentController != null) {
+                parentController.showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible de charger les destinations: " + e.getMessage());
+            }
             e.printStackTrace();
         }
     }
@@ -178,7 +180,6 @@ public class AjouterHebergementController implements Initializable {
             lblUniquenessWarning.setVisible(false);
         }
 
-        // Re-validate form (will disable save if duplicate exists)
         validateForm();
     }
 
@@ -199,7 +200,7 @@ public class AjouterHebergementController implements Initializable {
                 !tfAdresse.getText().trim().isEmpty() &&
                 !tfNote.getText().trim().isEmpty() &&
                 destination != null &&
-                !isDuplicate; // Ajout de la condition d'unicité
+                !isDuplicate;
 
         btnSave.setDisable(!isValid);
     }
@@ -232,7 +233,6 @@ public class AjouterHebergementController implements Initializable {
                     Double.parseDouble(tfNote.getText().trim()),
                     0.0, // latitude par défaut
                     0.0, // longitude par défaut
-                    0.0, // score par défaut
                     destination
             );
 
@@ -244,7 +244,6 @@ public class AjouterHebergementController implements Initializable {
             closeWindow();
 
         } catch (SQLException e) {
-            // Check if it's a duplicate key exception
             if (e.getMessage().contains("Duplicate") || e.getMessage().contains("duplicate")) {
                 showValidationAlert("Cet hébergement existe déjà dans cette destination!");
             } else {

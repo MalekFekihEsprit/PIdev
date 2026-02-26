@@ -11,7 +11,6 @@
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Circle?>
@@ -19,10 +18,10 @@
 
 <BorderPane prefHeight="900" prefWidth="1400" style="-fx-background-color: #0a0e27;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.DestinationBackController">
 
-    <!-- TOP NAV - DARK MODE WITH ORANGE ACCENT (SIMPLIFIED) -->
+    <!-- TOP NAV - DARK MODE WITH ORANGE ACCENT -->
     <top>
         <VBox>
-            <!-- Main Navigation Bar - Simplified -->
+            <!-- Main Navigation Bar -->
             <HBox alignment="CENTER_LEFT" spacing="20" style="-fx-background-color: #111633; -fx-border-color: #1e2749; -fx-border-width: 0 0 1 0;">
                 <padding>
                     <Insets bottom="20" left="32" right="32" top="20" />
@@ -36,16 +35,13 @@
                 </HBox>
 
                 <Region HBox.hgrow="ALWAYS" />
+
                 <!-- Home Button -->
                 <HBox fx:id="btnHome" alignment="CENTER" style="-fx-background-color: #1e2749; -fx-background-radius: 12; -fx-min-width: 40; -fx-min-height: 40; -fx-cursor: hand;">
                     <Label style="-fx-font-size: 18; -fx-text-fill: #94a3b8;" text="🏠" />
                 </HBox>
 
-                <!-- Search bar -->
-                <HBox alignment="CENTER" spacing="8" style="-fx-background-color: #1e2749; -fx-background-radius: 20; -fx-padding: 8 20;">
-                    <Label style="-fx-font-size: 14;" text="🔍" />
-                    <Label fx:id="lblSearchPlaceholder" style="-fx-text-fill: #64748b; -fx-font-size: 13;" text="Rechercher une destination..." />
-                </HBox>
+                <!-- SEARCH BAR REMOVED -->
 
                 <!-- Notifications with badge -->
                 <HBox alignment="CENTER" style="-fx-background-color: #1e2749; -fx-background-radius: 50%; -fx-min-width: 40; -fx-min-height: 40; -fx-cursor: hand;">
@@ -77,13 +73,7 @@
 
                 <Region HBox.hgrow="ALWAYS" />
 
-                <!-- Icon-only Action Buttons in top bar (keeping only Export) -->
-                <HBox spacing="8">
-                    <!-- Export Button (kept in top bar) -->
-                    <HBox fx:id="btnExport" alignment="CENTER" style="-fx-background-color: #1e2749; -fx-background-radius: 12; -fx-min-width: 40; -fx-min-height: 40; -fx-cursor: hand;">
-                        <Label style="-fx-font-size: 18; -fx-text-fill: #94a3b8;" text="📊" />
-                    </HBox>
-                </HBox>
+                <!-- EXPORT BUTTON REMOVED -->
             </HBox>
         </VBox>
     </top>
@@ -112,46 +102,34 @@
                     <Label fx:id="lblSidebarDestinationCount" style="-fx-background-color: rgba(255,255,255,0.2); -fx-background-radius: 10; -fx-padding: 2 8; -fx-text-fill: white; -fx-font-size: 11; -fx-font-weight: bold;" text="0" />
                 </HBox>
 
-                <!-- Hébergement - NEW BUTTON -->
+                <!-- Hébergement -->
                 <HBox fx:id="btnHebergement" alignment="CENTER_LEFT" spacing="12" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;">
                     <Label style="-fx-font-size: 16;" text="🏨" />
                     <Label style="-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;" text="Hébergement" />
                 </HBox>
 
                 <!-- Itinéraires -->
-                <HBox alignment="CENTER_LEFT" spacing="12" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;">
+                <HBox fx:id="btnItineraires" alignment="CENTER_LEFT" spacing="12" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;">
                     <Label style="-fx-font-size: 16;" text="🗺️" />
                     <Label style="-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;" text="Itinéraires" />
                 </HBox>
 
                 <!-- Activités -->
-                <HBox alignment="CENTER_LEFT" spacing="12" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;">
+                <HBox fx:id="btnActivites" alignment="CENTER_LEFT" spacing="12" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;">
                     <Label style="-fx-font-size: 16;" text="🏄" />
                     <Label style="-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;" text="Activités" />
                 </HBox>
 
                 <!-- Voyages -->
-                <HBox alignment="CENTER_LEFT" spacing="12" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;">
+                <HBox fx:id="btnVoyages" alignment="CENTER_LEFT" spacing="12" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;">
                     <Label style="-fx-font-size: 16;" text="✈️" />
                     <Label style="-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;" text="Voyages" />
                 </HBox>
 
                 <!-- Budgets -->
-                <HBox alignment="CENTER_LEFT" spacing="12" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;">
+                <HBox fx:id="btnBudgets" alignment="CENTER_LEFT" spacing="12" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;">
                     <Label style="-fx-font-size: 16;" text="💰" />
                     <Label style="-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;" text="Budgets" />
-                </HBox>
-
-                <!-- Rapports -->
-                <HBox alignment="CENTER_LEFT" spacing="12" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;">
-                    <Label style="-fx-font-size: 16;" text="📊" />
-                    <Label style="-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;" text="Rapports" />
-                </HBox>
-
-                <!-- Paramètres -->
-                <HBox alignment="CENTER_LEFT" spacing="12" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;">
-                    <Label style="-fx-font-size: 16;" text="⚙️" />
-                    <Label style="-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;" text="Paramètres" />
                 </HBox>
             </VBox>
 
@@ -280,7 +258,7 @@
 
                     <!-- TABLE SECTION -->
                     <VBox spacing="16">
-                        <!-- Table Header with Ajouter, Supprimer, and Suggérer Hôtels buttons -->
+                        <!-- Table Header with action buttons -->
                         <HBox alignment="CENTER_LEFT" spacing="12">
                             <Label style="-fx-font-family: 'Clash Display'; -fx-font-size: 24; -fx-font-weight: 600; -fx-text-fill: #ffffff;" text="Liste des Destinations" />
                             <Label fx:id="lblDestinationCount" style="-fx-background-color: rgba(255,140,66,0.15); -fx-text-fill: #ff8c42; -fx-background-radius: 20; -fx-padding: 6 14; -fx-font-weight: 600; -fx-font-size: 11;" text="0 destinations" />
@@ -288,13 +266,16 @@
 
                             <!-- Action Buttons -->
                             <HBox spacing="8">
-                                <!-- Suggérer Hôtels Button - Blue rectangle with text -->
+                                <!-- Carte Button -->
+                                <Button fx:id="btnShowMap" style="-fx-background-color: #10b981; -fx-text-fill: white; -fx-font-weight: 600; -fx-font-size: 13; -fx-padding: 8 16; -fx-background-radius: 8; -fx-cursor: hand;" text="🗺️ Carte" />
+
+                                <!-- Suggérer Hôtels Button -->
                                 <Button fx:id="btnSuggestHotels" style="-fx-background-color: #3b82f6; -fx-text-fill: white; -fx-font-weight: 600; -fx-font-size: 13; -fx-padding: 8 16; -fx-background-radius: 8; -fx-cursor: hand;" text="🏨 Suggérer Hôtels" />
 
-                                <!-- Ajouter Button - Green rectangle with text -->
+                                <!-- Ajouter Button -->
                                 <Button fx:id="btnAjouter" style="-fx-background-color: #10b981; -fx-text-fill: white; -fx-font-weight: 600; -fx-font-size: 13; -fx-padding: 8 16; -fx-background-radius: 8; -fx-cursor: hand;" text="➕ Ajouter" />
 
-                                <!-- Supprimer Button - Red rectangle with text -->
+                                <!-- Supprimer Button -->
                                 <Button fx:id="btnSupprimer" style="-fx-background-color: #ef4444; -fx-text-fill: white; -fx-font-weight: 600; -fx-font-size: 13; -fx-padding: 8 16; -fx-background-radius: 8; -fx-cursor: hand;" text="🗑️ Supprimer" />
 
                                 <!-- Search and Filter buttons (icon-only) -->
@@ -316,7 +297,7 @@
                                 <TableColumn fx:id="colDescription" prefWidth="300" text="Description" />
                                 <TableColumn fx:id="colClimat" prefWidth="150" text="Climat" />
                                 <TableColumn fx:id="colSaison" prefWidth="150" text="Saison idéale" />
-                                <!-- Actions Column with icon buttons for each row -->
+                                <!-- Actions Column -->
                                 <TableColumn fx:id="colActions" prefWidth="150" text="Actions" />
                             </columns>
                             <columnResizePolicy>
@@ -336,9 +317,6 @@
                             <HBox fx:id="paginationContainer" spacing="4" />
                         </HBox>
                     </VBox>
-
-                    <!-- STATISTICS SECTION (empty for now) -->
-                    <HBox spacing="20" />
 
                     <!-- ORANGE ACCENT BOTTOM DECORATION -->
                     <Rectangle arcHeight="8" arcWidth="8" fill="linear-gradient(to right, #ff8c42, #ff6b4a, #6366f1)" height="4" width="1200">

@@ -31,11 +31,6 @@ public class HebergementBackController implements Initializable {
 
     // ============== FXML INJECTED ELEMENTS ==============
 
-    // Top Navigation
-    @FXML private Label lblSearchPlaceholder;
-    @FXML private HBox btnHome;
-    @FXML private HBox btnDestinations;
-
     // Bottom Status
     @FXML private Label lblLastUpdate;
 
@@ -67,9 +62,14 @@ public class HebergementBackController implements Initializable {
     // Buttons
     @FXML private Button btnAjouter;
     @FXML private Button btnSupprimer;
-    @FXML private HBox btnExport;
     @FXML private HBox btnSearch;
     @FXML private HBox btnFilter;
+    @FXML private HBox btnHome;
+    @FXML private HBox btnDestinations;
+    @FXML private HBox btnItineraires;
+    @FXML private HBox btnActivites;
+    @FXML private HBox btnVoyages;
+    @FXML private HBox btnBudgets;
 
     // Pagination
     @FXML private Label lblPaginationInfo;
@@ -238,11 +238,6 @@ public class HebergementBackController implements Initializable {
             btnSupprimer.setOnAction(event -> handleBulkDelete());
         }
 
-        // Export button
-        if (btnExport != null) {
-            btnExport.setOnMouseClicked(event -> handleExport());
-        }
-
         // Search button
         if (btnSearch != null) {
             btnSearch.setOnMouseClicked(event -> handleSearch());
@@ -252,14 +247,17 @@ public class HebergementBackController implements Initializable {
         if (btnFilter != null) {
             btnFilter.setOnMouseClicked(event -> handleFilter());
         }
+
+        // Home
+        if (btnHome != null) {
+            btnHome.setOnMouseClicked(event -> navigateToHome());
+        }
     }
 
     private void setupNavigationButtons() {
         // Home button
         if (btnHome != null) {
-            btnHome.setOnMouseClicked(event -> navigateToHome());
-
-            // Hover effect
+            // Hover effect for home button
             btnHome.setOnMouseEntered(event -> {
                 btnHome.setStyle("-fx-background-color: #10b981; -fx-background-radius: 12; -fx-min-width: 40; -fx-min-height: 40; -fx-cursor: hand;");
                 btnHome.lookupAll(".label").forEach(label -> {
@@ -280,38 +278,81 @@ public class HebergementBackController implements Initializable {
         }
 
         // Destinations button
+        setupSidebarButtonHover(btnDestinations, "🌍", "Destinations");
         if (btnDestinations != null) {
             btnDestinations.setOnMouseClicked(event -> navigateToDestinations());
+        }
 
-            // Hover effect
-            btnDestinations.setOnMouseEntered(event -> {
-                btnDestinations.setStyle("-fx-background-color: rgba(255,140,66,0.15); -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand; -fx-border-color: #ff8c42; -fx-border-width: 1; -fx-border-radius: 12;");
-                btnDestinations.lookupAll(".label").forEach(label -> {
-                    if (label instanceof Label) {
-                        Label lbl = (Label) label;
-                        if (lbl.getText().equals("🌍")) {
-                            lbl.setStyle("-fx-font-size: 16;");
-                        } else {
-                            lbl.setStyle("-fx-text-fill: #ff8c42; -fx-font-weight: 600;");
-                        }
-                    }
-                });
-            });
-
-            btnDestinations.setOnMouseExited(event -> {
-                btnDestinations.setStyle("-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;");
-                btnDestinations.lookupAll(".label").forEach(label -> {
-                    if (label instanceof Label) {
-                        Label lbl = (Label) label;
-                        if (lbl.getText().equals("🌍")) {
-                            lbl.setStyle("-fx-font-size: 16;");
-                        } else {
-                            lbl.setStyle("-fx-text-fill: #94a3b8; -fx-font-weight: 500;");
-                        }
-                    }
-                });
+        // Itinéraires button
+        setupSidebarButtonHover(btnItineraires, "🗺️", "Itinéraires");
+        if (btnItineraires != null) {
+            btnItineraires.setOnMouseClicked(event -> {
+                // TODO: Implement navigation to Itinéraires when ready
+                showInfoAlert("Itinéraires", "Cette fonctionnalité sera bientôt disponible");
             });
         }
+
+        // Activités button
+        setupSidebarButtonHover(btnActivites, "🏄", "Activités");
+        if (btnActivites != null) {
+            btnActivites.setOnMouseClicked(event -> {
+                // TODO: Implement navigation to Activités when ready
+                showInfoAlert("Activités", "Cette fonctionnalité sera bientôt disponible");
+            });
+        }
+
+        // Voyages button
+        setupSidebarButtonHover(btnVoyages, "✈️", "Voyages");
+        if (btnVoyages != null) {
+            btnVoyages.setOnMouseClicked(event -> {
+                // TODO: Implement navigation to Voyages when ready
+                showInfoAlert("Voyages", "Cette fonctionnalité sera bientôt disponible");
+            });
+        }
+
+        // Budgets button
+        setupSidebarButtonHover(btnBudgets, "💰", "Budgets");
+        if (btnBudgets != null) {
+            btnBudgets.setOnMouseClicked(event -> {
+                // TODO: Implement navigation to Budgets when ready
+                showInfoAlert("Budgets", "Cette fonctionnalité sera bientôt disponible");
+            });
+        }
+    }
+
+    /**
+     * Helper method to setup hover effects for sidebar buttons
+     */
+    private void setupSidebarButtonHover(HBox button, String icon, String text) {
+        if (button == null) return;
+
+        button.setOnMouseEntered(event -> {
+            button.setStyle("-fx-background-color: rgba(255,140,66,0.15); -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand; -fx-border-color: #ff8c42; -fx-border-width: 1; -fx-border-radius: 12;");
+            button.lookupAll(".label").forEach(label -> {
+                if (label instanceof Label) {
+                    Label lbl = (Label) label;
+                    if (lbl.getText().equals(icon)) {
+                        lbl.setStyle("-fx-font-size: 16;");
+                    } else {
+                        lbl.setStyle("-fx-text-fill: #ff8c42; -fx-font-weight: 600; -fx-font-size: 14;");
+                    }
+                }
+            });
+        });
+
+        button.setOnMouseExited(event -> {
+            button.setStyle("-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;");
+            button.lookupAll(".label").forEach(label -> {
+                if (label instanceof Label) {
+                    Label lbl = (Label) label;
+                    if (lbl.getText().equals(icon)) {
+                        lbl.setStyle("-fx-font-size: 16;");
+                    } else {
+                        lbl.setStyle("-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;");
+                    }
+                }
+            });
+        });
     }
 
     // ============== CRUD OPERATIONS ==============
@@ -358,7 +399,6 @@ public class HebergementBackController implements Initializable {
     }
 
     private void handleDeleteSingle(Hebergement hebergement) {
-        // Build detailed information
         String details = String.format(
                 "Êtes-vous sûr de vouloir supprimer cet hébergement ?\n\n" +
                         "🏨 Nom: %s\n" +
@@ -382,7 +422,6 @@ public class HebergementBackController implements Initializable {
         confirm.setHeaderText("Supprimer l'hébergement");
         confirm.setContentText(details);
 
-        // Style the dialog
         DialogPane dialogPane = confirm.getDialogPane();
         dialogPane.setStyle("-fx-background-color: #111633;");
         dialogPane.lookup(".content.label").setStyle("-fx-text-fill: white; -fx-font-size: 13;");
@@ -420,7 +459,6 @@ public class HebergementBackController implements Initializable {
             return;
         }
 
-        // Build a simple list of names
         StringBuilder namesList = new StringBuilder();
         for (Hebergement h : selectedItems) {
             namesList.append("• ").append(h.getNom_hebergement())
@@ -434,7 +472,6 @@ public class HebergementBackController implements Initializable {
         confirm.setContentText("Hébergements à supprimer :\n\n" + namesList.toString() +
                 "\nÊtes-vous sûr de vouloir continuer ?");
 
-        // Style the dialog
         DialogPane dialogPane = confirm.getDialogPane();
         dialogPane.setStyle("-fx-background-color: #111633;");
         dialogPane.lookup(".content.label").setStyle("-fx-text-fill: white; -fx-font-size: 13;");
@@ -532,13 +569,11 @@ public class HebergementBackController implements Initializable {
     private void updateStats() {
         int total = allHebergements.size();
 
-        // Update all total labels
         lblHebergementsTotal.setText(String.valueOf(total));
         lblTotalHebergements.setText(String.valueOf(total));
         lblSidebarHebergementCount.setText(String.valueOf(total));
         lblHebergementCount.setText(total + " hébergement" + (total > 1 ? "s" : ""));
 
-        // Count unique types
         long typesCount = allHebergements.stream()
                 .map(Hebergement::getType_hebergement)
                 .filter(Objects::nonNull)
@@ -547,7 +582,6 @@ public class HebergementBackController implements Initializable {
         lblTypesTotal.setText(String.valueOf(typesCount));
         lblTypesCount.setText(String.valueOf(typesCount));
 
-        // Count unique destinations
         long destsCount = allHebergements.stream()
                 .map(Hebergement::getDestination)
                 .filter(Objects::nonNull)
@@ -557,7 +591,6 @@ public class HebergementBackController implements Initializable {
         lblDestinationsAssociees.setText(String.valueOf(destsCount));
         lblDestinationsCount.setText(String.valueOf(destsCount));
 
-        // Average price
         double avgPrice = allHebergements.stream()
                 .mapToDouble(Hebergement::getPrixNuit_hebergement)
                 .average()
@@ -577,7 +610,6 @@ public class HebergementBackController implements Initializable {
             return;
         }
 
-        // Calculate pagination
         int fromIndex = (currentPage - 1) * rowsPerPage;
         int toIndex = Math.min(fromIndex + rowsPerPage, total);
 
@@ -604,13 +636,11 @@ public class HebergementBackController implements Initializable {
 
         lblPaginationInfo.setText(total == 0 ? "0-0 sur 0 hébergements" : start + "-" + end + " sur " + total + " hébergements");
 
-        // Update pagination buttons
         paginationContainer.getChildren().clear();
         int totalPages = (int) Math.ceil((double) total / rowsPerPage);
 
         if (totalPages <= 1) return;
 
-        // Previous button
         if (currentPage > 1) {
             Label prevLabel = createPageLabel("◀", false);
             prevLabel.setOnMouseClicked(event -> {
@@ -620,7 +650,6 @@ public class HebergementBackController implements Initializable {
             paginationContainer.getChildren().add(prevLabel);
         }
 
-        // Page numbers
         int startPage = Math.max(1, currentPage - 2);
         int endPage = Math.min(totalPages, startPage + 4);
 
@@ -634,7 +663,6 @@ public class HebergementBackController implements Initializable {
             paginationContainer.getChildren().add(pageLabel);
         }
 
-        // Next button
         if (currentPage < totalPages) {
             Label nextLabel = createPageLabel("▶", false);
             nextLabel.setOnMouseClicked(event -> {
@@ -736,10 +764,6 @@ public class HebergementBackController implements Initializable {
         });
     }
 
-    private void handleExport() {
-        showAlert(Alert.AlertType.INFORMATION, "Export", "Fonctionnalité d'export à implémenter");
-    }
-
     // ============== NAVIGATION ==============
 
     private void navigateToHome() {
@@ -776,6 +800,14 @@ public class HebergementBackController implements Initializable {
 
     // ============== UTILITY METHODS ==============
 
+    private void showInfoAlert(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
     void showAlert(Alert.AlertType type, String title, String message) {
         Alert alert = new Alert(type);
         alert.setTitle(title);
@@ -783,37 +815,24 @@ public class HebergementBackController implements Initializable {
         alert.setContentText(message);
         alert.showAndWait();
     }
-    /**
-     * Filters the hébergements list to show only those for a specific destination
-     * @param destination The destination to filter by
-     */
+
     public void filterByDestination(Destination destination) {
         if (destination == null) return;
 
         try {
-            // Reload all hébergements to ensure we have the latest data
             allHebergements = hebergementCRUD.afficher();
 
-            // Filter the list to show only hébergements for this destination
             List<Hebergement> filtered = allHebergements.stream()
                     .filter(h -> h.getDestination() != null &&
                             h.getDestination().getId_destination() == destination.getId_destination())
                     .collect(Collectors.toList());
 
-            // Update the table with filtered results
             hebergementList.setAll(filtered);
             tableHebergements.setItems(hebergementList);
-
-            // Update the count label
             lblHebergementCount.setText(filtered.size() + " hébergement" + (filtered.size() > 1 ? "s" : "") +
                     " à " + destination.getNom_destination());
-
-            // Update pagination for filtered results
             currentPage = 1;
             updatePagination();
-
-            // Optional: Update the header to show filter info
-            // You might want to add a visual indicator that a filter is active
 
             System.out.println("Filtered to " + filtered.size() + " hébergements for destination: " + destination.getNom_destination());
 
@@ -823,17 +842,15 @@ public class HebergementBackController implements Initializable {
         }
     }
 
-    // Optional: Add a method to clear the filter
     public void clearFilter() {
         try {
-            // Reload all hébergements
             allHebergements = hebergementCRUD.afficher();
             hebergementList.setAll(allHebergements);
             tableHebergements.setItems(hebergementList);
             lblHebergementCount.setText(allHebergements.size() + " hébergement" + (allHebergements.size() > 1 ? "s" : ""));
             currentPage = 1;
             updatePagination();
-            updateStats(); // Reset stats to original values
+            updateStats();
         } catch (SQLException e) {
             showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible de réinitialiser le filtre: " + e.getMessage());
             e.printStackTrace();
