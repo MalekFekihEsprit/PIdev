@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Destinations Map</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <!-- Leaflet JavaScript -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+    #map {
+      height: 100vh;
+      width: 100vw;
+    }
+    .info {
+      padding: 6px 10px;
+      background: white;
+      background: rgba(255,255,255,0.8);
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    .info h4 {
+      margin: 0 0 5px;
+      color: #777;
+    }
+  </style>
+</head>
+<body>
+<div id="map"></div>
+
+<script>
+  // Initialize the map
+  var map = L.map('map').setView([20, 0], 2); // Default world view
+
+  // Add OpenStreetMap tile layer
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    maxZoom: 19
+  }).addTo(map);
+
+  // Array to store markers (useful if we need to remove them later)
+  var markers = [];
+
+  /**
+   * Function called from Java to add a marker
+   * @param {number} lat - Latitude
+   * @param {number} lng - Longitude
+   * @param {string} name - Destination name
+   */
+  function addMarker(lat, lng, name) {
+    // Create custom icon (optional)
+    var customIcon = L.divIcon({
+      className: 'custom-marker',
+      html: '<div style="background-color: #ff8c42; width: 20px; height: 20px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3);"></div>',
+      iconSize: [20, 20],
+      popupAnchor: [0, -10]
+    });
+
+    // Create marker with popup
+    var marker = L.marker([lat, lng], { icon: customIcon }).addTo(map);
+    marker.bindPopup("<b>" + name + "</b>");
+
+    // Store marker in array
+    markers.push(marker);
+
+    // Optional: Auto-fit bounds to show all markers
+    fitMapToMarkers();
+  }
+
+  /**
+   * Function to fit the map view to show all markers
+   * Called automatically when markers are added
+   */
+  function fitMapToMarkers() {
+    if (markers.length > 0) {
+      var group = L.featureGroup(markers);
+      map.fitBounds(group.getBounds(), { padding: [50, 50] });
+    }
+  }
+
+  /**
+   * Clear all markers from the map
+   */
+  function clearMarkers() {
+    for (var i = 0; i < markers.length; i++) {
+      map.removeLayer(markers[i]);
+    }
+    markers = [];
+  }
+
+  console.log("Map initialized successfully");
+</script>
+</body>
+</html>

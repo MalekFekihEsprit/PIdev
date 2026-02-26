@@ -26,11 +26,10 @@ public class LoginController {
     @FXML private Hyperlink signupLink;
     @FXML private Button loginButton;
     @FXML private ComboBox<Country> countryCodeCombo;
+    @FXML private Button faceLoginButton;
 
     private UserCRUD userCRUD = new UserCRUD();
     private Map<String, Integer> failedAttempts = new HashMap<>();
-
-    @FXML private Button faceLoginButton;
     private FaceRecognitionClient faceClient = new FaceRecognitionClient();
 
     @FXML
@@ -51,6 +50,7 @@ public class LoginController {
             // 3. Récupérer tous les utilisateurs avec embeddings
             List<User> users = userCRUD.afficherAll();
             User bestMatch = null;
+            double bestSimilarity = 0.6; // Seuil minimum de similarité
 
             for (User user : users) {
                 if (user.getFaceEmbedding() != null) {
@@ -81,7 +81,7 @@ public class LoginController {
                 // 6. Apprentissage incrémental
                 trainIncremental(bestMatch, currentEmbedding);
 
-                // 7. Redirection
+                // 7. Redirection selon le rôle
                 redirectUser(bestMatch);
             } else {
                 showAlert(Alert.AlertType.ERROR, "Échec", "Visage non reconnu");
@@ -89,145 +89,142 @@ public class LoginController {
 
         } catch (IOException | SQLException e) {
             e.printStackTrace();
-            showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur communication service IA");
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur communication service IA: " + e.getMessage());
         }
     }
 
+    /**
+     * Redirige l'utilisateur selon son rôle
+     * ADMIN → DestinationBack.fxml
+     * USER → DestinationFront.fxml
+     */
     private void redirectUser(User user) throws IOException {
         if ("ADMIN".equals(user.getRole())) {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/admin_users.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/DestinationBack.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) loginButton.getScene().getWindow();
             stage.setScene(new Scene(root));
+            stage.setMaximized(true);
+            showAlert(Alert.AlertType.INFORMATION, "Succès", "Bienvenue " + user.getPrenom() + " (Administrateur) !");
         } else {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/profile.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/DestinationFront.fxml"));
             Parent root = loader.load();
-            ProfileController profileController = loader.getController();
-            if (profileController != null) {
-                profileController.setUser(user);
-            }
             Stage stage = (Stage) loginButton.getScene().getWindow();
             stage.setScene(new Scene(root));
+            stage.setMaximized(true);
+            showAlert(Alert.AlertType.INFORMATION, "Succès", "Bienvenue " + user.getPrenom() + " !");
         }
     }
-/**
- * Apprentissage incrémental : moyenne mobile des embeddings
- */
-private void trainIncremental(User user, List<Double> newEmbedding) {
-    try {
-        String updatedEmbedding;
-        if (user.getFaceEmbedding() == null) {
-            updatedEmbedding = EmbeddingConverter.toJson(newEmbedding);
-        } else {
-            List<Double> oldEmbedding = EmbeddingConverter.fromJson(user.getFaceEmbedding());
-            List<Double> updated = new ArrayList<>();
-            for (int i = 0; i < oldEmbedding.size(); i++) {
-                updated.add(0.7 * oldEmbedding.get(i) + 0.3 * newEmbedding.get(i));
+
+    /**
+     * Apprentissage incrémental : moyenne mobile des embeddings
+     */
+    private void trainIncremental(User user, List<Double> newEmbedding) {
+        try {
+            String updatedEmbedding;
+            if (user.getFaceEmbedding() == null) {
+                updatedEmbedding = EmbeddingConverter.toJson(newEmbedding);
+            } else {
+                List<Double> oldEmbedding = EmbeddingConverter.fromJson(user.getFaceEmbedding());
+                List<Double> updated = new ArrayList<>();
+                for (int i = 0; i < oldEmbedding.size(); i++) {
+                    updated.add(0.7 * oldEmbedding.get(i) + 0.3 * newEmbedding.get(i));
+                }
+                updatedEmbedding = EmbeddingConverter.toJson(updated);
             }
-            updatedEmbedding = EmbeddingConverter.toJson(updated);
+            userCRUD.updateFaceEmbedding(user.getId(), updatedEmbedding);
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-        // Utiliser la nouvelle méthode au lieu de modifier(user)
-        userCRUD.updateFaceEmbedding(user.getId(), updatedEmbedding);
-    } catch (SQLException e) {
-        e.printStackTrace();
-    }
-}
-@FXML
-private void handleLogin() { // Gérer la connexion de l'utilisateur après validation des champs
-    String email = emailField.getText().trim();
-    String password = passwordField.getText();
-
-    // Validation basique
-    if (!ValidationUtils.isNotEmpty(email) || !ValidationUtils.isNotEmpty(password)) {
-        showAlert(Alert.AlertType.ERROR, "Champs requis", "Veuillez remplir tous les champs.");
-        return;
-    }
-    if (!ValidationUtils.isValidEmail(email)) {
-        showAlert(Alert.AlertType.ERROR, "Email invalide", "L'adresse email n'est pas valide.");
-        return;
     }
 
-    try {
-        // Vérifier si l'email existe (pour savoir si on compte les tentatives)
-        boolean emailExists = userCRUD.emailExists(email);
-        if (!emailExists) {
-            // On ne veut pas donner d'indice sur l'existence de l'email, donc on simule un échec
-            showAlert(Alert.AlertType.ERROR, "Mot de passe ou email incorrect", "Le mot de passe ou email incorrect.");
+    @FXML
+    private void handleLogin() {
+        String email = emailField.getText().trim();
+        String password = passwordField.getText();
+
+        // Validation basique
+        if (!ValidationUtils.isNotEmpty(email) || !ValidationUtils.isNotEmpty(password)) {
+            showAlert(Alert.AlertType.ERROR, "Champs requis", "Veuillez remplir tous les champs.");
+            return;
+        }
+        if (!ValidationUtils.isValidEmail(email)) {
+            showAlert(Alert.AlertType.ERROR, "Email invalide", "L'adresse email n'est pas valide.");
             return;
         }
 
-        // Vérifier le mot de passe avec BCrypt
-        boolean passwordCorrect = userCRUD.checkPassword(email, password);
-        if (passwordCorrect) {
-            // Réinitialiser les tentatives
-            failedAttempts.remove(email);
-
-            // Vérifier si l'email est vérifié
-            if (!userCRUD.isEmailVerified(email)) {
-                showAlert(Alert.AlertType.WARNING, "Email non vérifié", "Veuillez vérifier votre email avant de vous connecter.");
-                goToVerifyEmail(email);
+        try {
+            // Vérifier si l'email existe
+            boolean emailExists = userCRUD.emailExists(email);
+            if (!emailExists) {
+                showAlert(Alert.AlertType.ERROR, "Email ou mot de passe incorrect",
+                        "Email ou mot de passe incorrect.");
                 return;
             }
 
-            User user = userCRUD.getUserByEmail(email);
-            UserSession.getInstance().setCurrentUser(user);
+            // Vérifier le mot de passe avec BCrypt
+            boolean passwordCorrect = userCRUD.checkPassword(email, password);
+            if (passwordCorrect) {
+                // Réinitialiser les tentatives
+                failedAttempts.remove(email);
 
-            if ("ADMIN".equals(user.getRole())) {
-                showAlert(Alert.AlertType.INFORMATION, "Succès", "Bienvenue " + user.getPrenom() + " (Admin) !");
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/admin_users.fxml"));
-                Parent root = loader.load();
-                Stage stage = (Stage) loginButton.getScene().getWindow();
-                stage.setScene(new Scene(root));
-            } else {
+                // Vérifier si l'email est vérifié
+                if (!userCRUD.isEmailVerified(email)) {
+                    showAlert(Alert.AlertType.WARNING, "Email non vérifié",
+                            "Veuillez vérifier votre email avant de vous connecter.");
+                    goToVerifyEmail(email);
+                    return;
+                }
+
+                User user = userCRUD.getUserByEmail(email);
+                UserSession.getInstance().setCurrentUser(user);
+
                 // Enregistrer la dernière connexion (IP, localisation)
                 try {
                     String ip = userCRUD.getPublicIp() != null ? userCRUD.getPublicIp() : "IP non disponible";
                     String location = userCRUD.getLocationFromIp(ip) != null ? userCRUD.getLocationFromIp(ip) : "Localisation non disponible";
                     userCRUD.updateLastLogin(user.getId(), ip, location);
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    e.printStackTrace(); // Ne pas bloquer la connexion
                 }
-                showAlert(Alert.AlertType.INFORMATION, "Succès", "Bienvenue " + user.getPrenom() + " !");
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/profile.fxml"));
-                Parent root = loader.load();
-                ProfileController profileController = loader.getController();
-                if (profileController != null) {
-                    profileController.setUser(user);
-                }
-                Stage stage = (Stage) loginButton.getScene().getWindow();
-                stage.setScene(new Scene(root));
-            }
-        } else {
-            // Mot de passe incorrect
-            int attempts = failedAttempts.getOrDefault(email, 0) + 1;
-            failedAttempts.put(email, attempts);
 
-            if (attempts >= 3) {
-                // Capture photo et envoi email
-                try {
-                    File photo = WebcamUtil.captureImage(email);
-                    // Envoyer l'alerte
-                    EmailSender.sendWarningEmailWithAttachment(email, photo);
-                    showAlert(Alert.AlertType.WARNING, "Alerte de sécurité",
-                            "Trois tentatives échouées. Une photo a été prise et un email d'alerte a été envoyé au propriétaire du compte.");
-                    // Supprimer le fichier temporaire après envoi
-                    photo.delete();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible de capturer la photo ou d'envoyer l'email : " + e.getMessage());
-                }
-                // Réinitialiser le compteur pour cet email pour éviter de spammer
-                failedAttempts.remove(email);
+                // Redirection selon le rôle
+                redirectUser(user);
+
             } else {
-                showAlert(Alert.AlertType.ERROR, "Mot de passe ou email incorrect",
-                        "Le mot de passe ou email incorrect. Tentative " + attempts + "/3.");
+                // Mot de passe incorrect
+                int attempts = failedAttempts.getOrDefault(email, 0) + 1;
+                failedAttempts.put(email, attempts);
+
+                if (attempts >= 3) {
+                    // Capture photo et envoi email
+                    try {
+                        File photo = WebcamUtil.captureImage(email);
+                        // Envoyer l'alerte
+                        EmailSender.sendWarningEmailWithAttachment(email, photo);
+                        showAlert(Alert.AlertType.WARNING, "Alerte de sécurité",
+                                "Trois tentatives échouées. Une photo a été prise et un email d'alerte a été envoyé au propriétaire du compte.");
+                        // Supprimer le fichier temporaire après envoi
+                        if (photo != null && photo.exists()) {
+                            photo.delete();
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        showAlert(Alert.AlertType.ERROR, "Erreur",
+                                "Impossible de capturer la photo ou d'envoyer l'email : " + e.getMessage());
+                    }
+                    // Réinitialiser le compteur pour cet email pour éviter de spammer
+                    failedAttempts.remove(email);
+                } else {
+                    showAlert(Alert.AlertType.ERROR, "Email ou mot de passe incorrect",
+                            "Email ou mot de passe incorrect. Tentative " + attempts + "/3.");
+                }
             }
+        } catch (SQLException | IOException e) {
+            e.printStackTrace();
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur de base de données : " + e.getMessage());
         }
-    } catch (SQLException | IOException e) {
-        e.printStackTrace();
-        showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur de base de données : " + e.getMessage());
     }
-}
 
     private void goToVerifyEmail(String email) {
         try {
@@ -236,39 +233,6 @@ private void handleLogin() { // Gérer la connexion de l'utilisateur après vali
             VerifyEmailController controller = loader.getController();
             if (controller != null) {
                 controller.setEmail(email);
-            }
-            Stage stage = (Stage) loginButton.getScene().getWindow();
-            stage.setScene(new Scene(root));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        
-    }
-
-    @FXML
-    private void redirectToHome(User user) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/home.fxml"));
-            Parent root = loader.load();
-            HomeController homeController = loader.getController();
-            homeController.setUser(user); // pour afficher le nom
-            Stage stage = (Stage) loginButton.getScene().getWindow();
-            stage.setScene(new Scene(root));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @FXML
-    private void redirectToProfile(User user) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/profile.fxml"));
-            Parent root = loader.load();
-            // controller initialize() will run automatically and pick up the user from session,
-            // but we can also pass it explicitly in case we want to support that.
-            ProfileController profileController = loader.getController();
-            if (profileController != null) {
-                profileController.setUser(user);
             }
             Stage stage = (Stage) loginButton.getScene().getWindow();
             stage.setScene(new Scene(root));
@@ -298,7 +262,6 @@ private void handleLogin() { // Gérer la connexion de l'utilisateur après vali
             e.printStackTrace();
         }
     }
-
 
     private void showAlert(Alert.AlertType type, String title, String msg) {
         Alert alert = new Alert(type);

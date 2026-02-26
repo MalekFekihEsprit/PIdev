@@ -3,6 +3,7 @@ package Controllers;
 import Entities.User;
 import Services.UserCRUD;
 import Utils.FileUtil;
+import Utils.UserSession;
 import Utils.ValidationUtils;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
@@ -28,10 +29,12 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class AdminUsersController {
-    // FXML components
+
     @FXML private TableView<User> userTable;
     @FXML private TableColumn<User, Integer> colId;
     @FXML private TableColumn<User, String> colNom, colPrenom, colEmail, colRole, colTelephone, colPhoto;
@@ -47,15 +50,32 @@ public class AdminUsersController {
     @FXML private Button saveButton, updateButton, deleteButton, clearButton;
     @FXML private Label totalUsersLabel, sidebarTotalLabel, statsAdmins, statsUsers;
     @FXML private Button filterAllButton, filterAdminsButton, filterUsersButton;
+    @FXML private Label lblLastUpdate;
+    @FXML private HBox btnDestinations, btnHebergement, btnStats, btnItineraires, btnActivites, btnVoyages, btnBudgets;
+    @FXML private HBox userProfileBox;
+    @FXML private Label lblUserName, lblUserRole;
 
     private UserCRUD userCRUD = new UserCRUD();
-    private ObservableList<User> userList = FXCollections.observableArrayList();  // pour stocker les utilisateurs chargés
-    private FilteredList<User> filteredData;  // pour la recherche dynamique
-    private User selectedUser = null; // pour l'édition
+    private ObservableList<User> userList = FXCollections.observableArrayList();
+    private FilteredList<User> filteredData;
+    private User selectedUser = null;
 
     @FXML
     public void initialize() {
-        // Configurer les colonnes
+        setupTableColumns();
+        setupActionsColumn();
+        setupComboBox();
+        loadUsers();
+        setupSearchFilter();
+        updateStats();
+        updateFilterButtonAppearance("all");
+        setupNavigationButtons();
+        setupUserProfile();
+        updateUserInfo();
+        updateLastUpdateTime();
+    }
+
+    private void setupTableColumns() {
         colId.setCellValueFactory(new PropertyValueFactory<>("id"));
         colNom.setCellValueFactory(new PropertyValueFactory<>("nom"));
         colPrenom.setCellValueFactory(new PropertyValueFactory<>("prenom"));
@@ -63,7 +83,7 @@ public class AdminUsersController {
         colRole.setCellValueFactory(new PropertyValueFactory<>("role"));
         colDateNaissance.setCellValueFactory(new PropertyValueFactory<>("dateNaissance"));
         colTelephone.setCellValueFactory(new PropertyValueFactory<>("telephone"));
-        // Dans AdminUsersController, lors du remplissage du tableau
+
         colPhoto.setCellFactory(column -> new TableCell<User, String>() {
             private final ImageView imageView = new ImageView();
             @Override
@@ -83,8 +103,9 @@ public class AdminUsersController {
                 }
             }
         });
+    }
 
-        // Colonne Actions avec boutons
+    private void setupActionsColumn() {
         colActions.setCellFactory(param -> new TableCell<>() {
             private final Button editButton = new Button("✏️");
             private final Button deleteButton = new Button("🗑");
@@ -94,34 +115,38 @@ public class AdminUsersController {
                 editButton.setStyle("-fx-background-color: #ff8c42; -fx-text-fill: white; -fx-background-radius: 8; -fx-cursor: hand;");
                 deleteButton.setStyle("-fx-background-color: #ef4444; -fx-text-fill: white; -fx-background-radius: 8; -fx-cursor: hand;");
                 editButton.setOnAction(event -> {
-                    User user = getTableView().getItems().get(getIndex()); // Récupérer l'utilisateur de la ligne
-                    loadUserForEdit(user); // Charger les données de l'utilisateur dans le formulaire pour modification
+                    User user = getTableView().getItems().get(getIndex());
+                    loadUserForEdit(user);
                 });
                 deleteButton.setOnAction(event -> {
                     User user = getTableView().getItems().get(getIndex());
-                    handleDeleteUser(user); // Supprimer l'utilisateur après confirmation 
+                    handleDeleteUser(user);
                 });
             }
 
-            @Override // Mettre à jour la cellule pour afficher les boutons
+            @Override
             protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty) {
-                    setGraphic(null);
-                } else {
-                    setGraphic(pane);
-                }
+                setGraphic(empty ? null : pane);
             }
         });
+    }
 
-        // Remplir la combo des rôles
+    private void setupComboBox() {
         roleCombo.getItems().addAll("USER", "ADMIN");
         roleCombo.setValue("USER");
+    }
 
-        // Charger les données
-        loadUsers();
+    private void loadUsers() {
+        try {
+            userList.setAll(userCRUD.afficherAll());
+        } catch (SQLException e) {
+            e.printStackTrace();
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible de charger les utilisateurs : " + e.getMessage());
+        }
+    }
 
-        // Mettre en place le filtre de recherche
+    private void setupSearchFilter() {
         filteredData = new FilteredList<>(userList, p -> true);
         searchField.textProperty().addListener((observable, oldValue, newValue) -> {
             filteredData.setPredicate(user -> {
@@ -133,28 +158,13 @@ public class AdminUsersController {
                         || (user.getTelephone() != null && user.getTelephone().contains(lowerCaseFilter));
             });
         });
-        // Lier le tri de la table au SortedList
+
         SortedList<User> sortedData = new SortedList<>(filteredData);
         sortedData.comparatorProperty().bind(userTable.comparatorProperty());
         userTable.setItems(sortedData);
-
-        // Mise à jour des compteurs
-        updateStats();
-        
-        // Initialize filter buttons appearance
-        updateFilterButtonAppearance("all");
     }
 
-    private void loadUsers() { // Charger les utilisateurs depuis la base de données et les mettre dans userList
-        try {
-            userList.setAll(userCRUD.afficherAll());
-        } catch (SQLException e) {
-            e.printStackTrace();
-            showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible de charger les utilisateurs : " + e.getMessage());
-        }
-    }
-
-    private void updateStats() { // Mettre à jour les compteurs d'utilisateurs et de rôles
+    private void updateStats() {
         int total = userList.size();
         totalUsersLabel.setText(total + " utilisateurs");
         sidebarTotalLabel.setText(String.valueOf(total));
@@ -162,6 +172,147 @@ public class AdminUsersController {
         long userCount = userList.stream().filter(u -> "USER".equals(u.getRole())).count();
         statsAdmins.setText(String.valueOf(adminCount));
         statsUsers.setText(String.valueOf(userCount));
+    }
+
+    private void updateUserInfo() {
+        User currentUser = UserSession.getInstance().getCurrentUser();
+        if (currentUser != null) {
+            lblUserName.setText(currentUser.getPrenom() + " " + currentUser.getNom());
+            lblUserRole.setText(currentUser.getRole());
+        } else {
+            lblUserName.setText("Utilisateur");
+            lblUserRole.setText("Non connecté");
+        }
+    }
+
+    private void updateLastUpdateTime() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm");
+        lblLastUpdate.setText("Dernière mise à jour: " + LocalDateTime.now().format(formatter));
+    }
+
+    private void setupNavigationButtons() {
+        setupSidebarButtonHover(btnDestinations, "🌍", "Destinations");
+        if (btnDestinations != null) btnDestinations.setOnMouseClicked(event -> navigateToDestinations());
+
+        setupSidebarButtonHover(btnHebergement, "🏨", "Hébergement");
+        if (btnHebergement != null) btnHebergement.setOnMouseClicked(event -> navigateToHebergement());
+
+        setupSidebarButtonHover(btnStats, "📊", "Statistiques");
+        if (btnStats != null) btnStats.setOnMouseClicked(event -> navigateToStats());
+
+        setupSidebarButtonHover(btnItineraires, "🗺️", "Itinéraires");
+        if (btnItineraires != null) btnItineraires.setOnMouseClicked(event ->
+                showInfoAlert("Itinéraires", "Cette fonctionnalité sera bientôt disponible"));
+
+        setupSidebarButtonHover(btnActivites, "🏄", "Activités");
+        if (btnActivites != null) btnActivites.setOnMouseClicked(event ->
+                showInfoAlert("Activités", "Cette fonctionnalité sera bientôt disponible"));
+
+        setupSidebarButtonHover(btnVoyages, "✈️", "Voyages");
+        if (btnVoyages != null) btnVoyages.setOnMouseClicked(event ->
+                showInfoAlert("Voyages", "Cette fonctionnalité sera bientôt disponible"));
+
+        setupSidebarButtonHover(btnBudgets, "💰", "Budgets");
+        if (btnBudgets != null) btnBudgets.setOnMouseClicked(event ->
+                showInfoAlert("Budgets", "Cette fonctionnalité sera bientôt disponible"));
+    }
+
+    private void setupSidebarButtonHover(HBox button, String icon, String text) {
+        if (button == null) return;
+
+        button.setOnMouseEntered(event -> {
+            button.setStyle("-fx-background-color: rgba(255,140,66,0.15); -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand; -fx-border-color: #ff8c42; -fx-border-width: 1; -fx-border-radius: 12;");
+            button.lookupAll(".label").forEach(label -> {
+                if (label instanceof Label) {
+                    Label lbl = (Label) label;
+                    if (lbl.getText().equals(icon)) {
+                        lbl.setStyle("-fx-font-size: 16;");
+                    } else {
+                        lbl.setStyle("-fx-text-fill: #ff8c42; -fx-font-weight: 600; -fx-font-size: 14;");
+                    }
+                }
+            });
+        });
+
+        button.setOnMouseExited(event -> {
+            button.setStyle("-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;");
+            button.lookupAll(".label").forEach(label -> {
+                if (label instanceof Label) {
+                    Label lbl = (Label) label;
+                    if (lbl.getText().equals(icon)) {
+                        lbl.setStyle("-fx-font-size: 16;");
+                    } else {
+                        lbl.setStyle("-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;");
+                    }
+                }
+            });
+        });
+    }
+
+    private void setupUserProfile() {
+        if (userProfileBox != null) {
+            userProfileBox.setOnMouseClicked(event -> navigateToProfile());
+            userProfileBox.setOnMouseEntered(event ->
+                    userProfileBox.setStyle("-fx-background-color: #2d3759; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand;"));
+            userProfileBox.setOnMouseExited(event ->
+                    userProfileBox.setStyle("-fx-background-color: #1e2749; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand;"));
+        }
+    }
+
+    private void navigateToDestinations() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/DestinationBack.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) btnDestinations.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("TravelMate - Gestion des Destinations");
+            stage.setMaximized(true);
+        } catch (IOException e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir les destinations: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void navigateToHebergement() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/HebergementBack.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) btnHebergement.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("TravelMate - Gestion des Hébergements");
+            stage.setMaximized(true);
+        } catch (IOException e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir la gestion des hébergements: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void navigateToStats() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/admin_stats.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) btnStats.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("TravelMate - Statistiques");
+            stage.setMaximized(true);
+        } catch (IOException e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir les statistiques: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void navigateToProfile() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/profile.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) userProfileBox.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("TravelMate - Mon Profil");
+            stage.setMaximized(true);
+        } catch (IOException e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir le profil: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     @FXML
@@ -183,16 +334,16 @@ public class AdminUsersController {
     }
 
     private void updateFilterButtonAppearance(String active) {
-        String activeStyle = "-fx-background-color: rgba(255,140,66,0.15); -fx-text-fill: #ff8c42; -fx-background-radius: 16; -fx-padding: 4 12; -fx-font-size: 11; -fx-cursor: hand; -fx-border-color: #ff8c42; -fx-border-width: 1; -fx-border-radius: 16; -fx-border-insets: 0;";
-        String inactiveStyle = "-fx-background-color: #1e2749; -fx-text-fill: #94a3b8; -fx-background-radius: 16; -fx-padding: 4 12; -fx-font-size: 11; -fx-cursor: hand; -fx-border-color: transparent; -fx-border-width: 1; -fx-border-radius: 16; -fx-border-insets: 0;";
-        
+        String activeStyle = "-fx-background-color: rgba(255,140,66,0.15); -fx-text-fill: #ff8c42; -fx-background-radius: 16; -fx-padding: 4 12; -fx-font-size: 11; -fx-cursor: hand; -fx-border-color: #ff8c42; -fx-border-width: 1; -fx-border-radius: 16;";
+        String inactiveStyle = "-fx-background-color: #1e2749; -fx-text-fill: #94a3b8; -fx-background-radius: 16; -fx-padding: 4 12; -fx-font-size: 11; -fx-cursor: hand; -fx-border-color: transparent; -fx-border-width: 1; -fx-border-radius: 16;";
+
         filterAllButton.setStyle("all".equals(active) ? activeStyle : inactiveStyle);
         filterAdminsButton.setStyle("admins".equals(active) ? activeStyle : inactiveStyle);
         filterUsersButton.setStyle("users".equals(active) ? activeStyle : inactiveStyle);
     }
 
     @FXML
-    private void handleAddNew() { // Préparer le formulaire pour ajouter un nouvel utilisateur
+    private void handleAddNew() {
         clearForm();
         selectedUser = null;
         formTitle.setText("Ajouter un utilisateur");
@@ -203,7 +354,7 @@ public class AdminUsersController {
         confirmPasswordField.setDisable(false);
     }
 
-    private void loadUserForEdit(User user) { // Charger les données d'un utilisateur dans le formulaire pour modification
+    private void loadUserForEdit(User user) {
         selectedUser = user;
         formTitle.setText("Modifier l'utilisateur #" + user.getId());
         nomField.setText(user.getNom());
@@ -213,10 +364,9 @@ public class AdminUsersController {
         dateNaissancePicker.setValue(user.getDateNaissance());
         roleCombo.setValue(user.getRole());
         photoUrlField.setText(user.getPhotoUrl() != null ? user.getPhotoUrl() : "");
-        // Pour la modification, on désactive le mot de passe (on peut le changer via un champ dédié, mais on laisse vide)
         passwordField.clear();
         confirmPasswordField.clear();
-        passwordField.setDisable(false); // on peut permettre de changer le mot de passe
+        passwordField.setDisable(false);
         confirmPasswordField.setDisable(false);
         saveButton.setDisable(true);
         updateButton.setDisable(false);
@@ -224,30 +374,29 @@ public class AdminUsersController {
     }
 
     @FXML
-    private void handleSave() { // Ajouter un nouvel utilisateur après validation des champs
+    private void handleSave() {
         if (!validateInputs(true)) return;
-        // Créer un objet User à partir des champs du formulaire 
+
         User user = new User();
         user.setNom(nomField.getText().trim());
         user.setPrenom(prenomField.getText().trim());
         user.setEmail(emailField.getText().trim());
         user.setTelephone(telephoneField.getText().trim().isEmpty() ? null : telephoneField.getText().trim());
         user.setDateNaissance(dateNaissancePicker.getValue());
-        user.setMotDePasse(passwordField.getText()); // À hasher
+        user.setMotDePasse(passwordField.getText());
         user.setRole(roleCombo.getValue());
         user.setPhotoUrl(photoUrlField.getText().trim().isEmpty() ? null : photoUrlField.getText().trim());
 
         try {
-            // Vérifier si l'email existe déjà
             if (userCRUD.emailExists(user.getEmail())) {
                 showAlert(Alert.AlertType.ERROR, "Email existant", "Cet email est déjà utilisé.");
                 return;
             }
             userCRUD.ajouter(user);
             showAlert(Alert.AlertType.INFORMATION, "Succès", "Utilisateur ajouté avec succès.");
-            loadUsers(); // Recharger les utilisateurs pour afficher le nouvel utilisateur ajouté
-            updateStats(); // Mettre à jour les compteurs
-            clearForm(); // Vider le formulaire après l'ajout
+            loadUsers();
+            updateStats();
+            clearForm();
         } catch (SQLException e) {
             e.printStackTrace();
             showAlert(Alert.AlertType.ERROR, "Erreur", "Échec de l'ajout : " + e.getMessage());
@@ -256,9 +405,9 @@ public class AdminUsersController {
 
     @FXML
     private void handleUpdate() {
-        if (selectedUser == null) return; // ne rien faire si aucun utilisateur n'est sélectionné pour modification
-        if (!validateInputs(false)) return; 
-        // Mettre à jour les données de selectedUser avec les valeurs du formulaire
+        if (selectedUser == null) return;
+        if (!validateInputs(false)) return;
+
         selectedUser.setNom(nomField.getText().trim());
         selectedUser.setPrenom(prenomField.getText().trim());
         selectedUser.setEmail(emailField.getText().trim());
@@ -267,7 +416,6 @@ public class AdminUsersController {
         selectedUser.setRole(roleCombo.getValue());
         selectedUser.setPhotoUrl(photoUrlField.getText().trim().isEmpty() ? null : photoUrlField.getText().trim());
 
-        // Si un nouveau mot de passe est fourni, le mettre à jour
         String newPwd = passwordField.getText();
         if (!newPwd.isEmpty()) {
             if (!ValidationUtils.isPasswordValid(newPwd)) {
@@ -281,7 +429,7 @@ public class AdminUsersController {
             selectedUser.setMotDePasse(newPwd);
         }
 
-        try { // Mettre à jour l'utilisateur dans la base de données
+        try {
             userCRUD.modifier(selectedUser, false);
             showAlert(Alert.AlertType.INFORMATION, "Succès", "Utilisateur modifié avec succès.");
             loadUsers();
@@ -294,12 +442,12 @@ public class AdminUsersController {
     }
 
     @FXML
-    private void handleDelete() { // Supprimer l'utilisateur sélectionné après confirmation
+    private void handleDelete() {
         if (selectedUser == null) return;
         handleDeleteUser(selectedUser);
     }
 
-    private void handleDeleteUser(User user) { // Supprimer un utilisateur donné après confirmation
+    private void handleDeleteUser(User user) {
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
         confirm.setTitle("Confirmation");
         confirm.setHeaderText("Supprimer l'utilisateur " + user.getEmail() + " ?");
@@ -342,7 +490,7 @@ public class AdminUsersController {
         deleteButton.setDisable(true);
     }
 
-    private boolean validateInputs(boolean isNew) { // Valider les champs du formulaire avant d'ajouter ou de modifier un utilisateur
+    private boolean validateInputs(boolean isNew) {
         String nom = nomField.getText().trim();
         String prenom = prenomField.getText().trim();
         String email = emailField.getText().trim();
@@ -390,26 +538,24 @@ public class AdminUsersController {
     @FXML
     private void exportToPDF() {
         try {
-            // Get only the currently displayed (filtered and sorted) users from the table
             List<User> users = userTable.getItems();
-            
             if (users.isEmpty()) {
                 showAlert(Alert.AlertType.WARNING, "Aucune donnée", "Aucun utilisateur à exporter.");
                 return;
             }
-            
+
             PdfWriter writer = new PdfWriter("utilisateurs.pdf");
             PdfDocument pdf = new PdfDocument(writer);
             Document document = new Document(pdf);
             document.add(new Paragraph("Liste des utilisateurs").setFontSize(18).setBold());
-            
+
             Table table = new Table(new float[]{1, 3, 3, 5, 2});
             table.addHeaderCell("ID");
             table.addHeaderCell("Nom");
             table.addHeaderCell("Prénom");
             table.addHeaderCell("Email");
             table.addHeaderCell("Rôle");
-            
+
             for (User u : users) {
                 table.addCell(String.valueOf(u.getId()));
                 table.addCell(u.getNom());
@@ -428,16 +574,18 @@ public class AdminUsersController {
 
     @FXML
     private void goToStats() {
-        try {
-            Parent root = FXMLLoader.load(getClass().getResource("/fxml/admin_stats.fxml"));
-            Stage stage = (Stage) searchField.getScene().getWindow(); // n'importe quel composant
-            stage.setScene(new Scene(root));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        navigateToStats();
     }
 
-    private void showAlert(Alert.AlertType type, String title, String msg) { // Afficher une alerte avec le titre et le message spécifiés
+    private void showInfoAlert(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    private void showAlert(Alert.AlertType type, String title, String msg) {
         Alert alert = new Alert(type);
         alert.setTitle(title);
         alert.setHeaderText(null);

@@ -17,15 +17,15 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.mindrot.jbcrypt.BCrypt;
 
-import javax.mail.MessagingException;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 public class ProfileController {
 
@@ -39,53 +39,19 @@ public class ProfileController {
     @FXML private Button editModeButton, saveButton, cancelButton, deleteButton, uploadPhotoButton;
     @FXML private Hyperlink logoutLink;
     @FXML private Label statsVoyages, statsDepenses;
-    @FXML private ComboBox<Country> countryCodeCombo; // Country object holds iso + dial + flag
-    
+    @FXML private ComboBox<Country> countryCodeCombo;
+    @FXML private Button enrollFaceButton;
+    @FXML private HBox btnDestinations, btnHebergement, btnItineraires, btnActivites, btnVoyages, btnBudgets;
+    @FXML private HBox userProfileBox;
+    @FXML private Label lblUserName, lblUserRole;
+    @FXML private Label lblLastUpdate;
+
     private final Map<String, Image> flagCache = new HashMap<>();
     private File selectedImageFile;
     private UserCRUD userCRUD = new UserCRUD();
     private User currentUser;
     private boolean editMode = false;
-    @FXML private Button enrollFaceButton;
     private FaceRecognitionClient faceClient = new FaceRecognitionClient();
-
-    @FXML
-    private void handleFaceEnrollment() {
-        if (currentUser == null) return;
-
-        // 1. Capturer le visage via la webcam
-        File faceImage = FaceCaptureDialog.captureFace((Stage) enrollFaceButton.getScene().getWindow());
-        if (faceImage == null) return;
-
-        try {
-            // 2. Extraire l'embedding
-            List<Double> embedding = faceClient.extractEmbedding(faceImage);
-            if (embedding == null) {
-                showAlert(Alert.AlertType.ERROR, "Erreur", "Aucun visage détecté. Veuillez réessayer.");
-                faceImage.delete();
-                return;
-            }
-
-            // 3. Convertir en JSON et sauvegarder dans l'utilisateur
-            String embeddingJson = EmbeddingConverter.toJson(embedding);
-            currentUser.setFaceEmbedding(embeddingJson);
-
-            // 4. Mettre à jour en base
-            userCRUD.modifier(currentUser, false);
-
-            showAlert(Alert.AlertType.INFORMATION, "Succès", "Visage enregistré avec succès !");
-
-            // Optionnel : afficher un message dans l'interface
-            faceImage.delete();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur de communication avec le service de reconnaissance faciale.");
-        } catch (SQLException e) {
-            e.printStackTrace();
-            showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur lors de la sauvegarde en base.");
-        }
-    }
 
     @FXML
     public void initialize() {
@@ -104,6 +70,10 @@ public class ProfileController {
         } else {
             enrollFaceButton.setText("👤 Enregistrer mon visage");
         }
+        setupNavigationButtons();
+        setupUserProfile();
+        updateUserInfo();
+        updateLastUpdateTime();
     }
 
     public void setUser(User user) {
@@ -125,7 +95,6 @@ public class ProfileController {
         prenomField.setText(currentUser.getPrenom());
         emailField.setText(currentUser.getEmail());
 
-        // Split full telephone into dial + number
         if (currentUser.getTelephone() != null && !currentUser.getTelephone().isEmpty()) {
             String phone = currentUser.getTelephone();
             String dial = phone.replaceAll("\\d+", "");
@@ -143,93 +112,237 @@ public class ProfileController {
         dateNaissancePicker.setValue(currentUser.getDateNaissance());
         photoUrlField.setText(currentUser.getPhotoUrl() != null ? currentUser.getPhotoUrl() : "");
     }
-    
-        private void setupCountryCodeCombo() {
-            List<Country> countries = null; // Same as signup
+
+    private void updateUserInfo() {
+        if (currentUser != null) {
+            lblUserName.setText(currentUser.getPrenom() + " " + currentUser.getNom());
+            lblUserRole.setText(currentUser.getRole());
+        } else {
+            lblUserName.setText("Utilisateur");
+            lblUserRole.setText("Non connecté");
+        }
+    }
+
+    private void updateLastUpdateTime() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm");
+        lblLastUpdate.setText("Dernière mise à jour: " + LocalDateTime.now().format(formatter));
+    }
+
+    private void setupUserProfile() {
+        if (userProfileBox != null) {
+            userProfileBox.setOnMouseClicked(event -> {
+                // Already on profile page, could refresh or do nothing
+            });
+            userProfileBox.setOnMouseEntered(event ->
+                    userProfileBox.setStyle("-fx-background-color: #e2e8f0; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand;"));
+            userProfileBox.setOnMouseExited(event ->
+                    userProfileBox.setStyle("-fx-background-color: #f1f5f9; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand;"));
+        }
+    }
+
+    private void setupNavigationButtons() {
+        if (btnDestinations != null) {
+            btnDestinations.setOnMouseClicked(event -> navigateToDestinations());
+            setupNavButtonHover(btnDestinations, "🌍", "Destinations");
+        }
+
+        if (btnHebergement != null) {
+            btnHebergement.setOnMouseClicked(event -> navigateToHebergement());
+            setupNavButtonHover(btnHebergement, "🏨", "Hébergement");
+        }
+
+        if (btnItineraires != null) {
+            btnItineraires.setOnMouseClicked(event ->
+                    showInfoAlert("Itinéraires", "Cette fonctionnalité sera bientôt disponible"));
+            setupNavButtonHover(btnItineraires, "🗺️", "Itinéraires");
+        }
+
+        if (btnActivites != null) {
+            btnActivites.setOnMouseClicked(event ->
+                    showInfoAlert("Activités", "Cette fonctionnalité sera bientôt disponible"));
+            setupNavButtonHover(btnActivites, "🏄", "Activités");
+        }
+
+        if (btnVoyages != null) {
+            btnVoyages.setOnMouseClicked(event ->
+                    showInfoAlert("Voyages", "Cette fonctionnalité sera bientôt disponible"));
+            setupNavButtonHover(btnVoyages, "✈️", "Voyages");
+        }
+
+        if (btnBudgets != null) {
+            btnBudgets.setOnMouseClicked(event ->
+                    showInfoAlert("Budgets", "Cette fonctionnalité sera bientôt disponible"));
+            setupNavButtonHover(btnBudgets, "💰", "Budgets");
+        }
+    }
+
+    private void setupNavButtonHover(HBox button, String icon, String text) {
+        if (button == null) return;
+
+        button.setOnMouseEntered(event -> {
+            button.setStyle("-fx-background-color: rgba(255,140,66,0.1); -fx-background-radius: 12; -fx-padding: 8 16; -fx-cursor: hand; -fx-border-color: #ff8c42; -fx-border-width: 1; -fx-border-radius: 12;");
+            button.lookupAll(".label").forEach(label -> {
+                if (label instanceof Label) {
+                    Label lbl = (Label) label;
+                    if (lbl.getText().equals(icon)) {
+                        lbl.setStyle("-fx-font-size: 16;");
+                    } else {
+                        lbl.setStyle("-fx-text-fill: #ff8c42; -fx-font-weight: 600; -fx-font-size: 14;");
+                    }
+                }
+            });
+        });
+
+        button.setOnMouseExited(event -> {
+            button.setStyle("-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 8 16; -fx-cursor: hand;");
+            button.lookupAll(".label").forEach(label -> {
+                if (label instanceof Label) {
+                    Label lbl = (Label) label;
+                    if (lbl.getText().equals(icon)) {
+                        lbl.setStyle("-fx-font-size: 16;");
+                    } else {
+                        lbl.setStyle("-fx-text-fill: #475569; -fx-font-weight: 500; -fx-font-size: 14;");
+                    }
+                }
+            });
+        });
+    }
+
+    private void navigateToDestinations() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/DestinationFront.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) btnDestinations.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("TravelMate - Destinations");
+            stage.setMaximized(true);
+        } catch (IOException e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir les destinations: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void navigateToHebergement() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/HebergementFront.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) btnHebergement.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("TravelMate - Hébergements");
+            stage.setMaximized(true);
+        } catch (IOException e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir les hébergements: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void handleFaceEnrollment() {
+        if (currentUser == null) return;
+
+        File faceImage = FaceCaptureDialog.captureFace((Stage) enrollFaceButton.getScene().getWindow());
+        if (faceImage == null) return;
+
+        try {
+            List<Double> embedding = faceClient.extractEmbedding(faceImage);
+            if (embedding == null) {
+                showAlert(Alert.AlertType.ERROR, "Erreur", "Aucun visage détecté. Veuillez réessayer.");
+                faceImage.delete();
+                return;
+            }
+
+            String embeddingJson = EmbeddingConverter.toJson(embedding);
+            currentUser.setFaceEmbedding(embeddingJson);
+            userCRUD.modifier(currentUser, false);
+            showAlert(Alert.AlertType.INFORMATION, "Succès", "Visage enregistré avec succès !");
+            faceImage.delete();
+        } catch (IOException e) {
+            e.printStackTrace();
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur de communication avec le service de reconnaissance faciale.");
+        } catch (SQLException e) {
+            e.printStackTrace();
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur lors de la sauvegarde en base.");
+        }
+    }
+
+    private void setupCountryCodeCombo() {
+        List<Country> countries = null;
+        try {
+            countries = CountryService.getAllCountries();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        for (Country c : countries) {
+            countryCodeCombo.getItems().add(c);
+            new Thread(() -> {
+                try {
+                    Image img = new Image(c.getFlagUrl(), 24, 16, true, true, true);
+                    flagCache.put(c.getIsoCode(), img);
+                } catch (Exception ignored) {}
+            }).start();
+        }
+
+        countryCodeCombo.setCellFactory(lv -> new ListCell<Country>() {
+            private final ImageView imageView = new ImageView();
+            @Override
+            protected void updateItem(Country country, boolean empty) {
+                super.updateItem(country, empty);
+                if (empty || country == null) {
+                    setText(null);
+                    setGraphic(null);
+                } else {
+                    imageView.setFitWidth(24);
+                    imageView.setFitHeight(16);
+                    imageView.setPreserveRatio(true);
+                    imageView.setImage(flagCache.get(country.getIsoCode()));
+                    setText(" " + country.getDialCode());
+                    setGraphic(imageView);
+                }
+            }
+        });
+
+        countryCodeCombo.setButtonCell(new ListCell<Country>() {
+            private final ImageView imageView = new ImageView();
+            @Override
+            protected void updateItem(Country country, boolean empty) {
+                super.updateItem(country, empty);
+                if (empty || country == null) {
+                    setText(null);
+                    setGraphic(null);
+                } else {
+                    imageView.setFitWidth(24);
+                    imageView.setFitHeight(16);
+                    imageView.setPreserveRatio(true);
+                    imageView.setImage(flagCache.get(country.getIsoCode()));
+                    setText(" " + country.getDialCode());
+                    setGraphic(imageView);
+                }
+            }
+        });
+
+        if (currentUser.getTelephone() != null && !currentUser.getTelephone().isEmpty()) {
+            String userDial = currentUser.getTelephone().substring(0, currentUser.getTelephone().indexOf(currentUser.getTelephone().replaceAll("\\D+", "")));
+            countries.stream()
+                    .filter(c -> c.getDialCode().equals(userDial))
+                    .findFirst()
+                    .ifPresent(countryCodeCombo::setValue);
+        } else {
             try {
-                countries = CountryService.getAllCountries();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-
-            for (Country c : countries) {
-                countryCodeCombo.getItems().add(c);
-
-                // Preload flag asynchronously
-                new Thread(() -> {
-                    try {
-                        Image img = new Image(c.getFlagUrl(), 24, 16, true, true, true);
-                        flagCache.put(c.getIsoCode(), img);
-                    } catch (Exception ignored) {}
-                }).start();
-            }
-
-            // Cell factory to show flag + dial
-            countryCodeCombo.setCellFactory(lv -> new ListCell<Country>() {
-                private final ImageView imageView = new ImageView();
-
-                @Override
-                protected void updateItem(Country country, boolean empty) {
-                    super.updateItem(country, empty);
-                    if (empty || country == null) {
-                        setText(null);
-                        setGraphic(null);
-                    } else {
-                        imageView.setFitWidth(24);
-                        imageView.setFitHeight(16);
-                        imageView.setPreserveRatio(true);
-                        imageView.setImage(flagCache.get(country.getIsoCode()));
-                        setText(" " + country.getDialCode());
-                        setGraphic(imageView);
-                    }
-                }
-            });
-
-            countryCodeCombo.setButtonCell(new ListCell<Country>() {
-                private final ImageView imageView = new ImageView();
-
-                @Override
-                protected void updateItem(Country country, boolean empty) {
-                    super.updateItem(country, empty);
-                    if (empty || country == null) {
-                        setText(null);
-                        setGraphic(null);
-                    } else {
-                        imageView.setFitWidth(24);
-                        imageView.setFitHeight(16);
-                        imageView.setPreserveRatio(true);
-                        imageView.setImage(flagCache.get(country.getIsoCode()));
-                        setText(" " + country.getDialCode());
-                        setGraphic(imageView);
-                    }
-                }
-            });
-
-            // Auto-select current user's country code
-            if (currentUser.getTelephone() != null && !currentUser.getTelephone().isEmpty()) {
-                String userDial = currentUser.getTelephone().substring(0, currentUser.getTelephone().indexOf(currentUser.getTelephone().replaceAll("\\D+", "")));
-                countries.stream()
-                        .filter(c -> c.getDialCode().equals(userDial))
+                String iso = PhoneCodeUtil.getCountryCodeFromIP();
+                countries.stream().filter(c -> c.getIsoCode().equals(iso))
                         .findFirst()
                         .ifPresent(countryCodeCombo::setValue);
-            } else {
-                // fallback to IP-detection like signup
-                try {
-                    String iso = PhoneCodeUtil.getCountryCodeFromIP();
-                    countries.stream().filter(c -> c.getIsoCode().equals(iso))
-                            .findFirst()
-                            .ifPresent(countryCodeCombo::setValue);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    countryCodeCombo.setValue(countries.get(0)); // default
-                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                countryCodeCombo.setValue(countries.get(0));
             }
         }
+    }
 
     private void loadAvatar() {
         Image image = null;
 
-        // 1. Si l'utilisateur a uploadé une photo locale
         if (currentUser.getPhotoFileName() != null) {
             File file = FileUtil.getImageFile(currentUser.getPhotoFileName());
             if (file != null && file.exists()) {
@@ -237,7 +350,6 @@ public class ProfileController {
             }
         }
 
-        // 2. Sinon, si une URL est fournie
         if (image == null && currentUser.getPhotoUrl() != null && !currentUser.getPhotoUrl().isEmpty()) {
             try {
                 image = new Image(currentUser.getPhotoUrl(), 64, 64, true, true);
@@ -246,7 +358,6 @@ public class ProfileController {
             }
         }
 
-        // 3. Sinon, essayer Gravatar
         if (image == null) {
             String gravatarUrl = GravatarUtil.getGravatarUrl(currentUser.getEmail(), 64);
             try {
@@ -256,14 +367,10 @@ public class ProfileController {
             }
         }
 
-        // 4. Si tout échoue, on laisse l'ImageView vide (on pourrait mettre un emoji, mais l'ImageView ne gère pas le texte)
-        // Pour l'emoji, il faudrait un Label à côté, mais on peut se contenter d'une image par défaut.
-        // On utilise une image locale si disponible, sinon l'ImageView reste vide.
         if (image != null && !image.isError()) {
             profileImageView.setImage(image);
         } else {
-            // Option : afficher un placeholder (ex: icône par défaut)
-            profileImageView.setImage(null); // ou une image par défaut si tu en as une
+            profileImageView.setImage(null);
         }
     }
 
@@ -295,107 +402,97 @@ public class ProfileController {
         telephoneField.setEditable(editable);
         dateNaissancePicker.setEditable(editable);
         photoUrlField.setEditable(editable);
-        // email non modifiable
     }
 
     @FXML
-private void handleSave() {
-    String nom = nomField.getText().trim();
-    String prenom = prenomField.getText().trim();
+    private void handleSave() {
+        String nom = nomField.getText().trim();
+        String prenom = prenomField.getText().trim();
 
-    String dial = countryCodeCombo.getValue() != null ? countryCodeCombo.getValue().getDialCode() : "";
-    String phoneNumber = telephoneField.getText().trim();
-    String fullPhone = phoneNumber.isEmpty() ? null : dial + phoneNumber;
+        String dial = countryCodeCombo.getValue() != null ? countryCodeCombo.getValue().getDialCode() : "";
+        String phoneNumber = telephoneField.getText().trim();
+        String fullPhone = phoneNumber.isEmpty() ? null : dial + phoneNumber;
 
-    LocalDate dateNaissance = dateNaissancePicker.getValue();
-    String photoUrl = photoUrlField.getText().trim();
-    String newPassword = newPasswordField.getText();
-    String confirm = confirmPasswordField.getText();
+        LocalDate dateNaissance = dateNaissancePicker.getValue();
+        String photoUrl = photoUrlField.getText().trim();
+        String newPassword = newPasswordField.getText();
+        String confirm = confirmPasswordField.getText();
 
-    // Validations
-    if (!ValidationUtils.isNotEmpty(nom)) {
-        showAlert(Alert.AlertType.ERROR, "Validation", "Le nom ne peut pas être vide.");
-        return;
-    }
-    if (!ValidationUtils.isNotEmpty(prenom)) {
-        showAlert(Alert.AlertType.ERROR, "Validation", "Le prénom ne peut pas être vide.");
-        return;
-    }
-    if (dateNaissance == null) {
-        showAlert(Alert.AlertType.ERROR, "Validation", "La date de naissance est obligatoire.");
-        return;
-    }
-    if (!ValidationUtils.isAdult(dateNaissance)) {
-        showAlert(Alert.AlertType.ERROR, "Validation", "Vous devez avoir au moins 18 ans.");
-        return;
-    }
-    if (!phoneNumber.isEmpty() && !ValidationUtils.isValidPhone(phoneNumber)) {
-        showAlert(Alert.AlertType.ERROR, "Validation", "Le téléphone doit contenir 8 à 15 chiffres.");
-        return;
-    }
-
-    // Gestion de l'upload de photo
-    if (selectedImageFile != null) {
-        try {
-            if (currentUser.getPhotoFileName() != null) {
-                File oldFile = FileUtil.getImageFile(currentUser.getPhotoFileName());
-                if (oldFile != null && oldFile.exists()) oldFile.delete();
-            }
-            String fileName = FileUtil.saveImageToUploads(selectedImageFile, currentUser.getId());
-            currentUser.setPhotoFileName(fileName);
-            currentUser.setPhotoUrl(null); // on abandonne l'URL
-        } catch (IOException e) {
-            showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible de sauvegarder l'image : " + e.getMessage());
+        if (!ValidationUtils.isNotEmpty(nom)) {
+            showAlert(Alert.AlertType.ERROR, "Validation", "Le nom ne peut pas être vide.");
             return;
         }
-    } else if (!photoUrl.isEmpty()) {
-        // Si l'utilisateur a saisi une URL, on l'utilise
-        currentUser.setPhotoUrl(photoUrl);
-        currentUser.setPhotoFileName(null);
-    } else {
-        // Pas de nouvelle photo, on garde l'existante
-    }
-
-    // Mise à jour des champs texte
-    currentUser.setNom(nom);
-    currentUser.setPrenom(prenom);
-    currentUser.setTelephone(fullPhone);
-    currentUser.setDateNaissance(dateNaissance);
-
-    boolean passwordChanged = !newPassword.isEmpty();
-
-    try {
-        if (passwordChanged) {
-            if (!ValidationUtils.isPasswordValid(newPassword)) {
-                showAlert(Alert.AlertType.ERROR, "Validation", "Le mot de passe doit contenir au moins 6 caractères.");
-                return;
-            }
-            if (!ValidationUtils.passwordsMatch(newPassword, confirm)) {
-                showAlert(Alert.AlertType.ERROR, "Validation", "Les mots de passe ne correspondent pas.");
-                return;
-            }
-            // Hacher le nouveau mot de passe
-            String hashed = BCrypt.hashpw(newPassword, BCrypt.gensalt());
-            currentUser.setMotDePasse(hashed);
+        if (!ValidationUtils.isNotEmpty(prenom)) {
+            showAlert(Alert.AlertType.ERROR, "Validation", "Le prénom ne peut pas être vide.");
+            return;
+        }
+        if (dateNaissance == null) {
+            showAlert(Alert.AlertType.ERROR, "Validation", "La date de naissance est obligatoire.");
+            return;
+        }
+        if (!ValidationUtils.isAdult(dateNaissance)) {
+            showAlert(Alert.AlertType.ERROR, "Validation", "Vous devez avoir au moins 18 ans.");
+            return;
+        }
+        if (!phoneNumber.isEmpty() && !ValidationUtils.isValidPhone(phoneNumber)) {
+            showAlert(Alert.AlertType.ERROR, "Validation", "Le téléphone doit contenir 8 à 15 chiffres.");
+            return;
         }
 
-        // Appeler la méthode modifier avec le flag passwordChanged
-        // (vérifiez que votre UserCRUD possède cette signature)
-        userCRUD.modifier(currentUser, passwordChanged);
-        showAlert(Alert.AlertType.INFORMATION, "Succès", "Profil mis à jour.");
+        if (selectedImageFile != null) {
+            try {
+                if (currentUser.getPhotoFileName() != null) {
+                    File oldFile = FileUtil.getImageFile(currentUser.getPhotoFileName());
+                    if (oldFile != null && oldFile.exists()) oldFile.delete();
+                }
+                String fileName = FileUtil.saveImageToUploads(selectedImageFile, currentUser.getId());
+                currentUser.setPhotoFileName(fileName);
+                currentUser.setPhotoUrl(null);
+            } catch (IOException e) {
+                showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible de sauvegarder l'image : " + e.getMessage());
+                return;
+            }
+        } else if (!photoUrl.isEmpty()) {
+            currentUser.setPhotoUrl(photoUrl);
+            currentUser.setPhotoFileName(null);
+        }
 
-        // Recharger l'affichage
-        loadUserData();
-        loadAvatar();
-        toggleEditMode();
-        newPasswordField.clear();
-        confirmPasswordField.clear();
-        selectedImageFile = null;
-    } catch (SQLException e) {
-        e.printStackTrace();
-        showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur base de données : " + e.getMessage());
+        currentUser.setNom(nom);
+        currentUser.setPrenom(prenom);
+        currentUser.setTelephone(fullPhone);
+        currentUser.setDateNaissance(dateNaissance);
+
+        boolean passwordChanged = !newPassword.isEmpty();
+
+        try {
+            if (passwordChanged) {
+                if (!ValidationUtils.isPasswordValid(newPassword)) {
+                    showAlert(Alert.AlertType.ERROR, "Validation", "Le mot de passe doit contenir au moins 6 caractères.");
+                    return;
+                }
+                if (!ValidationUtils.passwordsMatch(newPassword, confirm)) {
+                    showAlert(Alert.AlertType.ERROR, "Validation", "Les mots de passe ne correspondent pas.");
+                    return;
+                }
+                String hashed = BCrypt.hashpw(newPassword, BCrypt.gensalt());
+                currentUser.setMotDePasse(hashed);
+            }
+
+            userCRUD.modifier(currentUser, passwordChanged);
+            showAlert(Alert.AlertType.INFORMATION, "Succès", "Profil mis à jour.");
+
+            loadUserData();
+            loadAvatar();
+            updateUserInfo();
+            toggleEditMode();
+            newPasswordField.clear();
+            confirmPasswordField.clear();
+            selectedImageFile = null;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur base de données : " + e.getMessage());
+        }
     }
-}
 
     @FXML
     private void cancelEdit() {
@@ -445,6 +542,14 @@ private void handleSave() {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void showInfoAlert(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 
     private void showAlert(Alert.AlertType type, String title, String msg) {
