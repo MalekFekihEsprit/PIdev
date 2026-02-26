@@ -6,6 +6,9 @@ import Services.NearbyPlacesAPI;
 import Services.PlaceSuggestionService;
 import Services.WeatherService;
 import Services.WeatherService.WeatherForecast;
+import javafx.animation.Animation;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -16,11 +19,11 @@ import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
-import javafx.scene.layout.TilePane;  // Essentiel pour TilePane
 import javafx.scene.paint.Color;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 import java.io.File;
 import java.net.URL;
@@ -68,14 +71,18 @@ public class ActivityDetailController implements Initializable {
     @FXML private Label lblWeatherWind;
     @FXML private Label lblWeatherAdvice;
 
-    // Suggestions - Version TilePane
-    @FXML private TilePane suggestionsTilePane;
+    // Suggestions avec défilement
+    @FXML private HBox suggestionsHBox;
     @FXML private ScrollPane suggestionsScrollPane;
     @FXML private Label suggestionsTitle;
+    @FXML private Button btnScrollLeft;
+    @FXML private Button btnScrollRight;
 
     private Activites activite;
     private WebEngine webEngine;
     private GeocodingService.LocationResult locationResult;
+    private Timeline autoScrollTimeline;
+    private double scrollSpeed = 0.5;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -90,6 +97,12 @@ public class ActivityDetailController implements Initializable {
             webEngine = webViewMap.getEngine();
             System.out.println("✅ WebEngine initialisé");
             webEngine.setJavaScriptEnabled(true);
+        }
+
+        // Initialiser les gestionnaires d'événements pour le défilement
+        if (suggestionsHBox != null) {
+            suggestionsHBox.setOnMouseEntered(e -> pauseAutoScroll());
+            suggestionsHBox.setOnMouseExited(e -> scheduleResumeAutoScroll());
         }
     }
 
@@ -182,13 +195,10 @@ public class ActivityDetailController implements Initializable {
 
                     displayMap(result);
                     loadWeatherForActivity();
-
-                    // Charger les suggestions à proximité
                     loadSuggestions();
 
                 } else {
                     showMapWithMessage("Impossible de localiser cette adresse");
-
                     lblVille.setText("Non trouvé");
                     lblPays.setText("Non trouvé");
                     lblCodePostal.setText("Non trouvé");
@@ -199,29 +209,28 @@ public class ActivityDetailController implements Initializable {
         }).start();
     }
 
-    // ==================== SUGGESTIONS À PROXIMITÉ ====================
+    // ==================== SUGGESTIONS AVEC DÉFILEMENT ====================
 
     private void loadSuggestions() {
-        if (suggestionsTilePane == null || activite == null) return;
+        if (suggestionsHBox == null || activite == null) return;
 
         // Afficher le chargement
         javafx.application.Platform.runLater(() -> {
-            suggestionsTilePane.getChildren().clear();
+            suggestionsHBox.getChildren().clear();
             for (int i = 0; i < 4; i++) {
                 VBox skeleton = new VBox();
                 skeleton.setPrefWidth(200);
                 skeleton.setPrefHeight(150);
                 skeleton.setStyle("-fx-background-color: linear-gradient(to right, #f0f0f0 0%, #e0e0e0 50%, #f0f0f0 100%); -fx-background-radius: 12;");
-                suggestionsTilePane.getChildren().add(skeleton);
+                suggestionsHBox.getChildren().add(skeleton);
             }
         });
 
-        // Utiliser le service dans un thread séparé
         new Thread(() -> {
             List<Map<String, Object>> places = PlaceSuggestionService.getSuggestionsForActivity(activite);
 
             javafx.application.Platform.runLater(() -> {
-                suggestionsTilePane.getChildren().clear();
+                suggestionsHBox.getChildren().clear();
 
                 if (places.isEmpty()) {
                     showNoSuggestions();
@@ -233,7 +242,8 @@ public class ActivityDetailController implements Initializable {
     }
 
     private void displaySuggestions(List<Map<String, Object>> places) {
-        suggestionsTilePane.getChildren().clear();
+        suggestionsHBox.getChildren().clear();
+        stopAutoScroll();
 
         if (suggestionsTitle != null && activite != null) {
             suggestionsTitle.setText("À proximité de " +
@@ -242,8 +252,11 @@ public class ActivityDetailController implements Initializable {
 
         for (Map<String, Object> place : places) {
             VBox card = createSuggestionCard(place);
-            suggestionsTilePane.getChildren().add(card);
+            suggestionsHBox.getChildren().add(card);
         }
+
+        startAutoScroll();
+        setupNavigationButtons();
     }
 
     private VBox createSuggestionCard(Map<String, Object> place) {
@@ -257,7 +270,6 @@ public class ActivityDetailController implements Initializable {
         String type = (String) place.get("type");
         double distance = (double) place.get("distance");
 
-        // Icône selon le type
         String icon = switch(type) {
             case "museum" -> "🏛️";
             case "restaurant" -> "🍽️";
@@ -314,19 +326,99 @@ public class ActivityDetailController implements Initializable {
 
         card.getChildren().addAll(header, nameLabel, distanceLabel, viewButton);
 
-        // Effet de survol
         card.setOnMouseEntered(e -> {
             card.setEffect(new DropShadow(12, Color.web("#ff6b0055")));
             card.setScaleX(1.02);
             card.setScaleY(1.02);
+            pauseAutoScroll();
         });
+
         card.setOnMouseExited(e -> {
             card.setEffect(null);
             card.setScaleX(1.0);
             card.setScaleY(1.0);
+            scheduleResumeAutoScroll();
         });
 
         return card;
+    }
+
+    private void startAutoScroll() {
+        suggestionsHBox.layout();
+        suggestionsScrollPane.layout();
+
+        double totalWidth = suggestionsHBox.getChildren().stream()
+                .mapToDouble(node -> node.getBoundsInParent().getWidth() + 15)
+                .sum();
+
+        if (totalWidth > suggestionsScrollPane.getWidth()) {
+            autoScrollTimeline = new Timeline(
+                    new KeyFrame(Duration.millis(50), e -> {
+                        double currentHvalue = suggestionsScrollPane.getHvalue();
+                        double maxHvalue = suggestionsScrollPane.getContent().getBoundsInLocal().getWidth()
+                                - suggestionsScrollPane.getViewportBounds().getWidth();
+
+                        if (maxHvalue > 0) {
+                            double newHvalue = currentHvalue + (scrollSpeed / maxHvalue);
+                            if (newHvalue >= 1.0) {
+                                suggestionsScrollPane.setHvalue(0.0);
+                            } else {
+                                suggestionsScrollPane.setHvalue(newHvalue);
+                            }
+                        }
+                    })
+            );
+            autoScrollTimeline.setCycleCount(Animation.INDEFINITE);
+            autoScrollTimeline.play();
+        }
+    }
+
+    private void stopAutoScroll() {
+        if (autoScrollTimeline != null) {
+            autoScrollTimeline.stop();
+            autoScrollTimeline = null;
+        }
+    }
+
+    private void pauseAutoScroll() {
+        if (autoScrollTimeline != null) {
+            autoScrollTimeline.pause();
+        }
+    }
+
+    private void scheduleResumeAutoScroll() {
+        Timeline resumeTimeline = new Timeline(
+                new KeyFrame(Duration.seconds(2), ev -> {
+                    if (autoScrollTimeline != null) {
+                        autoScrollTimeline.play();
+                    }
+                })
+        );
+        resumeTimeline.setCycleCount(1);
+        resumeTimeline.play();
+    }
+
+    private void setupNavigationButtons() {
+        if (btnScrollLeft != null && btnScrollRight != null) {
+            btnScrollLeft.setOnAction(e -> {
+                pauseAutoScroll();
+                double currentHvalue = suggestionsScrollPane.getHvalue();
+                suggestionsScrollPane.setHvalue(Math.max(0, currentHvalue - 0.2));
+                scheduleResumeAutoScroll();
+            });
+
+            btnScrollRight.setOnAction(e -> {
+                pauseAutoScroll();
+                double currentHvalue = suggestionsScrollPane.getHvalue();
+                suggestionsScrollPane.setHvalue(Math.min(1.0, currentHvalue + 0.2));
+                scheduleResumeAutoScroll();
+            });
+
+            btnScrollLeft.setOnMouseEntered(e -> pauseAutoScroll());
+            btnScrollRight.setOnMouseEntered(e -> pauseAutoScroll());
+            btnScrollLeft.setOnMouseExited(e -> scheduleResumeAutoScroll());
+            btnScrollRight.setOnMouseExited(e -> scheduleResumeAutoScroll());
+        }
     }
 
     private void centerMapOnPlace(Map<String, Object> place) {
@@ -344,8 +436,6 @@ public class ActivityDetailController implements Initializable {
                 + "</body></html>";
 
         webEngine.loadContent(html);
-
-        // Mettre à jour les coordonnées affichées
         lblCoordonnees.setText(String.format("%.4f, %.4f", lat, lon));
     }
 
@@ -365,7 +455,7 @@ public class ActivityDetailController implements Initializable {
         subMessage.setStyle("-fx-text-fill: #aaa; -fx-font-size: 12;");
 
         messageBox.getChildren().addAll(icon, message, subMessage);
-        suggestionsTilePane.getChildren().add(messageBox);
+        suggestionsHBox.getChildren().add(messageBox);
     }
 
     private void displayMap(GeocodingService.LocationResult result) {
@@ -464,6 +554,7 @@ public class ActivityDetailController implements Initializable {
 
     @FXML
     private void handleBack() {
+        stopAutoScroll();
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/activitesfront.fxml"));
             Parent root = loader.load();
@@ -479,6 +570,7 @@ public class ActivityDetailController implements Initializable {
 
     @FXML
     private void handleVersCategories() {
+        stopAutoScroll();
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/categoriesfront.fxml"));
             Parent root = loader.load();

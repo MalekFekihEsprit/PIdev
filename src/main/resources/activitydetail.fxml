@@ -13,14 +13,15 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.StackPane?>
-<?import javafx.scene.layout.TilePane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Circle?>
 <?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.text.Font?>
 <?import javafx.scene.web.WebView?>
 
-<BorderPane prefHeight="900" prefWidth="1400" style="-fx-background-color: #f0f4f0;" stylesheets="@activitesfront.css, @activitydetail.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controlles.ActivityDetailController">
+<BorderPane prefHeight="900" prefWidth="1400" style="-fx-background-color: #f0f4f0;" stylesheets="@activitesfront.css, @activitydetail.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controlles.ActivityDetailController">
 
     <!-- ==================== NAVBAR ==================== -->
     <top>
@@ -89,9 +90,9 @@
             <HBox alignment="CENTER_LEFT" spacing="6" style="-fx-background-color:#f0f4f0;-fx-padding:10 30;">
                 <Label style="-fx-text-fill:#888;-fx-font-size:12;" text="🏠 Accueil" />
                 <Label style="-fx-text-fill:#aaa;-fx-font-size:12;" text="&gt;" />
-                <Label style="-fx-text-fill:#888;-fx-font-size:12;-fx-cursor:hand;" onMouseClicked="#handleBack" text="Activités" />
+                <Label onMouseClicked="#handleBack" style="-fx-text-fill:#888;-fx-font-size:12;-fx-cursor:hand;" text="Activités" />
                 <Label style="-fx-text-fill:#aaa;-fx-font-size:12;" text="&gt;" />
-                <Label style="-fx-background-color:#ff6b00;-fx-text-fill:white;-fx-background-radius:15;-fx-padding:4 14;-fx-font-size:12;" fx:id="lblNomBreadcrumb" text="Détail" />
+                <Label fx:id="lblNomBreadcrumb" style="-fx-background-color:#ff6b00;-fx-text-fill:white;-fx-background-radius:15;-fx-padding:4 14;-fx-font-size:12;" text="Détail" />
                 <Region HBox.hgrow="ALWAYS" />
                 <Label fx:id="lblDate" style="-fx-text-fill:#888;-fx-font-size:12;" text="📅 Mars 2026" />
 
@@ -108,7 +109,7 @@
             <VBox spacing="20" style="-fx-padding:20 30;">
 
                 <!-- Titre -->
-                <Label style="-fx-font-size:28;-fx-font-weight:bold;-fx-text-fill:#1a1a1a;" fx:id="lblNom" text="" />
+                <Label fx:id="lblNom" style="-fx-font-size:28;-fx-font-weight:bold;-fx-text-fill:#1a1a1a;" text="" />
 
                 <!-- Grille principale 2 colonnes -->
                 <GridPane hgap="20" vgap="20">
@@ -133,7 +134,7 @@
                         <VBox style="-fx-background-color:white;-fx-background-radius:16;-fx-padding:20;-fx-effect:dropshadow(three-pass-box,rgba(0,0,0,0.06),8,0,0,2);">
                             <Label style="-fx-font-size:16;-fx-font-weight:bold;-fx-text-fill:#1a1a1a;" text="Adresse de l'activité" />
                             <Separator style="-fx-padding:10 0;" />
-                            <HBox spacing="8" alignment="CENTER_LEFT">
+                            <HBox alignment="CENTER_LEFT" spacing="8">
                                 <Label style="-fx-font-size:18;" text="📍" />
                                 <Label fx:id="lblAdresseComplete" style="-fx-font-size:14;-fx-text-fill:#ff6b00;-fx-wrap-text:true;" text="" />
                             </HBox>
@@ -149,65 +150,90 @@
 
                             <GridPane hgap="15" vgap="8">
                                 <!-- Budget -->
-                                <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Budget :" GridPane.rowIndex="0" GridPane.columnIndex="0" />
-                                <HBox alignment="CENTER_LEFT" spacing="5" GridPane.rowIndex="0" GridPane.columnIndex="1">
+                                <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Budget :" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                                <HBox alignment="CENTER_LEFT" spacing="5" GridPane.columnIndex="1" GridPane.rowIndex="0">
                                     <Label style="-fx-font-size:16;" text="💰" />
                                     <Label fx:id="lblBudget" style="-fx-text-fill:#ff6b00;-fx-font-weight:bold;-fx-font-size:13px;" text="" />
                                 </HBox>
 
                                 <!-- Durée -->
-                                <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Durée :" GridPane.rowIndex="1" GridPane.columnIndex="0" />
-                                <Label fx:id="lblDuree" GridPane.rowIndex="1" GridPane.columnIndex="1" text="" style="-fx-text-fill:#ff6b00;-fx-font-weight:bold;-fx-font-size:13px;" />
+                                <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Durée :" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                                <Label fx:id="lblDuree" style="-fx-text-fill:#ff6b00;-fx-font-weight:bold;-fx-font-size:13px;" text="" GridPane.columnIndex="1" GridPane.rowIndex="1" />
 
                                 <!-- Difficulté -->
-                                <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Difficulté :" GridPane.rowIndex="2" GridPane.columnIndex="0" />
-                                <Label fx:id="lblDifficulte" GridPane.rowIndex="2" GridPane.columnIndex="1" text="" style="-fx-text-fill:#ff6b00;-fx-font-weight:bold;-fx-font-size:13px;" />
+                                <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Difficulté :" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                                <Label fx:id="lblDifficulte" style="-fx-text-fill:#ff6b00;-fx-font-weight:bold;-fx-font-size:13px;" text="" GridPane.columnIndex="1" GridPane.rowIndex="2" />
 
                                 <!-- Âge minimum -->
-                                <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Âge minimum :" GridPane.rowIndex="3" GridPane.columnIndex="0" />
-                                <Label fx:id="lblAgeMin" GridPane.rowIndex="3" GridPane.columnIndex="1" text="" style="-fx-text-fill:#ff6b00;-fx-font-weight:bold;-fx-font-size:13px;" />
+                                <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Âge minimum :" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                                <Label fx:id="lblAgeMin" style="-fx-text-fill:#ff6b00;-fx-font-weight:bold;-fx-font-size:13px;" text="" GridPane.columnIndex="1" GridPane.rowIndex="3" />
 
                                 <!-- Statut -->
-                                <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Statut :" GridPane.rowIndex="4" GridPane.columnIndex="0" />
-                                <Label fx:id="lblStatut" GridPane.rowIndex="4" GridPane.columnIndex="1" text="" style="-fx-text-fill:#ff6b00;-fx-font-weight:bold;-fx-font-size:13px;" />
+                                <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Statut :" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+                                <Label fx:id="lblStatut" style="-fx-text-fill:#ff6b00;-fx-font-weight:bold;-fx-font-size:13px;" text="" GridPane.columnIndex="1" GridPane.rowIndex="4" />
 
                                 <!-- Catégorie -->
-                                <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Catégorie :" GridPane.rowIndex="5" GridPane.columnIndex="0" />
-                                <Label fx:id="lblCategorie" GridPane.rowIndex="5" GridPane.columnIndex="1" text="" style="-fx-text-fill:#ff6b00;-fx-font-weight:bold;-fx-font-size:13px;" />
+                                <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Catégorie :" GridPane.columnIndex="0" GridPane.rowIndex="5" />
+                                <Label fx:id="lblCategorie" style="-fx-text-fill:#ff6b00;-fx-font-weight:bold;-fx-font-size:13px;" text="" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                        <columnConstraints>
+                           <ColumnConstraints />
+                           <ColumnConstraints />
+                        </columnConstraints>
+                        <rowConstraints>
+                           <RowConstraints />
+                           <RowConstraints />
+                           <RowConstraints />
+                           <RowConstraints />
+                           <RowConstraints />
+                           <RowConstraints />
+                        </rowConstraints>
                             </GridPane>
                         </VBox>
 
                         <!-- TabPane pour Météo et Localisation -->
-                        <TabPane tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS" prefHeight="400">
+                        <TabPane prefHeight="400" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
                             <!-- Onglet Météo -->
-                            <Tab text="🌤️ Météo">
+                            <Tab text="🌤Météo">
                                 <VBox fx:id="weatherContainer" spacing="12" style="-fx-padding:15;">
                                     <Label fx:id="lblDatePrevue" style="-fx-text-fill:#ff6b00;-fx-font-weight:bold;-fx-font-size:14;" text="Prévisions pour le ..." />
 
                                     <GridPane hgap="15" vgap="10">
                                         <!-- Icône et description -->
-                                        <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Météo :" GridPane.rowIndex="0" GridPane.columnIndex="0" />
-                                        <HBox alignment="CENTER_LEFT" spacing="8" GridPane.rowIndex="0" GridPane.columnIndex="1">
+                                        <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Météo :" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                                        <HBox alignment="CENTER_LEFT" spacing="8" GridPane.columnIndex="1" GridPane.rowIndex="0">
                                             <Label fx:id="lblWeatherIcon" style="-fx-font-size:28;" text="🌡️" />
                                             <Label fx:id="lblWeatherDescription" style="-fx-text-fill:#555;" text="—" />
                                         </HBox>
 
                                         <!-- Température -->
-                                        <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Température :" GridPane.rowIndex="1" GridPane.columnIndex="0" />
-                                        <Label fx:id="lblWeatherTemp" GridPane.rowIndex="1" GridPane.columnIndex="1" style="-fx-text-fill:#ff6b00;-fx-font-weight:bold;" text="—" />
+                                        <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Température :" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                                        <Label fx:id="lblWeatherTemp" style="-fx-text-fill:#ff6b00;-fx-font-weight:bold;" text="—" GridPane.columnIndex="1" GridPane.rowIndex="1" />
 
                                         <!-- Précipitations -->
-                                        <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Précipitations :" GridPane.rowIndex="2" GridPane.columnIndex="0" />
-                                        <Label fx:id="lblWeatherPrecip" GridPane.rowIndex="2" GridPane.columnIndex="1" style="-fx-text-fill:#555;" text="—" />
+                                        <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Précipitations :" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                                        <Label fx:id="lblWeatherPrecip" style="-fx-text-fill:#555;" text="—" GridPane.columnIndex="1" GridPane.rowIndex="2" />
 
                                         <!-- Vent -->
-                                        <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Vent :" GridPane.rowIndex="3" GridPane.columnIndex="0" />
-                                        <Label fx:id="lblWeatherWind" GridPane.rowIndex="3" GridPane.columnIndex="1" style="-fx-text-fill:#555;" text="—" />
+                                        <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Vent :" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                                        <Label fx:id="lblWeatherWind" style="-fx-text-fill:#555;" text="—" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                              <columnConstraints>
+                                 <ColumnConstraints />
+                                 <ColumnConstraints />
+                              </columnConstraints>
+                              <rowConstraints>
+                                 <RowConstraints />
+                                 <RowConstraints />
+                                 <RowConstraints />
+                                 <RowConstraints />
+                              </rowConstraints>
                                     </GridPane>
 
                                     <!-- Conseils selon météo -->
                                     <HBox alignment="CENTER" style="-fx-background-color:#fff3e8;-fx-background-radius:8;-fx-padding:10;">
-                                        <Label fx:id="lblWeatherAdvice" style="-fx-text-fill:#ff6b00;-fx-font-size:13;" text="🌤️ Conditions idéales pour cette activité !" />
+                                        <Label fx:id="lblWeatherAdvice" style="-fx-text-fill:#ff6b00;-fx-font-size:13;" text="🌤 Conditions idéales pour cette activité !">
+                                 <font>
+                                    <Font name="Eras Bold ITC" size="12.0" />
+                                 </font></Label>
                                     </HBox>
                                 </VBox>
                             </Tab>
@@ -223,49 +249,61 @@
 
                                     <!-- Détails de localisation -->
                                     <GridPane hgap="15" vgap="8">
-                                        <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Ville :" GridPane.rowIndex="0" GridPane.columnIndex="0" />
-                                        <Label fx:id="lblVille" GridPane.rowIndex="0" GridPane.columnIndex="1" text="-" style="-fx-text-fill: #ff6b00; -fx-font-weight: bold;" />
+                                        <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Ville :" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                                        <Label fx:id="lblVille" style="-fx-text-fill: #ff6b00; -fx-font-weight: bold;" text="-" GridPane.columnIndex="1" GridPane.rowIndex="0" />
 
-                                        <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Pays :" GridPane.rowIndex="1" GridPane.columnIndex="0" />
-                                        <Label fx:id="lblPays" GridPane.rowIndex="1" GridPane.columnIndex="1" text="-" style="-fx-text-fill: #ff6b00; -fx-font-weight: bold;" />
+                                        <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Pays :" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                                        <Label fx:id="lblPays" style="-fx-text-fill: #ff6b00; -fx-font-weight: bold;" text="-" GridPane.columnIndex="1" GridPane.rowIndex="1" />
 
-                                        <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Code postal :" GridPane.rowIndex="2" GridPane.columnIndex="0" />
-                                        <Label fx:id="lblCodePostal" GridPane.rowIndex="2" GridPane.columnIndex="1" text="-" style="-fx-text-fill: #ff6b00; -fx-font-weight: bold;" />
+                                        <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Code postal :" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                                        <Label fx:id="lblCodePostal" style="-fx-text-fill: #ff6b00; -fx-font-weight: bold;" text="-" GridPane.columnIndex="1" GridPane.rowIndex="2" />
 
-                                        <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Rue :" GridPane.rowIndex="3" GridPane.columnIndex="0" />
-                                        <Label fx:id="lblRue" GridPane.rowIndex="3" GridPane.columnIndex="1" text="-" wrapText="true" style="-fx-text-fill: #ff6b00; -fx-font-weight: bold;" />
+                                        <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Rue :" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                                        <Label fx:id="lblRue" style="-fx-text-fill: #ff6b00; -fx-font-weight: bold;" text="-" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="3" />
 
-                                        <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Coordonnées :" GridPane.rowIndex="4" GridPane.columnIndex="0" />
-                                        <Label fx:id="lblCoordonnees" GridPane.rowIndex="4" GridPane.columnIndex="1" text="-" style="-fx-text-fill: #ff6b00; -fx-font-weight: bold;" />
+                                        <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Coordonnées :" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+                                        <Label fx:id="lblCoordonnees" style="-fx-text-fill: #ff6b00; -fx-font-weight: bold;" text="-" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                              <columnConstraints>
+                                 <ColumnConstraints />
+                                 <ColumnConstraints />
+                              </columnConstraints>
+                              <rowConstraints>
+                                 <RowConstraints />
+                                 <RowConstraints />
+                                 <RowConstraints />
+                                 <RowConstraints />
+                                 <RowConstraints />
+                              </rowConstraints>
                                     </GridPane>
                                 </VBox>
                             </Tab>
                         </TabPane>
                     </VBox>
+               <rowConstraints>
+                  <RowConstraints />
+               </rowConstraints>
                 </GridPane>
 
-                <!-- ==================== SECTION SUGGESTIONS À PROXIMITÉ ==================== -->
+                <!-- ==================== SECTION SUGGESTIONS À PROXIMITÉ AVEC DÉFILEMENT ==================== -->
                 <VBox spacing="15" style="-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 25; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 10, 0, 0, 2); -fx-margin-top: 20;">
 
-                    <!-- Titre de la section -->
-                    <Label fx:id="suggestionsTitle" style="-fx-font-size: 18; -fx-font-weight: bold; -fx-text-fill: #1a1a1a;" text="À proximité de cette activité" />
+                    <!-- Titre de la section avec flèches de navigation -->
+                    <HBox alignment="CENTER_LEFT" spacing="10">
+                        <Label fx:id="suggestionsTitle" style="-fx-font-size: 18; -fx-font-weight: bold; -fx-text-fill: #1a1a1a;" text="À proximité de cette activité" />
+                        <Region HBox.hgrow="ALWAYS" />
+                        <!-- Boutons de navigation -->
+                        <Button fx:id="btnScrollLeft" style="-fx-background-color: #fff3e8; -fx-text-fill: #ff6b00; -fx-background-radius: 20; -fx-padding: 5 10; -fx-font-size: 14; -fx-cursor: hand; -fx-font-weight: bold;" text="◀" />
+                        <Button fx:id="btnScrollRight" style="-fx-background-color: #fff3e8; -fx-text-fill: #ff6b00; -fx-background-radius: 20; -fx-padding: 5 10; -fx-font-size: 14; -fx-cursor: hand; -fx-font-weight: bold;" text="▶" />
+                    </HBox>
 
                     <!-- Séparateur -->
                     <Separator style="-fx-padding: 5 0;" />
 
-                    <!-- ScrollPane contenant les suggestions -->
-                    <ScrollPane fx:id="suggestionsScrollPane"
-                                fitToWidth="true"
-                                hbarPolicy="NEVER"
-                                style="-fx-background: transparent; -fx-background-color: transparent; -fx-border-color: transparent;">
+                    <!-- ScrollPane horizontal pour les suggestions -->
+                    <ScrollPane fx:id="suggestionsScrollPane" fitToHeight="true" hbarPolicy="ALWAYS" style="-fx-background: transparent; -fx-background-color: transparent; -fx-border-color: transparent;" vbarPolicy="NEVER">
 
-                        <!-- TilePane pour afficher les cartes en grille -->
-                        <TilePane fx:id="suggestionsTilePane"
-                                  prefColumns="4"
-                                  hgap="15"
-                                  vgap="15"
-                                  tileAlignment="TOP_LEFT"
-                                  style="-fx-background-color: transparent; -fx-padding: 10 0 0 0;" />
+                        <!-- HBox pour les cartes en ligne -->
+                        <HBox fx:id="suggestionsHBox" spacing="15" style="-fx-background-color: transparent; -fx-padding: 10 0 10 0;" />
                     </ScrollPane>
                 </VBox>
             </VBox>

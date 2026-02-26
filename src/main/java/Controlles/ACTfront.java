@@ -2,6 +2,7 @@ package Controlles;
 
 import Entites.Activites;
 import Services.ActivitesCRUD;
+import Services.ModerationService;
 import Services.QRCodeService;
 import Controlles.CategorieContext;
 import Utils.DeepLinkHandler;
@@ -19,6 +20,7 @@ import javafx.scene.Scene;
 import javafx.scene.chart.PieChart;
 import javafx.scene.control.*;
 import javafx.scene.effect.DropShadow;
+import javafx.scene.effect.GaussianBlur;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
@@ -72,6 +74,9 @@ public class ACTfront implements Initializable {
     private FilteredList<Activites> filteredData;
     private Activites selectedActivite = null;
     private String currentCategorieFiltre = null;
+
+    // Cache pour les résultats de modération
+    private Map<Integer, ModerationService.ModerationResult> moderationCache = new HashMap<>();
 
     // ─── Couleurs pour le PieChart ──────────────────────────────────────
     private static final String[] PIE_COLORS = {
@@ -157,6 +162,17 @@ public class ACTfront implements Initializable {
             activitesList.addAll(liste);
             filteredData = new FilteredList<>(activitesList, p -> true);
 
+            // Pré-analyser toutes les activités pour la modération
+            moderationCache.clear();
+            for (Activites activite : activitesList) {
+                ModerationService.ModerationResult result = ModerationService.analyserActivite(
+                        activite.getNom(),
+                        activite.getDescription(),
+                        activite.getImagePath()
+                );
+                moderationCache.put(activite.getId(), result);
+            }
+
             // Appliquer les filtres existants
             applyFilters();
 
@@ -217,7 +233,28 @@ public class ACTfront implements Initializable {
         int row = 0;
 
         for (Activites activite : activites) {
-            VBox card = createImageCard(activite);
+            VBox card;
+
+            // Récupérer le résultat de modération du cache
+            ModerationService.ModerationResult modResult = moderationCache.get(activite.getId());
+
+            // Si pas dans le cache (cas exceptionnel), analyser maintenant
+            if (modResult == null) {
+                modResult = ModerationService.analyserActivite(
+                        activite.getNom(),
+                        activite.getDescription(),
+                        activite.getImagePath()
+                );
+                moderationCache.put(activite.getId(), modResult);
+            }
+
+            // Créer la carte appropriée (normale ou avec modération)
+            if (modResult != null && modResult.estSuspect) {
+                card = createModeratedCard(activite, modResult);
+            } else {
+                card = createImageCard(activite);
+            }
+
             activitesGrid.add(card, column, row);
             column++;
             if (column >= 4) {
@@ -234,6 +271,68 @@ public class ACTfront implements Initializable {
         card.getStyleClass().add("activity-card");
         card.setPrefWidth(200);
         card.setMinWidth(160);
+
+        // Créer le contenu de base de la carte
+        VBox cardContent = createBaseCardContent(activite, true);
+        card.getChildren().add(cardContent);
+
+        // Clic sur la carte
+        card.setOnMouseClicked(event -> {
+            selectedActivite = activite;
+            updateSelectedDetail(activite);
+        });
+
+        // Effets de survol
+        card.setOnMouseEntered(event -> {
+            card.setEffect(new DropShadow(16, Color.web("#f5a62355")));
+            card.setScaleX(1.02);
+            card.setScaleY(1.02);
+        });
+        card.setOnMouseExited(event -> {
+            card.setEffect(new DropShadow(10, Color.web("#00000019")));
+            card.setScaleX(1.0);
+            card.setScaleY(1.0);
+        });
+
+        return card;
+    }
+
+    /**
+     * Crée une carte avec modération (floutée + avertissement)
+     * Utilise un véritable effet de flou GaussianBlur
+     */
+    private VBox createModeratedCard(Activites activite, ModerationService.ModerationResult modResult) {
+        VBox card = new VBox(0);
+        card.getStyleClass().add("activity-card");
+        card.setPrefWidth(200);
+        card.setMinWidth(160);
+
+        // Conteneur principal (StackPane pour superposer la carte et l'overlay)
+        StackPane cardContainer = new StackPane();
+
+        // Carte normale (sera floutée)
+        VBox cardContent = createBaseCardContent(activite, true);
+
+        // Appliquer un véritable effet de flou GaussianBlur
+        GaussianBlur blurEffect = new GaussianBlur();
+        blurEffect.setRadius(8); // Intensité du flou (ajustable)
+        cardContent.setEffect(blurEffect);
+        cardContent.setOpacity(0.7); // Légère transparence
+
+        // Overlay d'avertissement
+        VBox warningOverlay = createWarningOverlay(activite, modResult, card, cardContent);
+
+        cardContainer.getChildren().addAll(cardContent, warningOverlay);
+        card.getChildren().add(cardContainer);
+
+        return card;
+    }
+
+    /**
+     * Crée le contenu de base de la carte (image, infos, QR code)
+     */
+    private VBox createBaseCardContent(Activites activite, boolean includeQR) {
+        VBox content = new VBox(0);
 
         // ===== CONTENEUR IMAGE AVEC QR CODE INTÉGRÉ =====
         StackPane imageContainer = new StackPane();
@@ -269,32 +368,34 @@ public class ACTfront implements Initializable {
         StackPane.setMargin(badgeDiff, new Insets(8, 0, 0, 8));
         imageContainer.getChildren().add(badgeDiff);
 
-        // QR CODE (en haut à droite, plus petit et intégré)
-        try {
-            ImageView qrCode = QRCodeService.generateQRCode(activite.getId(), activite.getNom());
-            if (qrCode != null) {
-                qrCode.setFitWidth(40); // Plus petit
-                qrCode.setFitHeight(40);
-                qrCode.getStyleClass().add("qr-image-card");
+        // QR CODE (si demandé)
+        if (includeQR) {
+            try {
+                ImageView qrCode = QRCodeService.generateQRCode(activite.getId(), activite.getNom());
+                if (qrCode != null) {
+                    qrCode.setFitWidth(40);
+                    qrCode.setFitHeight(40);
+                    qrCode.getStyleClass().add("qr-image-card");
 
-                Tooltip tooltip = new Tooltip("📱 Scanner pour voir sur mobile");
-                tooltip.setStyle("-fx-background-color: #ff6b00; -fx-text-fill: white; -fx-font-size: 10;");
-                Tooltip.install(qrCode, tooltip);
+                    Tooltip tooltip = new Tooltip("📱 Scanner pour voir sur mobile");
+                    tooltip.setStyle("-fx-background-color: #ff6b00; -fx-text-fill: white; -fx-font-size: 10;");
+                    Tooltip.install(qrCode, tooltip);
 
-                qrCode.setOnMouseClicked(event -> {
-                    event.consume();
-                    openActivityDetail(activite);
-                });
+                    qrCode.setOnMouseClicked(event -> {
+                        event.consume();
+                        openActivityDetail(activite);
+                    });
 
-                StackPane.setAlignment(qrCode, Pos.TOP_RIGHT);
-                StackPane.setMargin(qrCode, new Insets(8, 8, 0, 0));
-                imageContainer.getChildren().add(qrCode);
+                    StackPane.setAlignment(qrCode, Pos.TOP_RIGHT);
+                    StackPane.setMargin(qrCode, new Insets(8, 8, 0, 0));
+                    imageContainer.getChildren().add(qrCode);
+                }
+            } catch (Exception ex) {
+                // Silencieux - pas de QR code
             }
-        } catch (Exception ex) {
-            // Silencieux - pas de QR code
         }
 
-        // ===== INFOBOX (sans QR code en bas) =====
+        // ===== INFOBOX =====
         VBox infoBox = new VBox(4);
         infoBox.setStyle("-fx-padding: 10 12 12 12; -fx-background-color: white;" +
                 "-fx-background-radius: 0 0 14 14;");
@@ -330,29 +431,78 @@ public class ACTfront implements Initializable {
 
         infoBox.getChildren().addAll(nameLabel, lieuBox, bottomRow);
 
-        card.getChildren().addAll(imageContainer, infoBox);
+        content.getChildren().addAll(imageContainer, infoBox);
 
-        // Clic sur la carte
-        card.setOnMouseClicked(event -> {
-            selectedActivite = activite;
-            updateSelectedDetail(activite);
-        });
-
-        // Effets de survol
-        card.setOnMouseEntered(event -> {
-            card.setEffect(new DropShadow(16, Color.web("#f5a62355")));
-            card.setScaleX(1.02);
-            card.setScaleY(1.02);
-        });
-        card.setOnMouseExited(event -> {
-            card.setEffect(new DropShadow(10, Color.web("#00000019")));
-            card.setScaleX(1.0);
-            card.setScaleY(1.0);
-        });
-
-        return card;
+        return content;
     }
 
+    /**
+     * Crée l'overlay d'avertissement pour les activités suspectes
+     */
+    private VBox createWarningOverlay(Activites activite, ModerationService.ModerationResult modResult,
+                                      VBox card, VBox cardContent) {
+        VBox overlay = new VBox(10);
+        overlay.setAlignment(Pos.CENTER);
+        overlay.setStyle("-fx-background-color: rgba(0,0,0,0.8); -fx-background-radius: 14; -fx-padding: 15;");
+        overlay.setPrefSize(200, 300);
+
+        Label warningIcon = new Label("⚠️");
+        warningIcon.setStyle("-fx-font-size: 36;");
+
+        Label warningTitle = new Label("Contenu suspect");
+        warningTitle.setStyle("-fx-text-fill: #ff6b00; -fx-font-weight: bold; -fx-font-size: 14;");
+
+        Label warningMessage = new Label(modResult.raison);
+        warningMessage.setStyle("-fx-text-fill: white; -fx-font-size: 11; -fx-wrap-text: true;");
+        warningMessage.setAlignment(Pos.CENTER);
+        warningMessage.setMaxWidth(180);
+        warningMessage.setMinHeight(60);
+
+        // Niveau d'alerte avec couleur
+        Label levelLabel = new Label("Niveau: " + modResult.niveauAlerte);
+        String levelColor = modResult.niveauAlerte.equals("HIGH") ? "#ef4444" :
+                (modResult.niveauAlerte.equals("MEDIUM") ? "#ff8c42" : "#f5a623");
+        levelLabel.setStyle("-fx-text-fill: " + levelColor + "; -fx-font-weight: bold; -fx-font-size: 11;");
+
+        // Bouton pour révéler (CORRIGÉ)
+        Button revealButton = new Button("👁️ Afficher quand même");
+        revealButton.setStyle("-fx-background-color: #ff6b00; -fx-text-fill: white; -fx-font-weight: bold; " +
+                "-fx-background-radius: 20; -fx-padding: 8 12; -fx-cursor: hand; -fx-font-size: 10; -fx-max-width: Infinity;");
+        revealButton.setMaxWidth(Double.MAX_VALUE);
+        revealButton.setOnAction(e -> {
+            // Récupérer le conteneur StackPane (qui est le parent direct de l'overlay)
+            // L'overlay est dans un StackPane avec cardContent
+            StackPane cardContainer = (StackPane) overlay.getParent();
+
+            // Retirer l'overlay
+            cardContainer.getChildren().remove(overlay);
+
+            // Enlever l'effet de flou et restaurer l'opacité
+            cardContent.setEffect(null);
+            cardContent.setOpacity(1.0);
+
+            // Restaurer le clic sur la carte
+            card.setOnMouseClicked(event -> {
+                selectedActivite = activite;
+                updateSelectedDetail(activite);
+            });
+        });
+
+        // Bouton pour masquer définitivement
+        Button hideButton = new Button("✖️ Masquer cette activité");
+        hideButton.setStyle("-fx-background-color: #ef4444; -fx-text-fill: white; -fx-font-weight: bold; " +
+                "-fx-background-radius: 20; -fx-padding: 8 12; -fx-cursor: hand; -fx-font-size: 10; -fx-max-width: Infinity;");
+        hideButton.setMaxWidth(Double.MAX_VALUE);
+        hideButton.setOnAction(e -> {
+            // Supprimer la carte complètement (le parent de card est le GridPane)
+            GridPane grid = (GridPane) card.getParent();
+            grid.getChildren().remove(card);
+        });
+
+        overlay.getChildren().addAll(warningIcon, warningTitle, warningMessage, levelLabel, revealButton, hideButton);
+
+        return overlay;
+    }
     /**
      * Navigation vers la page de détail
      */
