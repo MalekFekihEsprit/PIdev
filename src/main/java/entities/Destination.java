@@ -13,9 +13,24 @@ public class Destination {
     private String currency_destination;
     private String flag_destination;
     private String languages_destination;
+    private String video_url; // New field for YouTube video
 
+    // Default constructor
     public Destination() {}
-    public Destination(int id_destination, String nom_destination, String pays_destination, String description_destination, String climat_destination, String saison_destination) {
+
+    // Constructor without ID (for new destinations)
+    public Destination(String nom_destination, String pays_destination, String description_destination,
+                       String climat_destination, String saison_destination) {
+        this.nom_destination = nom_destination;
+        this.pays_destination = pays_destination;
+        this.description_destination = description_destination;
+        this.climat_destination = climat_destination;
+        this.saison_destination = saison_destination;
+    }
+
+    // Full constructor with ID
+    public Destination(int id_destination, String nom_destination, String pays_destination,
+                       String description_destination, String climat_destination, String saison_destination) {
         this.id_destination = id_destination;
         this.nom_destination = nom_destination;
         this.pays_destination = pays_destination;
@@ -23,14 +38,8 @@ public class Destination {
         this.climat_destination = climat_destination;
         this.saison_destination = saison_destination;
     }
-    public Destination(String nom_destination, String pays_destination, String description_destination, String climat_destination, String saison_destination) {
-        this.nom_destination = nom_destination;
-        this.pays_destination = pays_destination;
-        this.description_destination = description_destination;
-        this.climat_destination = climat_destination;
-        this.saison_destination = saison_destination;
-    }
 
+    // Getters and Setters
     public int getId_destination() {
         return id_destination;
     }
@@ -103,11 +112,6 @@ public class Destination {
         this.score_destination = score_destination;
     }
 
-    @Override
-    public String toString() {
-        return getNom_destination() + " " + getPays_destination() + " " + getDescription_destination() + " "  + getClimat_destination() + " " + getSaison_destination();
-    }
-
     public String getCurrency_destination() {
         return currency_destination;
     }
@@ -130,5 +134,18 @@ public class Destination {
 
     public void setLanguages_destination(String languages_destination) {
         this.languages_destination = languages_destination;
+    }
+
+    public String getVideo_url() {
+        return video_url;
+    }
+
+    public void setVideo_url(String video_url) {
+        this.video_url = video_url;
+    }
+
+    @Override
+    public String toString() {
+        return nom_destination + ", " + pays_destination;
     }
 }

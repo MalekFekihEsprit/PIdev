@@ -17,23 +17,24 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.ArrayList;
+import java.util.concurrent.CompletableFuture;
 
 import io.github.cdimascio.dotenv.Dotenv;
 
 public class AjouterDestinationController implements Initializable {
 
-    @FXML private TextField tfNom; // City name (user types here)
-    @FXML private TextField tfPays; // Country name
-    @FXML private Button btnSearchCity; // Manual search button
-    @FXML private ComboBox<CityService.CitySuggestion> cbCitySuggestions; // Hidden dropdown for suggestions
-    @FXML private Label lblCityValidation; // Validation message for city
+    @FXML private TextField tfNom;
+    @FXML private TextField tfPays;
+    @FXML private Button btnSearchCity;
+    @FXML private ComboBox<CityService.CitySuggestion> cbCitySuggestions;
+    @FXML private Label lblCityValidation;
     @FXML private TextArea taDescription;
-    @FXML private Button btnGenerateDescription; // AI Generate button
+    @FXML private Button btnGenerateDescription;
     @FXML private ComboBox<String> cbClimat;
     @FXML private ComboBox<String> cbSaison;
-    @FXML private Button btnDetectSeason; // Season detection button
-    @FXML private TextField tfScore; // Optional score input
-    @FXML private Label lblScoreValidation; // Score validation message
+    @FXML private Button btnDetectSeason;
+    @FXML private TextField tfScore;
+    @FXML private Label lblScoreValidation;
     @FXML private Label lblNomCounter;
     @FXML private Label lblPaysCounter;
     @FXML private Label lblDescCounter;
@@ -50,6 +51,7 @@ public class AjouterDestinationController implements Initializable {
     private LocalCityFallbackService fallbackService;
     private SeasonService seasonService;
     private AIService aiService;
+    private YouTubeVideoService youTubeVideoService;
     private String currentCountryCode;
     private CityCoordinates validatedCityCoordinates;
 
@@ -60,6 +62,7 @@ public class AjouterDestinationController implements Initializable {
     Dotenv dotenv = Dotenv.load();
     String citiesApiKey = dotenv.get("CITIES_API_KEY");
     String openRouterKey = dotenv.get("OPENROUTER_API_KEY");
+    String youtubeApiKey = dotenv.get("YOUTUBE_API_KEY");
 
     private final String[] climats = {"Méditerranéen", "Tropical", "Continental", "Désertique", "Montagnard", "Océanique", "Polaire"};
     private final String[] saisons = {"Printemps", "Été", "Automne", "Hiver", "Toute l'année"};
@@ -72,18 +75,32 @@ public class AjouterDestinationController implements Initializable {
         fallbackService = new LocalCityFallbackService();
         seasonService = new SeasonService();
 
-        // Initialize AI service with key from .env
+        // Initialize AI service
         try {
-            if (openRouterKey != null && !openRouterKey.isEmpty()) {
-                aiService = new AIService(openRouterKey);
-                System.out.println("AI Service initialized successfully");
+            if (openRouterKey != null && !openRouterKey.trim().isEmpty()) {
+                aiService = new AIService(openRouterKey.trim());
+                System.out.println("✅ AI Service initialized successfully");
             } else {
-                System.err.println("OPENROUTER_API_KEY not found in .env file");
+                System.err.println("❌ OPENROUTER_API_KEY not found in .env file");
                 aiService = null;
             }
         } catch (IllegalArgumentException e) {
-            System.err.println("AI Service initialization failed: " + e.getMessage());
+            System.err.println("❌ AI Service initialization failed: " + e.getMessage());
             aiService = null;
+        }
+
+        // Initialize YouTube service
+        try {
+            if (youtubeApiKey != null && !youtubeApiKey.trim().isEmpty()) {
+                youTubeVideoService = new YouTubeVideoService(youtubeApiKey.trim(), destinationCRUD.getConnection());
+                System.out.println("✅ YouTube Service initialized successfully");
+            } else {
+                System.err.println("❌ YOUTUBE_API_KEY not found in .env file");
+                youTubeVideoService = null;
+            }
+        } catch (Exception e) {
+            System.err.println("❌ YouTube Service initialization failed: " + e.getMessage());
+            youTubeVideoService = null;
         }
 
         // Load existing destinations for uniqueness check
@@ -97,7 +114,7 @@ public class AjouterDestinationController implements Initializable {
         setComboBoxTextWhite(cbClimat);
         setComboBoxTextWhite(cbSaison);
 
-        // Setup city suggestions
+        // Setup all features
         setupCitySuggestions();
         setupSeasonDetection();
         setupAIDescriptionGenerator();
@@ -119,13 +136,9 @@ public class AjouterDestinationController implements Initializable {
         cbCitySuggestions.setVisible(false);
         cbCitySuggestions.setManaged(false);
 
-        // Disable search button initially
+        // Disable buttons initially
         btnSearchCity.setDisable(true);
-
-        // Disable season detection button initially
-        if (btnDetectSeason != null) {
-            btnDetectSeason.setDisable(true);
-        }
+        if (btnDetectSeason != null) btnDetectSeason.setDisable(true);
 
         // Disable AI button if service not available
         if (aiService == null && btnGenerateDescription != null) {
@@ -138,7 +151,6 @@ public class AjouterDestinationController implements Initializable {
      * Forces white text in ComboBox dropdown and selected value
      */
     private void setComboBoxTextWhite(ComboBox<String> comboBox) {
-        // Set cell factory for dropdown items
         comboBox.setCellFactory(lv -> new ListCell<String>() {
             @Override
             protected void updateItem(String item, boolean empty) {
@@ -154,7 +166,6 @@ public class AjouterDestinationController implements Initializable {
             }
         });
 
-        // Set button cell for selected value
         comboBox.setButtonCell(new ListCell<String>() {
             @Override
             protected void updateItem(String item, boolean empty) {
@@ -172,7 +183,6 @@ public class AjouterDestinationController implements Initializable {
     }
 
     private void setupCitySuggestions() {
-        // Configure how to display city names in the combobox - just the name
         cbCitySuggestions.setConverter(new StringConverter<CityService.CitySuggestion>() {
             @Override
             public String toString(CityService.CitySuggestion city) {
@@ -188,29 +198,20 @@ public class AjouterDestinationController implements Initializable {
             }
         });
 
-        // When user selects a suggestion from dropdown
         cbCitySuggestions.setOnAction(event -> {
             CityService.CitySuggestion selected = cbCitySuggestions.getValue();
             if (selected != null) {
-                // Fill the text field with selected city
                 tfNom.setText(selected.getName());
-                // Validate and store coordinates
                 validateSelectedCity(selected);
-                // Enable season detection button
-                if (btnDetectSeason != null) {
-                    btnDetectSeason.setDisable(false);
-                }
-                // Hide suggestions
+                if (btnDetectSeason != null) btnDetectSeason.setDisable(false);
                 cbCitySuggestions.setVisible(false);
                 cbCitySuggestions.setManaged(false);
                 validateForm();
             }
         });
 
-        // Hide suggestions when focus is lost
         tfNom.focusedProperty().addListener((obs, old, newVal) -> {
-            if (!newVal) { // Focus lost
-                // Small delay to allow selection to register
+            if (!newVal) {
                 javafx.animation.PauseTransition pause =
                         new javafx.animation.PauseTransition(javafx.util.Duration.millis(200));
                 pause.setOnFinished(e -> {
@@ -251,7 +252,6 @@ public class AjouterDestinationController implements Initializable {
     private void setupAIDescriptionGenerator() {
         if (btnGenerateDescription == null) return;
 
-        // Disable if AI service not available
         if (aiService == null) {
             btnGenerateDescription.setDisable(true);
             btnGenerateDescription.setText("🤖 Service indisponible");
@@ -272,12 +272,10 @@ public class AjouterDestinationController implements Initializable {
                 return;
             }
 
-            // Disable button during generation
             btnGenerateDescription.setDisable(true);
             String originalText = btnGenerateDescription.getText();
-            btnGenerateDescription.setText("🤖 Génération...");
+            btnGenerateDescription.setText("🤖 Génération en cours...");
 
-            // Run in background thread
             javafx.concurrent.Task<String> generateTask = new javafx.concurrent.Task<>() {
                 @Override
                 protected String call() throws Exception {
@@ -286,25 +284,23 @@ public class AjouterDestinationController implements Initializable {
             };
 
             generateTask.setOnSucceeded(e -> {
-                String description = generateTask.getValue();
-                taDescription.setText(description);
-                // Force text color to be visible
+                String content = generateTask.getValue();
+                taDescription.setText(content);
                 taDescription.setStyle("-fx-text-fill: black; -fx-background-color: white;");
                 btnGenerateDescription.setText(originalText);
                 btnGenerateDescription.setDisable(false);
-
                 if (lblDescCounter != null) {
-                    lblDescCounter.setText(description.length() + "/1000");
+                    lblDescCounter.setText(content.length() + " caractères");
                 }
+                showInfoAlert("Description et itinéraire générés avec succès!");
             });
 
             generateTask.setOnFailed(e -> {
                 Throwable error = generateTask.getException();
-                if (error instanceof AIService.AIException) {
-                    showErrorAlert("Erreur IA", error.getMessage());
-                } else {
-                    showErrorAlert("Erreur", "Impossible de générer la description: " + error.getMessage());
-                }
+                System.err.println("AI Error: " + error.getMessage());
+                error.printStackTrace();
+
+                showErrorAlert("Erreur IA", "Impossible de générer le contenu: " + error.getMessage());
                 btnGenerateDescription.setText(originalText);
                 btnGenerateDescription.setDisable(false);
             });
@@ -374,18 +370,15 @@ public class AjouterDestinationController implements Initializable {
             return;
         }
 
-        // Show loading indicator
         lblCityValidation.setText("🔍 Recherche en cours...");
         lblCityValidation.setStyle("-fx-text-fill: #f59e0b;");
         btnSearchCity.setDisable(true);
 
-        // Perform search in background
         javafx.concurrent.Task<List<CityService.CitySuggestion>> searchTask = new javafx.concurrent.Task<>() {
             @Override
             protected List<CityService.CitySuggestion> call() throws Exception {
                 List<CityService.CitySuggestion> allSuggestions = new ArrayList<>();
 
-                // Strategy 1: Try API first
                 try {
                     allSuggestions.addAll(cityService.suggestCitiesIncludeDeleted(
                             currentCountryCode, cityPrefix, 10));
@@ -393,12 +386,10 @@ public class AjouterDestinationController implements Initializable {
                     System.err.println("API search failed: " + e.getMessage());
                 }
 
-                // Strategy 2: If API returns nothing, use fallback JSON
                 if (allSuggestions.isEmpty()) {
                     List<LocalCityFallbackService.CitySuggestion> fallbackResults =
                             fallbackService.getSuggestions(currentCountryCode, cityPrefix);
 
-                    // Convert fallback suggestions to CityService.CitySuggestion type
                     for (LocalCityFallbackService.CitySuggestion fb : fallbackResults) {
                         allSuggestions.add(new CityService.CitySuggestion(
                                 fb.getName(), "", currentCountryCode,
@@ -452,58 +443,8 @@ public class AjouterDestinationController implements Initializable {
             validatedCityCoordinates = new CityCoordinates(city.getLatitude(), city.getLongitude());
             lblCityValidation.setText("✓ Ville valide: " + city.getName());
             lblCityValidation.setStyle("-fx-text-fill: #10b981;");
-            // Enable season detection button
-            if (btnDetectSeason != null) {
-                btnDetectSeason.setDisable(false);
-            }
+            if (btnDetectSeason != null) btnDetectSeason.setDisable(false);
         }
-    }
-
-    private void validateCurrentCityInput() {
-        String cityName = tfNom.getText().trim();
-
-        if (cityName.isEmpty() || currentCountryCode == null) {
-            return;
-        }
-
-        // Try API first
-        CityCoordinates coords = cityService.validateCity(currentCountryCode, cityName);
-        String source = "API";
-
-        // If API fails, try fallback JSON
-        if (coords == null) {
-            LocalCityFallbackService.CityCoordinates fbCoords =
-                    fallbackService.validateCity(currentCountryCode, cityName);
-
-            if (fbCoords != null) {
-                coords = new CityCoordinates(fbCoords.getLatitude(), fbCoords.getLongitude());
-                source = "base locale";
-            }
-        }
-
-        if (coords != null) {
-            validatedCityCoordinates = coords;
-            if (source.equals("API")) {
-                lblCityValidation.setText("✓ Ville valide: " + cityName);
-            } else {
-                lblCityValidation.setText("✓ Ville valide (base locale): " + cityName);
-            }
-            lblCityValidation.setStyle("-fx-text-fill: #10b981;");
-            // Enable season detection button
-            if (btnDetectSeason != null) {
-                btnDetectSeason.setDisable(false);
-            }
-        } else {
-            validatedCityCoordinates = null;
-            lblCityValidation.setText("⚠️ Ville non trouvée: " + cityName);
-            lblCityValidation.setStyle("-fx-text-fill: #ef4444;");
-            // Disable season detection button
-            if (btnDetectSeason != null) {
-                btnDetectSeason.setDisable(true);
-            }
-        }
-
-        validateForm();
     }
 
     private void loadExistingDestinations() {
@@ -520,36 +461,25 @@ public class AjouterDestinationController implements Initializable {
     }
 
     private void setupValidation() {
-        // Add listeners to all fields to validate form and check uniqueness
         tfNom.textProperty().addListener((obs, old, newVal) -> {
             validateForm();
             checkUniqueness();
-            // Enable search button if we have text and valid country
             btnSearchCity.setDisable(newVal.length() < 2 || currentCountryCode == null);
-            // Clear validation when typing new text
             if (!newVal.equals(old) && validatedCityCoordinates != null) {
                 validatedCityCoordinates = null;
                 lblCityValidation.setText("");
-                // Disable season detection button
-                if (btnDetectSeason != null) {
-                    btnDetectSeason.setDisable(true);
-                }
+                if (btnDetectSeason != null) btnDetectSeason.setDisable(true);
             }
         });
 
         tfPays.textProperty().addListener((obs, old, newVal) -> {
-            // When country changes, fetch country code
             if (newVal != null && newVal.length() >= 2) {
                 fetchCountryCode(newVal);
             } else {
                 currentCountryCode = null;
                 lblCityValidation.setText("");
-                // Disable season detection button
-                if (btnDetectSeason != null) {
-                    btnDetectSeason.setDisable(true);
-                }
+                if (btnDetectSeason != null) btnDetectSeason.setDisable(true);
             }
-            // Update search button state
             btnSearchCity.setDisable(tfNom.getText().length() < 2 || currentCountryCode == null);
             validateForm();
             checkUniqueness();
@@ -558,8 +488,6 @@ public class AjouterDestinationController implements Initializable {
         cbClimat.valueProperty().addListener((obs, old, newVal) -> validateForm());
         cbSaison.valueProperty().addListener((obs, old, newVal) -> validateForm());
         taDescription.textProperty().addListener((obs, old, newVal) -> validateForm());
-
-        // Add listener for city validation
         cbCitySuggestions.valueProperty().addListener((obs, old, newVal) -> validateForm());
     }
 
@@ -574,7 +502,6 @@ public class AjouterDestinationController implements Initializable {
                 lblCityValidation.setStyle("-fx-text-fill: #10b981;");
             }
         } catch (Exception e) {
-            System.err.println("Error fetching country code: " + e.getMessage());
             currentCountryCode = null;
             lblCityValidation.setText("⚠️ Erreur de validation du pays");
             lblCityValidation.setStyle("-fx-text-fill: #ef4444;");
@@ -593,8 +520,9 @@ public class AjouterDestinationController implements Initializable {
         }
 
         if (lblDescCounter != null) {
+            // REMOVED CHARACTER LIMIT - Just show count without max
             taDescription.textProperty().addListener((obs, old, newVal) ->
-                    lblDescCounter.setText(newVal.length() + "/1000"));
+                    lblDescCounter.setText(newVal.length() + " caractères"));
         }
     }
 
@@ -603,9 +531,7 @@ public class AjouterDestinationController implements Initializable {
         String pays = tfPays.getText().trim();
 
         if (nom.isEmpty() || pays.isEmpty() || existingDestinations == null) {
-            if (lblUniquenessWarning != null) {
-                lblUniquenessWarning.setVisible(false);
-            }
+            if (lblUniquenessWarning != null) lblUniquenessWarning.setVisible(false);
             return;
         }
 
@@ -634,27 +560,23 @@ public class AjouterDestinationController implements Initializable {
                         .anyMatch(d -> d.getNom_destination().equalsIgnoreCase(nom)
                                 && d.getPays_destination().equalsIgnoreCase(pays));
 
-        // Validate score if not empty
         boolean scoreValid = true;
         String scoreText = tfScore.getText().trim();
         if (!scoreText.isEmpty()) {
             try {
                 double score = Double.parseDouble(scoreText);
-                if (score < 0 || score > 10) {
-                    scoreValid = false;
-                }
+                if (score < 0 || score > 10) scoreValid = false;
             } catch (NumberFormatException e) {
                 scoreValid = false;
             }
         }
 
-        // Country must be valid, city validation is optional (coordinates default to 0,0)
+        // REMOVED DESCRIPTION LENGTH VALIDATION - No limit anymore
         boolean isValid = !nom.isEmpty() && nom.length() <= 30 &&
                 !pays.isEmpty() && pays.length() <= 30 &&
-                currentCountryCode != null && // Country must be valid
+                currentCountryCode != null &&
                 cbClimat.getValue() != null &&
                 cbSaison.getValue() != null &&
-                taDescription.getText().length() <= 1000 &&
                 !isDuplicate &&
                 scoreValid;
 
@@ -667,39 +589,33 @@ public class AjouterDestinationController implements Initializable {
         String nom = tfNom.getText().trim();
         String pays = tfPays.getText().trim();
 
-        // Double-check uniqueness before saving
         if (existingDestinations != null) {
             boolean exists = existingDestinations.stream()
                     .anyMatch(d -> d.getNom_destination().equalsIgnoreCase(nom)
                             && d.getPays_destination().equalsIgnoreCase(pays));
 
             if (exists) {
-                showValidationAlert("Une destination avec ce nom et ce pays existe déjà!");
+                showValidationAlert("Cette destination existe déjà!");
                 return;
             }
         }
 
-        // Parse score (optional)
         double score = 0.0;
         String scoreText = tfScore.getText().trim();
         if (!scoreText.isEmpty()) {
             try {
                 score = Double.parseDouble(scoreText);
             } catch (NumberFormatException e) {
-                // Should not happen due to validation
                 score = 0.0;
             }
         }
 
-        // Get coordinates
-        double latitude = 0.0;
-        double longitude = 0.0;
+        double latitude = 0.0, longitude = 0.0;
         if (validatedCityCoordinates != null) {
             latitude = validatedCityCoordinates.getLatitude();
             longitude = validatedCityCoordinates.getLongitude();
         }
 
-        // Try to detect best season if coordinates available
         String bestSeason = null;
         if (latitude != 0.0 || longitude != 0.0) {
             try {
@@ -710,55 +626,68 @@ public class AjouterDestinationController implements Initializable {
             }
         }
 
-        // Fetch country information from API
         CountryService.CountryInfo countryInfo = null;
         try {
             CountryService countryService = new CountryService();
             countryInfo = countryService.getCountryInfo(pays);
-
-        } catch (CountryService.CountryNotFoundException e) {
-            showValidationAlert("Pays non trouvé dans l'API. Vérifiez le nom du pays.");
-            return;
-        } catch (CountryService.ApiException e) {
-            showErrorAlert("Erreur API", "Impossible de récupérer les informations du pays: " + e.getMessage());
+        } catch (Exception e) {
+            showValidationAlert("Pays non trouvé dans l'API");
             return;
         }
 
-        try {
-            // Create destination object with all fields
-            Destination newDestination = new Destination();
-            newDestination.setNom_destination(nom);
-            newDestination.setPays_destination(pays);
-            newDestination.setDescription_destination(taDescription.getText().trim());
-
-            // Use detected best season for climat if available, otherwise use user selection
-            if (bestSeason != null && !bestSeason.isEmpty()) {
-                newDestination.setClimat_destination(bestSeason);
-            } else {
-                newDestination.setClimat_destination(cbClimat.getValue());
+        String videoUrl = null;
+        if (youTubeVideoService != null) {
+            try {
+                videoUrl = youTubeVideoService.fetchVideoUrl(nom, pays);
+                if (videoUrl != null) {
+                    System.out.println("✅ Video found for " + nom + ", " + pays + ": " + videoUrl);
+                }
+            } catch (Exception e) {
+                System.err.println("Failed to fetch video: " + e.getMessage());
             }
+        }
 
-            // Keep user's saison selection
-            newDestination.setSaison_destination(cbSaison.getValue());
+        // Get the AI-generated content from the text area
+        String fullContent = taDescription.getText().trim();
 
-            // Set coordinates
-            newDestination.setLatitude_destination(latitude);
-            newDestination.setLongitude_destination(longitude);
+        // If the text area is empty and AI service is available, generate automatically
+        if (fullContent.isEmpty() && aiService != null) {
+            try {
+                showInfoAlert("Génération de la description et de l'itinéraire en cours...");
+                fullContent = aiService.generateDescription(nom, pays);
+                taDescription.setText(fullContent);
+                taDescription.setStyle("-fx-text-fill: black; -fx-background-color: white;");
+            } catch (AIService.AIException e) {
+                showErrorAlert("Erreur IA", "Impossible de générer le contenu: " + e.getMessage());
+                // Continue with empty content
+            }
+        }
 
-            // Set score (user-provided or default 0.0)
-            newDestination.setScore_destination(score);
+        Destination newDestination = new Destination();
+        newDestination.setNom_destination(nom);
+        newDestination.setPays_destination(pays);
+        newDestination.setDescription_destination(fullContent);
 
-            // Set the country information from API
-            newDestination.setCurrency_destination(countryInfo.getCurrency());
-            newDestination.setFlag_destination(countryInfo.getFlagUrl());
-            newDestination.setLanguages_destination(countryInfo.getLanguages());
+        if (bestSeason != null && !bestSeason.isEmpty()) {
+            newDestination.setClimat_destination(bestSeason);
+        } else {
+            newDestination.setClimat_destination(cbClimat.getValue());
+        }
 
-            // Use the CRUD's ajouter method
+        newDestination.setSaison_destination(cbSaison.getValue());
+        newDestination.setLatitude_destination(latitude);
+        newDestination.setLongitude_destination(longitude);
+        newDestination.setScore_destination(score);
+        newDestination.setCurrency_destination(countryInfo.getCurrency());
+        newDestination.setFlag_destination(countryInfo.getFlagUrl());
+        newDestination.setLanguages_destination(countryInfo.getLanguages());
+        newDestination.setVideo_url(videoUrl);
+
+        try {
             destinationCRUD.ajouter(newDestination);
 
-            // Show success message with only city and country
-            String scoreMsg = score > 0 ? " (score: " + score + ")" : "";
-            showSuccessAlert("Destination ajoutée avec succès!\n" + nom + ", " + pays);
+            String videoMsg = (videoUrl != null) ? "\n✓ Vidéo ajoutée" : "";
+            showSuccessAlert("Destination ajoutée avec succès!\n" + nom + ", " + pays + videoMsg);
 
             if (parentController != null) parentController.refreshAfterModification();
             closeWindow();
@@ -788,12 +717,8 @@ public class AjouterDestinationController implements Initializable {
             showValidationAlert("Pays non valide. Vérifiez le nom du pays.");
             return false;
         }
-        if (taDescription.getText().length() > 1000) {
-            showValidationAlert("La description ne peut pas dépasser 1000 caractères");
-            return false;
-        }
+        // REMOVED DESCRIPTION LENGTH VALIDATION - No limit
 
-        // Validate score if provided
         String scoreText = tfScore.getText().trim();
         if (!scoreText.isEmpty()) {
             try {
@@ -809,6 +734,16 @@ public class AjouterDestinationController implements Initializable {
         }
 
         return true;
+    }
+
+    // ============== ALERT METHODS ==============
+
+    private void showInfoAlert(String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Information");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 
     private void showValidationAlert(String message) {

@@ -15,11 +15,13 @@ public class DestinationCRUD implements InterfaceCRUD<Destination> {
 
     @Override
     public void ajouter(Destination object) throws SQLException {
-        String req = "INSERT INTO `destination`(`nom_destination`, `pays_destination`, " +
+        String req = "INSERT INTO `destination`(" +
+                "`nom_destination`, `pays_destination`, " +
                 "`description_destination`, `climat_destination`, `saison_destination`, " +
                 "`latitude_destination`, `longitude_destination`, `score_destination`, " +
-                "`currency_destination`, `flag_destination`, `languages_destination`) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                "`currency_destination`, `flag_destination`, `languages_destination`, " +
+                "`video_url`) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (PreparedStatement pst = conn.prepareStatement(req)) {
             pst.setString(1, object.getNom_destination());
@@ -33,6 +35,7 @@ public class DestinationCRUD implements InterfaceCRUD<Destination> {
             pst.setString(9, object.getCurrency_destination());
             pst.setString(10, object.getFlag_destination());
             pst.setString(11, object.getLanguages_destination());
+            pst.setString(12, object.getVideo_url()); // New video URL field
 
             pst.executeUpdate();
             System.out.println("Destination ajoutée avec succès!");
@@ -41,10 +44,12 @@ public class DestinationCRUD implements InterfaceCRUD<Destination> {
 
     @Override
     public void modifier(Destination object) throws SQLException {
-        String req = "UPDATE destination SET nom_destination = ?, pays_destination = ?, " +
+        String req = "UPDATE destination SET " +
+                "nom_destination = ?, pays_destination = ?, " +
                 "description_destination = ?, climat_destination = ?, saison_destination = ?, " +
                 "latitude_destination = ?, longitude_destination = ?, score_destination = ?, " +
-                "currency_destination = ?, flag_destination = ?, languages_destination = ? " +
+                "currency_destination = ?, flag_destination = ?, languages_destination = ?, " +
+                "video_url = ? " +
                 "WHERE id_destination = ?";
 
         try (PreparedStatement pst = conn.prepareStatement(req)) {
@@ -59,7 +64,8 @@ public class DestinationCRUD implements InterfaceCRUD<Destination> {
             pst.setString(9, object.getCurrency_destination());
             pst.setString(10, object.getFlag_destination());
             pst.setString(11, object.getLanguages_destination());
-            pst.setInt(12, object.getId_destination());
+            pst.setString(12, object.getVideo_url()); // New video URL field
+            pst.setInt(13, object.getId_destination());
 
             pst.executeUpdate();
             System.out.println("Destination modifiée avec succès!!");
@@ -96,17 +102,28 @@ public class DestinationCRUD implements InterfaceCRUD<Destination> {
                 destination.setLatitude_destination(rs.getDouble("latitude_destination"));
                 destination.setLongitude_destination(rs.getDouble("longitude_destination"));
                 destination.setScore_destination(rs.getDouble("score_destination"));
-
-                // New fields
                 destination.setCurrency_destination(rs.getString("currency_destination"));
                 destination.setFlag_destination(rs.getString("flag_destination"));
                 destination.setLanguages_destination(rs.getString("languages_destination"));
+                destination.setVideo_url(rs.getString("video_url")); // New video URL field
 
                 destinations.add(destination);
             }
         }
 
         return destinations;
+    }
+
+    // Method to update video URL for an existing destination
+    public void updateVideoUrl(int destinationId, String videoUrl) throws SQLException {
+        String req = "UPDATE destination SET video_url = ? WHERE id_destination = ?";
+
+        try (PreparedStatement pst = conn.prepareStatement(req)) {
+            pst.setString(1, videoUrl);
+            pst.setInt(2, destinationId);
+            pst.executeUpdate();
+            System.out.println("Video URL mise à jour pour destination ID: " + destinationId);
+        }
     }
 
     // Optional: Method to get connection for other operations
