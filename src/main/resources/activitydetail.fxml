@@ -14,13 +14,15 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.TilePane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Circle?>
 <?import javafx.scene.shape.Rectangle?>
 <?import javafx.scene.web.WebView?>
 
 <BorderPane prefHeight="900" prefWidth="1400" style="-fx-background-color: #f0f4f0;" stylesheets="@activitesfront.css, @activitydetail.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controlles.ActivityDetailController">
-    <!-- NAVBAR -->
+
+    <!-- ==================== NAVBAR ==================== -->
     <top>
         <VBox>
             <HBox alignment="CENTER_LEFT" spacing="0" style="-fx-background-color:#f5a623;-fx-padding:0 30 0 20;-fx-min-height:60;-fx-pref-height:60;">
@@ -100,7 +102,7 @@
         </VBox>
     </top>
 
-    <!-- CENTRE -->
+    <!-- ==================== CENTRE ==================== -->
     <center>
         <ScrollPane fitToWidth="true" style="-fx-background:transparent;-fx-background-color:transparent;-fx-border-color:transparent;">
             <VBox spacing="20" style="-fx-padding:20 30;">
@@ -140,7 +142,7 @@
 
                     <!-- Colonne droite : Détails de base + TabPane -->
                     <VBox spacing="15" GridPane.columnIndex="1" VBox.vgrow="ALWAYS">
-                        <!-- Détails de base - TOUS EN ORANGE -->
+                        <!-- Détails de base -->
                         <VBox style="-fx-background-color:white;-fx-background-radius:16;-fx-padding:20;-fx-effect:dropshadow(three-pass-box,rgba(0,0,0,0.06),8,0,0,2);">
                             <Label style="-fx-font-size:16;-fx-font-weight:bold;-fx-text-fill:#1a1a1a;" text="Détails de l'activité" />
                             <Separator style="-fx-padding:5 0;" />
@@ -179,7 +181,7 @@
                         <TabPane tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS" prefHeight="400">
                             <!-- Onglet Météo -->
                             <Tab text="🌤️ Météo">
-                                <VBox fx:id="weatherContainer" spacing="12" style="-fx-padding:15;" visible="true" managed="true">
+                                <VBox fx:id="weatherContainer" spacing="12" style="-fx-padding:15;">
                                     <Label fx:id="lblDatePrevue" style="-fx-text-fill:#ff6b00;-fx-font-weight:bold;-fx-font-size:14;" text="Prévisions pour le ..." />
 
                                     <GridPane hgap="15" vgap="10">
@@ -192,22 +194,19 @@
 
                                         <!-- Température -->
                                         <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Température :" GridPane.rowIndex="1" GridPane.columnIndex="0" />
-                                        <Label fx:id="lblWeatherTemp" GridPane.rowIndex="1" GridPane.columnIndex="1"
-                                               style="-fx-text-fill:#ff6b00;-fx-font-weight:bold;" text="—" />
+                                        <Label fx:id="lblWeatherTemp" GridPane.rowIndex="1" GridPane.columnIndex="1" style="-fx-text-fill:#ff6b00;-fx-font-weight:bold;" text="—" />
 
                                         <!-- Précipitations -->
                                         <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Précipitations :" GridPane.rowIndex="2" GridPane.columnIndex="0" />
-                                        <Label fx:id="lblWeatherPrecip" GridPane.rowIndex="2" GridPane.columnIndex="1"
-                                               style="-fx-text-fill:#555;" text="—" />
+                                        <Label fx:id="lblWeatherPrecip" GridPane.rowIndex="2" GridPane.columnIndex="1" style="-fx-text-fill:#555;" text="—" />
 
                                         <!-- Vent -->
                                         <Label style="-fx-font-weight:bold;-fx-text-fill:#888;" text="Vent :" GridPane.rowIndex="3" GridPane.columnIndex="0" />
-                                        <Label fx:id="lblWeatherWind" GridPane.rowIndex="3" GridPane.columnIndex="1"
-                                               style="-fx-text-fill:#555;" text="—" />
+                                        <Label fx:id="lblWeatherWind" GridPane.rowIndex="3" GridPane.columnIndex="1" style="-fx-text-fill:#555;" text="—" />
                                     </GridPane>
 
                                     <!-- Conseils selon météo -->
-                                    <HBox alignment="CENTER" style="-fx-background-color:#fff3e8;-fx-background-radius:8;-fx-padding:10;-fx-margin:10 0 0 0;">
+                                    <HBox alignment="CENTER" style="-fx-background-color:#fff3e8;-fx-background-radius:8;-fx-padding:10;">
                                         <Label fx:id="lblWeatherAdvice" style="-fx-text-fill:#ff6b00;-fx-font-size:13;" text="🌤️ Conditions idéales pour cette activité !" />
                                     </HBox>
                                 </VBox>
@@ -244,11 +243,36 @@
                         </TabPane>
                     </VBox>
                 </GridPane>
+
+                <!-- ==================== SECTION SUGGESTIONS À PROXIMITÉ ==================== -->
+                <VBox spacing="15" style="-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 25; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 10, 0, 0, 2); -fx-margin-top: 20;">
+
+                    <!-- Titre de la section -->
+                    <Label fx:id="suggestionsTitle" style="-fx-font-size: 18; -fx-font-weight: bold; -fx-text-fill: #1a1a1a;" text="À proximité de cette activité" />
+
+                    <!-- Séparateur -->
+                    <Separator style="-fx-padding: 5 0;" />
+
+                    <!-- ScrollPane contenant les suggestions -->
+                    <ScrollPane fx:id="suggestionsScrollPane"
+                                fitToWidth="true"
+                                hbarPolicy="NEVER"
+                                style="-fx-background: transparent; -fx-background-color: transparent; -fx-border-color: transparent;">
+
+                        <!-- TilePane pour afficher les cartes en grille -->
+                        <TilePane fx:id="suggestionsTilePane"
+                                  prefColumns="4"
+                                  hgap="15"
+                                  vgap="15"
+                                  tileAlignment="TOP_LEFT"
+                                  style="-fx-background-color: transparent; -fx-padding: 10 0 0 0;" />
+                    </ScrollPane>
+                </VBox>
             </VBox>
         </ScrollPane>
     </center>
 
-    <!-- Bottom -->
+    <!-- ==================== BOTTOM ==================== -->
     <bottom>
         <Rectangle fill="linear-gradient(to right,#f5a623,#ff6b00,#6366f1)" height="5" width="1400" />
     </bottom>

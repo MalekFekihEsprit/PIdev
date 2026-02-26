@@ -1,8 +1,9 @@
 package Controlles;
 
 import Entites.Activites;
-import Services.ActivitesCRUD;
 import Services.GeocodingService;
+import Services.NearbyPlacesAPI;
+import Services.PlaceSuggestionService;
 import Services.WeatherService;
 import Services.WeatherService.WeatherForecast;
 import javafx.fxml.FXML;
@@ -11,11 +12,12 @@ import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
+import javafx.scene.layout.TilePane;  // Essentiel pour TilePane
+import javafx.scene.paint.Color;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
@@ -24,8 +26,7 @@ import java.io.File;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Locale;
-import java.util.ResourceBundle;
+import java.util.*;
 
 public class ActivityDetailController implements Initializable {
 
@@ -34,6 +35,7 @@ public class ActivityDetailController implements Initializable {
     @FXML private Button btnTranslate;
     @FXML private HBox btnVersCategories;
     @FXML private HBox btnVersActivites;
+    @FXML private Label lblNomBreadcrumb;
 
     // Détails de l'activité
     @FXML private Label lblNom;
@@ -66,6 +68,11 @@ public class ActivityDetailController implements Initializable {
     @FXML private Label lblWeatherWind;
     @FXML private Label lblWeatherAdvice;
 
+    // Suggestions - Version TilePane
+    @FXML private TilePane suggestionsTilePane;
+    @FXML private ScrollPane suggestionsScrollPane;
+    @FXML private Label suggestionsTitle;
+
     private Activites activite;
     private WebEngine webEngine;
     private GeocodingService.LocationResult locationResult;
@@ -74,13 +81,11 @@ public class ActivityDetailController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         System.out.println("🟢 ActivityDetailController initialisé");
 
-        // Date du jour
         if (lblDate != null) {
             lblDate.setText("📅 " + LocalDate.now().format(
                     DateTimeFormatter.ofPattern("MMMM yyyy", Locale.FRENCH)));
         }
 
-        // Initialiser WebEngine
         if (webViewMap != null) {
             webEngine = webViewMap.getEngine();
             System.out.println("✅ WebEngine initialisé");
@@ -91,20 +96,18 @@ public class ActivityDetailController implements Initializable {
     public void setActivite(Activites activite) {
         System.out.println("🟢 Activité reçue: " + activite.getNom());
         this.activite = activite;
+
+        if (lblNomBreadcrumb != null) {
+            lblNomBreadcrumb.setText(activite.getNom());
+        }
+
         loadActivityDetails();
         loadLocation();
     }
 
     private void loadActivityDetails() {
-        if (activite == null) {
-            System.out.println("❌ activite est null");
-            return;
-        }
+        if (activite == null) return;
 
-        System.out.println("📝 Chargement des détails pour: " + activite.getNom());
-        System.out.println("   Date prévue: " + activite.getDatePrevue());
-
-        // Mettre à jour les labels
         lblNom.setText(activite.getNom() != null ? activite.getNom() : "");
         lblDescription.setText(activite.getDescription() != null ? activite.getDescription() : "");
         lblBudget.setText(activite.getBudget() + " €");
@@ -115,11 +118,8 @@ public class ActivityDetailController implements Initializable {
             lblDuree.setText("Non spécifié");
         }
 
-        if (activite.getNiveaudifficulte() != null && !activite.getNiveaudifficulte().isEmpty()) {
-            lblDifficulte.setText(activite.getNiveaudifficulte());
-        } else {
-            lblDifficulte.setText("Non spécifié");
-        }
+        lblDifficulte.setText(activite.getNiveaudifficulte() != null ?
+                activite.getNiveaudifficulte() : "Non spécifié");
 
         if (activite.getAgemin() > 0) {
             lblAgeMin.setText(activite.getAgemin() + " ans et plus");
@@ -127,16 +127,11 @@ public class ActivityDetailController implements Initializable {
             lblAgeMin.setText("Tous âges");
         }
 
-        if (activite.getStatut() != null && !activite.getStatut().isEmpty()) {
-            lblStatut.setText(activite.getStatut());
-        } else {
-            lblStatut.setText("Non spécifié");
-        }
+        lblStatut.setText(activite.getStatut() != null ? activite.getStatut() : "Non spécifié");
 
-        // Afficher la catégorie
         if (activite.getCategorie() != null) {
             String catText = activite.getCategorie().getNom();
-            if (activite.getCategorie().getType() != null && !activite.getCategorie().getType().isEmpty()) {
+            if (activite.getCategorie().getType() != null) {
                 catText += " (" + activite.getCategorie().getType() + ")";
             }
             lblCategorie.setText(catText);
@@ -151,11 +146,8 @@ public class ActivityDetailController implements Initializable {
             try {
                 File file = new File(activite.getImagePath());
                 if (file.exists()) {
-                    Image image = new Image(file.toURI().toString(), 400, 250, true, true);
+                    Image image = new Image(file.toURI().toString(), 600, 300, true, true);
                     imageView.setImage(image);
-                    System.out.println("🖼️ Image chargée: " + activite.getImagePath());
-                } else {
-                    System.out.println("⚠️ Fichier image non trouvé: " + activite.getImagePath());
                 }
             } catch (Exception e) {
                 System.err.println("Erreur chargement image: " + e.getMessage());
@@ -165,53 +157,36 @@ public class ActivityDetailController implements Initializable {
 
     private void loadLocation() {
         if (activite == null || activite.getLieu() == null || activite.getLieu().isEmpty()) {
-            System.out.println("❌ Pas d'adresse pour cette activité");
             showMapWithMessage("Adresse non disponible");
             return;
         }
 
-        System.out.println("🗺️ Début du géocodage pour: " + activite.getLieu());
         mapLoadingIndicator.setVisible(true);
 
-        // Lancer le géocodage dans un thread séparé
         new Thread(() -> {
-            System.out.println("🔄 Thread géocodage démarré");
             GeocodingService.LocationResult result = GeocodingService.geocode(activite.getLieu());
 
             javafx.application.Platform.runLater(() -> {
-                System.out.println("🔄 Retour sur le thread JavaFX");
                 mapLoadingIndicator.setVisible(false);
 
                 if (result != null) {
-                    System.out.println("✅ Résultat géocodage trouvé!");
-                    System.out.println("   Lat: " + result.getLatitude());
-                    System.out.println("   Lon: " + result.getLongitude());
+                    locationResult = result;
 
-                    locationResult = result; // Stocker pour la météo
+                    lblVille.setText(result.getCity().isEmpty() ? "Non spécifié" : result.getCity());
+                    lblPays.setText(result.getCountry().isEmpty() ? "Non spécifié" : result.getCountry());
+                    lblCodePostal.setText(result.getPostcode().isEmpty() ? "Non spécifié" : result.getPostcode());
+                    lblRue.setText(result.getStreet().isEmpty() ? "Non spécifié" : result.getStreet());
 
-                    // Mettre à jour les labels
-                    lblVille.setText(result.getCity() != null && !result.getCity().isEmpty() ?
-                            result.getCity() : "Non spécifié");
-                    lblPays.setText(result.getCountry() != null && !result.getCountry().isEmpty() ?
-                            result.getCountry() : "Non spécifié");
-                    lblCodePostal.setText(result.getPostcode() != null && !result.getPostcode().isEmpty() ?
-                            result.getPostcode() : "Non spécifié");
-                    lblRue.setText(result.getStreet() != null && !result.getStreet().isEmpty() ?
-                            result.getStreet() : "Non spécifié");
-
-                    String coords = String.format("%.4f, %.4f",
-                            result.getLatitude(), result.getLongitude());
+                    String coords = String.format("%.4f, %.4f", result.getLatitude(), result.getLongitude());
                     lblCoordonnees.setText(coords);
 
-                    System.out.println("✅ Labels mis à jour");
-
                     displayMap(result);
-
-                    // Charger la météo
                     loadWeatherForActivity();
 
+                    // Charger les suggestions à proximité
+                    loadSuggestions();
+
                 } else {
-                    System.out.println("❌ Aucun résultat de géocodage");
                     showMapWithMessage("Impossible de localiser cette adresse");
 
                     lblVille.setText("Non trouvé");
@@ -224,103 +199,218 @@ public class ActivityDetailController implements Initializable {
         }).start();
     }
 
-    private void displayMap(GeocodingService.LocationResult result) {
-        System.out.println("🗺️ Affichage de la carte");
+    // ==================== SUGGESTIONS À PROXIMITÉ ====================
 
-        if (webEngine == null) {
-            System.err.println("❌ WebEngine non initialisé!");
-            return;
+    private void loadSuggestions() {
+        if (suggestionsTilePane == null || activite == null) return;
+
+        // Afficher le chargement
+        javafx.application.Platform.runLater(() -> {
+            suggestionsTilePane.getChildren().clear();
+            for (int i = 0; i < 4; i++) {
+                VBox skeleton = new VBox();
+                skeleton.setPrefWidth(200);
+                skeleton.setPrefHeight(150);
+                skeleton.setStyle("-fx-background-color: linear-gradient(to right, #f0f0f0 0%, #e0e0e0 50%, #f0f0f0 100%); -fx-background-radius: 12;");
+                suggestionsTilePane.getChildren().add(skeleton);
+            }
+        });
+
+        // Utiliser le service dans un thread séparé
+        new Thread(() -> {
+            List<Map<String, Object>> places = PlaceSuggestionService.getSuggestionsForActivity(activite);
+
+            javafx.application.Platform.runLater(() -> {
+                suggestionsTilePane.getChildren().clear();
+
+                if (places.isEmpty()) {
+                    showNoSuggestions();
+                } else {
+                    displaySuggestions(places);
+                }
+            });
+        }).start();
+    }
+
+    private void displaySuggestions(List<Map<String, Object>> places) {
+        suggestionsTilePane.getChildren().clear();
+
+        if (suggestionsTitle != null && activite != null) {
+            suggestionsTitle.setText("À proximité de " +
+                    (activite.getLieu() != null ? activite.getLieu() : "cette activité"));
         }
 
-        String html = "<!DOCTYPE html>\n" +
-                "<html>\n" +
-                "<head>\n" +
-                "    <meta charset=\"UTF-8\">\n" +
-                "    <style>\n" +
-                "        * { margin: 0; padding: 0; box-sizing: border-box; }\n" +
-                "        html, body { width: 100%; height: 100%; overflow: hidden; }\n" +
-                "        iframe { width: 100%; height: 100%; border: none; }\n" +
-                "    </style>\n" +
-                "</head>\n" +
-                "<body>\n" +
-                "    <iframe \n" +
-                "        src='https://www.openstreetmap.org/export/embed.html?bbox=" + (result.getLongitude() - 0.01) + "%2C" + (result.getLatitude() - 0.01) + "%2C" + (result.getLongitude() + 0.01) + "%2C" + (result.getLatitude() + 0.01) + "&amp;layer=mapnik&amp;marker=" + result.getLatitude() + "%2C" + result.getLongitude() + "'\n" +
-                "        style='border: 1px solid black'>\n" +
-                "    </iframe>\n" +
-                "</body>\n" +
-                "</html>";
+        for (Map<String, Object> place : places) {
+            VBox card = createSuggestionCard(place);
+            suggestionsTilePane.getChildren().add(card);
+        }
+    }
+
+    private VBox createSuggestionCard(Map<String, Object> place) {
+        VBox card = new VBox(8);
+        card.setPrefWidth(200);
+        card.setStyle("-fx-background-color: white; -fx-background-radius: 12; -fx-padding: 12; " +
+                "-fx-border-color: #f0f0f0; -fx-border-radius: 12; -fx-cursor: hand;");
+        card.setAlignment(javafx.geometry.Pos.TOP_CENTER);
+
+        String name = (String) place.get("name");
+        String type = (String) place.get("type");
+        double distance = (double) place.get("distance");
+
+        // Icône selon le type
+        String icon = switch(type) {
+            case "museum" -> "🏛️";
+            case "restaurant" -> "🍽️";
+            case "cafe" -> "☕";
+            case "park" -> "🌳";
+            case "monument" -> "🗿";
+            case "theatre" -> "🎭";
+            case "cinema" -> "🎬";
+            case "hotel" -> "🏨";
+            case "shop" -> "🛍️";
+            default -> "📍";
+        };
+
+        HBox header = new HBox(8);
+        header.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+
+        Label iconLabel = new Label(icon);
+        iconLabel.setStyle("-fx-font-size: 24;");
+
+        String typeDisplay = switch(type) {
+            case "museum" -> "Musée";
+            case "restaurant" -> "Restaurant";
+            case "cafe" -> "Café";
+            case "park" -> "Parc";
+            case "monument" -> "Monument";
+            case "theatre" -> "Théâtre";
+            case "cinema" -> "Cinéma";
+            case "hotel" -> "Hôtel";
+            case "shop" -> "Boutique";
+            default -> "Lieu d'intérêt";
+        };
+
+        Label typeLabel = new Label(typeDisplay);
+        typeLabel.setStyle("-fx-background-color: #fff3e8; -fx-text-fill: #ff6b00; " +
+                "-fx-background-radius: 10; -fx-padding: 4 10; -fx-font-size: 11; -fx-font-weight: bold;");
+
+        header.getChildren().addAll(iconLabel, typeLabel);
+
+        Label nameLabel = new Label(name);
+        nameLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14; -fx-text-fill: #1a1a1a;");
+        nameLabel.setWrapText(true);
+        nameLabel.setMaxWidth(180);
+
+        String distanceText = distance < 1 ?
+                String.format("📍 %.0f m", distance * 1000) :
+                String.format("📍 %.1f km", distance);
+        Label distanceLabel = new Label(distanceText);
+        distanceLabel.setStyle("-fx-text-fill: #888; -fx-font-size: 11;");
+
+        Label viewButton = new Label("Voir sur la carte →");
+        viewButton.setStyle("-fx-text-fill: #ff6b00; -fx-font-size: 11; -fx-font-weight: bold; " +
+                "-fx-cursor: hand; -fx-padding: 8 0 0 0;");
+        viewButton.setOnMouseClicked(e -> centerMapOnPlace(place));
+
+        card.getChildren().addAll(header, nameLabel, distanceLabel, viewButton);
+
+        // Effet de survol
+        card.setOnMouseEntered(e -> {
+            card.setEffect(new DropShadow(12, Color.web("#ff6b0055")));
+            card.setScaleX(1.02);
+            card.setScaleY(1.02);
+        });
+        card.setOnMouseExited(e -> {
+            card.setEffect(null);
+            card.setScaleX(1.0);
+            card.setScaleY(1.0);
+        });
+
+        return card;
+    }
+
+    private void centerMapOnPlace(Map<String, Object> place) {
+        double lat = (double) place.get("lat");
+        double lon = (double) place.get("lon");
+
+        String html = "<!DOCTYPE html><html><head><meta charset='UTF-8'><style>"
+                + "body { margin:0; padding:0; }"
+                + "iframe { width:100%; height:100%; border:none; }"
+                + "</style></head><body>"
+                + "<iframe src='https://www.openstreetmap.org/export/embed.html?bbox="
+                + (lon - 0.005) + "%2C" + (lat - 0.005) + "%2C"
+                + (lon + 0.005) + "%2C" + (lat + 0.005)
+                + "&amp;layer=mapnik&amp;marker=" + lat + "%2C" + lon + "'></iframe>"
+                + "</body></html>";
 
         webEngine.loadContent(html);
-        System.out.println("✅ Carte chargée en iframe");
+
+        // Mettre à jour les coordonnées affichées
+        lblCoordonnees.setText(String.format("%.4f, %.4f", lat, lon));
+    }
+
+    private void showNoSuggestions() {
+        VBox messageBox = new VBox(10);
+        messageBox.setAlignment(javafx.geometry.Pos.CENTER);
+        messageBox.setPrefWidth(800);
+        messageBox.setStyle("-fx-padding: 30;");
+
+        Label icon = new Label("📍");
+        icon.setStyle("-fx-font-size: 48;");
+
+        Label message = new Label("Aucun lieu à proximité trouvé pour le moment");
+        message.setStyle("-fx-text-fill: #888; -fx-font-size: 14;");
+
+        Label subMessage = new Label("Explorez d'autres activités ou élargissez votre recherche");
+        subMessage.setStyle("-fx-text-fill: #aaa; -fx-font-size: 12;");
+
+        messageBox.getChildren().addAll(icon, message, subMessage);
+        suggestionsTilePane.getChildren().add(messageBox);
+    }
+
+    private void displayMap(GeocodingService.LocationResult result) {
+        if (webEngine == null) return;
+
+        String html = "<!DOCTYPE html><html><head><meta charset='UTF-8'><style>"
+                + "body { margin:0; padding:0; }"
+                + "iframe { width:100%; height:100%; border:none; }"
+                + "</style></head><body>"
+                + "<iframe src='https://www.openstreetmap.org/export/embed.html?bbox="
+                + (result.getLongitude() - 0.01) + "%2C" + (result.getLatitude() - 0.01) + "%2C"
+                + (result.getLongitude() + 0.01) + "%2C" + (result.getLatitude() + 0.01)
+                + "&amp;layer=mapnik&amp;marker=" + result.getLatitude() + "%2C" + result.getLongitude() + "'></iframe>"
+                + "</body></html>";
+
+        webEngine.loadContent(html);
     }
 
     private void showMapWithMessage(String message) {
-        System.out.println("ℹ️ Message carte: " + message);
+        if (webEngine == null) return;
 
-        if (webEngine == null) {
-            System.err.println("❌ WebEngine non initialisé!");
-            return;
-        }
-
-        String html = "<!DOCTYPE html>\n" +
-                "<html>\n" +
-                "<head>\n" +
-                "    <style>\n" +
-                "        body { \n" +
-                "            margin: 0; \n" +
-                "            padding: 0; \n" +
-                "            display: flex;\n" +
-                "            justify-content: center;\n" +
-                "            align-items: center;\n" +
-                "            height: 100%;\n" +
-                "            font-family: Arial, sans-serif;\n" +
-                "            color: #666;\n" +
-                "            background: #f5f5f5;\n" +
-                "        }\n" +
-                "    </style>\n" +
-                "</head>\n" +
-                "<body>\n" +
-                "    <div style=\"text-align: center;\">\n" +
-                "        <div style=\"font-size: 48px; margin-bottom: 20px;\">📍</div>\n" +
-                "        <div style=\"font-size: 16px;\">" + message + "</div>\n" +
-                "    </div>\n" +
-                "</body>\n" +
-                "</html>";
+        String html = "<!DOCTYPE html><html><head><style>"
+                + "body { margin:0; padding:0; display:flex; justify-content:center; align-items:center; height:100%; font-family:Arial; color:#666; background:#f5f5f5; }"
+                + "</style></head><body>"
+                + "<div style='text-align:center;'><div style='font-size:48px; margin-bottom:20px;'>📍</div>"
+                + "<div style='font-size:16px;'>" + message + "</div></div>"
+                + "</body></html>";
 
         webEngine.loadContent(html);
     }
 
     private void loadWeatherForActivity() {
-        System.out.println("🔍 Tentative de chargement météo");
-        System.out.println("   Date activité: " + activite.getDatePrevue());
-        System.out.println("   Location result: " + (locationResult != null ? "OK" : "NULL"));
-
-        if (activite.getDatePrevue() == null) {
-            System.out.println("⚠️ Pas de date prévue pour cette activité");
+        if (activite.getDatePrevue() == null || locationResult == null) {
             weatherContainer.setVisible(false);
             return;
         }
 
-        if (locationResult == null) {
-            System.out.println("⚠️ Pas de localisation disponible");
-            showWeatherUnavailable("Localisation inconnue");
-            return;
-        }
-
-        // Afficher la date
         String dateFormatted = activite.getDatePrevue().format(
                 DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale.FRENCH));
         lblDatePrevue.setText("Prévisions pour le " + dateFormatted);
 
-        // Afficher le chargement
         weatherContainer.setVisible(true);
         lblWeatherIcon.setText("⏳");
-        lblWeatherDescription.setText("Chargement météo...");
-        lblWeatherTemp.setText("—");
-        lblWeatherPrecip.setText("—");
-        lblWeatherWind.setText("—");
+        lblWeatherDescription.setText("Chargement...");
 
-        // Lancer dans un thread séparé
         new Thread(() -> {
             WeatherForecast forecast = WeatherService.getForecast(
                     locationResult.getLatitude(),
@@ -332,7 +422,7 @@ public class ActivityDetailController implements Initializable {
                 if (forecast != null) {
                     displayWeather(forecast);
                 } else {
-                    showWeatherUnavailable("Prévisions non disponibles (date trop lointaine?)");
+                    showWeatherUnavailable();
                 }
             });
         }).start();
@@ -345,50 +435,32 @@ public class ActivityDetailController implements Initializable {
         lblWeatherPrecip.setText(String.format("💧 %.1f mm", forecast.getPrecipitation()));
         lblWeatherWind.setText(String.format("💨 %.0f km/h", forecast.getWindSpeed()));
 
-        // Ajouter un conseil selon la météo
         String advice = getWeatherAdvice(forecast);
         lblWeatherAdvice.setText(advice);
-
-        // Colorer selon les conditions
-        if (forecast.getPrecipitation() > 5) {
-            lblWeatherPrecip.setStyle("-fx-text-fill: #3b82f6; -fx-font-weight: bold;");
-        } else {
-            lblWeatherPrecip.setStyle("-fx-text-fill: #555;");
-        }
-
-        if (forecast.getWindSpeed() > 30) {
-            lblWeatherWind.setStyle("-fx-text-fill: #ef4444; -fx-font-weight: bold;");
-        } else {
-            lblWeatherWind.setStyle("-fx-text-fill: #555;");
-        }
     }
 
-    private void showWeatherUnavailable(String message) {
+    private void showWeatherUnavailable() {
         lblWeatherIcon.setText("🌡️");
-        lblWeatherDescription.setText(message);
+        lblWeatherDescription.setText("Prévisions non disponibles");
         lblWeatherTemp.setText("—");
         lblWeatherPrecip.setText("—");
         lblWeatherWind.setText("—");
-        lblWeatherAdvice.setText("ℹ️ " + message);
+        lblWeatherAdvice.setText("ℹ️ Météo non disponible pour cette date");
     }
 
     private String getWeatherAdvice(WeatherForecast forecast) {
-        if (forecast.getPrecipitation() > 10) {
-            return "☔ Fortes pluies prévues - Prévoyez un équipement imperméable !";
-        } else if (forecast.getPrecipitation() > 2) {
-            return "🌦️ Quelques averses possibles - Un parapluie peut être utile";
-        } else if (forecast.getWindSpeed() > 40) {
-            return "💨 Vents forts - Attention aux activités en extérieur";
+        if (forecast.getPrecipitation() > 5) {
+            return "☔ Pluie prévue - Prévoyez un parapluie !";
         } else if (forecast.getTemperatureMax() > 30) {
-            return "☀️ Forte chaleur - Pensez à vous hydrater et vous protéger du soleil";
+            return "☀️ Forte chaleur - Hydratez-vous !";
         } else if (forecast.getTemperatureMin() < 5) {
-            return "❄️ Températures froides - Habillez-vous chaudement !";
-        } else if (forecast.getWeatherCode() == 0 || forecast.getWeatherCode() == 1) {
-            return "☀️ Conditions idéales pour profiter de cette activité !";
+            return "❄️ Temps froid - Habillez-vous chaudement !";
         } else {
-            return "🌤️ Conditions météo acceptables pour l'activité";
+            return "🌤️ Conditions idéales pour cette activité !";
         }
     }
+
+    // ==================== NAVIGATION ====================
 
     @FXML
     private void handleBack() {
