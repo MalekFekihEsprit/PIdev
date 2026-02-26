@@ -11,17 +11,45 @@ import java.nio.charset.StandardCharsets;
 
 public class AIService {
 
-    // La clé est lue depuis config.properties (sécurisé)
     private static final String API_KEY = Config.get("gemini.api.key");
-    private static final String API_URL = Config.get("gemini.api.url") + "?key=" + API_KEY;
+    // Liste des modèles à essayer en cas d'échec
+    private static final String[] MODELES = {
+            "gemini-1.5-flash",
+            "gemini-1.5-pro",
+            "gemini-1.0-pro"
+    };
 
-    public static String genererDescriptionAttrayante(String nom, String niveauDifficulte, String lieu) throws IOException {
+    private static int modeleActuel = 0;
+
+    public static String genererDescriptionAttrayante(String nom, String niveauDifficulte, String lieu) {
         // Vérifier que la clé API est configurée
         if (API_KEY == null || API_KEY.isEmpty() || API_KEY.equals("VOTRE_CLE_API_ICI")) {
             System.out.println("⚠️ Clé API non configurée, utilisation du mode fallback");
             return getFallbackDescription(nom, niveauDifficulte, lieu);
         }
 
+        // Essayer chaque modèle jusqu'à ce qu'un fonctionne
+        for (int i = 0; i < MODELES.length; i++) {
+            try {
+                String modele = MODELES[i];
+                String apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/" + modele + ":generateContent?key=" + API_KEY;
+
+                String description = appelerAPI(apiUrl, nom, niveauDifficulte, lieu);
+                if (description != null && !description.isEmpty()) {
+                    System.out.println("✅ Modèle utilisé: " + modele);
+                    return description;
+                }
+            } catch (Exception e) {
+                System.out.println("⚠️ Modèle " + MODELES[i] + " échoué, essai du suivant...");
+            }
+        }
+
+        // Si tous les modèles échouent
+        System.out.println("⚠️ Tous les modèles API ont échoué, utilisation du mode fallback");
+        return getFallbackDescription(nom, niveauDifficulte, lieu);
+    }
+
+    private static String appelerAPI(String apiUrl, String nom, String niveauDifficulte, String lieu) throws IOException {
         String prompt = String.format(
                 "Tu es un rédacteur professionnel pour une agence de voyages. " +
                         "Génère UNE SEULE description courte (entre 100 et 200 caractères) pour une activité touristique. " +
@@ -50,7 +78,7 @@ public class AIService {
         generationConfig.addProperty("maxOutputTokens", 200);
         requestBody.add("generationConfig", generationConfig);
 
-        URL url = new URL(API_URL);
+        URL url = new URL(apiUrl);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json");
@@ -84,19 +112,8 @@ public class AIService {
 
                 return description.trim();
             }
-        } else {
-            // En cas d'erreur, lire le message
-            try (BufferedReader br = new BufferedReader(
-                    new InputStreamReader(connection.getErrorStream(), StandardCharsets.UTF_8))) {
-                StringBuilder error = new StringBuilder();
-                String line;
-                while ((line = br.readLine()) != null) {
-                    error.append(line);
-                }
-                System.err.println("Erreur API " + responseCode + ": " + error.toString());
-            }
-            return getFallbackDescription(nom, niveauDifficulte, lieu);
         }
+        return null;
     }
 
     private static String getFallbackDescription(String nom, String niveauDifficulte, String lieu) {
@@ -113,7 +130,7 @@ public class AIService {
     public static boolean testConnection() {
         try {
             String result = genererDescriptionAttrayante("Test", "Facile", "Paris");
-            System.out.println("✅ Test: " + result.substring(0, Math.min(50, result.length())) + "...");
+            System.out.println("✅ Test: " + result);
             return true;
         } catch (Exception e) {
             System.err.println("❌ Test échoué: " + e.getMessage());
