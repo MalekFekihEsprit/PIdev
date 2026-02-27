@@ -472,21 +472,75 @@ public class CATfront implements Initializable {
     }
 
     private void updatePieCharts(ObservableList<Categories> list) {
+        System.out.println("\n=== DEBUG PIE CHARTS ===");
+        System.out.println("Nombre total de catégories: " + list.size());
+
+        // Compter les catégories avec type non-null
+        long countWithType = list.stream().filter(c -> c.getType() != null).count();
+        System.out.println("Catégories avec type non-null: " + countWithType);
+
+        // Afficher tous les types trouvés
+        System.out.println("\nListe des types trouvés:");
+        list.stream()
+                .filter(c -> c.getType() != null)
+                .map(Categories::getType)
+                .forEach(type -> System.out.println("  - " + type));
+
+        // Compter par type
+        Map<String, Long> typeCounts = list.stream()
+                .filter(c -> c.getType() != null)
+                .collect(Collectors.groupingBy(Categories::getType, Collectors.counting()));
+
+        System.out.println("\nComptage par type:");
+        typeCounts.forEach((type, count) ->
+                System.out.println("  " + type + ": " + count + " catégorie(s)"));
+
+        // Mettre à jour les graphiques
         fillPie(pieChartSaison, list.stream().filter(c -> c.getSaison() != null)
                 .collect(Collectors.groupingBy(Categories::getSaison, Collectors.counting())), SAISON_COLORS);
-        fillPie(pieChartType, list.stream().filter(c -> c.getType() != null)
-                .collect(Collectors.groupingBy(Categories::getType, Collectors.counting())), TYPE_COLORS);
+        fillPie(pieChartType, typeCounts, TYPE_COLORS);
     }
 
     private void fillPie(PieChart chart, Map<String, Long> data, String[] colors) {
         if (chart == null) return;
         chart.getData().clear();
+
+        System.out.println("\nRemplissage du graphique: " + (chart == pieChartSaison ? "SAISON" : "TYPE"));
+        System.out.println("Nombre d'entrées: " + data.size());
+
+        if (data.isEmpty()) {
+            System.out.println("⚠️ AUCUNE DONNÉE pour ce graphique");
+            // Créer une donnée factice pour montrer que le graphique fonctionne
+            PieChart.Data dummy = new PieChart.Data("Aucune donnée", 1);
+            chart.getData().add(dummy);
+            dummy.nodeProperty().addListener((obs, o, n) -> {
+                if (n != null) {
+                    n.setStyle("-fx-pie-color: #cccccc;");
+                }
+            });
+            return;
+        }
+
+        long total = data.values().stream().mapToLong(Long::longValue).sum();
         int i = 0;
+
         for (Map.Entry<String, Long> e : data.entrySet()) {
-            PieChart.Data d = new PieChart.Data(e.getKey(), e.getValue());
+            double percentage = (e.getValue() * 100.0) / total;
+            String label = String.format("%s (%.0f%%)", e.getKey(), percentage);
+
+            System.out.println("Ajout du secteur: " + label + " (" + e.getValue() + "/" + total + ")");
+
+            PieChart.Data d = new PieChart.Data(label, e.getValue());
             chart.getData().add(d);
-            final String col = colors[i++ % colors.length];
-            d.nodeProperty().addListener((obs, o, n) -> { if (n != null) n.setStyle("-fx-pie-color:" + col + ";"); });
+
+            final String col = colors[i % colors.length];
+
+            d.nodeProperty().addListener((obs, o, n) -> {
+                if (n != null) {
+                    n.setStyle("-fx-pie-color:" + col + ";");
+                }
+            });
+            i++;
         }
     }
 

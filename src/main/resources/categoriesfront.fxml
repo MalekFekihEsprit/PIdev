@@ -201,18 +201,18 @@
                     </ScrollPane>
                 </VBox>
 
-                <!-- Panneau droit -->
-                <VBox prefWidth="300" spacing="20" style="-fx-padding:0 0 0 24;">
+                <!-- Panneau droit - AUGMENTER LA LARGEUR -->
+                <VBox prefWidth="360" spacing="20" style="-fx-padding:0 0 0 24;">
                     <!-- PieChart Saison -->
                     <VBox spacing="12" style="-fx-background-color:white;-fx-background-radius:16;-fx-padding:20;-fx-effect:dropshadow(three-pass-box,rgba(0,0,0,0.08),10,0,0,2);">
                         <Label style="-fx-font-size:15;-fx-font-weight:bold;-fx-text-fill:#1a1a1a;" text="Répartition par Saison" />
-                        <PieChart fx:id="pieChartSaison" labelsVisible="false" legendVisible="true" prefHeight="170" prefWidth="260" style="-fx-background-color:transparent;" />
+                        <PieChart fx:id="pieChartSaison" labelsVisible="true" legendVisible="true" prefHeight="200" prefWidth="280" style="-fx-background-color:transparent;" />
                     </VBox>
 
-                    <!-- PieChart Type -->
-                    <VBox spacing="12" style="-fx-background-color:white;-fx-background-radius:16;-fx-padding:20;-fx-effect:dropshadow(three-pass-box,rgba(0,0,0,0.08),10,0,0,2);">
+                    <!-- PieChart Type - AJOUT D'UN ESPACE SUPPLEMENTAIRE -->
+                    <VBox spacing="12" style="-fx-background-color:white;-fx-background-radius:16;-fx-padding:20 20 30 20;-fx-effect:dropshadow(three-pass-box,rgba(0,0,0,0.08),10,0,0,2);">
                         <Label style="-fx-font-size:15;-fx-font-weight:bold;-fx-text-fill:#1a1a1a;" text="Répartition par Type" />
-                        <PieChart fx:id="pieChartType" labelsVisible="false" legendVisible="true" prefHeight="170" prefWidth="260" style="-fx-background-color:transparent;" />
+                        <PieChart fx:id="pieChartType" labelsVisible="true" legendVisible="true" prefHeight="220" prefWidth="280" style="-fx-background-color:transparent;" />
                     </VBox>
 
                     <!-- Détail catégorie sélectionnée -->

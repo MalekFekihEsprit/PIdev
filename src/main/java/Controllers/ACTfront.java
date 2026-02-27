@@ -683,6 +683,10 @@ public class ACTfront implements Initializable {
     private void updatePieChart(ObservableList<Activites> list) {
         pieChart.getData().clear();
 
+        if (list.isEmpty()) {
+            return;
+        }
+
         Map<String, Long> countByType = list.stream()
                 .collect(Collectors.groupingBy(a -> {
                     if (a.getCategorie() != null && a.getCategorie().getType() != null) {
@@ -691,13 +695,20 @@ public class ACTfront implements Initializable {
                     return "Autres";
                 }, Collectors.counting()));
 
+        long total = list.size();
         int colorIdx = 0;
+
         for (Map.Entry<String, Long> entry : countByType.entrySet()) {
-            PieChart.Data slice = new PieChart.Data(entry.getKey(), entry.getValue());
+            double percentage = (entry.getValue() * 100.0) / total;
+            // Format du label avec le nom et le pourcentage
+            String label = String.format("%s (%.1f%%)", entry.getKey(), percentage);
+
+            PieChart.Data slice = new PieChart.Data(label, entry.getValue());
             pieChart.getData().add(slice);
 
             String color = PIE_COLORS[colorIdx % PIE_COLORS.length];
             final String col = color;
+
             slice.nodeProperty().addListener((obs, oldNode, newNode) -> {
                 if (newNode != null) {
                     newNode.setStyle("-fx-pie-color: " + col + ";");
