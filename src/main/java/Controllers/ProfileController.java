@@ -41,10 +41,25 @@ public class ProfileController {
     @FXML private Label statsVoyages, statsDepenses;
     @FXML private ComboBox<Country> countryCodeCombo;
     @FXML private Button enrollFaceButton;
-    @FXML private HBox btnDestinations, btnHebergement, btnItineraires, btnActivites, btnVoyages, btnBudgets;
+
+    // Navigation buttons (navbar)
+    @FXML private HBox btnDestinations;
+    @FXML private HBox btnHebergement;
+    @FXML private HBox btnItineraires;
+    @FXML private HBox btnActivites;
+    @FXML private HBox btnVoyages;
+    @FXML private HBox btnBudgets;
+    @FXML private HBox btnCategories;
     @FXML private HBox userProfileBox;
-    @FXML private Label lblUserName, lblUserRole;
+    @FXML private Label lblUserName;
+    @FXML private Label lblUserRole;
     @FXML private Label lblLastUpdate;
+
+    // Scroll navigation elements
+    @FXML private ScrollPane navScrollPane;
+    @FXML private HBox navLinksContainer;
+    @FXML private HBox leftArrow;
+    @FXML private HBox rightArrow;
 
     private final Map<String, Image> flagCache = new HashMap<>();
     private File selectedImageFile;
@@ -74,6 +89,7 @@ public class ProfileController {
         setupUserProfile();
         updateUserInfo();
         updateLastUpdateTime();
+        setupScrollArrows();
     }
 
     public void setUser(User user) {
@@ -140,6 +156,64 @@ public class ProfileController {
         }
     }
 
+    private void setupScrollArrows() {
+        if (navScrollPane != null && leftArrow != null && rightArrow != null) {
+            // Masquer les flèches initialement
+            leftArrow.setVisible(false);
+            leftArrow.setManaged(false);
+            rightArrow.setVisible(false);
+            rightArrow.setManaged(false);
+
+            // Surveiller les changements de largeur
+            navScrollPane.widthProperty().addListener((obs, oldVal, newVal) -> {
+                updateArrowVisibility();
+            });
+
+            navLinksContainer.widthProperty().addListener((obs, oldVal, newVal) -> {
+                updateArrowVisibility();
+            });
+
+            // Surveiller le défilement
+            navScrollPane.hvalueProperty().addListener((obs, oldVal, newVal) -> {
+                updateArrowVisibility();
+            });
+        }
+    }
+
+    private void updateArrowVisibility() {
+        if (navScrollPane == null || navLinksContainer == null) return;
+
+        double contentWidth = navLinksContainer.getWidth();
+        double viewportWidth = navScrollPane.getViewportBounds().getWidth();
+        double hvalue = navScrollPane.getHvalue();
+
+        // Afficher flèche gauche si on n'est pas au début ET si le contenu dépasse
+        boolean showLeft = contentWidth > viewportWidth && hvalue > 0.01;
+        leftArrow.setVisible(showLeft);
+        leftArrow.setManaged(showLeft);
+
+        // Afficher flèche droite si on n'est pas à la fin ET si le contenu dépasse
+        boolean showRight = contentWidth > viewportWidth && hvalue < 0.99;
+        rightArrow.setVisible(showRight);
+        rightArrow.setManaged(showRight);
+    }
+
+    @FXML
+    private void scrollLeft() {
+        if (navScrollPane != null) {
+            double newHvalue = navScrollPane.getHvalue() - 0.15;
+            navScrollPane.setHvalue(Math.max(0, newHvalue));
+        }
+    }
+
+    @FXML
+    private void scrollRight() {
+        if (navScrollPane != null) {
+            double newHvalue = navScrollPane.getHvalue() + 0.15;
+            navScrollPane.setHvalue(Math.min(1, newHvalue));
+        }
+    }
+
     private void setupNavigationButtons() {
         if (btnDestinations != null) {
             btnDestinations.setOnMouseClicked(event -> navigateToDestinations());
@@ -157,10 +231,16 @@ public class ProfileController {
             setupNavButtonHover(btnItineraires, "🗺️", "Itinéraires");
         }
 
+        // Bouton Activités
         if (btnActivites != null) {
-            btnActivites.setOnMouseClicked(event ->
-                    showInfoAlert("Activités", "Cette fonctionnalité sera bientôt disponible"));
+            btnActivites.setOnMouseClicked(event -> navigateToActivitesFront());
             setupNavButtonHover(btnActivites, "🏄", "Activités");
+        }
+
+        // Bouton Catégories
+        if (btnCategories != null) {
+            btnCategories.setOnMouseClicked(event -> navigateToCategoriesFront());
+            setupNavButtonHover(btnCategories, "📑", "Catégories");
         }
 
         if (btnVoyages != null) {
@@ -206,6 +286,38 @@ public class ProfileController {
                 }
             });
         });
+    }
+
+    // Navigation vers Activités Front
+    private void navigateToActivitesFront() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/activitesfront.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) btnActivites.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("TravelMate - Activités");
+            stage.setMaximized(true);
+        } catch (IOException e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur",
+                    "Impossible d'ouvrir les activités: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    // Navigation vers Catégories Front
+    private void navigateToCategoriesFront() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/categoriesfront.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) btnCategories.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("TravelMate - Catégories");
+            stage.setMaximized(true);
+        } catch (IOException e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur",
+                    "Impossible d'ouvrir les catégories: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     private void navigateToDestinations() {

@@ -2,10 +2,29 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
-## ignore all files in upload directory
+
+### Fichiers de configuration sensibles ###
+# Source principal
+src/main/resources/config.properties
+src/test/resources/config.properties
+
+# Fichiers de config dans target
+target/classes/config.properties
+target/test-classes/config.properties
+
+# Fichiers de propriétés sensibles
+*.properties
+!*.css
+!*.fxml
+!*.xml
+!*.json
+
+### Dossiers d'upload ###
 uploads/
 
-### IntelliJ IDEA ###
+### IDEs - Fichiers de configuration d'IDE ###
+# IntelliJ IDEA
+.idea/
 .idea/modules.xml
 .idea/jarRepositories.xml
 .idea/compiler.xml
@@ -14,7 +33,7 @@ uploads/
 *.iml
 *.ipr
 
-### Eclipse ###
+# Eclipse
 .apt_generated
 .classpath
 .factorypath
@@ -23,19 +42,54 @@ uploads/
 .springBeans
 .sts4-cache
 
-### NetBeans ###
+# NetBeans
 /nbproject/private/
 /nbbuild/
 /dist/
 /nbdist/
 /.nb-gradle/
+nbproject/
+nbactions.xml
+nb-configuration.xml
+
+# VS Code
+.vscode/
+
+### Système - Fichiers cachés ###
+# Mac OS
+.DS_Store
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# Éditeurs
+*.swp
+*.swo
+*~
+
+### Logs ###
+*.log
+logs/
+**/logs/
+
+### Environnements spécifiques ###
+.env
+.env.local
+*.env
+
+### Fichiers temporaires ###
+*.tmp
+*.temp
+*.bak
+*.old
+
+### Build ###
 build/
 !**/src/main/**/build/
 !**/src/test/**/build/
-
-### VS Code ###
-.vscode/
-
-### Mac OS ###
-.DS_Store
-.env
+out/
+*.class
+*.jar
+*.war
+*.ear

@@ -2,11 +2,12 @@
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- Host: localhost
--- Generation Time: Feb 26, 2026 at 08:52 PM
--- Server version: 10.4.28-MariaDB
--- PHP Version: 8.2.4
+-- Hôte : 127.0.0.1
+-- Généré le : ven. 27 fév. 2026 à 02:19
+-- Version du serveur : 10.4.32-MariaDB
+-- Version de PHP : 8.2.12
 
+SET FOREIGN_KEY_CHECKS=0;
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
 SET time_zone = "+00:00";
@@ -18,32 +19,53 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `travelmate`
+-- Base de données : `travelmate`
 --
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `activites`
+-- Structure de la table `activites`
 --
 
 CREATE TABLE `activites` (
   `id` int(11) NOT NULL,
-  `nom` varchar(10) NOT NULL,
+  `nom` varchar(100) NOT NULL,
   `description` text NOT NULL,
-  `duree` float NOT NULL,
-  `budget` float NOT NULL,
-  `niveaudifficulte` int(11) NOT NULL,
-  `lieu` varchar(100) NOT NULL,
-  `agemin` int(11) NOT NULL,
+  `budget` int(255) NOT NULL,
+  `niveaudifficulte` varchar(100) NOT NULL,
+  `lieu` varchar(500) DEFAULT NULL,
+  `agemin` int(100) NOT NULL,
   `statut` varchar(100) NOT NULL,
-  `id_cat` int(11) NOT NULL
+  `duree` int(100) NOT NULL,
+  `categorie_id` int(11) DEFAULT NULL,
+  `image_path` varchar(255) DEFAULT NULL,
+  `date_prevue` date DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Déchargement des données de la table `activites`
+--
+
+INSERT INTO `activites` (`id`, `nom`, `description`, `budget`, `niveaudifficulte`, `lieu`, `agemin`, `statut`, `duree`, `categorie_id`, `image_path`, `date_prevue`) VALUES
+(6, 'soirée masquée', '⭐ Une activité exceptionnelle vous attend : soirée masquée à paris ! Niveau facile, cette expérience unique restera gravée dans vos mémoires.', 70, 'Facile', 'paris', 20, 'Active', 4, 3, 'uploads\\activites\\act_20260220_232708.jpg', '2026-02-28'),
+(8, 'Randonnée', '🌈 Plongez dans l\'univers magique de Randonnée à Jbal Rsas ! Une activité de niveau difficile qui éveillera tous vos sens.', 450, 'Difficile', 'Dolomites', 15, 'Inactive', 3, 5, 'uploads\\activites\\act_20260220_232623.jpg', NULL),
+(15, 'soirée disco', '🔥 L\'aventure vous appelle ! soirée disco à marsa est l\'activité parfaite pour les amateurs de sensations (niveau facile). Venez vivre des moments intenses !', 15, 'Facile', 'marsa', 18, 'Active', 2, 3, 'uploads\\activites\\act_20260224_002508.jpg', NULL),
+(17, 'camping', '🎉 Découvrez camping comme vous ne l\'avez jamais vu à Sidi Bou Said, Tunisie ! Activité de niveau difficile, moments de pur bonheur !', 20, 'Difficile', 'Sidi Bou Said, Tunisie', 20, 'En attente', 1, 7, 'uploads\\activites\\act_20260222_231844.jpg', '2026-03-31'),
+(20, 'camping', '🌟 Vivez une expérience unique avec camping à jendouba ! Que vous soyez débutant ou expert (niveau expert), cette activité saura vous séduire par son authenticité.', 15, 'Expert', 'jendouba', 15, 'Active', 24, 7, 'uploads\\activites\\act_20260223_235244.jpg', NULL),
+(21, 'soirée halloween', '🔥 L\'aventure vous appelle ! soirée halloween à paris est l\'activité parfaite pour les amateurs de sensations (niveau facile). Venez vivre des moments intenses !', 25, 'Facile', 'paris', 18, 'Active', 5, 3, 'uploads\\activites\\act_20260224_002041.jpg', NULL),
+(24, 'sortie musée', '🌟 Vivez une expérience unique avec sortie musée à Avenue Abdelaziz Kamel, El Bouhaira, Délégation Cité El Khadra, Tunis, Gouvernorat Tunis, 1073, Tunisie ! Cette activité de niveau moyen saura vous séduire.', 15, 'Moyen', 'Avenue Abdelaziz Kamel, El Bouhaira, Délégation Cité El Khadra, Tunis, Gouvernorat Tunis, 1073, Tunisie', 15, 'Active', 2, 13, 'uploads\\activites\\act_20260225_234011.jpg', '2026-03-04'),
+(26, 'sortie vélo', '🎉 Découvrez sortie vélo comme vous ne l\'avez jamais vu à Rue 8001, Montplaisir, Khereiddine Pacha, Délégation Cité El Khadra, Tunis, Gouvernorat Tunis, 1073, Tunisie ! Activité de niveau moyen, moments de pur bonheur !', 15, 'Moyen', 'Rue 8001, Montplaisir, Khereiddine Pacha, Délégation Cité El Khadra, Tunis, Gouvernorat Tunis, 1073, Tunisie', 15, 'Active', 2, 5, 'uploads\\activites\\act_20260225_234826.jpg', '2026-03-04'),
+(27, 'sortie musée', '🎉 Découvrez sortie musée comme vous ne l\'avez jamais vu à Tour Eiffel, 5, Avenue Anatole France, Quartier du Gros-Caillou, Paris 7e Arrondissement, Paris, Île-de-France, France métropolitaine, 75007, France ! Activité de niveau difficile, moments de pur bonheur !', 20, 'Difficile', 'Tour Eiffel, 5, Avenue Anatole France, Quartier du Gros-Caillou, Paris 7e Arrondissement, Paris, Île-de-France, France métropolitaine, 75007, France', 18, 'Active', 1, 13, 'uploads\\activites\\act_20260226_013624.jpg', '2026-03-05'),
+(28, 'sortie musée', '🌟 Vivez une expérience unique avec sortie musée à Allée 1165, Notre Dame, 01 Juin, Délégation El Menzah, Tunis, Gouvernorat Tunis, 1075, Tunisie ! Cette activité de niveau facile saura vous séduire.', 30, 'Facile', 'Allée 1165, Notre Dame, 01 Juin, Délégation El Menzah, Tunis, Gouvernorat Tunis, 1075, Tunisie', 15, 'Inactive', 1, 5, 'uploads\\activites\\act_20260226_023705.jpg', '2026-03-06'),
+(29, 'soirée', '✨ Préparez-vous pour une aventure inoubliable ! soirée vous attend à Jardin Japonais, Rue Abou Hamed El Ghazali, Montplaisir, Khereiddine Pacha, Délégation Cité El Khadra, Tunis, Gouvernorat Tunis, 1073, Tunisie. Une activité de niveau facile qui vous fera vibrer !', 15, 'Facile', 'Jardin Japonais, Rue Abou Hamed El Ghazali, Montplaisir, Khereiddine Pacha, Délégation Cité El Khadra, Tunis, Gouvernorat Tunis, 1073, Tunisie', 12, 'Active', 2, 3, 'uploads\\activites\\act_20260226_170646.jpg', '2026-03-05'),
+(30, 'soirée', '✨ Préparez-vous pour une aventure inoubliable ! soirée vous attend à Institut Supérieur du Sport et de l\'Education Physique de Ksar Saïd, Rue Es-sirt, La Manouba, Ksar - Said, Délégation Manouba‬‬, Gouvernorat La Manouba, 2041, Tunisie. Une activité de niveau moyen qui vous fera vibrer !', 150, 'Moyen', 'Institut Supérieur du Sport et de l\'Education Physique de Ksar Saïd, Rue Es-sirt, La Manouba, Ksar - Said, Délégation Manouba‬‬, Gouvernorat La Manouba, 2041, Tunisie', 15, 'Active', 2, 3, 'uploads\\activites\\act_20260226_173311.jpg', '2026-03-05'),
+(31, 'cours de peinture', '🎉 Découvrez cours de peinture comme vous ne l\'avez jamais vu à Boulevard Qualité de la Vie, Gammarth, Délégation La Marsa, Tunis, Gouvernorat Tunis, 1057, Tunisie ! Activité de niveau facile, moments de pur bonheur !', 20, 'Facile', 'Boulevard Qualité de la Vie, Gammarth, Délégation La Marsa, Tunis, Gouvernorat Tunis, 1057, Tunisie', 12, 'Active', 2, 17, 'uploads\\activites\\act_20260226_225545.jpg', '2026-03-05');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `budget`
+-- Structure de la table `budget`
 --
 
 CREATE TABLE `budget` (
@@ -56,14 +78,23 @@ CREATE TABLE `budget` (
   `id_voyage` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Déchargement des données de la table `budget`
+--
+
+INSERT INTO `budget` (`id_budget`, `montant_total`, `devise_budget`, `statut_budget`, `description_budget`, `id`, `id_voyage`) VALUES
+(1, 1000.00, 'EUR', 'ACTIF', 'Budget voyage Nice', 1, 1),
+(2, 2000.00, 'EUR', 'ACTIF', 'Budget voyage Rome', 2, 2),
+(3, 3000.00, 'EUR', 'ACTIF', 'Budget voyage Paris', 3, 3);
+
 -- --------------------------------------------------------
 
 --
--- Table structure for table `categories`
+-- Structure de la table `categories`
 --
 
 CREATE TABLE `categories` (
-  `id_cat` int(11) NOT NULL,
+  `id` int(11) NOT NULL,
   `nom` varchar(100) NOT NULL,
   `description` text NOT NULL,
   `type` varchar(100) NOT NULL,
@@ -72,10 +103,23 @@ CREATE TABLE `categories` (
   `publiccible` varchar(100) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Déchargement des données de la table `categories`
+--
+
+INSERT INTO `categories` (`id`, `nom`, `description`, `type`, `saison`, `niveauintensite`, `publiccible`) VALUES
+(3, 'soirée', 'Événements nocturnes pour se divertir, rencontrer du monde et profiter d’ambiances festives.', 'Détente', 'Toutes saisons', 'Moyen', 'adulte'),
+(5, 'randonnée', 'Activités en plein air permettant d’explorer la nature à pied, sur des sentiers adaptés à différents niveaux.', 'Aventure', 'Printemps', 'Moyen', 'adulte'),
+(7, 'camping', 'Découvrir les activtés \"camping\" que offrent notre application et laissez la nature vous faire rever', 'Aventure', 'Été', 'Élevé', 'adulte'),
+(12, 'shopping', 'Activités centrées sur la découverte de boutiques, centres commerciaux et marchés pour faire des achats.', 'Détente', 'Toutes saisons', 'Faible', 'femme'),
+(13, 'musée', 'Activités dédiés à la découverte du patrimoine, de l’histoire, de la science ou de l’art à travers des collections et expositions.', 'Culturel', 'Été', 'Faible', 'adulte'),
+(17, 'Art', 'Expériences artistiques liées à la créativité comme expositions, ateliers artistiques ou événements culturels.', 'Détente', 'Toutes saisons', 'Faible', 'tout le monde'),
+(18, 'sorties conviviales', 'Moments de détente autour de la gastronomie et des boissons dans des lieux conviviaux.', 'Gastronomique', 'Toutes saisons', 'Faible', 'adulte');
+
 -- --------------------------------------------------------
 
 --
--- Table structure for table `depense`
+-- Structure de la table `depense`
 --
 
 CREATE TABLE `depense` (
@@ -90,10 +134,18 @@ CREATE TABLE `depense` (
   `id_budget` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Déchargement des données de la table `depense`
+--
+
+INSERT INTO `depense` (`id_depense`, `montant_depense`, `libelle_depense`, `categorie_depense`, `description_depense`, `devise_depense`, `type_paiement`, `date_creation`, `id_budget`) VALUES
+(1, 150.00, 'Hôtel Nice', 'Hébergement', 'Nuitée à l\'hôtel à Nice', 'EUR', 'Carte', '2026-02-26', 1),
+(2, 45.00, 'Restaurant', 'Restauration', 'Dîner au restaurant', 'EUR', 'Espèces', '2026-02-26', 1);
+
 -- --------------------------------------------------------
 
 --
--- Table structure for table `destination`
+-- Structure de la table `destination`
 --
 
 CREATE TABLE `destination` (
@@ -113,11 +165,11 @@ CREATE TABLE `destination` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `destination`
+-- Déchargement des données de la table `destination`
 --
 
 INSERT INTO `destination` (`id_destination`, `nom_destination`, `pays_destination`, `description_destination`, `climat_destination`, `saison_destination`, `latitude_destination`, `longitude_destination`, `score_destination`, `currency_destination`, `flag_destination`, `languages_destination`, `video_url`) VALUES
-(1, 'Nice', 'France', 'Nice, France, is a vibrant Mediterranean jewel boasting a rich artistic heritage, stunning coastline, and a lively atmosphere. Explore the Promenade des Anglais, delve into the charming Old Town (Vieux Nice), and immerse yourself in the city’s blend of French elegance and Italian flair.\n\n\n\nDay 1: Arrival & Old Town Exploration – Settle into your hotel and begin your Nice adventure with a wander through Vieux Nice. Get lost in the narrow, colorful streets, browse the Cours Saleya flower market, and enjoy a traditional Niçoise lunch.\n\nDay 2: Promenade & Castle – Stroll along the iconic Promenade des Anglais, taking in the sea views and people-watching. In the afternoon, ascend to Castle Hill (Colline du Château) for panoramic vistas of the city and coastline – perfect for sunset.\n\nDay 3: Musée Matisse & Cimiez – Immerse yourself in the world of Henri Matisse at the Musée Matisse, housed in his former villa. Afterwards, explore the Cimiez district, home to the Roman ruins, the Parc de la Colline du Château, and the Orthodox Cathedral.\n\nDay 4: Day Trip to Èze & Monaco – Take a day trip to the medieval village of Èze, perched high on a hilltop with breathtaking views. Continue to Monaco, exploring the opulent Monte Carlo Casino and the Prince’s Palace.\n\nDay 5: Beach Day & Port Lympia – Relax and soak up the sun on one of Nice’s beautiful beaches. In the afternoon, head to Port Lympia, Nice’s harbor, and enjoy a seafood dinner overlooking the boats.\n\nDay 6: Musée Marc Chagall & Saint-Paul de Vence – Visit the Musée Marc Chagall, dedicated to the works of the renowned artist who spent much of his life in Nice. Afterwards, journey to the picturesque hilltop village of Saint-Paul de Vence, known for its art galleries and stunning views.\n\nDay 7: Market & Departure – Enjoy a final morning exploring the local markets for souvenirs and treats. Depending on your flight schedule, you might have time for a last stroll along the Promenade or a final café au lait before heading to the airport.', 'Tropical', 'Été', 43.701944444, 7.268333333, 0, 'EUR (€)', 'https://flagcdn.com/w320/fr.png', 'French', 'https://www.youtube.com/watch?v=jyIux-2o69Y'),
+(1, 'Nice', 'France', 'Nice, France, is a vibrant Mediterranean jewel...', 'Tropical', 'Été', 43.701944444, 7.268333333, 0, 'EUR (€)', 'https://flagcdn.com/w320/fr.png', 'French', 'https://www.youtube.com/watch?v=jyIux-2o69Y'),
 (2, 'Rome', 'Italy', 'Historic capital with ancient monuments and vibrant culture.', 'Mediterranean', 'Spring', 41.9028, 12.4964, 4.6, 'Euro', 'https://flagcdn.com/w320/it.png', 'Italian', 'https://example.com/rome.mp4'),
 (3, 'Paris', 'France', 'City of lights known for art, fashion and gastronomy.', 'Oceanic', 'Summer', 48.8566, 2.3522, 4.8, 'Euro', 'https://flagcdn.com/w320/fr.png', 'French', 'https://example.com/paris.mp4'),
 (4, 'Tokyo', 'Japan', 'Modern metropolis blending tradition and technology.', 'Humid Subtropical', 'Autumn', 35.6762, 139.6503, 4.7, 'Yen', 'https://flagcdn.com/w320/jp.png', 'Japanese', 'https://example.com/tokyo.mp4');
@@ -125,13 +177,13 @@ INSERT INTO `destination` (`id_destination`, `nom_destination`, `pays_destinatio
 -- --------------------------------------------------------
 
 --
--- Table structure for table `etape`
+-- Structure de la table `etape`
 --
 
 CREATE TABLE `etape` (
   `id_etape` int(11) NOT NULL,
   `heure` time NOT NULL,
-  `lieu` varchar(10) NOT NULL,
+  `lieu` varchar(255) NOT NULL,
   `description_etape` text NOT NULL,
   `id_activite` int(11) NOT NULL,
   `id_itineraire` int(11) NOT NULL
@@ -140,7 +192,7 @@ CREATE TABLE `etape` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `hebergement`
+-- Structure de la table `hebergement`
 --
 
 CREATE TABLE `hebergement` (
@@ -156,31 +208,31 @@ CREATE TABLE `hebergement` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `hebergement`
+-- Déchargement des données de la table `hebergement`
 --
 
 INSERT INTO `hebergement` (`id_hebergement`, `nom_hebergement`, `type_hebergement`, `prixNuit_hebergement`, `adresse_hebergement`, `note_hebergement`, `latitude_hebergement`, `longitude_hebergement`, `destination_hebergement`) VALUES
-(2, 'Hôtel Locarno', 'Hôtel', 125, 'Hôtel Locarno, 4 Avenue des Baumettes, 06000 Nice, France', 3, 43.69472300054007, 7.251776289308175, 1),
-(3, 'Hôtel Negresco', 'Hôtel', 175, 'Hôtel Negresco, Rue du Commandant Berretta, 06000 Nice, France', 5, 43.69470965054007, 7.257752071044015, 1),
-(4, 'Goldstar Suites', 'Hôtel', 150, 'Goldstar Suites, Passage Meyerbeer, 06000 Nice, France', 4, 43.69753050054002, 7.260538197109449, 1),
-(5, 'Splendid Hôtel & Spa Nice', 'Hôtel', 150, 'Splendid Hôtel & Spa Nice, Rue Gounod, 06000 Nice, France', 4, 43.69875250054001, 7.259834457727271, 1),
-(6, 'Le Méridien Nice', 'Hôtel', 150, 'Le Méridien Nice, Avenue Gustave V, 06000 Nice, France', 4, 43.695280300540055, 7.265958300000001, 1),
-(7, 'Colosseum Hotel', 'Hotel', 120, 'Via Roma 1', 4.3, 41.903, 12.495, 2),
-(8, 'Vatican Stay', 'Hotel', 150, 'Via Vaticano 10', 4.5, 41.9022, 12.4539, 2),
-(9, 'Eiffel View Hotel', 'Hotel', 200, 'Avenue Gustave Eiffel', 4.7, 48.8584, 2.2945, 3),
-(10, 'Montmartre Lodge', 'Hotel', 110, 'Montmartre Street 5', 4.2, 48.8867, 2.3431, 3),
-(11, 'Shinjuku Grand', 'Hotel', 180, 'Shinjuku District', 4.6, 35.6938, 139.7034, 4),
-(12, 'Asakusa Ryokan', 'Ryokan', 90, 'Asakusa 2-3-1', 4.4, 35.7148, 139.7967, 4);
+(1, 'Hôtel Locarno', 'Hôtel', 125, '4 Avenue des Baumettes, 06000 Nice, France', 3, 43.69472300054007, 7.251776289308175, 1),
+(2, 'Hôtel Negresco', 'Hôtel', 175, 'Rue du Commandant Berretta, 06000 Nice, France', 5, 43.69470965054007, 7.257752071044015, 1),
+(3, 'Goldstar Suites', 'Hôtel', 150, 'Passage Meyerbeer, 06000 Nice, France', 4, 43.69753050054002, 7.260538197109449, 1),
+(4, 'Splendid Hôtel & Spa Nice', 'Hôtel', 150, 'Rue Gounod, 06000 Nice, France', 4, 43.69875250054001, 7.259834457727271, 1),
+(5, 'Le Méridien Nice', 'Hôtel', 150, 'Avenue Gustave V, 06000 Nice, France', 4, 43.695280300540055, 7.265958300000001, 1),
+(6, 'Colosseum Hotel', 'Hotel', 120, 'Via Roma 1, Rome', 4.3, 41.903, 12.495, 2),
+(7, 'Vatican Stay', 'Hotel', 150, 'Via Vaticano 10, Rome', 4.5, 41.9022, 12.4539, 2),
+(8, 'Eiffel View Hotel', 'Hotel', 200, 'Avenue Gustave Eiffel, Paris', 4.7, 48.8584, 2.2945, 3),
+(9, 'Montmartre Lodge', 'Hotel', 110, 'Montmartre Street 5, Paris', 4.2, 48.8867, 2.3431, 3),
+(10, 'Shinjuku Grand', 'Hotel', 180, 'Shinjuku District, Tokyo', 4.6, 35.6938, 139.7034, 4),
+(11, 'Asakusa Ryokan', 'Ryokan', 90, 'Asakusa 2-3-1, Tokyo', 4.4, 35.7148, 139.7967, 4);
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `itineraire`
+-- Structure de la table `itineraire`
 --
 
 CREATE TABLE `itineraire` (
   `id_itineraire` int(11) NOT NULL,
-  `nom_iteneraire` varchar(10) NOT NULL,
+  `nom_iteneraire` varchar(100) NOT NULL,
   `description_iteneraire` text NOT NULL,
   `id_voyage` int(11) NOT NULL,
   `nombre_jour` int(11) NOT NULL
@@ -189,7 +241,7 @@ CREATE TABLE `itineraire` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `liste_activite`
+-- Structure de la table `liste_activite`
 --
 
 CREATE TABLE `liste_activite` (
@@ -200,20 +252,20 @@ CREATE TABLE `liste_activite` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `participation`
+-- Structure de la table `participation`
 --
 
 CREATE TABLE `participation` (
   `id_participation` int(11) NOT NULL,
   `id` int(11) NOT NULL,
-  `role_participation` varchar(10) NOT NULL,
+  `role_participation` varchar(50) NOT NULL,
   `id_voyage` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `user`
+-- Structure de la table `user`
 --
 
 CREATE TABLE `user` (
@@ -236,43 +288,52 @@ CREATE TABLE `user` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `user`
+-- Déchargement des données de la table `user`
 --
 
 INSERT INTO `user` (`id`, `nom`, `prenom`, `date_naissance`, `email`, `telephone`, `mot_de_passe`, `role`, `photo_url`, `verification_code`, `is_verified`, `last_login_ip`, `last_login_location`, `created_at`, `photo_file_name`, `face_embedding`) VALUES
-(1, 'Chekir', 'Neyrouz', '2005-01-29', 'neyrouzchekir01@gmail.com', '+21629074810', '$2a$12$HZAHY7Nb1zbudlwU28ienuKGjzKDUlPPVw9wBOdEcCFZVbLLhN6Je', 'ADMIN', NULL, NULL, 1, '102.173.115.26', 'Tunis, Tunisia, ', '2026-02-26 18:12:29', NULL, NULL),
+(1, 'Chekir', 'Neyrouz', '2005-01-29', 'neyrouzchekir01@gmail.com', '+21629074810', '$2a$12$HZAHY7Nb1zbudlwU28ienuKGjzKDUlPPVw9wBOdEcCFZVbLLhN6Je', 'ADMIN', NULL, NULL, 1, '102.173.115.26', 'Tunis, Tunisia', '2026-02-26 18:12:29', NULL, NULL),
 (2, 'Boutaieb', 'Yosr', '2003-05-30', 'yosr.boutaieb@esprit.tn', NULL, '$2a$12$K52nqVrAtvx8EMHTyi7kFO1VFax0SQ5nlsExmunmWbG4h3JsKJ4YO', 'USER', NULL, NULL, 0, NULL, NULL, '2026-02-26 18:16:36', NULL, NULL),
-(3, 'Chekiir', 'Neyrouzz', '2003-02-08', 'neyrouz.chekir@esprit.tn', NULL, '$2a$12$xru.KeGJexFAPNBrxxdWk.20aMGwuZ/fZmdMfy/YttCSSCuVHtMva', 'USER', NULL, NULL, 1, '102.173.115.26', 'Tunis, Tunisia, ', '2026-02-26 18:40:58', NULL, NULL),
-(4, 'Boutaieb', 'Yosr', '2004-02-13', 'neyrouzchekir2005@gmail.com', NULL, '$2a$12$/KPn2qOG5U5wOBL7Wvr/XuPag3EvRbAJPivloQ1OKj8yQzi3B9Y/O', 'USER', NULL, NULL, 1, '102.173.115.26', 'Tunis, Tunisia, ', '2026-02-26 19:00:33', NULL, NULL);
+(3, 'Chekir', 'Neyrouz', '2003-02-08', 'neyrouz.chekir@esprit.tn', NULL, '$2a$12$xru.KeGJexFAPNBrxxdWk.20aMGwuZ/fZmdMfy/YttCSSCuVHtMva', 'USER', NULL, NULL, 1, '102.173.115.26', 'Tunis, Tunisia', '2026-02-26 18:40:58', NULL, NULL),
+(4, 'Boutaieb', 'Yosr', '2004-02-13', 'neyrouzchekir2005@gmail.com', NULL, '$2a$12$/KPn2qOG5U5wOBL7Wvr/XuPag3EvRbAJPivloQ1OKj8yQzi3B9Y/O', 'USER', NULL, NULL, 1, '102.173.115.26', 'Tunis, Tunisia', '2026-02-26 19:00:33', NULL, NULL);
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `voyage`
+-- Structure de la table `voyage`
 --
 
 CREATE TABLE `voyage` (
   `id_voyage` int(11) NOT NULL,
-  `titre_voyage` varchar(10) NOT NULL,
+  `titre_voyage` varchar(100) NOT NULL,
   `date_debut` datetime NOT NULL,
   `date_fin` datetime NOT NULL,
-  `statut` varchar(10) NOT NULL,
+  `statut` varchar(50) NOT NULL,
   `id_destination` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Indexes for dumped tables
+-- Déchargement des données de la table `voyage`
+--
+
+INSERT INTO `voyage` (`id_voyage`, `titre_voyage`, `date_debut`, `date_fin`, `statut`, `id_destination`) VALUES
+(1, 'Voyage Nice', '2026-03-01 00:00:00', '2026-03-07 00:00:00', 'Prévu', 1),
+(2, 'Découverte Rome', '2026-04-10 00:00:00', '2026-04-15 00:00:00', 'Prévu', 2),
+(3, 'Séjour Paris', '2026-05-05 00:00:00', '2026-05-10 00:00:00', 'Prévu', 3);
+
+--
+-- Index pour les tables déchargées
 --
 
 --
--- Indexes for table `activites`
+-- Index pour la table `activites`
 --
 ALTER TABLE `activites`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `fk_activites_categories` (`id_cat`);
+  ADD KEY `fk_activites_categories` (`categorie_id`);
 
 --
--- Indexes for table `budget`
+-- Index pour la table `budget`
 --
 ALTER TABLE `budget`
   ADD PRIMARY KEY (`id_budget`),
@@ -280,26 +341,26 @@ ALTER TABLE `budget`
   ADD KEY `fk_budget_voyage` (`id_voyage`);
 
 --
--- Indexes for table `categories`
+-- Index pour la table `categories`
 --
 ALTER TABLE `categories`
-  ADD PRIMARY KEY (`id_cat`);
+  ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `depense`
+-- Index pour la table `depense`
 --
 ALTER TABLE `depense`
   ADD PRIMARY KEY (`id_depense`),
   ADD KEY `depense_fk` (`id_budget`);
 
 --
--- Indexes for table `destination`
+-- Index pour la table `destination`
 --
 ALTER TABLE `destination`
   ADD PRIMARY KEY (`id_destination`);
 
 --
--- Indexes for table `etape`
+-- Index pour la table `etape`
 --
 ALTER TABLE `etape`
   ADD PRIMARY KEY (`id_etape`),
@@ -307,177 +368,180 @@ ALTER TABLE `etape`
   ADD KEY `fk_etape_activite` (`id_activite`);
 
 --
--- Indexes for table `hebergement`
+-- Index pour la table `hebergement`
 --
 ALTER TABLE `hebergement`
   ADD PRIMARY KEY (`id_hebergement`),
   ADD KEY `hebergement_fk` (`destination_hebergement`);
 
 --
--- Indexes for table `itineraire`
+-- Index pour la table `itineraire`
 --
 ALTER TABLE `itineraire`
   ADD PRIMARY KEY (`id_itineraire`),
   ADD KEY `fk_itineraire_voyage` (`id_voyage`);
 
 --
--- Indexes for table `liste_activite`
+-- Index pour la table `liste_activite`
 --
 ALTER TABLE `liste_activite`
   ADD KEY `fk_liste_activite_voyage` (`id_voyage`),
   ADD KEY `fk_liste_activite_activite` (`id`);
 
 --
--- Indexes for table `participation`
+-- Index pour la table `participation`
 --
 ALTER TABLE `participation`
   ADD PRIMARY KEY (`id_participation`),
+  ADD KEY `fk_participation_user` (`id`),
   ADD KEY `fk_participation_voyage` (`id_voyage`);
 
 --
--- Indexes for table `user`
+-- Index pour la table `user`
 --
 ALTER TABLE `user`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `email` (`email`);
 
 --
--- Indexes for table `voyage`
+-- Index pour la table `voyage`
 --
 ALTER TABLE `voyage`
   ADD PRIMARY KEY (`id_voyage`),
   ADD KEY `fk_voyage_destination` (`id_destination`);
 
 --
--- AUTO_INCREMENT for dumped tables
+-- AUTO_INCREMENT pour les tables déchargées
 --
 
 --
--- AUTO_INCREMENT for table `activites`
+-- AUTO_INCREMENT pour la table `activites`
 --
 ALTER TABLE `activites`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
 
 --
--- AUTO_INCREMENT for table `budget`
+-- AUTO_INCREMENT pour la table `budget`
 --
 ALTER TABLE `budget`
-  MODIFY `id_budget` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id_budget` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
--- AUTO_INCREMENT for table `categories`
+-- AUTO_INCREMENT pour la table `categories`
 --
 ALTER TABLE `categories`
-  MODIFY `id_cat` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
--- AUTO_INCREMENT for table `depense`
+-- AUTO_INCREMENT pour la table `depense`
 --
 ALTER TABLE `depense`
-  MODIFY `id_depense` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id_depense` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
--- AUTO_INCREMENT for table `destination`
+-- AUTO_INCREMENT pour la table `destination`
 --
 ALTER TABLE `destination`
   MODIFY `id_destination` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
--- AUTO_INCREMENT for table `etape`
+-- AUTO_INCREMENT pour la table `etape`
 --
 ALTER TABLE `etape`
   MODIFY `id_etape` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `hebergement`
+-- AUTO_INCREMENT pour la table `hebergement`
 --
 ALTER TABLE `hebergement`
-  MODIFY `id_hebergement` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id_hebergement` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
--- AUTO_INCREMENT for table `itineraire`
+-- AUTO_INCREMENT pour la table `itineraire`
 --
 ALTER TABLE `itineraire`
   MODIFY `id_itineraire` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `participation`
+-- AUTO_INCREMENT pour la table `participation`
 --
 ALTER TABLE `participation`
   MODIFY `id_participation` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `user`
+-- AUTO_INCREMENT pour la table `user`
 --
 ALTER TABLE `user`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
--- AUTO_INCREMENT for table `voyage`
+-- AUTO_INCREMENT pour la table `voyage`
 --
 ALTER TABLE `voyage`
-  MODIFY `id_voyage` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id_voyage` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
--- Constraints for dumped tables
+-- Contraintes pour les tables déchargées
 --
 
 --
--- Constraints for table `activites`
+-- Contraintes pour la table `activites`
 --
 ALTER TABLE `activites`
-  ADD CONSTRAINT `fk_activites_categories` FOREIGN KEY (`id_cat`) REFERENCES `categories` (`id_cat`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `fk_activites_categories` FOREIGN KEY (`categorie_id`) REFERENCES `categories` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 --
--- Constraints for table `budget`
+-- Contraintes pour la table `budget`
 --
 ALTER TABLE `budget`
   ADD CONSTRAINT `fk_budget_user` FOREIGN KEY (`id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_budget_voyage` FOREIGN KEY (`id_voyage`) REFERENCES `voyage` (`id_voyage`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- Constraints for table `depense`
+-- Contraintes pour la table `depense`
 --
 ALTER TABLE `depense`
   ADD CONSTRAINT `depense_fk` FOREIGN KEY (`id_budget`) REFERENCES `budget` (`id_budget`) ON DELETE CASCADE;
 
 --
--- Constraints for table `etape`
+-- Contraintes pour la table `etape`
 --
 ALTER TABLE `etape`
   ADD CONSTRAINT `fk_etape_activite` FOREIGN KEY (`id_activite`) REFERENCES `activites` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_etape_itineraire` FOREIGN KEY (`id_itineraire`) REFERENCES `itineraire` (`id_itineraire`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- Constraints for table `hebergement`
+-- Contraintes pour la table `hebergement`
 --
 ALTER TABLE `hebergement`
-  ADD CONSTRAINT `hebergement_fk` FOREIGN KEY (`destination_hebergement`) REFERENCES `destination` (`id_destination`);
+  ADD CONSTRAINT `hebergement_fk` FOREIGN KEY (`destination_hebergement`) REFERENCES `destination` (`id_destination`) ON DELETE CASCADE;
 
 --
--- Constraints for table `itineraire`
+-- Contraintes pour la table `itineraire`
 --
 ALTER TABLE `itineraire`
   ADD CONSTRAINT `fk_itineraire_voyage` FOREIGN KEY (`id_voyage`) REFERENCES `voyage` (`id_voyage`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- Constraints for table `liste_activite`
+-- Contraintes pour la table `liste_activite`
 --
 ALTER TABLE `liste_activite`
   ADD CONSTRAINT `fk_liste_activite_activite` FOREIGN KEY (`id`) REFERENCES `activites` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_liste_activite_voyage` FOREIGN KEY (`id_voyage`) REFERENCES `voyage` (`id_voyage`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- Constraints for table `participation`
+-- Contraintes pour la table `participation`
 --
 ALTER TABLE `participation`
+  ADD CONSTRAINT `fk_participation_user` FOREIGN KEY (`id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_participation_voyage` FOREIGN KEY (`id_voyage`) REFERENCES `voyage` (`id_voyage`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- Constraints for table `voyage`
+-- Contraintes pour la table `voyage`
 --
 ALTER TABLE `voyage`
   ADD CONSTRAINT `fk_voyage_destination` FOREIGN KEY (`id_destination`) REFERENCES `destination` (`id_destination`) ON DELETE CASCADE ON UPDATE CASCADE;
+SET FOREIGN_KEY_CHECKS=1;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

@@ -4,6 +4,7 @@ import Entities.Destination;
 import Entities.Hebergement;
 import Services.HebergementCRUD;
 import Utils.UserSession;
+import Entities.User;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -24,23 +25,23 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
-import Utils.UserSession;
-import Entities.User;
 
 public class HebergementFrontController implements Initializable {
 
     // ============== FXML INJECTED ELEMENTS ==============
 
     // Top Navigation
-    @FXML private Label lblSearchPlaceholder;
     @FXML private HBox btnDestinations;
     @FXML private HBox btnHebergement;
     @FXML private HBox btnItineraires;
     @FXML private HBox btnActivites;
     @FXML private HBox btnVoyages;
     @FXML private HBox btnBudgets;
+    @FXML private HBox btnCategories;
     @FXML private HBox btnHome;
-    @FXML private HBox userProfileBox; // User profile clickable area
+    @FXML private HBox userProfileBox;
+    @FXML private Label lblUserName;
+    @FXML private Label lblUserRole;
 
     // Bottom Status
     @FXML private Label lblLastUpdate;
@@ -73,9 +74,10 @@ public class HebergementFrontController implements Initializable {
     @FXML private HBox btnRefresh;
     @FXML private HBox btnSearch;
     @FXML private HBox btnFilter;
-    // Add these FXML fields
-    @FXML private Label lblUserName;
-    @FXML private Label lblUserRole;
+
+    // Scroll navigation
+    @FXML private ScrollPane navScrollPane;
+    @FXML private HBox navLinksContainer;
 
     // ============== CLASS VARIABLES ==============
 
@@ -192,14 +194,105 @@ public class HebergementFrontController implements Initializable {
         });
     }
 
-    private void updateUserInfo() {
-        User currentUser = UserSession.getInstance().getCurrentUser();
-        if (currentUser != null) {
-            lblUserName.setText(currentUser.getPrenom() + " " + currentUser.getNom());
-            lblUserRole.setText(currentUser.getRole());
-        } else {
-            lblUserName.setText("Utilisateur");
-            lblUserRole.setText("Non connecté");
+    private void setupNavigationButtons() {
+        // Destinations button
+        if (btnDestinations != null) {
+            btnDestinations.setOnMouseClicked(event -> navigateToDestinations());
+        }
+
+        // Hébergement button (current page, no action needed)
+
+        // Itinéraires button (pas encore implémenté)
+        if (btnItineraires != null) {
+            btnItineraires.setOnMouseClicked(event -> showNotImplementedAlert("Itinéraires"));
+        }
+
+        // Activités button
+        if (btnActivites != null) {
+            btnActivites.setOnMouseClicked(event -> navigateToActivites());
+        }
+
+        // Catégories button
+        if (btnCategories != null) {
+            btnCategories.setOnMouseClicked(event -> navigateToCategories());
+        }
+
+        // Voyages button (pas encore implémenté)
+        if (btnVoyages != null) {
+            btnVoyages.setOnMouseClicked(event -> showNotImplementedAlert("Voyages"));
+        }
+
+        // Budgets button (pas encore implémenté)
+        if (btnBudgets != null) {
+            btnBudgets.setOnMouseClicked(event -> showNotImplementedAlert("Budgets"));
+        }
+    }
+
+    private void navigateToDestinations() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/DestinationFront.fxml"));
+            Parent root = loader.load();
+            Scene scene = new Scene(root);
+            Stage stage = (Stage) btnDestinations.getScene().getWindow();
+            stage.setScene(scene);
+            stage.setTitle("TravelMate - Destinations");
+            stage.show();
+        } catch (IOException e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur de navigation", "Impossible de charger les destinations: " + e.getMessage());
+        }
+    }
+
+    private void navigateToActivites() {
+        CategorieContext.categorieFiltre = null;
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/activitesfront.fxml"));
+            Parent root = loader.load();
+            Scene scene = new Scene(root);
+            Stage stage = (Stage) btnActivites.getScene().getWindow();
+            stage.setScene(scene);
+            stage.setTitle("TravelMate - Activités");
+            stage.show();
+        } catch (IOException e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur de navigation", "Impossible de charger les activités: " + e.getMessage());
+        }
+    }
+
+    private void navigateToCategories() {
+        CategorieContext.categorieFiltre = null;
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/categoriesfront.fxml"));
+            Parent root = loader.load();
+            Scene scene = new Scene(root);
+            Stage stage = (Stage) btnCategories.getScene().getWindow();
+            stage.setScene(scene);
+            stage.setTitle("TravelMate - Catégories");
+            stage.show();
+        } catch (IOException e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur de navigation", "Impossible de charger les catégories: " + e.getMessage());
+        }
+    }
+
+    private void showNotImplementedAlert(String feature) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Fonctionnalité à venir");
+        alert.setHeaderText(null);
+        alert.setContentText("La fonctionnalité \"" + feature + "\" sera bientôt disponible !");
+        alert.showAndWait();
+    }
+
+    @FXML
+    private void scrollNavLeft() {
+        if (navScrollPane != null && navLinksContainer != null) {
+            double newHvalue = navScrollPane.getHvalue() - 0.2;
+            navScrollPane.setHvalue(Math.max(0, newHvalue));
+        }
+    }
+
+    @FXML
+    private void scrollNavRight() {
+        if (navScrollPane != null && navLinksContainer != null) {
+            double newHvalue = navScrollPane.getHvalue() + 0.2;
+            navScrollPane.setHvalue(Math.min(1, newHvalue));
         }
     }
 
@@ -213,46 +306,6 @@ public class HebergementFrontController implements Initializable {
         if (btnFilter != null) {
             btnFilter.setOnMouseClicked(event -> handleFilter());
         }
-    }
-
-    private void setupUserProfile() {
-        if (userProfileBox != null) {
-            // Update user info from session if needed
-            if (UserSession.getInstance().getCurrentUser() != null) {
-                // You can update labels here if you add fx:id to them
-            }
-
-            userProfileBox.setOnMouseClicked(event -> navigateToProfile());
-
-            // Hover effect
-            userProfileBox.setOnMouseEntered(event -> {
-                userProfileBox.setStyle("-fx-background-color: #e2e8f0; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand;");
-            });
-
-            userProfileBox.setOnMouseExited(event -> {
-                userProfileBox.setStyle("-fx-background-color: #f1f5f9; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand;");
-            });
-        }
-    }
-
-    private void navigateToProfile() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/profile.fxml"));
-            Parent root = loader.load();
-
-            Stage stage = (Stage) userProfileBox.getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.setTitle("TravelMate - Mon Profil");
-            stage.setMaximized(true);
-
-        } catch (IOException e) {
-            showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir le profil: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
-    private void setupNavigationButtons() {
-        // Home button
         if (btnHome != null) {
             btnHome.setOnMouseClicked(event -> navigateToHome());
 
@@ -275,107 +328,54 @@ public class HebergementFrontController implements Initializable {
                 });
             });
         }
+    }
 
-        // Destinations button
-        if (btnDestinations != null) {
-            btnDestinations.setOnMouseClicked(event -> navigateToDestinations());
+    private void setupUserProfile() {
+        if (userProfileBox != null) {
+            userProfileBox.setOnMouseClicked(event -> navigateToProfile());
 
             // Hover effect
-            btnDestinations.setOnMouseEntered(event -> {
-                btnDestinations.setStyle("-fx-background-color: rgba(255,140,66,0.1); -fx-background-radius: 12; -fx-padding: 8 16; -fx-cursor: hand; -fx-border-color: #ff8c42; -fx-border-width: 1; -fx-border-radius: 12;");
-                btnDestinations.lookupAll(".label").forEach(label -> {
-                    if (label instanceof Label) {
-                        Label lbl = (Label) label;
-                        if (lbl.getText().equals("🌍")) {
-                            lbl.setStyle("-fx-font-size: 16;");
-                        } else {
-                            lbl.setStyle("-fx-text-fill: #ff8c42; -fx-font-weight: 600; -fx-font-size: 14;");
-                        }
-                    }
-                });
+            userProfileBox.setOnMouseEntered(event -> {
+                userProfileBox.setStyle("-fx-background-color: #e2e8f0; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand;");
             });
 
-            btnDestinations.setOnMouseExited(event -> {
-                btnDestinations.setStyle("-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 8 16; -fx-cursor: hand;");
-                btnDestinations.lookupAll(".label").forEach(label -> {
-                    if (label instanceof Label) {
-                        Label lbl = (Label) label;
-                        if (lbl.getText().equals("🌍")) {
-                            lbl.setStyle("-fx-font-size: 16;");
-                        } else {
-                            lbl.setStyle("-fx-text-fill: #475569; -fx-font-weight: 500; -fx-font-size: 14;");
-                        }
-                    }
-                });
-            });
-        }
-
-        // Itinéraires button
-        setupNavButtonHover(btnItineraires, "🗺️", "Itinéraires");
-        if (btnItineraires != null) {
-            btnItineraires.setOnMouseClicked(event -> {
-                showInfoAlert("Itinéraires", "Cette fonctionnalité sera bientôt disponible");
-            });
-        }
-
-        // Activités button
-        setupNavButtonHover(btnActivites, "🏄", "Activités");
-        if (btnActivites != null) {
-            btnActivites.setOnMouseClicked(event -> {
-                showInfoAlert("Activités", "Cette fonctionnalité sera bientôt disponible");
-            });
-        }
-
-        // Voyages button
-        setupNavButtonHover(btnVoyages, "✈️", "Voyages");
-        if (btnVoyages != null) {
-            btnVoyages.setOnMouseClicked(event -> {
-                showInfoAlert("Voyages", "Cette fonctionnalité sera bientôt disponible");
-            });
-        }
-
-        // Budgets button
-        setupNavButtonHover(btnBudgets, "💰", "Budgets");
-        if (btnBudgets != null) {
-            btnBudgets.setOnMouseClicked(event -> {
-                showInfoAlert("Budgets", "Cette fonctionnalité sera bientôt disponible");
+            userProfileBox.setOnMouseExited(event -> {
+                userProfileBox.setStyle("-fx-background-color: #f1f5f9; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand;");
             });
         }
     }
 
-    /**
-     * Helper method to setup hover effects for navigation buttons
-     */
-    private void setupNavButtonHover(HBox button, String icon, String text) {
-        if (button == null) return;
+    private void updateUserInfo() {
+        User currentUser = UserSession.getInstance().getCurrentUser();
+        if (currentUser != null) {
+            if (lblUserName != null) {
+                lblUserName.setText(currentUser.getPrenom() + " " + currentUser.getNom());
+            }
+            if (lblUserRole != null) {
+                lblUserRole.setText(currentUser.getRole());
+            }
+        } else {
+            if (lblUserName != null) {
+                lblUserName.setText("Utilisateur");
+            }
+            if (lblUserRole != null) {
+                lblUserRole.setText("Non connecté");
+            }
+        }
+    }
 
-        button.setOnMouseEntered(event -> {
-            button.setStyle("-fx-background-color: rgba(255,140,66,0.1); -fx-background-radius: 12; -fx-padding: 8 16; -fx-cursor: hand; -fx-border-color: #ff8c42; -fx-border-width: 1; -fx-border-radius: 12;");
-            button.lookupAll(".label").forEach(label -> {
-                if (label instanceof Label) {
-                    Label lbl = (Label) label;
-                    if (lbl.getText().equals(icon)) {
-                        lbl.setStyle("-fx-font-size: 16;");
-                    } else {
-                        lbl.setStyle("-fx-text-fill: #ff8c42; -fx-font-weight: 600; -fx-font-size: 14;");
-                    }
-                }
-            });
-        });
-
-        button.setOnMouseExited(event -> {
-            button.setStyle("-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 8 16; -fx-cursor: hand;");
-            button.lookupAll(".label").forEach(label -> {
-                if (label instanceof Label) {
-                    Label lbl = (Label) label;
-                    if (lbl.getText().equals(icon)) {
-                        lbl.setStyle("-fx-font-size: 16;");
-                    } else {
-                        lbl.setStyle("-fx-text-fill: #475569; -fx-font-weight: 500; -fx-font-size: 14;");
-                    }
-                }
-            });
-        });
+    private void navigateToProfile() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/profile.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) userProfileBox.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("TravelMate - Mon Profil");
+            stage.setMaximized(true);
+        } catch (IOException e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir le profil: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     private void loadHebergements() {
@@ -396,9 +396,9 @@ public class HebergementFrontController implements Initializable {
 
     private void updateStats() {
         int total = allHebergements.size();
-        lblTotalHebergements.setText(String.valueOf(total));
-        lblHebergementCount.setText(total + " hébergement" + (total > 1 ? "s" : ""));
-        lblStatut.setText("● " + total + " hébergement" + (total > 1 ? "s" : ""));
+        if (lblTotalHebergements != null) lblTotalHebergements.setText(String.valueOf(total));
+        if (lblHebergementCount != null) lblHebergementCount.setText(total + " hébergement" + (total > 1 ? "s" : ""));
+        if (lblStatut != null) lblStatut.setText("● " + total + " hébergement" + (total > 1 ? "s" : ""));
 
         // Count unique types
         long typesCount = allHebergements.stream()
@@ -406,7 +406,7 @@ public class HebergementFrontController implements Initializable {
                 .filter(Objects::nonNull)
                 .distinct()
                 .count();
-        lblTypesCount.setText(typesCount + " type" + (typesCount > 1 ? "s" : "") + " différents");
+        if (lblTypesCount != null) lblTypesCount.setText(typesCount + " type" + (typesCount > 1 ? "s" : "") + " différents");
 
         // Count unique destinations
         long destsCount = allHebergements.stream()
@@ -415,24 +415,24 @@ public class HebergementFrontController implements Initializable {
                 .map(Destination::getId_destination)
                 .distinct()
                 .count();
-        lblDestinationsCount.setText(destsCount + " destination" + (destsCount > 1 ? "s" : ""));
-        lblTotalDestinationsLiees.setText("Dans " + destsCount + " destination" + (destsCount > 1 ? "s" : ""));
+        if (lblDestinationsCount != null) lblDestinationsCount.setText(destsCount + " destination" + (destsCount > 1 ? "s" : ""));
+        if (lblTotalDestinationsLiees != null) lblTotalDestinationsLiees.setText("Dans " + destsCount + " destination" + (destsCount > 1 ? "s" : ""));
 
         // Average price
         double avgPrice = allHebergements.stream()
                 .mapToDouble(Hebergement::getPrixNuit_hebergement)
                 .average()
                 .orElse(0.0);
-        lblPrixMoyen.setText(String.format("%.2f €", avgPrice));
+        if (lblPrixMoyen != null) lblPrixMoyen.setText(String.format("%.2f €", avgPrice));
 
         // Average note
         double avgNote = allHebergements.stream()
                 .mapToDouble(Hebergement::getNote_hebergement)
                 .average()
                 .orElse(0.0);
-        lblNoteMoyenne.setText(String.format("Note moyenne: %.1f ⭐", avgNote));
-        lblNoteMoyenneKPI.setText(String.format("%.1f", avgNote));
-        progressNote.setProgress(avgNote / 5.0);
+        if (lblNoteMoyenne != null) lblNoteMoyenne.setText(String.format("Note moyenne: %.1f ⭐", avgNote));
+        if (lblNoteMoyenneKPI != null) lblNoteMoyenneKPI.setText(String.format("%.1f", avgNote));
+        if (progressNote != null) progressNote.setProgress(avgNote / 5.0);
     }
 
     private void refreshData() {
@@ -442,8 +442,10 @@ public class HebergementFrontController implements Initializable {
     }
 
     private void updateLastUpdateTime() {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm");
-        lblLastUpdate.setText("Dernière mise à jour: " + LocalDateTime.now().format(formatter));
+        if (lblLastUpdate != null) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm");
+            lblLastUpdate.setText("Dernière mise à jour: " + LocalDateTime.now().format(formatter));
+        }
     }
 
     private void handleSearch() {
@@ -465,7 +467,9 @@ public class HebergementFrontController implements Initializable {
                 } else {
                     hebergementList.setAll(searchResults);
                     tableHebergements.setItems(hebergementList);
-                    lblHebergementCount.setText(searchResults.size() + " résultat" + (searchResults.size() > 1 ? "s" : ""));
+                    if (lblHebergementCount != null) {
+                        lblHebergementCount.setText(searchResults.size() + " résultat" + (searchResults.size() > 1 ? "s" : ""));
+                    }
                 }
             }
         });
@@ -495,7 +499,9 @@ public class HebergementFrontController implements Initializable {
             if ("Tous".equals(type)) {
                 hebergementList.setAll(allHebergements);
                 tableHebergements.setItems(hebergementList);
-                lblHebergementCount.setText(allHebergements.size() + " hébergement" + (allHebergements.size() > 1 ? "s" : ""));
+                if (lblHebergementCount != null) {
+                    lblHebergementCount.setText(allHebergements.size() + " hébergement" + (allHebergements.size() > 1 ? "s" : ""));
+                }
             } else {
                 List<Hebergement> filteredResults = allHebergements.stream()
                         .filter(h -> type.equals(h.getType_hebergement()))
@@ -506,7 +512,9 @@ public class HebergementFrontController implements Initializable {
                 } else {
                     hebergementList.setAll(filteredResults);
                     tableHebergements.setItems(hebergementList);
-                    lblHebergementCount.setText(filteredResults.size() + " résultat" + (filteredResults.size() > 1 ? "s" : ""));
+                    if (lblHebergementCount != null) {
+                        lblHebergementCount.setText(filteredResults.size() + " résultat" + (filteredResults.size() > 1 ? "s" : ""));
+                    }
                 }
             }
         });
@@ -550,32 +558,8 @@ public class HebergementFrontController implements Initializable {
         }
     }
 
-    private void navigateToDestinations() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/DestinationFront.fxml"));
-            Parent root = loader.load();
-
-            Stage stage = (Stage) btnDestinations.getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.setTitle("TravelMate - Destinations");
-            stage.setMaximized(true);
-
-        } catch (IOException e) {
-            showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir les destinations: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
     private void showAlert(Alert.AlertType type, String title, String message) {
         Alert alert = new Alert(type);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
-    }
-
-    private void showInfoAlert(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);
         alert.setHeaderText(null);
         alert.setContentText(message);
@@ -592,16 +576,22 @@ public class HebergementFrontController implements Initializable {
 
         hebergementList.setAll(filtered);
         tableHebergements.setItems(hebergementList);
-        lblHebergementCount.setText(filtered.size() + " hébergement" + (filtered.size() > 1 ? "s" : "") +
-                " à " + destination.getNom_destination());
-        lblStatut.setText("● " + filtered.size() + " hébergement" + (filtered.size() > 1 ? "s" : "") +
-                " • " + destination.getNom_destination());
+        if (lblHebergementCount != null) {
+            lblHebergementCount.setText(filtered.size() + " hébergement" + (filtered.size() > 1 ? "s" : "") +
+                    " à " + destination.getNom_destination());
+        }
+        if (lblStatut != null) {
+            lblStatut.setText("● " + filtered.size() + " hébergement" + (filtered.size() > 1 ? "s" : "") +
+                    " • " + destination.getNom_destination());
+        }
     }
 
     public void clearFilter() {
         hebergementList.setAll(allHebergements);
         tableHebergements.setItems(hebergementList);
-        lblHebergementCount.setText(allHebergements.size() + " hébergement" + (allHebergements.size() > 1 ? "s" : ""));
+        if (lblHebergementCount != null) {
+            lblHebergementCount.setText(allHebergements.size() + " hébergement" + (allHebergements.size() > 1 ? "s" : ""));
+        }
         updateStats();
     }
 }

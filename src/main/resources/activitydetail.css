@@ -1,0 +1,300 @@
+/* activitydetail.css - Version harmonisée */
+
+.root {
+    -fx-background-color: #f0f4f0;
+}
+
+/* ===== STYLES POUR LES LABELS DE DÉTAILS - TOUS EN ORANGE ===== */
+#lblBudget, #lblDuree, #lblDifficulte, #lblAgeMin, #lblStatut, #lblCategorie {
+    -fx-text-fill: #ff6b00;
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+}
+
+/* ===== STYLES POUR LES LABELS DE LOCALISATION ===== */
+#lblVille, #lblPays, #lblCodePostal, #lblRue, #lblCoordonnees {
+    -fx-text-fill: #ff6b00;
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+}
+
+/* ===== STYLES POUR LA SECTION MÉTÉO ===== */
+#lblDatePrevue {
+    -fx-text-fill: #ff6b00;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+}
+
+#lblWeatherIcon {
+    -fx-font-size: 28px;
+}
+
+#lblWeatherDescription {
+    -fx-text-fill: #555;
+    -fx-font-size: 13px;
+}
+
+#lblWeatherTemp {
+    -fx-text-fill: #ff6b00;
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+}
+
+#lblWeatherPrecip, #lblWeatherWind {
+    -fx-text-fill: #555;
+    -fx-font-size: 13px;
+}
+
+#lblWeatherAdvice {
+    -fx-text-fill: #ff6b00;
+    -fx-font-size: 13px;
+}
+
+/* ===== STYLES POUR LA GRILLE ===== */
+.grid-pane {
+    -fx-hgap: 15;
+    -fx-vgap: 8;
+}
+
+/* ===== STYLES POUR LES SÉPARATEURS ===== */
+.separator {
+    -fx-padding: 5 0;
+}
+
+.separator .line {
+    -fx-border-color: #e0e0e0;
+    -fx-border-width: 1;
+}
+
+/* ===== STYLES POUR LA CARTE ===== */
+.stack-pane {
+    -fx-background-color: #f0f0f0;
+    -fx-background-radius: 8;
+}
+
+.web-view {
+    -fx-background-color: white;
+    -fx-background-radius: 8;
+}
+
+/* ===== STYLES POUR LE TITRE PRINCIPAL ===== */
+#lblNom {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1a1a1a;
+}
+
+/* ===== STYLES POUR LES IMAGES ===== */
+#imageView {
+    -fx-background-color: #0a0e27;
+    -fx-background-radius: 16;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);
+}
+
+/* ===== STYLES POUR LE TABPANE ===== */
+.tab-pane {
+    -fx-background-color: white;
+    -fx-background-radius: 16;
+    -fx-tab-min-height: 40;
+    -fx-tab-max-height: 40;
+}
+
+.tab-pane .tab-header-area {
+    -fx-padding: 5 5 0 5;
+}
+
+.tab-pane .tab {
+    -fx-background-color: #f0f0f0;
+    -fx-background-radius: 10 10 0 0;
+    -fx-padding: 5 15;
+}
+
+.tab-pane .tab:selected {
+    -fx-background-color: #ff6b00;
+}
+
+.tab-pane .tab:selected .tab-label {
+    -fx-text-fill: white;
+}
+
+.tab-pane .tab .tab-label {
+    -fx-font-weight: bold;
+    -fx-text-fill: #555;
+}
+/* Styles pour les suggestions (à ajouter à la fin du fichier) */
+
+#suggestionsFlowPane {
+    -fx-background-color: transparent;
+}
+
+.suggestion-card {
+    -fx-background-color: white;
+    -fx-background-radius: 16;
+    -fx-padding: 16;
+    -fx-cursor: hand;
+    -fx-border-color: #f0f0f0;
+    -fx-border-width: 1;
+    -fx-border-radius: 16;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 5, 0, 0, 1);
+}
+
+.suggestion-card:hover {
+    -fx-effect: dropshadow(three-pass-box, rgba(255,107,0,0.3), 12, 0, 0, 3);
+    -fx-border-color: #ff6b00;
+    -fx-border-width: 2;
+}
+
+.suggestion-type-badge {
+    -fx-background-color: #fff3e8;
+    -fx-text-fill: #ff6b00;
+    -fx-background-radius: 15;
+    -fx-padding: 4 12;
+    -fx-font-size: 11;
+    -fx-font-weight: bold;
+}
+
+.suggestion-name {
+    -fx-font-size: 14;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1a1a1a;
+    -fx-wrap-text: true;
+}
+
+.suggestion-distance {
+    -fx-text-fill: #888;
+    -fx-font-size: 11;
+}
+
+.suggestion-view-button {
+    -fx-text-fill: #ff6b00;
+    -fx-font-size: 11;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-padding: 8 0 0 0;
+}
+
+.suggestion-view-button:hover {
+    -fx-text-fill: #f5a623;
+    -fx-underline: true;
+}
+/* Styles pour le défilement horizontal des suggestions */
+
+#suggestionsHBox {
+    -fx-background-color: transparent;
+    -fx-min-height: 200;
+}
+
+#btnScrollLeft, #btnScrollRight {
+    -fx-background-color: #fff3e8;
+    -fx-text-fill: #ff6b00;
+    -fx-background-radius: 20;
+    -fx-padding: 5 10;
+    -fx-font-size: 14;
+    -fx-cursor: hand;
+    -fx-font-weight: bold;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 3, 0, 0, 1);
+    -fx-transition: all 0.2s ease;
+}
+
+#btnScrollLeft:hover, #btnScrollRight:hover {
+    -fx-background-color: #ff6b00;
+    -fx-text-fill: white;
+    -fx-effect: dropshadow(three-pass-box, rgba(255,107,0,0.3), 8, 0, 0, 2);
+    -fx-scale-x: 1.1;
+    -fx-scale-y: 1.1;
+}
+
+#btnScrollLeft:pressed, #btnScrollRight:pressed {
+    -fx-scale-x: 0.95;
+    -fx-scale-y: 0.95;
+}
+
+/* Personnalisation de la scrollbar horizontale */
+.scroll-pane .scroll-bar:horizontal {
+    -fx-background-color: transparent;
+    -fx-pref-height: 8;
+    -fx-padding: 2 0;
+}
+
+.scroll-pane .scroll-bar:horizontal .thumb {
+    -fx-background-color: #ff6b00;
+    -fx-background-radius: 4;
+    -fx-opacity: 0.6;
+    -fx-transition: all 0.2s ease;
+}
+
+.scroll-pane .scroll-bar:horizontal .thumb:hover {
+    -fx-opacity: 1;
+    -fx-background-color: #f5a623;
+}
+
+.scroll-pane .scroll-bar:horizontal .track {
+    -fx-background-color: #f0f0f0;
+    -fx-background-radius: 4;
+    -fx-border-color: transparent;
+}
+
+.scroll-pane .scroll-bar:horizontal .increment-button,
+.scroll-pane .scroll-bar:horizontal .decrement-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+    -fx-opacity: 0;
+}
+
+.scroll-pane .scroll-bar:horizontal .increment-arrow,
+.scroll-pane .scroll-bar:horizontal .decrement-arrow {
+    -fx-background-color: transparent;
+}
+
+/* Animation de chargement (skeleton) */
+@keyframes loading {
+    0% { -fx-background-position: -200% 0; }
+    100% { -fx-background-position: 200% 0; }
+}
+
+.loading-skeleton {
+    -fx-background-color: linear-gradient(to right, #f0f0f0 0%, #e0e0e0 50%, #f0f0f0 100%);
+    -fx-background-size: 200% 100%;
+    -fx-animation: loading 1.5s infinite;
+}
+
+/* Amélioration des cartes pour le défilement */
+.suggestion-card {
+    -fx-background-color: white;
+    -fx-background-radius: 16;
+    -fx-padding: 16;
+    -fx-cursor: hand;
+    -fx-border-color: #f0f0f0;
+    -fx-border-width: 1;
+    -fx-border-radius: 16;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 5, 0, 0, 1);
+    -fx-transition: all 0.2s ease;
+}
+
+.suggestion-card:hover {
+    -fx-effect: dropshadow(three-pass-box, rgba(255,107,0,0.3), 12, 0, 0, 3);
+    -fx-border-color: #ff6b00;
+    -fx-border-width: 2;
+    -fx-translate-y: -2;
+}
+
+/* Style pour le message "aucun résultat" */
+.no-suggestions-container {
+    -fx-alignment: center;
+    -fx-padding: 30;
+    -fx-min-width: 800;
+}
+
+.no-suggestions-icon {
+    -fx-font-size: 48;
+}
+
+.no-suggestions-message {
+    -fx-text-fill: #888;
+    -fx-font-size: 14;
+}
+
+.no-suggestions-submessage {
+    -fx-text-fill: #aaa;
+    -fx-font-size: 12;
+}

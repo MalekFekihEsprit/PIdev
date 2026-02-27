@@ -1,0 +1,330 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.shape.Rectangle?>
+
+<BorderPane prefHeight="900" prefWidth="1400" style="-fx-background-color: #0a0e27;" stylesheets="@activitesback.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.ACTback">
+
+    <!-- ===== TOP NAVIGATION BAR ===== -->
+    <top>
+        <VBox>
+            <!-- Main Navigation Bar -->
+            <HBox alignment="CENTER_LEFT" spacing="20" style="-fx-background-color: #111633; -fx-border-color: #1e2749; -fx-border-width: 0 0 1 0;">
+                <padding>
+                    <Insets bottom="20" left="32" right="32" top="20" />
+                </padding>
+
+                <!-- Logo Section -->
+                <HBox alignment="CENTER" spacing="10">
+                    <Circle fill="linear-gradient(from 0% 0% to 100% 100%, #ff8c42, #ff6b4a)" radius="16" />
+                    <Label style="-fx-font-family: 'Clash Display'; -fx-font-size: 26; -fx-font-weight: bold; -fx-text-fill: #ffffff;" text="TravelMate" />
+                    <Label style="-fx-background-color: #ff8c42; -fx-text-fill: white; -fx-background-radius: 12; -fx-padding: 4 10; -fx-font-size: 10; -fx-font-weight: bold;" text="PRO" />
+                </HBox>
+
+                <Region HBox.hgrow="ALWAYS" />
+
+                <!-- Search Bar -->
+                <HBox alignment="CENTER" spacing="8" style="-fx-background-color: #1e2749; -fx-background-radius: 20; -fx-padding: 8 20;">
+                    <Label style="-fx-font-size: 14;" text="🔍" />
+                    <TextField fx:id="searchField" prefWidth="200" promptText="Rechercher une activité..." style="-fx-background-color: transparent; -fx-text-fill: #ffffff; -fx-prompt-text-fill: #64748b; -fx-border-color: transparent; -fx-font-size: 13;" />
+                </HBox>
+
+                <!-- Notifications -->
+                <HBox alignment="CENTER" style="-fx-background-color: #1e2749; -fx-background-radius: 50%; -fx-min-width: 40; -fx-min-height: 40; -fx-cursor: hand;">
+                    <Label style="-fx-font-size: 16;" text="🔔" />
+                </HBox>
+
+                <!-- User Profile -->
+                <HBox fx:id="userProfileBox" alignment="CENTER" spacing="10" style="-fx-background-color: #1e2749; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand;">
+                    <Circle fill="linear-gradient(from 0% 0% to 100% 100%, #ff8c42, #ff6b4a)" radius="16" />
+                    <VBox spacing="0">
+                        <Label fx:id="lblUserName" style="-fx-text-fill: #ffffff; -fx-font-weight: 600; -fx-font-size: 13;" text="Yosr Boutaieb" />
+                        <Label fx:id="lblUserRole" style="-fx-text-fill: #64748b; -fx-font-size: 10;" text="Administrateur" />
+                    </VBox>
+                    <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 12;" text="▼" />
+                </HBox>
+            </HBox>
+
+            <!-- Secondary Navigation - Filtres rapides + boutons d'action -->
+            <HBox alignment="CENTER_LEFT" spacing="16" style="-fx-background-color: #0a0e27; -fx-border-color: #1e2749; -fx-border-width: 0 0 1 0; -fx-padding: 8 32;">
+                <HBox alignment="CENTER" spacing="8">
+                    <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 12; -fx-font-weight: 500;" text="FILTRES RAPIDES :" />
+                    <Label style="-fx-background-color: rgba(255,140,66,0.15); -fx-text-fill: #ff8c42; -fx-background-radius: 16; -fx-padding: 4 12; -fx-font-size: 11; -fx-cursor: hand;" text="Toutes les activités" />
+                    <Label style="-fx-background-color: #1e2749; -fx-text-fill: #94a3b8; -fx-background-radius: 16; -fx-padding: 4 12; -fx-font-size: 11; -fx-cursor: hand;" text="Actives" />
+                    <Label style="-fx-background-color: #1e2749; -fx-text-fill: #94a3b8; -fx-background-radius: 16; -fx-padding: 4 12; -fx-font-size: 11; -fx-cursor: hand;" text="Récentes" />
+                </HBox>
+
+                <Region HBox.hgrow="ALWAYS" />
+
+                <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 13;" text="📅 Février 2026" />
+
+                <!-- Bouton Front Office (vert) -->
+                <Button fx:id="btnFrontOffice" onAction="#handleFrontOffice" style="-fx-background-color: #10b981; -fx-text-fill: white; -fx-font-weight: 600; -fx-background-radius: 20; -fx-padding: 8 20; -fx-cursor: hand; -fx-font-size: 12; -fx-border-color: #34d399; -fx-border-width: 1; -fx-border-radius: 20;" text="👤 Front Office" />
+
+                <!-- Bouton nouvelle activité (orange) -->
+                <Button onAction="#handleAjouter" style="-fx-background-color: #ff8c42; -fx-text-fill: white; -fx-font-weight: 600; -fx-background-radius: 20; -fx-padding: 8 20; -fx-cursor: hand; -fx-font-size: 12;" text="+ Nouvelle Activité" />
+            </HBox>
+        </VBox>
+    </top>
+
+    <!-- ===== SIDEBAR DASHBOARD (gauche) avec ScrollPane ===== -->
+    <left>
+        <ScrollPane fitToHeight="true" fitToWidth="true" style="-fx-background: #111633; -fx-background-color: #111633; -fx-border-color: #1e2749; -fx-border-width: 0 1 0 0;">
+            <VBox prefWidth="260" spacing="8" style="-fx-background-color: #111633;">
+                <padding>
+                    <Insets bottom="24" left="20" right="20" top="24" />
+                </padding>
+
+                <!-- DASHBOARD TITLE -->
+                <Label style="-fx-font-size: 12; -fx-font-weight: 700; -fx-text-fill: #64748b; -fx-letter-spacing: 1.5;" text="DASHBOARD" />
+
+                <!-- MENU NAVIGATION (tous les boutons) -->
+                <VBox spacing="4">
+                    <padding>
+                        <Insets top="12" />
+                    </padding>
+
+                    <!-- Destinations -->
+                    <HBox fx:id="btnDestinations" alignment="CENTER_LEFT" spacing="12" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;">
+                        <Label style="-fx-font-size: 16;" text="🌍" />
+                        <Label style="-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;" text="Destinations" />
+                    </HBox>
+
+                    <!-- Hébergement -->
+                    <HBox fx:id="btnHebergement" alignment="CENTER_LEFT" spacing="12" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;">
+                        <Label style="-fx-font-size: 16;" text="🏨" />
+                        <Label style="-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;" text="Hébergement" />
+                    </HBox>
+
+                    <!-- Utilisateurs -->
+                    <HBox fx:id="btnUsers" alignment="CENTER_LEFT" spacing="12" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;">
+                        <Label style="-fx-font-size: 16;" text="👥" />
+                        <Label style="-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;" text="Utilisateurs" />
+                    </HBox>
+
+                    <!-- Statistiques -->
+                    <HBox fx:id="btnStats" alignment="CENTER_LEFT" spacing="12" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;">
+                        <Label style="-fx-font-size: 16;" text="📊" />
+                        <Label style="-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;" text="Statistiques" />
+                    </HBox>
+
+                    <!-- Itinéraires -->
+                    <HBox fx:id="btnItineraires" alignment="CENTER_LEFT" spacing="12" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;">
+                        <Label style="-fx-font-size: 16;" text="🗺️" />
+                        <Label style="-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;" text="Itinéraires" />
+                    </HBox>
+
+                    <!-- Catégories (NOUVEAU) -->
+                    <HBox fx:id="btnCategories" alignment="CENTER_LEFT" spacing="12" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;">
+                        <Label style="-fx-font-size: 16;" text="📑" />
+                        <Label style="-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;" text="Catégories" />
+                        <Region HBox.hgrow="ALWAYS" />
+                        <Label fx:id="lblCategoriesCount" style="-fx-background-color: #1e2749; -fx-background-radius: 10; -fx-padding: 2 8; -fx-text-fill: #94a3b8; -fx-font-size: 11;" text="0" />
+                    </HBox>
+
+                    <!-- Activités - Actif (page courante) -->
+                    <HBox alignment="CENTER_LEFT" spacing="12" style="-fx-background-color: linear-gradient(to right, #ff8c42, #ff6b4a); -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;">
+                        <Label style="-fx-font-size: 16;" text="🏄" />
+                        <Label style="-fx-text-fill: white; -fx-font-weight: 600; -fx-font-size: 14;" text="Activités" />
+                        <Region HBox.hgrow="ALWAYS" />
+                        <Label fx:id="lblTotalActivites" style="-fx-background-color: rgba(255,255,255,0.2); -fx-background-radius: 10; -fx-padding: 2 8; -fx-text-fill: white; -fx-font-size: 11; -fx-font-weight: bold;" text="0" />
+                    </HBox>
+
+                    <!-- Voyages -->
+                    <HBox fx:id="btnVoyages" alignment="CENTER_LEFT" spacing="12" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;">
+                        <Label style="-fx-font-size: 16;" text="✈️" />
+                        <Label style="-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;" text="Voyages" />
+                    </HBox>
+
+                    <!-- Budgets -->
+                    <HBox fx:id="btnBudgets" alignment="CENTER_LEFT" spacing="12" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;">
+                        <Label style="-fx-font-size: 16;" text="💰" />
+                        <Label style="-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;" text="Budgets" />
+                    </HBox>
+                </VBox>
+
+                <!-- DIVIDER -->
+                <Rectangle fill="#1e2749" height="1" width="220">
+                    <VBox.margin>
+                        <Insets bottom="12" top="12" />
+                    </VBox.margin>
+                </Rectangle>
+
+                <!-- STATISTIQUES RAPIDES -->
+                <VBox spacing="12" style="-fx-background-color: #0a0e27; -fx-background-radius: 16; -fx-padding: 16; -fx-border-color: #1e2749; -fx-border-width: 1; -fx-border-radius: 16;">
+                    <Label style="-fx-font-weight: 600; -fx-text-fill: #64748b; -fx-font-size: 11; -fx-letter-spacing: 1;" text="STATISTIQUES" />
+                    <VBox spacing="10">
+                        <!-- Total Activités -->
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <Label style="-fx-font-size: 14;" text="🏄" />
+                            <VBox spacing="2" HBox.hgrow="ALWAYS">
+                                <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 11;" text="Total activités" />
+                                <Label fx:id="lblStatActivites" style="-fx-font-weight: bold; -fx-text-fill: #ff8c42; -fx-font-size: 14;" text="0" />
+                            </VBox>
+                        </HBox>
+                        <!-- Actives -->
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <Label style="-fx-font-size: 14;" text="✅" />
+                            <VBox spacing="2" HBox.hgrow="ALWAYS">
+                                <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 11;" text="Actives" />
+                                <Label fx:id="lblStatActives" style="-fx-font-weight: bold; -fx-text-fill: #34d399; -fx-font-size: 14;" text="0" />
+                            </VBox>
+                        </HBox>
+                        <!-- Inactives -->
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <Label style="-fx-font-size: 14;" text="⛔" />
+                            <VBox spacing="2" HBox.hgrow="ALWAYS">
+                                <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 11;" text="Inactives" />
+                                <Label fx:id="lblStatInactives" style="-fx-font-weight: bold; -fx-text-fill: #ef4444; -fx-font-size: 14;" text="0" />
+                            </VBox>
+                        </HBox>
+                    </VBox>
+                </VBox>
+
+            </VBox>
+        </ScrollPane>
+    </left>
+
+    <!-- ===== BOTTOM STATUS BAR ===== -->
+    <bottom>
+        <HBox alignment="CENTER_LEFT" spacing="20" style="-fx-background-color: #111633; -fx-border-color: #1e2749; -fx-border-width: 1 0 0 0; -fx-padding: 10 28;">
+            <Label style="-fx-text-fill: #ff8c42; -fx-font-size: 11; -fx-font-weight: 500;" text="● Connecté" />
+            <Region HBox.hgrow="ALWAYS" />
+            <Label fx:id="lblLastUpdate" style="-fx-text-fill: #64748b; -fx-font-size: 11;" text="©️ 2026 TravelMate" />
+        </HBox>
+    </bottom>
+
+    <!-- ===== MAIN CONTENT (centre) ===== -->
+    <center>
+        <ScrollPane fitToHeight="true" fitToWidth="true" style="-fx-background: #0a0e27; -fx-border-color: transparent; -fx-background-color: transparent;">
+            <content>
+                <VBox spacing="24" style="-fx-background-color: #0a0e27; -fx-padding: 32;">
+
+                    <!-- Page Header -->
+                    <HBox alignment="CENTER_LEFT" spacing="16">
+                        <Label style="-fx-font-size: 28;" text="🏄" />
+                        <Label style="-fx-font-family: 'Clash Display'; -fx-font-size: 28; -fx-font-weight: bold; -fx-text-fill: #ffffff;" text="Gestion des Activités" />
+                        <Label style="-fx-background-color: #ff8c42; -fx-text-fill: white; -fx-background-radius: 12; -fx-padding: 6 14; -fx-font-size: 11; -fx-font-weight: bold;" text="BACK OFFICE" />
+                        <Label style="-fx-text-fill: #64748b; -fx-font-size: 13;" text="Administration et configuration des activités de voyage" />
+                    </HBox>
+
+                    <!-- KPI Cards -->
+                    <HBox spacing="16">
+                        <!-- Total Activités -->
+                        <VBox spacing="12" style="-fx-background-color: linear-gradient(to bottom right, #1e2749, #111633); -fx-background-radius: 20; -fx-padding: 20; -fx-border-color: #ff8c42; -fx-border-width: 2; -fx-border-radius: 20;" HBox.hgrow="ALWAYS">
+                            <HBox alignment="CENTER_LEFT" spacing="12">
+                                <VBox alignment="CENTER" style="-fx-background-color: rgba(255,140,66,0.15); -fx-background-radius: 14; -fx-min-width: 48; -fx-min-height: 48;">
+                                    <Label style="-fx-font-size: 22;" text="🏄" />
+                                </VBox>
+                                <VBox spacing="4">
+                                    <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 11; -fx-font-weight: 500;" text="TOTAL ACTIVITÉS" />
+                                    <Label fx:id="lblKpiTotal" style="-fx-font-family: 'Clash Display'; -fx-font-size: 26; -fx-font-weight: bold; -fx-text-fill: #ffffff;" text="0" />
+                                </VBox>
+                            </HBox>
+                        </VBox>
+
+                        <!-- Actives -->
+                        <VBox spacing="12" style="-fx-background-color: linear-gradient(to bottom right, #1e2749, #111633); -fx-background-radius: 20; -fx-padding: 20; -fx-border-color: #34d399; -fx-border-width: 1; -fx-border-radius: 20;" HBox.hgrow="ALWAYS">
+                            <HBox alignment="CENTER_LEFT" spacing="12">
+                                <VBox alignment="CENTER" style="-fx-background-color: rgba(52,211,153,0.15); -fx-background-radius: 14; -fx-min-width: 48; -fx-min-height: 48;">
+                                    <Label style="-fx-font-size: 22;" text="✅" />
+                                </VBox>
+                                <VBox spacing="4">
+                                    <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 11; -fx-font-weight: 500;" text="ACTIVES" />
+                                    <Label fx:id="lblKpiActives" style="-fx-font-family: 'Clash Display'; -fx-font-size: 26; -fx-font-weight: bold; -fx-text-fill: #34d399;" text="0" />
+                                </VBox>
+                            </HBox>
+                        </VBox>
+
+                        <!-- Inactives -->
+                        <VBox spacing="12" style="-fx-background-color: linear-gradient(to bottom right, #1e2749, #111633); -fx-background-radius: 20; -fx-padding: 20; -fx-border-color: #ef4444; -fx-border-width: 1; -fx-border-radius: 20;" HBox.hgrow="ALWAYS">
+                            <HBox alignment="CENTER_LEFT" spacing="12">
+                                <VBox alignment="CENTER" style="-fx-background-color: rgba(239,68,68,0.15); -fx-background-radius: 14; -fx-min-width: 48; -fx-min-height: 48;">
+                                    <Label style="-fx-font-size: 22;" text="⛔" />
+                                </VBox>
+                                <VBox spacing="4">
+                                    <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 11; -fx-font-weight: 500;" text="INACTIVES" />
+                                    <Label fx:id="lblKpiInactives" style="-fx-font-family: 'Clash Display'; -fx-font-size: 26; -fx-font-weight: bold; -fx-text-fill: #ef4444;" text="0" />
+                                </VBox>
+                            </HBox>
+                        </VBox>
+
+                        <!-- Budget Moyen -->
+                        <VBox spacing="12" style="-fx-background-color: linear-gradient(to bottom right, #1e2749, #111633); -fx-background-radius: 20; -fx-padding: 20; -fx-border-color: #60a5fa; -fx-border-width: 1; -fx-border-radius: 20;" HBox.hgrow="ALWAYS">
+                            <HBox alignment="CENTER_LEFT" spacing="12">
+                                <VBox alignment="CENTER" style="-fx-background-color: rgba(96,165,250,0.15); -fx-background-radius: 14; -fx-min-width: 48; -fx-min-height: 48;">
+                                    <Label style="-fx-font-size: 22;" text="💶" />
+                                </VBox>
+                                <VBox spacing="4">
+                                    <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 11; -fx-font-weight: 500;" text="BUDGET MOYEN (€)" />
+                                    <Label fx:id="lblKpiBudget" style="-fx-font-family: 'Clash Display'; -fx-font-size: 26; -fx-font-weight: bold; -fx-text-fill: #60a5fa;" text="0" />
+                                </VBox>
+                            </HBox>
+                        </VBox>
+                    </HBox>
+
+                    <!-- Action Buttons Bar -->
+                    <HBox alignment="CENTER_LEFT" spacing="12">
+                        <Button fx:id="btnModifier" disable="true" onAction="#handleModifier" style="-fx-background-color: rgba(255,140,66,0.15); -fx-text-fill: #ff8c42; -fx-font-weight: 600; -fx-background-radius: 10; -fx-padding: 10 20; -fx-cursor: hand; -fx-border-color: #ff8c42; -fx-border-width: 1; -fx-border-radius: 10; -fx-font-size: 13;" text="✏ Modifier" />
+                        <Button fx:id="btnSupprimer" disable="true" onAction="#handleSupprimer" style="-fx-background-color: rgba(239,68,68,0.15); -fx-text-fill: #ef4444; -fx-font-weight: 600; -fx-background-radius: 10; -fx-padding: 10 20; -fx-cursor: hand; -fx-border-color: #ef4444; -fx-border-width: 1; -fx-border-radius: 10; -fx-font-size: 13;" text="🗑 Supprimer" />
+                        <Region HBox.hgrow="ALWAYS" />
+                        <Button onAction="#handleActualiser" style="-fx-background-color: #1e2749; -fx-text-fill: #94a3b8; -fx-background-radius: 10; -fx-padding: 10 20; -fx-cursor: hand; -fx-border-color: #2d3a5f; -fx-border-width: 1; -fx-border-radius: 10; -fx-font-weight: 500; -fx-font-size: 13;" text="🔄 Actualiser" />
+                    </HBox>
+
+                    <!-- TABLE SECTION -->
+                    <VBox spacing="12">
+                        <HBox alignment="CENTER_LEFT" spacing="12">
+                            <Label style="-fx-font-family: 'Clash Display'; -fx-font-size: 20; -fx-font-weight: 600; -fx-text-fill: #ffffff;" text="Liste des Activités" />
+                            <Label fx:id="lblCountBadge" style="-fx-background-color: rgba(255,140,66,0.15); -fx-text-fill: #ff8c42; -fx-background-radius: 20; -fx-padding: 4 12; -fx-font-weight: 600; -fx-font-size: 11;" text="0 activités" />
+                        </HBox>
+
+                        <!-- TableView -->
+                        <TableView fx:id="tableActivites" style="-fx-background-color: #1e2749; -fx-background-radius: 20; -fx-border-color: #ff8c42; -fx-border-width: 2; -fx-border-radius: 20;" VBox.vgrow="ALWAYS">
+                            <columns>
+                                <TableColumn fx:id="colId" prefWidth="60" style="-fx-alignment: CENTER;" text="ID" />
+                                <TableColumn fx:id="colNom" prefWidth="150" text="Nom" />
+                                <TableColumn fx:id="colDescription" prefWidth="200" text="Description" />
+                                <TableColumn fx:id="colBudget" prefWidth="100" style="-fx-alignment: CENTER;" text="Budget (€)" />
+                                <TableColumn fx:id="colNiveauDifficulte" prefWidth="100" style="-fx-alignment: CENTER;" text="Difficulté" />
+                                <TableColumn fx:id="colLieu" prefWidth="120" text="Lieu" />
+                                <TableColumn fx:id="colAgeMin" prefWidth="80" style="-fx-alignment: CENTER;" text="Âge Min" />
+                                <TableColumn fx:id="colStatut" prefWidth="100" style="-fx-alignment: CENTER;" text="Statut" />
+                                <TableColumn fx:id="colDuree" prefWidth="90" style="-fx-alignment: CENTER;" text="Durée (h)" />
+                                <TableColumn fx:id="colCategorie" prefWidth="120" style="-fx-alignment: CENTER;" text="Catégorie" />
+                                <TableColumn fx:id="colImage" prefWidth="80" style="-fx-alignment: CENTER;" text="Image" />
+                            </columns>
+
+                            <placeholder>
+                                <VBox alignment="CENTER" spacing="12">
+                                    <Label style="-fx-font-size: 48;" text="📊" />
+                                    <Label style="-fx-text-fill: #64748b; -fx-font-size: 14;" text="Aucune activité à afficher" />
+                                    <Button onAction="#handleAjouter" style="-fx-background-color: #ff8c42; -fx-text-fill: white; -fx-font-weight: 600; -fx-background-radius: 10; -fx-padding: 10 20; -fx-cursor: hand;" text="+ Ajouter une activité" />
+                                </VBox>
+                            </placeholder>
+                        </TableView>
+                    </VBox>
+
+                    <!-- Bottom Gradient Decoration -->
+                    <Rectangle arcHeight="8" arcWidth="8" fill="linear-gradient(to right, #ff8c42, #ff6b4a, #6366f1)" height="4" width="1000">
+                        <VBox.margin>
+                            <Insets top="20" />
+                        </VBox.margin>
+                    </Rectangle>
+
+                </VBox>
+            </content>
+        </ScrollPane>
+    </center>
+
+</BorderPane>

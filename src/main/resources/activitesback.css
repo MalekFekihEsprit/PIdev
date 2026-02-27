@@ -1,0 +1,408 @@
+/* ==================== BACK OFFICE - DARK THEME WITH ORANGE ACCENT ==================== */
+
+/* ==================== ROOT & GLOBAL STYLES ==================== */
+.root {
+    -fx-background-color: #0a0e27;
+    -fx-font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* ==================== SCROLLPANE ==================== */
+.scroll-pane {
+    -fx-background-color: #0a0e27;
+    -fx-border-color: transparent;
+}
+
+.scroll-pane > .viewport {
+    -fx-background-color: #0a0e27;
+}
+
+.scroll-bar:vertical {
+    -fx-background-color: #0a0e27;
+}
+
+.scroll-bar:vertical .track {
+    -fx-background-color: #1e2749;
+    -fx-border-color: transparent;
+    -fx-background-radius: 4;
+}
+
+.scroll-bar:vertical .thumb {
+    -fx-background-color: #2d3a5f;
+    -fx-background-radius: 4;
+}
+
+.scroll-bar:vertical .thumb:hover {
+    -fx-background-color: #3d4a6f;
+}
+
+.scroll-bar:vertical .increment-button,
+.scroll-bar:vertical .decrement-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+/* ==================== BUTTONS - DARK THEME ==================== */
+.button {
+    -fx-cursor: hand;
+    -fx-effect: none;
+}
+
+.button:hover {
+    -fx-opacity: 0.9;
+}
+
+.button:pressed {
+    -fx-scale-y: 0.98;
+    -fx-scale-x: 0.98;
+}
+
+/* ==================== PIE CHART - DARK THEME ==================== */
+.chart {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.chart-pie-label {
+    -fx-font-size: 11px;
+    -fx-fill: white;
+}
+
+.chart-pie-label-line {
+    -fx-stroke: #64748b;
+}
+
+/* Pie Chart Colors - Orange theme */
+.default-color0.chart-pie { -fx-pie-color: #ff8c42; }
+.default-color1.chart-pie { -fx-pie-color: #ff6b4a; }
+.default-color2.chart-pie { -fx-pie-color: #ffa366; }
+.default-color3.chart-pie { -fx-pie-color: #ffb886; }
+.default-color4.chart-pie { -fx-pie-color: #ffd4b3; }
+
+/* ==================== PROGRESS BAR - DARK THEME ==================== */
+.progress-bar {
+    -fx-pref-height: 10;
+}
+
+.progress-bar > .track {
+    -fx-background-color: #2d3a5f;
+    -fx-background-radius: 5;
+}
+
+.progress-bar > .bar {
+    -fx-background-color: linear-gradient(to right, #ff8c42, #ff6b4a);
+    -fx-background-radius: 5;
+    -fx-padding: 0;
+}
+
+/* ==================== HOVER EFFECTS ==================== */
+.hover-card {
+    -fx-cursor: hand;
+}
+
+.hover-card:hover {
+    -fx-translate-y: -3;
+    -fx-effect: dropshadow(gaussian, rgba(255, 140, 66, 0.3), 15, 0, 0, 5);
+}
+
+/* ==================== CUSTOM STYLES FOR SPECIFIC ELEMENTS ==================== */
+
+/* Activity Cards Hover Effect */
+VBox[style*="cursor: hand"]:hover {
+    -fx-border-color: #ff8c42 !important;
+    -fx-effect: dropshadow(gaussian, rgba(255, 140, 66, 0.3), 15, 0, 0, 5);
+}
+
+/* Navigation Items Hover */
+HBox[style*="cursor: hand"]:hover {
+    -fx-background-color: rgba(255, 140, 66, 0.1) !important;
+}
+
+/* Search Bar Focus */
+HBox[style*="background-color: #1e2749"]:hover {
+    -fx-background-color: #242e52 !important;
+}
+
+/* ==================== ANIMATIONS ==================== */
+@keyframes fadeIn {
+    from {
+        -fx-opacity: 0;
+        -fx-translate-y: 10;
+    }
+    to {
+        -fx-opacity: 1;
+        -fx-translate-y: 0;
+    }
+}
+
+@keyframes slideIn {
+    from {
+        -fx-translate-x: -20;
+        -fx-opacity: 0;
+    }
+    to {
+        -fx-translate-x: 0;
+        -fx-opacity: 1;
+    }
+}
+
+/* ==================== TEXT SELECTION ==================== */
+.text {
+    -fx-selection-fill: #ff8c42;
+    -fx-selection-bar-fill: rgba(255, 140, 66, 0.3);
+}
+
+/* ==================== LABEL STYLES ==================== */
+.label {
+    -fx-text-fill: #ffffff;
+}
+
+.label-secondary {
+    -fx-text-fill: #94a3b8;
+}
+
+.label-muted {
+    -fx-text-fill: #64748b;
+}
+
+/* ==================== CARD SHADOWS ==================== */
+.card-shadow {
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 10, 0, 0, 3);
+}
+
+.card-shadow-hover:hover {
+    -fx-effect: dropshadow(gaussian, rgba(255, 140, 66, 0.4), 15, 0, 0, 5);
+}
+
+/* ==================== GRADIENT BACKGROUNDS ==================== */
+.gradient-orange {
+    -fx-background-color: linear-gradient(to bottom right, #ff8c42, #ff6b4a);
+}
+
+.gradient-dark {
+    -fx-background-color: linear-gradient(to bottom, #111633, #0a0e27);
+}
+
+/* ==================== BORDER UTILITIES ==================== */
+.border-orange {
+    -fx-border-color: #ff8c42;
+    -fx-border-width: 1;
+    -fx-border-radius: 12;
+}
+
+.border-dark {
+    -fx-border-color: #2d3a5f;
+    -fx-border-width: 1;
+    -fx-border-radius: 12;
+}
+
+.border-left-orange {
+    -fx-border-color: #ff8c42;
+    -fx-border-width: 0 0 0 6;
+    -fx-border-radius: 20;
+}
+
+/* ==================== BACKGROUND UTILITIES ==================== */
+.bg-primary {
+    -fx-background-color: #1e2749;
+}
+
+.bg-secondary {
+    -fx-background-color: #111633;
+}
+
+.bg-dark {
+    -fx-background-color: #0a0e27;
+}
+
+.bg-orange {
+    -fx-background-color: #ff8c42;
+}
+
+.bg-orange-light {
+    -fx-background-color: rgba(255, 140, 66, 0.15);
+}
+
+.bg-red-light {
+    -fx-background-color: rgba(239, 68, 68, 0.15);
+}
+
+/* ==================== TEXT UTILITIES ==================== */
+.text-white {
+    -fx-text-fill: #ffffff;
+}
+
+.text-orange {
+    -fx-text-fill: #ff8c42;
+}
+
+.text-muted {
+    -fx-text-fill: #94a3b8;
+}
+
+.text-dim {
+    -fx-text-fill: #64748b;
+}
+
+.text-red {
+    -fx-text-fill: #ef4444;
+}
+
+/* ==================== ROUNDED CORNERS ==================== */
+.rounded-sm {
+    -fx-background-radius: 8;
+}
+
+.rounded-md {
+    -fx-background-radius: 12;
+}
+
+.rounded-lg {
+    -fx-background-radius: 16;
+}
+
+.rounded-xl {
+    -fx-background-radius: 20;
+}
+
+.rounded-full {
+    -fx-background-radius: 50%;
+}
+
+/* ==================== SPACING UTILITIES ==================== */
+.padding-sm {
+    -fx-padding: 8;
+}
+
+.padding-md {
+    -fx-padding: 16;
+}
+
+.padding-lg {
+    -fx-padding: 24;
+}
+
+.padding-xl {
+    -fx-padding: 32;
+}
+
+/* ==================== FONT WEIGHTS ==================== */
+.font-normal {
+    -fx-font-weight: 400;
+}
+
+.font-medium {
+    -fx-font-weight: 500;
+}
+
+.font-semibold {
+    -fx-font-weight: 600;
+}
+
+.font-bold {
+    -fx-font-weight: 700;
+}
+
+/* ==================== CURSOR UTILITIES ==================== */
+.cursor-pointer {
+    -fx-cursor: hand;
+}
+
+.cursor-default {
+    -fx-cursor: default;
+}
+
+/* ==================== OPACITY UTILITIES ==================== */
+.opacity-50 {
+    -fx-opacity: 0.5;
+}
+
+.opacity-75 {
+    -fx-opacity: 0.75;
+}
+
+.opacity-90 {
+    -fx-opacity: 0.9;
+}
+
+/* ==================== HOVER STATES ==================== */
+.hover-brighten:hover {
+    -fx-brightness: 1.1;
+}
+
+.hover-dim:hover {
+    -fx-opacity: 0.8;
+}
+
+.hover-scale:hover {
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+}
+
+/* ==================== FOCUS STATES ==================== */
+.button:focused,
+.text-field:focused,
+.text-area:focused {
+    -fx-border-color: #ff8c42;
+    -fx-border-width: 2;
+    -fx-effect: dropshadow(gaussian, rgba(255, 140, 66, 0.3), 8, 0, 0, 0);
+}
+
+/* ==================== DISABLED STATES ==================== */
+.button:disabled {
+    -fx-opacity: 0.4;
+    -fx-cursor: default;
+}
+
+.label:disabled {
+    -fx-opacity: 0.5;
+}
+
+/* ==================== CUSTOM SCROLLBAR FOR SCROLL PANE ==================== */
+.scroll-pane:focused {
+    -fx-border-color: transparent;
+}
+
+/* ==================== TABLE VIEW DARK THEME ==================== */
+.table-view {
+    -fx-background-color: #1e2749;
+    -fx-border-color: #ff8c42;
+    -fx-border-width: 1;
+    -fx-border-radius: 20;
+}
+
+.table-view .column-header-background {
+    -fx-background-color: #111633;
+}
+
+.table-view .column-header {
+    -fx-background-color: transparent;
+    -fx-text-fill: #94a3b8;
+    -fx-font-weight: 600;
+    -fx-font-size: 12;
+}
+
+.table-view .table-cell {
+    -fx-text-fill: #ffffff;
+    -fx-background-color: transparent;
+    -fx-border-color: #2d3a5f;
+}
+
+.table-row-cell {
+    -fx-background-color: transparent;
+}
+
+.table-row-cell:hover {
+    -fx-background-color: rgba(255, 140, 66, 0.1);
+}
+
+.table-row-cell:selected {
+    -fx-background-color: rgba(255, 140, 66, 0.2);
+    -fx-border-color: #ff8c42;
+}
+
+/* ==================== RESPONSIVE ADJUSTMENTS ==================== */
+@media screen and (max-width: 1200px) {
+    .root {
+        -fx-font-size: 12px;
+    }
+}

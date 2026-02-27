@@ -4,6 +4,7 @@ import Entities.Destination;
 import Entities.Hebergement;
 import Services.DestinationCRUD;
 import Services.HebergementCRUD;
+import Services.CategoriesCRUD;
 import Utils.UserSession;
 import Entities.User;
 import javafx.collections.FXCollections;
@@ -72,7 +73,9 @@ public class HebergementBackController implements Initializable {
     @FXML private HBox btnBudgets;
     @FXML private HBox btnUsers;
     @FXML private HBox btnStats;
+    @FXML private HBox btnCategories;
     @FXML private HBox userProfileBox;
+    @FXML private Label lblCategoriesCount;
 
     // Pagination
     @FXML private Label lblPaginationInfo;
@@ -89,6 +92,9 @@ public class HebergementBackController implements Initializable {
     private int currentPage = 1;
     private final int rowsPerPage = 10;
 
+    // Ajout de la référence manquante pour btnHebergement
+    @FXML private HBox btnHebergement;
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         hebergementCRUD = new HebergementCRUD();
@@ -103,6 +109,22 @@ public class HebergementBackController implements Initializable {
         setupUserProfile();
         updateLastUpdateTime();
         updateUserInfo();
+        loadCategoriesCount();
+
+        // Style spécial pour la page active (Hébergement)
+        if (btnHebergement != null) {
+            btnHebergement.setStyle("-fx-background-color: linear-gradient(to right, #ff8c42, #ff6b4a); -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;");
+            btnHebergement.lookupAll(".label").forEach(label -> {
+                if (label instanceof Label) {
+                    Label lbl = (Label) label;
+                    if (lbl.getText().equals("🏨")) {
+                        lbl.setStyle("-fx-font-size: 16; -fx-text-fill: white;");
+                    } else if (!lbl.getText().matches("\\d+")) {
+                        lbl.setStyle("-fx-text-fill: white; -fx-font-weight: 600; -fx-font-size: 14;");
+                    }
+                }
+            });
+        }
     }
 
     private void setupTableColumns() {
@@ -232,27 +254,39 @@ public class HebergementBackController implements Initializable {
     }
 
     private void setupNavigationButtons() {
+        // Destinations
         setupSidebarButtonHover(btnDestinations, "🌍", "Destinations");
         if (btnDestinations != null) btnDestinations.setOnMouseClicked(event -> navigateToDestinations());
 
+        // Utilisateurs
         setupSidebarButtonHover(btnUsers, "👥", "Utilisateurs");
-        if (btnUsers != null) btnUsers.setOnMouseClicked(event -> navigateToUsers());
+        if (btnUsers != null) btnUsers.setOnMouseClicked(event ->
+                showInfoAlert("Utilisateurs", "Cette fonctionnalité sera bientôt disponible"));
 
+        // Statistiques
         setupSidebarButtonHover(btnStats, "📊", "Statistiques");
-        if (btnStats != null) btnStats.setOnMouseClicked(event -> navigateToStats());
+        if (btnStats != null) btnStats.setOnMouseClicked(event ->
+                showInfoAlert("Statistiques", "Cette fonctionnalité sera bientôt disponible"));
 
+        // Itinéraires
         setupSidebarButtonHover(btnItineraires, "🗺️", "Itinéraires");
         if (btnItineraires != null) btnItineraires.setOnMouseClicked(event ->
                 showInfoAlert("Itinéraires", "Cette fonctionnalité sera bientôt disponible"));
 
+        // Activités
         setupSidebarButtonHover(btnActivites, "🏄", "Activités");
-        if (btnActivites != null) btnActivites.setOnMouseClicked(event ->
-                showInfoAlert("Activités", "Cette fonctionnalité sera bientôt disponible"));
+        if (btnActivites != null) btnActivites.setOnMouseClicked(event -> navigateToActivitesBack());
 
+        // Catégories
+        setupSidebarButtonHover(btnCategories, "📑", "Catégories");
+        if (btnCategories != null) btnCategories.setOnMouseClicked(event -> navigateToCategoriesBack());
+
+        // Voyages
         setupSidebarButtonHover(btnVoyages, "✈️", "Voyages");
         if (btnVoyages != null) btnVoyages.setOnMouseClicked(event ->
                 showInfoAlert("Voyages", "Cette fonctionnalité sera bientôt disponible"));
 
+        // Budgets
         setupSidebarButtonHover(btnBudgets, "💰", "Budgets");
         if (btnBudgets != null) btnBudgets.setOnMouseClicked(event ->
                 showInfoAlert("Budgets", "Cette fonctionnalité sera bientôt disponible"));
@@ -290,6 +324,50 @@ public class HebergementBackController implements Initializable {
         });
     }
 
+    private void navigateToActivitesBack() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/activitesback.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) btnActivites.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("TravelMate - Gestion des Activités");
+            stage.setMaximized(true);
+        } catch (IOException e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur",
+                    "Impossible d'ouvrir la gestion des activités: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void navigateToCategoriesBack() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/categoriesback.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) btnCategories.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("TravelMate - Gestion des Catégories");
+            stage.setMaximized(true);
+        } catch (IOException e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur",
+                    "Impossible d'ouvrir la gestion des catégories: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void loadCategoriesCount() {
+        try {
+            CategoriesCRUD crud = new CategoriesCRUD();
+            int count = crud.afficher().size();
+            if (lblCategoriesCount != null) {
+                lblCategoriesCount.setText(String.valueOf(count));
+            }
+        } catch (SQLException e) {
+            if (lblCategoriesCount != null) {
+                lblCategoriesCount.setText("0");
+            }
+        }
+    }
+
     private void navigateToDestinations() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/DestinationBack.fxml"));
@@ -300,34 +378,6 @@ public class HebergementBackController implements Initializable {
             stage.setMaximized(true);
         } catch (IOException e) {
             showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir les destinations: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
-    private void navigateToUsers() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/admin_users.fxml"));
-            Parent root = loader.load();
-            Stage stage = (Stage) btnUsers.getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.setTitle("TravelMate - Gestion des Utilisateurs");
-            stage.setMaximized(true);
-        } catch (IOException e) {
-            showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir la gestion des utilisateurs: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
-    private void navigateToStats() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/admin_stats.fxml"));
-            Parent root = loader.load();
-            Stage stage = (Stage) btnStats.getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.setTitle("TravelMate - Statistiques");
-            stage.setMaximized(true);
-        } catch (IOException e) {
-            showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir les statistiques: " + e.getMessage());
             e.printStackTrace();
         }
     }
