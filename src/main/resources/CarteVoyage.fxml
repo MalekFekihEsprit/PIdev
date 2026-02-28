@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Rectangle?>
+
+<VBox minWidth="750" style="-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 0; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.04), 14, 0, 0, 4); -fx-border-color: #e2e8f0; -fx-border-width: 1; -fx-border-radius: 20;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.CarteVoyageController">
+
+    <!-- Top accent bar -->
+    <Rectangle arcHeight="4" arcWidth="4" fill="linear-gradient(to right, #ff8c42, #ff6b4a)" height="4" style="-fx-background-radius: 20 20 0 0;" width="2000" />
+
+    <VBox style="-fx-padding: 18 20 18 20;">
+        <HBox spacing="16">
+            <!-- Left: Icon -->
+            <VBox alignment="CENTER" style="-fx-background-color: linear-gradient(to bottom right, #fff7ed, #ffedd5); -fx-background-radius: 18; -fx-min-width: 85; -fx-min-height: 85; -fx-max-width: 85; -fx-max-height: 85; -fx-border-color: rgba(255,140,66,0.15); -fx-border-width: 1; -fx-border-radius: 18;">
+                <Label fx:id="iconLabel" style="-fx-font-size: 42;" text="🏖" />
+            </VBox>
+
+            <!-- Center: Info -->
+            <VBox spacing="10" HBox.hgrow="ALWAYS">
+                <!-- Title + Status Row -->
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <Label fx:id="titreVoyage" style="-fx-font-size: 19; -fx-font-weight: bold; -fx-text-fill: #0f172a;" />
+                    <Label fx:id="statutVoyage" style="-fx-text-fill: white; -fx-background-radius: 20; -fx-padding: 4 14; -fx-font-size: 10; -fx-font-weight: 700;" />
+                    <Region HBox.hgrow="ALWAYS" />
+                </HBox>
+
+                <!-- Data Grid -->
+                <GridPane hgap="20" vgap="8">
+                    <columnConstraints>
+                        <ColumnConstraints percentWidth="33" />
+                        <ColumnConstraints percentWidth="33" />
+                        <ColumnConstraints percentWidth="33" />
+                    </columnConstraints>
+                    <rowConstraints>
+                        <RowConstraints />
+                        <RowConstraints />
+                    </rowConstraints>
+
+                    <!-- Row 1 -->
+                    <HBox alignment="CENTER_LEFT" spacing="8" style="-fx-background-color: #f8fafc; -fx-background-radius: 10; -fx-padding: 6 10;" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                        <Label style="-fx-font-size: 14;" text="📅" />
+                        <VBox spacing="1">
+                            <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 9; -fx-font-weight: 700;" text="DATES" />
+                            <Label fx:id="datesVoyage" style="-fx-text-fill: #0f172a; -fx-font-weight: 600; -fx-font-size: 11;" />
+                        </VBox>
+                    </HBox>
+
+                    <HBox alignment="CENTER_LEFT" spacing="8" style="-fx-background-color: #f8fafc; -fx-background-radius: 10; -fx-padding: 6 10;" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                        <Label style="-fx-font-size: 14;" text="📍" />
+                        <VBox spacing="1">
+                            <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 9; -fx-font-weight: 700;" text="DESTINATION" />
+                            <Label fx:id="destinationVoyage" style="-fx-text-fill: #0f172a; -fx-font-weight: 600; -fx-font-size: 11;" />
+                        </VBox>
+                    </HBox>
+
+                    <HBox alignment="CENTER_LEFT" spacing="8" style="-fx-background-color: #fff7ed; -fx-background-radius: 10; -fx-padding: 6 10; -fx-border-color: rgba(255,140,66,0.15); -fx-border-width: 1; -fx-border-radius: 10;" GridPane.columnIndex="2" GridPane.rowIndex="0">
+                        <Label style="-fx-font-size: 14;" text="💰" />
+                        <VBox spacing="1">
+                            <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 9; -fx-font-weight: 700;" text="PRIX" />
+                            <Label fx:id="prixVoyage" style="-fx-text-fill: #ff8c42; -fx-font-weight: 700; -fx-font-size: 12;" text="150 €" />
+                        </VBox>
+                    </HBox>
+
+                    <!-- Row 2 -->
+                    <HBox alignment="CENTER_LEFT" spacing="8" style="-fx-background-color: #f8fafc; -fx-background-radius: 10; -fx-padding: 6 10;" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                        <Label style="-fx-font-size: 14;" text="👥" />
+                        <VBox spacing="1">
+                            <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 9; -fx-font-weight: 700;" text="PARTICIPANTS" />
+                            <Label fx:id="participantsVoyage" style="-fx-text-fill: #0f172a; -fx-font-weight: 600; -fx-font-size: 11;" text="0 participants" />
+                        </VBox>
+                    </HBox>
+
+                    <HBox alignment="CENTER_LEFT" spacing="8" style="-fx-background-color: #f8fafc; -fx-background-radius: 10; -fx-padding: 6 10;" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                        <Label style="-fx-font-size: 14;" text="🎫" />
+                        <VBox spacing="1">
+                            <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 9; -fx-font-weight: 700;" text="ACTIVITÉS" />
+                            <Label fx:id="activitesVoyage" style="-fx-text-fill: #0f172a; -fx-font-weight: 600; -fx-font-size: 11;" text="0 activités" />
+                        </VBox>
+                    </HBox>
+
+                    <HBox alignment="CENTER_LEFT" spacing="8" style="-fx-background-color: #f8fafc; -fx-background-radius: 10; -fx-padding: 6 10;" GridPane.columnIndex="2" GridPane.rowIndex="1">
+                        <Label style="-fx-font-size: 14;" text="✨" />
+                        <VBox spacing="1">
+                            <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 9; -fx-font-weight: 700;" text="DESCRIPTION" />
+                            <Label fx:id="descriptionVoyage" style="-fx-text-fill: #475569; -fx-font-style: italic; -fx-font-size: 10; -fx-wrap-text: true;" text="Cliquez sur le bouton violet" />
+                        </VBox>
+                    </HBox>
+                </GridPane>
+            </VBox>
+
+            <!-- Vertical divider -->
+            <Rectangle fill="#e2e8f0" height="140" width="1" />
+
+            <!-- Right: Action Buttons -->
+            <VBox alignment="CENTER" minWidth="155" spacing="6">
+                <Label fx:id="btnModifier" alignment="CENTER" minWidth="145" style="-fx-background-color: linear-gradient(to right, #10b981, #059669); -fx-text-fill: white; -fx-background-radius: 12; -fx-padding: 7 16; -fx-font-size: 11; -fx-font-weight: 700; -fx-cursor: hand;" text="✏ Modifier" />
+                <Label fx:id="btnPaiement" alignment="CENTER" minWidth="145" style="-fx-background-color: linear-gradient(to right, #ff8c42, #ff6b4a); -fx-text-fill: white; -fx-background-radius: 12; -fx-padding: 7 16; -fx-font-size: 11; -fx-font-weight: 700; -fx-cursor: hand;" text="💰 Paiement" />
+                <Label fx:id="btnParticipants" alignment="CENTER" minWidth="145" style="-fx-background-color: linear-gradient(to right, #3b82f6, #2563eb); -fx-text-fill: white; -fx-background-radius: 12; -fx-padding: 7 16; -fx-font-size: 11; -fx-font-weight: 700; -fx-cursor: hand;" text="👥 Participants" />
+                <Label fx:id="btnSupprimer" alignment="CENTER" minWidth="145" style="-fx-background-color: linear-gradient(to right, #ec4899, #db2777); -fx-text-fill: white; -fx-background-radius: 12; -fx-padding: 7 16; -fx-font-size: 11; -fx-font-weight: 700; -fx-cursor: hand;" text="🗑 Supprimer" />
+                <Label fx:id="btnGenererDescription" alignment="CENTER" minWidth="145" style="-fx-background-color: linear-gradient(to right, #9b59b6, #8b5cf6); -fx-text-fill: white; -fx-background-radius: 12; -fx-padding: 7 16; -fx-font-size: 11; -fx-font-weight: 700; -fx-cursor: hand;" text="✨ Description" />
+                <Label fx:id="btnQRCode" alignment="CENTER" minWidth="145" style="-fx-background-color: linear-gradient(to right, #0a0e27, #1e2749); -fx-text-fill: white; -fx-background-radius: 12; -fx-padding: 7 16; -fx-font-size: 11; -fx-font-weight: 700; -fx-cursor: hand;" text="📱 QR Code" />
+                <Label fx:id="btnInfosPays" alignment="CENTER" minWidth="145" style="-fx-background-color: linear-gradient(to right, #10b981, #0d9488); -fx-text-fill: white; -fx-background-radius: 12; -fx-padding: 7 16; -fx-font-size: 11; -fx-font-weight: 700; -fx-cursor: hand;" text="🌍 Infos Pays" />
+            </VBox>
+        </HBox>
+    </VBox>
+</VBox>

@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.shape.Rectangle?>
+
+<BorderPane prefHeight="750" prefWidth="1100" style="-fx-background-color: #f8fafc;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.PaiementController">
+
+    <!-- TOP NAV -->
+    <top>
+        <VBox>
+            <!-- Main Navigation Bar -->
+            <HBox alignment="CENTER_LEFT" spacing="15" style="-fx-background-color: #ffffff; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.04), 12, 0, 0, 3);">
+                <padding>
+                    <Insets bottom="12" left="24" right="24" top="12" />
+                </padding>
+
+                <!-- Logo -->
+                <HBox alignment="CENTER" spacing="10">
+                    <Circle fill="linear-gradient(from 0% 0% to 100% 100%, #ff8c42, #ff6b4a)" radius="16" />
+                    <Label style="-fx-font-size: 22; -fx-font-weight: bold; -fx-text-fill: #0f172a;" text="TravelMate" />
+                    <Label style="-fx-background-color: linear-gradient(to right, #ff8c42, #ff6b4a); -fx-text-fill: white; -fx-background-radius: 12; -fx-padding: 3 10; -fx-font-size: 9; -fx-font-weight: bold;" text="PRO" />
+                </HBox>
+
+                <!-- Nav Menu -->
+                <HBox alignment="CENTER_LEFT" spacing="4" style="-fx-padding: 0 0 0 20;">
+                    <HBox alignment="CENTER" spacing="6" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 8 14; -fx-cursor: hand;">
+                        <Label style="-fx-font-size: 14;" text="🌍" />
+                        <Label style="-fx-text-fill: #475569; -fx-font-weight: 500; -fx-font-size: 12;" text="Destinations" />
+                    </HBox>
+                    <HBox alignment="CENTER" spacing="6" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 8 14; -fx-cursor: hand;">
+                        <Label style="-fx-font-size: 14;" text="🗺️" />
+                        <Label style="-fx-text-fill: #475569; -fx-font-weight: 500; -fx-font-size: 12;" text="Itinéraires" />
+                    </HBox>
+                    <HBox alignment="CENTER" spacing="6" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 8 14; -fx-cursor: hand;">
+                        <Label style="-fx-font-size: 14;" text="🏄" />
+                        <Label style="-fx-text-fill: #475569; -fx-font-weight: 500; -fx-font-size: 12;" text="Activités" />
+                    </HBox>
+                    <HBox alignment="CENTER" spacing="6" style="-fx-background-color: rgba(255,140,66,0.08); -fx-background-radius: 12; -fx-padding: 8 14; -fx-cursor: hand; -fx-border-color: rgba(255,140,66,0.5); -fx-border-width: 1; -fx-border-radius: 12;">
+                        <Label style="-fx-font-size: 14;" text="✈️" />
+                        <Label style="-fx-text-fill: #ff8c42; -fx-font-weight: 700; -fx-font-size: 12;" text="Voyages" />
+                    </HBox>
+                    <HBox alignment="CENTER" spacing="6" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 8 14; -fx-cursor: hand;">
+                        <Label style="-fx-font-size: 14;" text="💰" />
+                        <Label style="-fx-text-fill: #475569; -fx-font-weight: 500; -fx-font-size: 12;" text="Budgets" />
+                    </HBox>
+                </HBox>
+
+                <Region HBox.hgrow="ALWAYS" />
+
+                <!-- Notifications -->
+                <HBox alignment="CENTER" style="-fx-background-color: #f8fafc; -fx-background-radius: 50; -fx-min-width: 38; -fx-min-height: 38; -fx-cursor: hand; -fx-border-color: #e2e8f0; -fx-border-width: 1; -fx-border-radius: 50;">
+                    <Label style="-fx-font-size: 15;" text="🔔" />
+                </HBox>
+
+                <!-- User Profile -->
+                <HBox alignment="CENTER" spacing="10" style="-fx-background-color: #f8fafc; -fx-background-radius: 25; -fx-padding: 5 14 5 5; -fx-cursor: hand; -fx-border-color: #e2e8f0; -fx-border-width: 1; -fx-border-radius: 25;">
+                    <Circle fill="linear-gradient(from 0% 0% to 100% 100%, #ff8c42, #ff6b4a)" radius="15" />
+                    <VBox spacing="0">
+                        <Label style="-fx-text-fill: #0f172a; -fx-font-weight: 600; -fx-font-size: 11;" text="Minyar GHANNEM" />
+                        <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 9;" text="Utilisateur" />
+                    </VBox>
+                    <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 8;" text="▼" />
+                </HBox>
+            </HBox>
+
+            <!-- Breadcrumb -->
+            <HBox alignment="CENTER_LEFT" spacing="6" style="-fx-background-color: #ffffff; -fx-border-color: #f1f5f9; -fx-border-width: 0 0 1 0; -fx-padding: 8 24;">
+                <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 11;" text="🏠 Accueil" />
+                <Label style="-fx-text-fill: #cbd5e1; -fx-font-size: 11;" text="›" />
+                <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 11; -fx-cursor: hand;" text="✈️ Voyages" />
+                <Label style="-fx-text-fill: #cbd5e1; -fx-font-size: 11;" text="›" />
+                <Label style="-fx-text-fill: #ff8c42; -fx-font-size: 11; -fx-font-weight: 700;" text="💳 Paiement" />
+                <Region HBox.hgrow="ALWAYS" />
+                <HBox spacing="6" alignment="CENTER_RIGHT">
+                    <Label style="-fx-font-size: 11;" text="🔒" />
+                    <Label style="-fx-text-fill: #10b981; -fx-font-size: 10; -fx-font-weight: 600;" text="Paiement sécurisé" />
+                </HBox>
+            </HBox>
+        </VBox>
+    </top>
+
+    <!-- BOTTOM STATUS -->
+    <bottom>
+        <HBox alignment="CENTER_LEFT" spacing="15" style="-fx-background-color: #ffffff; -fx-border-color: #e2e8f0; -fx-border-width: 1 0 0 0; -fx-padding: 8 24;">
+            <HBox spacing="6" alignment="CENTER_LEFT">
+                <Circle fill="#10b981" radius="3.5" />
+                <Label style="-fx-text-fill: #10b981; -fx-font-size: 10; -fx-font-weight: 600;" text="Connecté" />
+            </HBox>
+            <Rectangle fill="#e2e8f0" height="12" width="1" />
+            <Label style="-fx-text-fill: #64748b; -fx-font-size: 10;" text="🔒 Transactions sécurisées" />
+            <Region HBox.hgrow="ALWAYS" />
+            <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 10;" text="© 2026 TravelMate" />
+        </HBox>
+    </bottom>
+
+    <!-- MAIN CONTENT -->
+    <center>
+        <ScrollPane fitToWidth="true" style="-fx-background: #f8fafc; -fx-border-color: transparent; -fx-background-color: transparent;">
+            <content>
+                <VBox maxWidth="1100" spacing="20">
+                    <padding>
+                        <Insets bottom="40" left="30" right="30" top="24" />
+                    </padding>
+
+                    <!-- VOYAGE HEADER -->
+                    <VBox spacing="0" style="-fx-background-color: white; -fx-background-radius: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.03), 12, 0, 0, 3); -fx-border-color: #f1f5f9; -fx-border-width: 1; -fx-border-radius: 20;">
+                        <Rectangle fill="linear-gradient(to right, #ff8c42, #ff6b4a)" height="4" width="2000" arcHeight="4" arcWidth="4" />
+                        <HBox alignment="CENTER_LEFT" spacing="16" style="-fx-padding: 18 24;">
+                            <VBox alignment="CENTER" style="-fx-background-color: linear-gradient(to bottom right, #fff7ed, #ffedd5); -fx-background-radius: 18; -fx-min-width: 68; -fx-min-height: 68; -fx-border-color: rgba(255,140,66,0.15); -fx-border-width: 1; -fx-border-radius: 18;">
+                                <Label style="-fx-font-size: 32;" text="✈️" />
+                            </VBox>
+                            <VBox spacing="6">
+                                <Label fx:id="lblTitreVoyage" style="-fx-font-size: 22; -fx-font-weight: bold; -fx-text-fill: #0f172a;" />
+                                <HBox spacing="16">
+                                    <HBox spacing="6" alignment="CENTER_LEFT" style="-fx-background-color: #f8fafc; -fx-background-radius: 8; -fx-padding: 4 10;">
+                                        <Label style="-fx-font-size: 12;" text="📍" />
+                                        <Label fx:id="lblDestinationVoyage" style="-fx-text-fill: #475569; -fx-font-size: 12; -fx-font-weight: 500;" />
+                                    </HBox>
+                                    <HBox spacing="6" alignment="CENTER_LEFT" style="-fx-background-color: #f8fafc; -fx-background-radius: 8; -fx-padding: 4 10;">
+                                        <Label style="-fx-font-size: 12;" text="📅" />
+                                        <Label fx:id="lblDatesVoyage" style="-fx-text-fill: #475569; -fx-font-size: 12; -fx-font-weight: 500;" />
+                                    </HBox>
+                                </HBox>
+                            </VBox>
+                            <Region HBox.hgrow="ALWAYS" />
+                            <!-- Price badge -->
+                            <VBox alignment="CENTER" spacing="2" style="-fx-background-color: linear-gradient(to bottom right, #fff7ed, #ffedd5); -fx-background-radius: 16; -fx-padding: 12 20; -fx-border-color: rgba(255,140,66,0.2); -fx-border-width: 1; -fx-border-radius: 16;">
+                                <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 10; -fx-font-weight: 600;" text="PRIX TOTAL" />
+                                <Label fx:id="lblPrixVoyage" style="-fx-font-size: 26; -fx-font-weight: bold; -fx-text-fill: #ff8c42;" text="150 €" />
+                            </VBox>
+                        </HBox>
+                    </VBox>
+
+                    <!-- PAYMENT FORM -->
+                    <VBox spacing="16" style="-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 24; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.03), 12, 0, 0, 3); -fx-border-color: #f1f5f9; -fx-border-width: 1; -fx-border-radius: 20;">
+                        <HBox alignment="CENTER_LEFT" spacing="8">
+                            <Label style="-fx-font-size: 16; -fx-font-weight: 700; -fx-text-fill: #0f172a;" text="💰 Détails du paiement" />
+                            <Rectangle fill="#ff8c42" height="2" width="40" />
+                        </HBox>
+
+                        <GridPane hgap="16" vgap="14">
+                            <columnConstraints>
+                                <ColumnConstraints percentWidth="15" />
+                                <ColumnConstraints percentWidth="35" />
+                                <ColumnConstraints percentWidth="15" />
+                                <ColumnConstraints percentWidth="35" />
+                            </columnConstraints>
+
+                            <!-- Montant -->
+                            <Label style="-fx-text-fill: #475569; -fx-font-size: 11; -fx-font-weight: 600;" text="💵 Montant:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                            <TextField fx:id="tfMontant" promptText="0.00"
+                                       style="-fx-background-color: #f8fafc; -fx-background-radius: 12; -fx-padding: 10; -fx-border-color: #e2e8f0; -fx-border-radius: 12; -fx-border-width: 1; -fx-font-size: 12;"
+                                       GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+                            <!-- Devise -->
+                            <Label style="-fx-text-fill: #475569; -fx-font-size: 11; -fx-font-weight: 600;" text="🌐 Devise:" GridPane.columnIndex="2" GridPane.rowIndex="0" />
+                            <ComboBox fx:id="cbDevise" prefWidth="150"
+                                      style="-fx-background-color: #f8fafc; -fx-background-radius: 12; -fx-border-color: #e2e8f0; -fx-border-radius: 12;"
+                                      GridPane.columnIndex="3" GridPane.rowIndex="0" />
+
+                            <!-- Email -->
+                            <Label style="-fx-text-fill: #475569; -fx-font-size: 11; -fx-font-weight: 600;" text="📧 Email:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                            <TextField fx:id="tfEmail" promptText="email@exemple.com"
+                                       style="-fx-background-color: #f8fafc; -fx-background-radius: 12; -fx-padding: 10; -fx-border-color: #e2e8f0; -fx-border-radius: 12; -fx-border-width: 1; -fx-font-size: 12;"
+                                       GridPane.columnIndex="1" GridPane.columnSpan="3" GridPane.rowIndex="1" />
+
+                            <!-- Description -->
+                            <Label style="-fx-text-fill: #475569; -fx-font-size: 11; -fx-font-weight: 600;" text="📝 Description:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                            <TextField fx:id="tfDescription" promptText="Description du paiement"
+                                       style="-fx-background-color: #f8fafc; -fx-background-radius: 12; -fx-padding: 10; -fx-border-color: #e2e8f0; -fx-border-radius: 12; -fx-border-width: 1; -fx-font-size: 12;"
+                                       GridPane.columnIndex="1" GridPane.columnSpan="3" GridPane.rowIndex="2" />
+                        </GridPane>
+
+                        <!-- Payment Buttons -->
+                        <HBox spacing="16" alignment="CENTER" style="-fx-padding: 12 0 6 0;">
+                            <Button fx:id="btnStripe"
+                                    style="-fx-background-color: linear-gradient(to right, #635bff, #7c3aed); -fx-text-fill: white; -fx-background-radius: 16; -fx-padding: 14 48; -fx-font-size: 14; -fx-font-weight: 700; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(99,91,255,0.3), 10, 0, 0, 3);"
+                                    text="💳  Payer" />
+                        </HBox>
+
+                        <HBox alignment="CENTER_RIGHT" style="-fx-padding: 4 0 0 0;">
+                            <Button fx:id="btnRetour"
+                                    style="-fx-background-color: #f8fafc; -fx-text-fill: #475569; -fx-background-radius: 12; -fx-padding: 8 20; -fx-font-size: 11; -fx-cursor: hand; -fx-font-weight: 600; -fx-border-color: #e2e8f0; -fx-border-width: 1; -fx-border-radius: 12;"
+                                    text="← Retour aux voyages" />
+                        </HBox>
+                    </VBox>
+
+                    <!-- PAYMENT HISTORY -->
+                    <VBox spacing="14" style="-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 24; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.03), 12, 0, 0, 3); -fx-border-color: #f1f5f9; -fx-border-width: 1; -fx-border-radius: 20;">
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <VBox alignment="CENTER" style="-fx-background-color: linear-gradient(to bottom right, #ff8c42, #ff6b4a); -fx-background-radius: 12; -fx-min-width: 38; -fx-min-height: 38;">
+                                <Label style="-fx-font-size: 17; -fx-text-fill: white;" text="📋" />
+                            </VBox>
+                            <Label style="-fx-font-size: 18; -fx-font-weight: 700; -fx-text-fill: #0f172a;" text="Historique des paiements" />
+                            <Region HBox.hgrow="ALWAYS" />
+                            <!-- Stats badges -->
+                            <HBox spacing="12" alignment="CENTER_RIGHT">
+                                <HBox spacing="6" alignment="CENTER" style="-fx-background-color: #f8fafc; -fx-background-radius: 10; -fx-padding: 5 12; -fx-border-color: #e2e8f0; -fx-border-width: 1; -fx-border-radius: 10;">
+                                    <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 10; -fx-font-weight: 600;" text="Total:" />
+                                    <Label fx:id="lblTotalPaiements" style="-fx-text-fill: #0f172a; -fx-font-weight: 700; -fx-font-size: 11;" text="0" />
+                                </HBox>
+                                <HBox spacing="6" alignment="CENTER" style="-fx-background-color: #fff7ed; -fx-background-radius: 10; -fx-padding: 5 12; -fx-border-color: rgba(255,140,66,0.2); -fx-border-width: 1; -fx-border-radius: 10;">
+                                    <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 10; -fx-font-weight: 600;" text="Montant:" />
+                                    <Label fx:id="lblMontantTotal" style="-fx-text-fill: #ff8c42; -fx-font-weight: 700; -fx-font-size: 11;" text="0 €" />
+                                </HBox>
+                            </HBox>
+                        </HBox>
+
+                        <TableView fx:id="tablePaiements" prefHeight="220"
+                                   style="-fx-background-color: white; -fx-background-radius: 14; -fx-border-color: #e2e8f0; -fx-border-radius: 14;">
+                            <columns>
+                                <TableColumn fx:id="colId" prefWidth="50" text="ID" />
+                                <TableColumn fx:id="colMethode" prefWidth="80" text="Méthode" />
+                                <TableColumn fx:id="colMontant" prefWidth="80" text="Montant" />
+                                <TableColumn fx:id="colDevise" prefWidth="60" text="Devise" />
+                                <TableColumn fx:id="colStatut" prefWidth="90" text="Statut" />
+                                <TableColumn fx:id="colTransaction" prefWidth="120" text="Transaction" />
+                                <TableColumn fx:id="colDate" prefWidth="130" text="Date" />
+                                <TableColumn fx:id="colEmail" prefWidth="150" text="Email" />
+                                <TableColumn fx:id="colActions" prefWidth="120" text="Actions" />
+                            </columns>
+                            <placeholder>
+                                <VBox alignment="CENTER" spacing="10">
+                                    <Label style="-fx-font-size: 32;" text="💳" />
+                                    <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 12; -fx-font-weight: 500;" text="Aucun paiement enregistré" />
+                                    <Label style="-fx-text-fill: #cbd5e1; -fx-font-size: 10;" text="Effectuez un paiement via le formulaire ci-dessus" />
+                                </VBox>
+                            </placeholder>
+                        </TableView>
+                    </VBox>
+
+                    <!-- Bottom Decoration -->
+                    <Rectangle arcHeight="6" arcWidth="6" fill="linear-gradient(to right, #ff8c42, #ff6b4a, #6366f1)" height="3" width="1100">
+                        <VBox.margin>
+                            <Insets top="10" />
+                        </VBox.margin>
+                    </Rectangle>
+                </VBox>
+            </content>
+        </ScrollPane>
+    </center>
+</BorderPane>

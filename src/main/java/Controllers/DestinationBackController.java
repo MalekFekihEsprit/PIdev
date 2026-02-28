@@ -305,10 +305,9 @@ public class DestinationBackController implements Initializable {
         if (btnActivites != null) btnActivites.setOnMouseClicked(event -> navigateToActivitesBack());
 
         // Voyages
+        // Voyages
         setupSidebarButtonHover(btnVoyages, "✈️", "Voyages");
-        if (btnVoyages != null) btnVoyages.setOnMouseClicked(event ->
-                showInfoAlert("Voyages", "Cette fonctionnalité sera bientôt disponible"));
-
+        if (btnVoyages != null) btnVoyages.setOnMouseClicked(event -> navigateToVoyagesBack()); // CORRIGÉ
         // Budgets
         setupSidebarButtonHover(btnBudgets, "💰", "Budgets");
         if (btnBudgets != null) btnBudgets.setOnMouseClicked(event ->
@@ -345,6 +344,22 @@ public class DestinationBackController implements Initializable {
                 }
             });
         });
+    }
+
+    // Navigation vers Voyages Back
+    private void navigateToVoyagesBack() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/PageVoyageBack.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) btnVoyages.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("TravelMate - Gestion des Voyages");
+            stage.setMaximized(true);
+        } catch (IOException e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur",
+                    "Impossible d'ouvrir la gestion des voyages: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     private void navigateToCategoriesBack() {

@@ -3,11 +3,10 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : 127.0.0.1
--- Généré le : ven. 27 fév. 2026 à 02:19
+-- Généré le : sam. 28 fév. 2026 à 16:01
 -- Version du serveur : 10.4.32-MariaDB
 -- Version de PHP : 8.2.12
 
-SET FOREIGN_KEY_CHECKS=0;
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
 SET time_zone = "+00:00";
@@ -78,15 +77,6 @@ CREATE TABLE `budget` (
   `id_voyage` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Déchargement des données de la table `budget`
---
-
-INSERT INTO `budget` (`id_budget`, `montant_total`, `devise_budget`, `statut_budget`, `description_budget`, `id`, `id_voyage`) VALUES
-(1, 1000.00, 'EUR', 'ACTIF', 'Budget voyage Nice', 1, 1),
-(2, 2000.00, 'EUR', 'ACTIF', 'Budget voyage Rome', 2, 2),
-(3, 3000.00, 'EUR', 'ACTIF', 'Budget voyage Paris', 3, 3);
-
 -- --------------------------------------------------------
 
 --
@@ -133,14 +123,6 @@ CREATE TABLE `depense` (
   `date_creation` date NOT NULL,
   `id_budget` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Déchargement des données de la table `depense`
---
-
-INSERT INTO `depense` (`id_depense`, `montant_depense`, `libelle_depense`, `categorie_depense`, `description_depense`, `devise_depense`, `type_paiement`, `date_creation`, `id_budget`) VALUES
-(1, 150.00, 'Hôtel Nice', 'Hébergement', 'Nuitée à l\'hôtel à Nice', 'EUR', 'Carte', '2026-02-26', 1),
-(2, 45.00, 'Restaurant', 'Restauration', 'Dîner au restaurant', 'EUR', 'Espèces', '2026-02-26', 1);
 
 -- --------------------------------------------------------
 
@@ -252,6 +234,42 @@ CREATE TABLE `liste_activite` (
 -- --------------------------------------------------------
 
 --
+-- Structure de la table `paiement`
+--
+
+CREATE TABLE `paiement` (
+  `id_paiement` int(11) NOT NULL,
+  `id_voyage` int(11) NOT NULL,
+  `id_utilisateur` int(11) NOT NULL,
+  `montant` decimal(10,2) NOT NULL,
+  `devise` varchar(10) NOT NULL DEFAULT 'EUR',
+  `methode` varchar(50) NOT NULL,
+  `statut` varchar(50) NOT NULL DEFAULT 'EN_ATTENTE',
+  `transaction_id` varchar(255) DEFAULT NULL,
+  `sale_id` varchar(255) DEFAULT NULL,
+  `date_paiement` timestamp NOT NULL DEFAULT current_timestamp(),
+  `description` text DEFAULT NULL,
+  `email_payeur` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Déchargement des données de la table `paiement`
+--
+
+INSERT INTO `paiement` (`id_paiement`, `id_voyage`, `id_utilisateur`, `montant`, `devise`, `methode`, `statut`, `transaction_id`, `sale_id`, `date_paiement`, `description`, `email_payeur`) VALUES
+(1, 23, 1, 150.00, 'EUR', 'STRIPE', 'COMPLETE', 'pi_3T46etBBrkfMn6Hw0qXRSJ06', NULL, '2026-02-23 21:27:13', 'Paiement pour le voyage : amal (Modifié)', 'client@example.com'),
+(2, 23, 1, 150.00, 'EUR', 'STRIPE', 'COMPLETE', 'pi_3T46fvBBrkfMn6Hw1EOb0huN', NULL, '2026-02-23 21:28:18', 'Paiement pour le voyage : amal (Modifié)', 'minyar.ghannem@esprit.tn'),
+(3, 23, 1, 150.00, 'EUR', 'STRIPE', 'COMPLETE', 'pi_3T46g8BBrkfMn6Hw1vta3DUU', NULL, '2026-02-23 21:28:30', 'Paiement pour le voyage : amal (Modifié)', 'minyar.ghannem@esprit.tn'),
+(4, 23, 1, 150.00, 'EUR', 'STRIPE', 'COMPLETE', 'pi_3T474EBBrkfMn6Hw1nmNpWVP', NULL, '2026-02-23 21:53:24', 'Paiement pour le voyage : amal (Modifié)', 'mimi@gmail.com'),
+(5, 23, 1, 150.00, 'EUR', 'STRIPE', 'COMPLETE', 'pi_3T47khBBrkfMn6Hw1ka9p8C5', NULL, '2026-02-23 22:37:18', 'Paiement pour le voyage : amal (Modifié)', 'mimi@gmail.com'),
+(6, 23, 1, 150.00, 'EUR', 'STRIPE', 'COMPLETE', 'pi_3T4JRLBBrkfMn6Hw0Su8emQh', NULL, '2026-02-24 11:06:05', 'Paiement pour le voyage : amal (Modifié)', 'client@example.com'),
+(7, 23, 1, 150.00, 'EUR', 'STRIPE', 'COMPLETE', 'pi_3T4V0xBBrkfMn6Hw0saTG70H', NULL, '2026-02-24 23:27:38', 'Paiement pour le voyage : amal (Modifié)', 'mimi@gmail.com'),
+(8, 23, 1, 150.00, 'EUR', 'STRIPE', 'COMPLETE', 'pi_3T4V1LBBrkfMn6Hw0GDdhdZR', NULL, '2026-02-24 23:28:03', 'Paiement pour le voyage : amal (Modifié)', 'ilyessguesmi7@gmail.com'),
+(9, 23, 1, 150.00, 'EUR', 'STRIPE', 'COMPLETE', 'pi_3T4V9vBBrkfMn6Hw0sztRk2v', NULL, '2026-02-24 23:36:55', 'Paiement pour le voyage : amal (Modifié)', 'ilyessguesmi7@gmail.com');
+
+-- --------------------------------------------------------
+
+--
 -- Structure de la table `participation`
 --
 
@@ -261,6 +279,13 @@ CREATE TABLE `participation` (
   `role_participation` varchar(50) NOT NULL,
   `id_voyage` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Déchargement des données de la table `participation`
+--
+
+INSERT INTO `participation` (`id_participation`, `id`, `role_participation`, `id_voyage`) VALUES
+(1, 5, 'Participant', 29);
 
 -- --------------------------------------------------------
 
@@ -292,10 +317,11 @@ CREATE TABLE `user` (
 --
 
 INSERT INTO `user` (`id`, `nom`, `prenom`, `date_naissance`, `email`, `telephone`, `mot_de_passe`, `role`, `photo_url`, `verification_code`, `is_verified`, `last_login_ip`, `last_login_location`, `created_at`, `photo_file_name`, `face_embedding`) VALUES
-(1, 'Chekir', 'Neyrouz', '2005-01-29', 'neyrouzchekir01@gmail.com', '+21629074810', '$2a$12$HZAHY7Nb1zbudlwU28ienuKGjzKDUlPPVw9wBOdEcCFZVbLLhN6Je', 'ADMIN', NULL, NULL, 1, '102.173.115.26', 'Tunis, Tunisia', '2026-02-26 18:12:29', NULL, NULL),
+(1, 'Chekir', 'Neyrouz', '2005-01-29', 'neyrouzchekir01@gmail.com', '+21629074810', '$2a$12$HZAHY7Nb1zbudlwU28ienuKGjzKDUlPPVw9wBOdEcCFZVbLLhN6Je', 'ADMIN', NULL, NULL, 1, '196.203.207.178', 'Tunis, Tunisia, El Menzah', '2026-02-26 18:12:29', NULL, NULL),
 (2, 'Boutaieb', 'Yosr', '2003-05-30', 'yosr.boutaieb@esprit.tn', NULL, '$2a$12$K52nqVrAtvx8EMHTyi7kFO1VFax0SQ5nlsExmunmWbG4h3JsKJ4YO', 'USER', NULL, NULL, 0, NULL, NULL, '2026-02-26 18:16:36', NULL, NULL),
 (3, 'Chekir', 'Neyrouz', '2003-02-08', 'neyrouz.chekir@esprit.tn', NULL, '$2a$12$xru.KeGJexFAPNBrxxdWk.20aMGwuZ/fZmdMfy/YttCSSCuVHtMva', 'USER', NULL, NULL, 1, '102.173.115.26', 'Tunis, Tunisia', '2026-02-26 18:40:58', NULL, NULL),
-(4, 'Boutaieb', 'Yosr', '2004-02-13', 'neyrouzchekir2005@gmail.com', NULL, '$2a$12$/KPn2qOG5U5wOBL7Wvr/XuPag3EvRbAJPivloQ1OKj8yQzi3B9Y/O', 'USER', NULL, NULL, 1, '102.173.115.26', 'Tunis, Tunisia', '2026-02-26 19:00:33', NULL, NULL);
+(4, 'Boutaieb', 'Yosr', '2004-02-13', 'neyrouzchekir2005@gmail.com', NULL, '$2a$12$/KPn2qOG5U5wOBL7Wvr/XuPag3EvRbAJPivloQ1OKj8yQzi3B9Y/O', 'USER', NULL, NULL, 1, '196.203.207.178', 'Tunis, Tunisia, El Menzah', '2026-02-26 19:00:33', NULL, NULL),
+(5, 'minyar', 'ghannem', '2026-02-14', 'minyarghannem06@gmail.com', '92559234', 'Travelmate123*', 'USER', '', NULL, 0, NULL, NULL, '2026-02-28 13:16:39', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -317,9 +343,24 @@ CREATE TABLE `voyage` (
 --
 
 INSERT INTO `voyage` (`id_voyage`, `titre_voyage`, `date_debut`, `date_fin`, `statut`, `id_destination`) VALUES
-(1, 'Voyage Nice', '2026-03-01 00:00:00', '2026-03-07 00:00:00', 'Prévu', 1),
-(2, 'Découverte Rome', '2026-04-10 00:00:00', '2026-04-15 00:00:00', 'Prévu', 2),
-(3, 'Séjour Paris', '2026-05-05 00:00:00', '2026-05-10 00:00:00', 'Prévu', 3);
+(3, 'minyar', '2026-02-12 00:00:00', '2026-02-27 00:00:00', 'a venir', 1),
+(4, 'meriemmmk', '2026-02-13 00:00:00', '2026-02-27 00:00:00', 'a venir', 1),
+(7, 'DOUDOUZo', '2026-02-27 00:00:00', '2026-03-08 00:00:00', 'Terminé', 1),
+(8, 'laraGH', '2026-02-20 00:00:00', '2026-03-27 00:00:00', 'Annulé', 1),
+(9, 'amira', '2026-02-14 00:00:00', '2026-03-06 00:00:00', 'a venir', 1),
+(10, 'yosr', '2026-02-12 00:00:00', '2026-03-08 00:00:00', 'En cours', 1),
+(13, 'ADAM', '2026-02-15 00:00:00', '2026-02-17 00:00:00', 'Terminé', 1),
+(14, 'ZAKIAAAA', '2026-02-15 00:00:00', '2026-02-21 00:00:00', 'a venir', 1),
+(15, 'Nouuur', '2026-02-15 00:00:00', '2026-02-20 00:00:00', 'a venir', 1),
+(23, 'amal (Modifié)', '2026-07-16 00:00:00', '2026-08-01 00:00:00', 'a venir', 1),
+(28, 'ILYES', '2026-02-25 00:00:00', '2026-02-27 00:00:00', 'a venir', 2),
+(29, 'voyageillll', '2026-02-25 00:00:00', '2026-02-26 00:00:00', 'a venir', 1),
+(30, 'nouuuuuuuur', '2026-02-27 00:00:00', '2026-03-08 00:00:00', 'a venir', 3),
+(31, 'www', '2026-02-27 00:00:00', '2026-03-04 00:00:00', 'a venir', 2),
+(33, 'ssssminyar', '2026-02-26 00:00:00', '2026-02-28 00:00:00', 'a venir', 3),
+(47, 'aaaaaaaaaaaaaaaaaaaa', '2026-02-26 00:00:00', '2026-02-28 00:00:00', 'a venir', 3),
+(50, 'back', '2026-02-28 00:00:00', '2026-03-08 00:00:00', 'a venir', 1),
+(51, 'backtest', '2026-02-28 00:00:00', '2026-03-01 00:00:00', 'a venir', 1);
 
 --
 -- Index pour les tables déchargées
@@ -387,6 +428,14 @@ ALTER TABLE `itineraire`
 ALTER TABLE `liste_activite`
   ADD KEY `fk_liste_activite_voyage` (`id_voyage`),
   ADD KEY `fk_liste_activite_activite` (`id`);
+
+--
+-- Index pour la table `paiement`
+--
+ALTER TABLE `paiement`
+  ADD PRIMARY KEY (`id_paiement`),
+  ADD KEY `id_voyage` (`id_voyage`),
+  ADD KEY `id_utilisateur` (`id_utilisateur`);
 
 --
 -- Index pour la table `participation`
@@ -463,22 +512,28 @@ ALTER TABLE `itineraire`
   MODIFY `id_itineraire` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT pour la table `paiement`
+--
+ALTER TABLE `paiement`
+  MODIFY `id_paiement` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+
+--
 -- AUTO_INCREMENT pour la table `participation`
 --
 ALTER TABLE `participation`
-  MODIFY `id_participation` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_participation` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT pour la table `user`
 --
 ALTER TABLE `user`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT pour la table `voyage`
 --
 ALTER TABLE `voyage`
-  MODIFY `id_voyage` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id_voyage` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=52;
 
 --
 -- Contraintes pour les tables déchargées
@@ -530,6 +585,13 @@ ALTER TABLE `liste_activite`
   ADD CONSTRAINT `fk_liste_activite_voyage` FOREIGN KEY (`id_voyage`) REFERENCES `voyage` (`id_voyage`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
+-- Contraintes pour la table `paiement`
+--
+ALTER TABLE `paiement`
+  ADD CONSTRAINT `paiement_ibfk_1` FOREIGN KEY (`id_voyage`) REFERENCES `voyage` (`id_voyage`) ON DELETE CASCADE,
+  ADD CONSTRAINT `paiement_ibfk_2` FOREIGN KEY (`id_utilisateur`) REFERENCES `user` (`id`) ON DELETE CASCADE;
+
+--
 -- Contraintes pour la table `participation`
 --
 ALTER TABLE `participation`
@@ -541,7 +603,6 @@ ALTER TABLE `participation`
 --
 ALTER TABLE `voyage`
   ADD CONSTRAINT `fk_voyage_destination` FOREIGN KEY (`id_destination`) REFERENCES `destination` (`id_destination`) ON DELETE CASCADE ON UPDATE CASCADE;
-SET FOREIGN_KEY_CHECKS=1;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

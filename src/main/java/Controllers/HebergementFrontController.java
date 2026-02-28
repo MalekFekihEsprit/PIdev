@@ -219,7 +219,7 @@ public class HebergementFrontController implements Initializable {
 
         // Voyages button (pas encore implémenté)
         if (btnVoyages != null) {
-            btnVoyages.setOnMouseClicked(event -> showNotImplementedAlert("Voyages"));
+            btnVoyages.setOnMouseClicked(event -> navigateToVoyages());
         }
 
         // Budgets button (pas encore implémenté)
@@ -256,6 +256,39 @@ public class HebergementFrontController implements Initializable {
             showAlert(Alert.AlertType.ERROR, "Erreur de navigation", "Impossible de charger les activités: " + e.getMessage());
         }
     }
+
+    private void navigateToVoyages() {
+        try {
+            System.out.println("=== NAVIGATION VERS PAGE VOYAGES ===");
+
+            // Charger le fichier FXML de la page des voyages
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/PageVoyage.fxml"));
+            Parent root = loader.load();
+
+            // Obtenir la scène actuelle et changer la scène
+            Stage stage = (Stage) btnVoyages.getScene().getWindow();
+            Scene scene = new Scene(root);
+            stage.setScene(scene);
+            stage.setTitle("TravelMate - Gestion des Voyages");
+            stage.setMaximized(true); // Garder la fenêtre maximisée
+            stage.show();
+
+            System.out.println("✓ Navigation vers PageVoyage réussie");
+
+        } catch (IOException e) {
+            System.err.println("✗ Erreur lors du chargement de PageVoyage.fxml: " + e.getMessage());
+            e.printStackTrace();
+            showAlert(Alert.AlertType.ERROR, "Erreur de navigation",
+                    "Impossible de charger la page des voyages:\n" + e.getMessage() +
+                            "\n\nVérifiez que le fichier 'PageVoyage.fxml' existe dans le dossier resources.");
+        } catch (Exception e) {
+            System.err.println("✗ Erreur inattendue: " + e.getMessage());
+            e.printStackTrace();
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur inattendue: " + e.getMessage());
+        }
+    }
+
+
 
     private void navigateToCategories() {
         CategorieContext.categorieFiltre = null;

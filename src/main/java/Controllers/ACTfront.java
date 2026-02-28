@@ -153,9 +153,9 @@ public class ACTfront implements Initializable {
             btnItineraires.setOnMouseClicked(event -> showNotImplementedAlert("Itinéraires"));
         }
 
-        // Voyages button (pas encore implémenté)
+        // Voyages button - Navigue vers PageVoyage.fxml
         if (btnVoyages != null) {
-            btnVoyages.setOnMouseClicked(event -> showNotImplementedAlert("Voyages"));
+            btnVoyages.setOnMouseClicked(event -> navigateToVoyages());
         }
 
         // Budgets button (pas encore implémenté)
@@ -213,6 +213,24 @@ public class ACTfront implements Initializable {
             stage.show();
         } catch (IOException e) {
             showError("Erreur de navigation", "Impossible de charger les hébergements: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Navigue vers la page PageVoyage.fxml
+     */
+    private void navigateToVoyages() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/PageVoyage.fxml"));
+            Parent root = loader.load();
+            Scene scene = new Scene(root);
+            Stage stage = (Stage) btnVoyages.getScene().getWindow();
+            stage.setScene(scene);
+            stage.setTitle("TravelMate - Gestion des Voyages");
+            stage.show();
+        } catch (IOException e) {
+            showError("Erreur de navigation", "Impossible de charger la page des voyages: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -878,4 +896,5 @@ public class ACTfront implements Initializable {
         alert.setContentText(message);
         alert.showAndWait();
     }
+
 }

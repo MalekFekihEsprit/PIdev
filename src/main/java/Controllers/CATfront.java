@@ -111,9 +111,9 @@ public class CATfront implements Initializable {
             btnItineraires.setOnMouseClicked(event -> showNotImplementedAlert("Itinéraires"));
         }
 
-        // Voyages button (pas encore implémenté)
+        // Voyages button - Navigue vers PageVoyage.fxml
         if (btnVoyages != null) {
-            btnVoyages.setOnMouseClicked(event -> showNotImplementedAlert("Voyages"));
+            btnVoyages.setOnMouseClicked(event -> navigateToVoyages());
         }
 
         // Budgets button (pas encore implémenté)
@@ -678,5 +678,30 @@ public class CATfront implements Initializable {
         a.setHeaderText(null);
         a.setContentText(msg);
         a.showAndWait();
+    }
+
+    /**
+     * Navigue vers la page PageVoyage.fxml
+     */
+    private void navigateToVoyages() {
+        try {
+            System.out.println("Tentative de chargement: /PageVoyage.fxml");
+            URL resource = getClass().getResource("/PageVoyage.fxml");
+            if (resource == null) {
+                showError("Erreur", "Fichier PageVoyage.fxml non trouvé dans le classpath");
+                return;
+            }
+
+            FXMLLoader loader = new FXMLLoader(resource);
+            Parent root = loader.load();
+            Scene scene = new Scene(root);
+            Stage stage = (Stage) btnVoyages.getScene().getWindow();
+            stage.setScene(scene);
+            stage.setTitle("TravelMate - Gestion des Voyages");
+            stage.show();
+        } catch (IOException e) {
+            showError("Erreur de navigation", "Impossible de charger la page des voyages: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 }

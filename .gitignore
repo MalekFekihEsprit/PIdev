@@ -93,3 +93,5 @@ out/
 *.jar
 *.war
 *.ear
+
+.env

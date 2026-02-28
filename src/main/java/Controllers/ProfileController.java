@@ -243,9 +243,9 @@ public class ProfileController {
             setupNavButtonHover(btnCategories, "📑", "Catégories");
         }
 
+        // BOUTON VOYAGES - CORRIGÉ
         if (btnVoyages != null) {
-            btnVoyages.setOnMouseClicked(event ->
-                    showInfoAlert("Voyages", "Cette fonctionnalité sera bientôt disponible"));
+            btnVoyages.setOnMouseClicked(event -> navigateToVoyages());
             setupNavButtonHover(btnVoyages, "✈️", "Voyages");
         }
 
@@ -320,6 +320,7 @@ public class ProfileController {
         }
     }
 
+    // Navigation vers Destinations
     private void navigateToDestinations() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/DestinationFront.fxml"));
@@ -334,6 +335,7 @@ public class ProfileController {
         }
     }
 
+    // Navigation vers Hébergements
     private void navigateToHebergement() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/HebergementFront.fxml"));
@@ -344,6 +346,23 @@ public class ProfileController {
             stage.setMaximized(true);
         } catch (IOException e) {
             showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir les hébergements: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    // NOUVELLE MÉTHODE : Navigation vers Voyages
+    private void navigateToVoyages() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/PageVoyage.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) btnVoyages.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("TravelMate - Gestion des Voyages");
+            stage.setMaximized(true);
+            stage.show();
+        } catch (IOException e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur",
+                    "Impossible d'ouvrir la page des voyages: " + e.getMessage());
             e.printStackTrace();
         }
     }
