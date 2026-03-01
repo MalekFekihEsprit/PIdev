@@ -12,16 +12,15 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class CulturalAdviceService {
 
-    // Chargement de la clé depuis .env
-    private static final String GEMINI_API_KEY = EnvLoader.get("GEMINI_API_KEY");
-
-    // URL de l'API Gemini (modèle flash gratuit)
-    private static final String GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + GEMINI_API_KEY;
+    // Chargement de la clé depuis .env pour Cerebras
+    private static final String CEREBRAS_API_KEY = EnvLoader.get("CEREBRAS_API_KEY");
+    private static final String CEREBRAS_URL = "https://api.cerebras.ai/v1/chat/completions";
+    private static final String DEFAULT_MODEL = "llama-3.3-70b"; // Modèle Cerebras
 
     private final OkHttpClient client;
     private Map<String, CulturalInfo> cache = new HashMap<>();
 
-    // Gestion des limites de quota (60 requêtes par minute pour le gratuit)
+    // Gestion des limites de quota
     private static final int MAX_REQUESTS_PER_MINUTE = 50;
     private static final long MIN_TIME_BETWEEN_REQUESTS_MS = 1200; // 1.2 secondes
     private AtomicLong lastRequestTime = new AtomicLong(0);
@@ -76,8 +75,8 @@ public class CulturalAdviceService {
 
         // Vérification au démarrage
         if (!isApiConfigured()) {
-            System.out.println("⚠️⚠️⚠️ ATTENTION: Clé API Gemini non configurée!");
-            System.out.println("📝 Créez un fichier .env avec GEMINI_API_KEY=votre_cle");
+            System.out.println("⚠️⚠️⚠️ ATTENTION: Clé API Cerebras non configurée!");
+            System.out.println("📝 Créez un fichier .env avec CEREBRAS_API_KEY=votre_cle");
         }
     }
 
@@ -96,7 +95,7 @@ public class CulturalAdviceService {
         if (cache.containsKey(cacheKey)) {
             CulturalInfo cached = cache.get(cacheKey);
             System.out.println("✅ Utilisation du cache pour: " + destination +
-                    (cached.isFromDefaultRules() ? " (règles par défaut)" : " (Gemini)"));
+                    (cached.isFromDefaultRules() ? " (règles par défaut)" : " (Cerebras)"));
             return cached;
         }
 
@@ -108,30 +107,30 @@ public class CulturalAdviceService {
         CulturalInfo info = getDefaultAdvice(destination, country);
         System.out.println("📋 AFFICHAGE INITIAL: Règles par défaut pour " + destination);
 
-        // Essayer d'obtenir de meilleures données avec Gemini en arrière-plan
+        // Essayer d'obtenir de meilleures données avec Cerebras en arrière-plan
         if (isApiConfigured()) {
-            System.out.println("🔄 Tentative asynchrone de Gemini pour " + query);
-            tryToFetchFromGeminiAsync(query, cacheKey);
+            System.out.println("🔄 Tentative asynchrone de Cerebras pour " + query);
+            tryToFetchFromCerebrasAsync(query, cacheKey);
         } else {
-            System.out.println("⚠️ API Gemini non configurée - Utilisation des règles par défaut uniquement");
+            System.out.println("⚠️ API Cerebras non configurée - Utilisation des règles par défaut uniquement");
         }
 
-        // Mettre en cache et retourner les règles par défaut (sera mis à jour plus tard si Gemini répond)
+        // Mettre en cache et retourner les règles par défaut (sera mis à jour plus tard si Cerebras répond)
         cache.put(cacheKey, info);
         return info;
     }
 
     /**
-     * Vérifie si l'API Gemini est configurée
+     * Vérifie si l'API Cerebras est configurée
      */
     private boolean isApiConfigured() {
-        return EnvLoader.hasValidKey("GEMINI_API_KEY");
+        return EnvLoader.hasValidKey("CEREBRAS_API_KEY");
     }
 
     /**
-     * Tente de récupérer les données Gemini en arrière-plan
+     * Tente de récupérer les données Cerebras en arrière-plan
      */
-    private void tryToFetchFromGeminiAsync(String query, String cacheKey) {
+    private void tryToFetchFromCerebrasAsync(String query, String cacheKey) {
         new Thread(() -> {
             try {
                 // Respecter le délai entre les requêtes pour éviter le rate limiting
@@ -141,55 +140,54 @@ public class CulturalAdviceService {
                     Thread.sleep(MIN_TIME_BETWEEN_REQUESTS_MS - (now - last));
                 }
 
-                System.out.println("⏳ Appel Gemini en cours pour: " + query);
-                CulturalInfo geminiInfo = fetchFromGemini(query);
+                System.out.println("⏳ Appel Cerebras en cours pour: " + query);
+                CulturalInfo cerebrasInfo = fetchFromCerebras(query);
 
-                if (geminiInfo != null && geminiInfo.hasContent()) {
+                if (cerebrasInfo != null && cerebrasInfo.hasContent()) {
                     lastRequestTime.set(System.currentTimeMillis());
 
                     // Mettre à jour le cache avec les vraies données
-                    cache.put(cacheKey, geminiInfo);
-                    System.out.println("✅✅ MISE À JOUR CACHE: Gemini a répondu pour " + query);
-
-                    // NOTE: L'interface utilisateur ne sera pas automatiquement mise à jour
-                    // car c'est un thread séparé. Il faudrait un mécanisme de callback.
+                    cache.put(cacheKey, cerebrasInfo);
+                    System.out.println("✅✅ MISE À JOUR CACHE: Cerebras a répondu pour " + query);
                 } else {
-                    System.out.println("❌ Gemini n'a pas retourné de contenu pour " + query);
+                    System.out.println("❌ Cerebras n'a pas retourné de contenu pour " + query);
                 }
             } catch (Exception e) {
-                System.out.println("❌ Erreur Gemini asynchrone: " + e.getMessage());
+                System.out.println("❌ Erreur Cerebras asynchrone: " + e.getMessage());
             }
         }).start();
     }
 
     /**
-     * Interroge l'API Gemini
+     * Interroge l'API Cerebras
      */
-    private CulturalInfo fetchFromGemini(String query) throws Exception {
+    private CulturalInfo fetchFromCerebras(String query) throws Exception {
         String prompt = String.format(SYSTEM_PROMPT, query);
 
         JsonObject requestBody = new JsonObject();
-        JsonArray contents = new JsonArray();
-        JsonObject content = new JsonObject();
-        JsonArray parts = new JsonArray();
-        JsonObject part = new JsonObject();
+        requestBody.addProperty("model", DEFAULT_MODEL);
+        requestBody.addProperty("temperature", 0.2);
+        requestBody.addProperty("max_tokens", 1024);
+        requestBody.addProperty("top_p", 0.8);
 
-        part.addProperty("text", prompt);
-        parts.add(part);
-        content.add("parts", parts);
-        contents.add(content);
-        requestBody.add("contents", contents);
+        // Construction des messages pour Cerebras (format OpenAI-compatible)
+        JsonArray messages = new JsonArray();
 
-        // Configuration pour des réponses plus prévisibles
-        JsonObject generationConfig = new JsonObject();
-        generationConfig.addProperty("temperature", 0.2);
-        generationConfig.addProperty("maxOutputTokens", 1024);
-        generationConfig.addProperty("topP", 0.8);
-        generationConfig.addProperty("topK", 40);
-        requestBody.add("generationConfig", generationConfig);
+        JsonObject systemMessage = new JsonObject();
+        systemMessage.addProperty("role", "system");
+        systemMessage.addProperty("content", "Tu es un expert en étiquette culturelle qui répond en français avec des listes à puces.");
+        messages.add(systemMessage);
+
+        JsonObject userMessage = new JsonObject();
+        userMessage.addProperty("role", "user");
+        userMessage.addProperty("content", prompt);
+        messages.add(userMessage);
+
+        requestBody.add("messages", messages);
 
         Request request = new Request.Builder()
-                .url(GEMINI_URL)
+                .url(CEREBRAS_URL)
+                .header("Authorization", "Bearer " + CEREBRAS_API_KEY)
                 .header("Content-Type", "application/json")
                 .post(RequestBody.create(
                         requestBody.toString(),
@@ -200,27 +198,27 @@ public class CulturalAdviceService {
         try (Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful()) {
                 String errorBody = response.body() != null ? response.body().string() : "";
-                System.out.println("❌ Erreur Gemini " + response.code() + ": " + errorBody);
+                System.out.println("❌ Erreur Cerebras " + response.code() + ": " + errorBody);
 
-                // Gestion spécifique des erreurs de quota
+                // Gestion spécifique des erreurs
                 if (response.code() == 429) {
-                    System.out.println("⚠️ Quota Gemini dépassé. Réessayez plus tard.");
+                    System.out.println("⚠️ Quota Cerebras dépassé. Réessayez plus tard.");
                 }
                 if (response.code() == 401 || response.code() == 403) {
-                    System.out.println("🔑 Clé API Gemini invalide ou non configurée!");
+                    System.out.println("🔑 Clé API Cerebras invalide ou non configurée!");
                 }
                 return null;
             }
 
             String jsonData = response.body().string();
-            return parseGeminiResponse(jsonData, query);
+            return parseCerebrasResponse(jsonData, query);
         }
     }
 
     /**
-     * Parse la réponse de Gemini
+     * Parse la réponse de Cerebras
      */
-    private CulturalInfo parseGeminiResponse(String jsonData, String query) {
+    private CulturalInfo parseCerebrasResponse(String jsonData, String query) {
         CulturalInfo info = new CulturalInfo();
         info.setDestination(query);
         info.setFromDefaultRules(false);
@@ -228,36 +226,20 @@ public class CulturalAdviceService {
         try {
             JsonObject json = JsonParser.parseString(jsonData).getAsJsonObject();
 
-            // Vérifier les erreurs
-            if (json.has("promptFeedback")) {
-                JsonObject feedback = json.getAsJsonObject("promptFeedback");
-                if (feedback.has("blockReason")) {
-                    System.out.println("⛔ Requête bloquée: " + feedback.get("blockReason").getAsString());
-                    return null;
-                }
-            }
+            if (json.has("choices") && json.getAsJsonArray("choices").size() > 0) {
+                JsonObject choice = json.getAsJsonArray("choices").get(0).getAsJsonObject();
 
-            if (json.has("candidates") && json.getAsJsonArray("candidates").size() > 0) {
-                JsonObject candidate = json.getAsJsonArray("candidates").get(0).getAsJsonObject();
-
-                // Vérifier si la réponse a été bloquée
-                if (candidate.has("finishReason") &&
-                        candidate.get("finishReason").getAsString().equals("SAFETY")) {
-                    System.out.println("⛔ Réponse filtrée pour des raisons de sécurité");
-                    return null;
-                }
-
-                JsonObject content = candidate.getAsJsonObject("content");
-                JsonArray parts = content.getAsJsonArray("parts");
-
-                if (parts.size() > 0) {
-                    String text = parts.get(0).getAsJsonObject().get("text").getAsString();
-                    info.setRespectSection(text);
-                    return info;
+                if (choice.has("message")) {
+                    JsonObject message = choice.getAsJsonObject("message");
+                    if (message.has("content") && !message.get("content").isJsonNull()) {
+                        String text = message.get("content").getAsString();
+                        info.setRespectSection(text);
+                        return info;
+                    }
                 }
             }
         } catch (Exception e) {
-            System.out.println("❌ Erreur parsing Gemini: " + e.getMessage());
+            System.out.println("❌ Erreur parsing Cerebras: " + e.getMessage());
             e.printStackTrace();
         }
 
@@ -265,7 +247,7 @@ public class CulturalAdviceService {
     }
 
     /**
-     * Règles par défaut (fallback si Gemini ne répond pas)
+     * Règles par défaut (fallback si Cerebras ne répond pas)
      */
     private CulturalInfo getDefaultAdvice(String destination, String country) {
         CulturalInfo info = new CulturalInfo();
@@ -708,7 +690,7 @@ public class CulturalAdviceService {
 
                             "**⚠️ NOTE**\n" +
                             "• Ces conseils sont génériques - pour des informations spécifiques à " + destination + ", " +
-                            "activez l'API Gemini avec une clé valide ou consultez un guide spécialisé."
+                            "activez l'API Cerebras avec une clé valide ou consultez un guide spécialisé."
             );
         }
 

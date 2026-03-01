@@ -1,14 +1,33 @@
 package Services;
 
+import Controllers.VoyageController;
+import Entities.Itineraire;
 import Entities.Voyage;
 import Utils.MyBD;
+import javafx.application.Platform;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class VoyageCRUDV implements InterfaceCRUDV<Voyage> {
 
+    // ===== NOUVEAU : Déclaration des services pour la génération d'itinéraire =====
+    private ItineraryGeneratorService itineraryGeneratorService;
+    private itineraireCRUD itineraireCRUD;
+    private VoyageController voyageController;
+
     public VoyageCRUDV() {
+        // Initialisation des services
+        this.itineraryGeneratorService = new ItineraryGeneratorService();
+        this.itineraireCRUD = new itineraireCRUD();
+    }
+
+    /**
+     * Permet de lier le contrôleur pour récupérer les informations de destination
+     */
+    public void setVoyageController(VoyageController controller) {
+        this.voyageController = controller;
     }
 
     private Voyage mapResultSetToVoyage(ResultSet rs) throws SQLException {
@@ -136,11 +155,15 @@ public class VoyageCRUDV implements InterfaceCRUDV<Voyage> {
         }
     }
 
+    /**
+     * Ajoute un voyage et retourne son ID, puis génère automatiquement un itinéraire
+     */
     public int ajouterEtRetournerId(Voyage v) throws SQLException {
         String req = "INSERT INTO voyage (titre_voyage, date_debut, date_fin, statut, id_destination) VALUES (?, ?, ?, ?, ?)";
         Connection con = null;
         PreparedStatement pst = null;
         ResultSet rs = null;
+        int idVoyage = -1;
 
         try {
             con = getValidConnection();
@@ -156,7 +179,12 @@ public class VoyageCRUDV implements InterfaceCRUDV<Voyage> {
 
             rs = pst.getGeneratedKeys();
             if (rs.next()) {
-                return rs.getInt(1);
+                idVoyage = rs.getInt(1);
+                v.setId_voyage(idVoyage);
+
+                // ===== GÉNÉRATION AUTOMATIQUE D'ITINÉRAIRE =====
+                // Note: Cette partie est maintenant déplacée dans le contrôleur
+                // pour avoir accès au nom de la destination
             } else {
                 throw new SQLException("Échec de la récupération de l'ID généré");
             }
@@ -168,6 +196,35 @@ public class VoyageCRUDV implements InterfaceCRUDV<Voyage> {
             if (pst != null) {
                 try { pst.close(); } catch (SQLException e) { e.printStackTrace(); }
             }
+        }
+
+        return idVoyage;
+    }
+
+    // ===== NOUVELLE MÉTHODE : Génération d'itinéraire (appelée depuis le contrôleur) =====
+    public void genererItinerairePourVoyage(Voyage voyage, String nomDestination, String pays) {
+        try {
+            System.out.println("🤖 Génération automatique d'itinéraire pour: " + voyage.getTitre_voyage());
+
+            // Générer l'itinéraire avec Cerebras
+            ItineraryGeneratorService.GeneratedItinerary generated =
+                    itineraryGeneratorService.generateItinerary(voyage, nomDestination, pays);
+
+            if (generated != null && generated.getNomItineraire() != null) {
+                // Convertir en itinéraire et sauvegarder
+                Itineraire nouvelItineraire = generated.toItineraire();
+                itineraireCRUD.ajouter(nouvelItineraire);
+
+                System.out.println("✅✅ Itinéraire généré automatiquement: " + generated.getNomItineraire());
+                System.out.println("📅 " + generated.getNbJours() + " jours d'aventure !");
+            } else {
+                System.out.println("⚠️ Aucun itinéraire généré (réponse vide)");
+            }
+
+        } catch (Exception e) {
+            System.err.println("❌ Erreur lors de la génération automatique de l'itinéraire: " + e.getMessage());
+            e.printStackTrace();
+            // Ne pas bloquer la création du voyage si la génération échoue
         }
     }
 

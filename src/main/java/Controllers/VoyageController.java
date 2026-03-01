@@ -1,5 +1,8 @@
 package Controllers;
 
+import Services.ItineraryGeneratorService;
+import Services.itineraireCRUD;
+import Entities.Itineraire;
 import Entities.Voyage;
 import Services.VoyageCRUDV;
 import Services.ActiviteVoyageService;
@@ -49,6 +52,8 @@ public class VoyageController {
     @FXML private HBox userProfileBox;
     @FXML private Label lblUserName;
     @FXML private Label lblUserRole;
+    private ItineraryGeneratorService itineraryGeneratorService = new ItineraryGeneratorService();
+    private itineraireCRUD itineraireCRUD = new itineraireCRUD();
 
     // Boutons existants
     @FXML
@@ -742,34 +747,31 @@ public class VoyageController {
             int idVoyage = voyageCRUD.ajouterEtRetournerId(v);
             v.setId_voyage(idVoyage);
 
-            // Ajouter les activités sélectionnées à la table liste_activite
+            // Ajouter les activités sélectionnées
             if (!activitesSelectionnees.isEmpty()) {
                 List<Integer> idsActivites = new ArrayList<>();
-
-                System.out.println("=== ACTIVITÉS SÉLECTIONNÉES ===");
                 for (String activite : activitesSelectionnees) {
                     Integer id = activiteIdMap.get(activite);
-                    System.out.println("Activité: '" + activite + "' -> ID: " + id);
                     if (id != null) {
                         idsActivites.add(id);
-                    } else {
-                        System.err.println("ATTENTION: ID non trouvé pour l'activité: " + activite);
                     }
                 }
-
                 if (!idsActivites.isEmpty()) {
                     activiteVoyageService.associerActivitesAVoyage(idVoyage, idsActivites);
-                    System.out.println(idsActivites.size() + " activité(s) associée(s) au voyage " + idVoyage);
-                } else {
-                    System.out.println("Aucun ID d'activité valide trouvé");
                 }
-            } else {
-                System.out.println("Aucune activité sélectionnée");
             }
+
+            // ===== GÉNÉRATION AUTOMATIQUE D'ITINÉRAIRE =====
+            String nomDestination = cbDestination.getValue().getNom();
+            String pays = cbDestination.getValue().getPays();
+
+            // Appeler la méthode du CRUD pour générer l'itinéraire
+            voyageCRUD.genererItinerairePourVoyage(v, nomDestination, pays);
 
             showAlert(Alert.AlertType.INFORMATION, "Succès",
                     "Voyage ajouté avec succès!\n" +
-                            activitesSelectionnees.size() + " activité(s) sélectionnée(s).");
+                            activitesSelectionnees.size() + " activité(s) sélectionnée(s)." +
+                            "\nUn itinéraire a été généré automatiquement.");
 
             chargerVoyages();
             resetForm();
