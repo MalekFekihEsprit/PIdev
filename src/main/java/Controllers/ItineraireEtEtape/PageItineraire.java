@@ -10,6 +10,8 @@ import Utils.ExportUtil;
 import Utils.MyBD;
 import Utils.UserSession;
 import Entities.User;
+import Entities.etape;
+import Services.etapeCRUD;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -17,6 +19,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -67,8 +70,10 @@ public class PageItineraire {
     @FXML private Label lblJoursCount;
     @FXML private Label lblResultCount;
     @FXML private Label lblListeTitre;
+    @FXML private BorderPane mainBorderPane;
 
     private itineraireCRUD itineraireCRUD;
+    private etapeCRUD etapeCRUD;
     private List<Itineraire> tousLesItineraires;
     private List<Itineraire> itinerairesAffiches;
     private Voyage voyageActuel;
@@ -101,6 +106,7 @@ public class PageItineraire {
     @FXML
     public void initialize() {
         itineraireCRUD = new itineraireCRUD();
+        etapeCRUD = new etapeCRUD();
 
         // ============== CONFIGURATION DE LA NAVIGATION ==============
         configurerNavigation();
@@ -1048,10 +1054,54 @@ public class PageItineraire {
     @FXML
     private void handleExporter() {
         if (itinerairesAffiches != null && !itinerairesAffiches.isEmpty()) {
-            Services.etapeCRUD etapeCRUD = new Services.etapeCRUD();
-            ExportUtil.exporterTousItineraires(itinerairesAffiches, etapeCRUD, itinerariesContainer.getScene().getWindow());
+            // Proposer le choix entre export simple et Excel
+            ChoiceDialog<String> dialog = new ChoiceDialog<>("Excel avec mise en forme",
+                    "Excel avec mise en forme", "Export simple (CSV)");
+            dialog.setTitle("Type d'export");
+            dialog.setHeaderText("Choisissez le format d'export");
+            dialog.setContentText("Format :");
+
+            dialog.showAndWait().ifPresent(choice -> {
+                if (choice.equals("Excel avec mise en forme")) {
+                    // Utiliser la méthode Excel
+                    ExportUtil.exporterTousItinerairesExcel(itinerairesAffiches, etapeCRUD,
+                            itinerariesContainer.getScene().getWindow());
+                } else {
+                    // Utiliser la méthode CSV simple
+                    ExportUtil.exporterTousItineraires(itinerairesAffiches, etapeCRUD,
+                            itinerariesContainer.getScene().getWindow());
+                }
+            });
         } else {
             AlertUtil.showWarning("Aucun itinéraire", "Il n'y a aucun itinéraire à exporter.");
+        }
+    }
+
+    private void handleExporterItineraire(Itineraire itineraire) {
+        try {
+            List<etape> etapes = etapeCRUD.getEtapesByItineraire(itineraire.getId_itineraire());
+
+            // Proposer le choix entre export simple et Excel
+            ChoiceDialog<String> dialog = new ChoiceDialog<>("Excel avec mise en forme",
+                    "Excel avec mise en forme", "Export simple (CSV)");
+            dialog.setTitle("Type d'export");
+            dialog.setHeaderText("Choisissez le format d'export pour : " + itineraire.getNom_itineraire());
+            dialog.setContentText("Format :");
+
+            dialog.showAndWait().ifPresent(choice -> {
+                if (choice.equals("Excel avec mise en forme")) {
+                    // Utiliser la méthode Excel
+                    ExportUtil.exporterItineraireExcel(itineraire, etapes,
+                            itinerariesContainer.getScene().getWindow());
+                } else {
+                    // Utiliser la méthode CSV simple
+                    ExportUtil.exporterItineraire(itineraire, etapes,
+                            itinerariesContainer.getScene().getWindow());
+                }
+            });
+
+        } catch (SQLException e) {
+            AlertUtil.showError("Erreur", "Impossible de charger les étapes: " + e.getMessage());
         }
     }
 
@@ -1077,16 +1127,6 @@ public class PageItineraire {
         }
     }
 
-    private void handleExporterItineraire(Itineraire itineraire) {
-        try {
-            Services.etapeCRUD etapeCRUD = new Services.etapeCRUD();
-            List<Entities.etape> etapes = etapeCRUD.getEtapesByItineraire(itineraire.getId_itineraire());
-            ExportUtil.exporterItineraire(itineraire, etapes, itinerariesContainer.getScene().getWindow());
-        } catch (SQLException e) {
-            AlertUtil.showError("Erreur", "Impossible de charger les étapes: " + e.getMessage());
-        }
-    }
-
     @FXML
     private void handleRetour() {
         try {
@@ -1103,5 +1143,12 @@ public class PageItineraire {
             e.printStackTrace();
             AlertUtil.showError("Erreur", "Impossible de retourner à la page des voyages");
         }
+    }
+
+    /**
+     * Méthode publique pour exporter un itinéraire individuel (appelée depuis la carte)
+     */
+    public void exporterItineraire(Itineraire itineraire) {
+        handleExporterItineraire(itineraire);
     }
 }
