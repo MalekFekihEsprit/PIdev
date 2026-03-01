@@ -293,9 +293,7 @@ public class DestinationBackController implements Initializable {
 
         // Itinéraires
         setupSidebarButtonHover(btnItineraires, "🗺️", "Itinéraires");
-        if (btnItineraires != null) btnItineraires.setOnMouseClicked(event ->
-                showInfoAlert("Itinéraires", "Cette fonctionnalité sera bientôt disponible"));
-
+        if (btnItineraires != null) btnItineraires.setOnMouseClicked(event -> navigateToGestionItineraires());
         // Catégories
         setupSidebarButtonHover(btnCategories, "📑", "Catégories");
         if (btnCategories != null) btnCategories.setOnMouseClicked(event -> navigateToCategoriesBack());
@@ -304,7 +302,6 @@ public class DestinationBackController implements Initializable {
         setupSidebarButtonHover(btnActivites, "🏄", "Activités");
         if (btnActivites != null) btnActivites.setOnMouseClicked(event -> navigateToActivitesBack());
 
-        // Voyages
         // Voyages
         setupSidebarButtonHover(btnVoyages, "✈️", "Voyages");
         if (btnVoyages != null) btnVoyages.setOnMouseClicked(event -> navigateToVoyagesBack()); // CORRIGÉ
@@ -344,6 +341,20 @@ public class DestinationBackController implements Initializable {
                 }
             });
         });
+    }
+    private void navigateToGestionItineraires() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ItineraireEtEtape/PageGestionItineraires.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) btnItineraires.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("TravelMate - Gestion des Itinéraires");
+            stage.setMaximized(true);
+        } catch (IOException e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur",
+                    "Impossible d'ouvrir la gestion des itinéraires: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     // Navigation vers Voyages Back

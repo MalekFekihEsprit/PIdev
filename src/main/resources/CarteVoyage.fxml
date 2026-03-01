@@ -9,7 +9,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Rectangle?>
 
-<VBox minWidth="750" style="-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 0; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.04), 14, 0, 0, 4); -fx-border-color: #e2e8f0; -fx-border-width: 1; -fx-border-radius: 20;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.CarteVoyageController">
+<VBox fx:id="carteVoyage" minWidth="750" style="-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 0; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.04), 14, 0, 0, 4); -fx-border-color: #e2e8f0; -fx-border-width: 1; -fx-border-radius: 20;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.CarteVoyageController">
 
     <!-- Top accent bar -->
     <Rectangle arcHeight="4" arcWidth="4" fill="linear-gradient(to right, #ff8c42, #ff6b4a)" height="4" style="-fx-background-radius: 20 20 0 0;" width="2000" />

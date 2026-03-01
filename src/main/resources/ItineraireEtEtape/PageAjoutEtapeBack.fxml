@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<DialogPane xmlns="http://javafx.com/javafx/17"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="Controllers.ItineraireEtEtape.PageAjoutEtapeBack"
+            prefWidth="500"
+            style="-fx-background-color: #0a0e27; -fx-background-radius: 10; -fx-border-color: #ff8c42; -fx-border-width: 2;">
+
+    <content>
+        <VBox spacing="15" alignment="CENTER">
+            <padding>
+                <Insets top="20" right="20" bottom="20" left="20" />
+            </padding>
+
+            <!-- Titre avec style backend -->
+            <Label fx:id="titreFormulaire"
+                   style="-fx-font-size: 20; -fx-font-weight: bold; -fx-text-fill: #ff8c42; -fx-font-family: 'Clash Display';"
+                   text="Ajouter une étape (Back Office)" />
+
+            <!-- Itinéraire -->
+            <VBox spacing="5">
+                <Label style="-fx-font-weight: 600; -fx-text-fill: #ffffff; -fx-font-size: 12;" text="Itinéraire *" />
+                <ComboBox fx:id="itineraireCombo" promptText="Sélectionner un itinéraire"
+                          style="-fx-background-color: #1e2749; -fx-text-fill: white; -fx-border-color: #ff8c42; -fx-border-radius: 5; -fx-background-radius: 5; -fx-padding: 5;" />
+            </VBox>
+
+            <!-- Jour -->
+            <VBox spacing="5">
+                <Label style="-fx-font-weight: 600; -fx-text-fill: #ffffff; -fx-font-size: 12;" text="Jour *" />
+                <ComboBox fx:id="jourCombo" promptText="Sélectionner un jour"
+                          style="-fx-background-color: #1e2749; -fx-text-fill: white; -fx-border-color: #ff8c42; -fx-border-radius: 5; -fx-background-radius: 5; -fx-padding: 5;" />
+            </VBox>
+
+            <!-- Heure -->
+            <VBox spacing="5">
+                <Label style="-fx-font-weight: 600; -fx-text-fill: #ffffff; -fx-font-size: 12;" text="Heure *" />
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Spinner fx:id="heureSpinner" prefWidth="80"
+                             style="-fx-background-color: #1e2749; -fx-text-fill: white;" />
+                    <Label text=":" style="-fx-font-size: 16; -fx-font-weight: bold; -fx-text-fill: #ff8c42;" />
+                    <Spinner fx:id="minuteSpinner" prefWidth="80"
+                             style="-fx-background-color: #1e2749; -fx-text-fill: white;" />
+                </HBox>
+            </VBox>
+
+            <!-- Activité -->
+            <VBox spacing="5">
+                <Label style="-fx-font-weight: 600; -fx-text-fill: #ffffff; -fx-font-size: 12;" text="Activité *" />
+                <ComboBox fx:id="activiteCombo" promptText="Sélectionner une activité"
+                          style="-fx-background-color: #1e2749; -fx-text-fill: white; -fx-border-color: #ff8c42; -fx-border-radius: 5; -fx-background-radius: 5; -fx-padding: 5;" />
+            </VBox>
+
+            <!-- Description -->
+            <VBox spacing="5">
+                <Label style="-fx-font-weight: 600; -fx-text-fill: #ffffff; -fx-font-size: 12;" text="Description" />
+                <TextArea fx:id="descriptionField" promptText="Détails de l'étape..."
+                          prefRowCount="3" wrapText="true"
+                          style="-fx-background-color: #1e2749; -fx-text-fill: white; -fx-border-color: #ff8c42; -fx-border-radius: 5;" />
+            </VBox>
+
+            <!-- Message d'erreur/succès -->
+            <Label fx:id="errorLabel" style="-fx-font-size: 12; -fx-text-fill: #ef4444;"
+                   wrapText="true" managed="false" visible="false" />
+        </VBox>
+    </content>
+
+    <ButtonType fx:constant="OK" />
+    <ButtonType fx:constant="CANCEL" />
+
+</DialogPane>

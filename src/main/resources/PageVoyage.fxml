@@ -138,7 +138,7 @@
                     <!-- PAGE HEADER -->
                     <HBox alignment="CENTER_LEFT" spacing="14">
                         <VBox alignment="CENTER" style="-fx-background-color: linear-gradient(to bottom right, #ff8c42, #ff6b4a); -fx-background-radius: 16; -fx-min-width: 52; -fx-min-height: 52;">
-                            <Label style="-fx-font-size: 24; -fx-text-fill: white;" text="✈️" />
+                            <Label style="-fx-font-size: 24; -fx-text-fill: white;" text="✈" />
                         </VBox>
                         <VBox spacing="2">
                             <Label style="-fx-font-size: 24; -fx-font-weight: bold; -fx-text-fill: #0f172a;" text="Gestion des Voyages" />

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Rectangle?>
+
+<BorderPane prefHeight="720" style="-fx-background-color: #f8fafc;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.ItineraireEtEtape.ModifierItineraireBack">
+
+    <center>
+        <VBox alignment="TOP_CENTER" spacing="20" style="-fx-background-color: #f8fafc;">
+            <padding>
+                <Insets bottom="30" left="24" right="24" top="24" />
+            </padding>
+
+            <!-- HEADER SECTION -->
+            <HBox alignment="CENTER_LEFT" spacing="16" HBox.hgrow="ALWAYS">
+                <VBox alignment="CENTER" style="-fx-background-color: #fff7ed; -fx-background-radius: 18; -fx-min-width: 60; -fx-min-height: 60;">
+                    <Label style="-fx-font-size: 36;" text="✏️" />
+                </VBox>
+
+                <VBox spacing="6">
+                    <Label style="-fx-font-family: 'Clash Display'; -fx-font-size: 28; -fx-font-weight: bold; -fx-text-fill: #0f172a;" text="Modifier itinéraire" />
+                    <Label style="-fx-text-fill: #64748b; -fx-font-size: 12;" text="Modifiez les informations de l'itinéraire" />
+                </VBox>
+            </HBox>
+
+            <!-- FORM CARD -->
+            <VBox spacing="20" style="-fx-background-color: white; -fx-background-radius: 18; -fx-padding: 24; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.02), 8, 0, 0, 2);" VBox.vgrow="ALWAYS">
+
+                <!-- Nom de l'itinéraire -->
+                <VBox spacing="8">
+                    <Label style="-fx-font-weight: 600; -fx-text-fill: #0f172a; -fx-font-size: 13;" text="Nom de l'itinéraire *" />
+                    <Label style="-fx-text-fill: #ef4444; -fx-font-size: 10;" text="(maximum 10 caractères)" />
+                    <TextField fx:id="nomField" promptText="Ex: Paris 2024" style="-fx-background-color: #f8fafc; -fx-border-color: #e2e8f0; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 10;" />
+                </VBox>
+
+                <!-- Description -->
+                <VBox spacing="8">
+                    <Label style="-fx-font-weight: 600; -fx-text-fill: #0f172a; -fx-font-size: 13;" text="Description" />
+                    <TextArea fx:id="descriptionField" prefRowCount="4" promptText="Décrivez votre itinéraire..." style="-fx-background-color: #f8fafc; -fx-border-color: #e2e8f0; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 8;" wrapText="true" />
+                </VBox>
+
+                <!-- Voyage associé -->
+                <VBox spacing="8">
+                    <Label style="-fx-font-weight: 600; -fx-text-fill: #0f172a; -fx-font-size: 13;" text="Voyage associé *" />
+                    <ComboBox fx:id="voyageCombo" promptText="Sélectionner un voyage" style="-fx-background-color: #f8fafc; -fx-border-color: #e2e8f0; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 4;" HBox.hgrow="ALWAYS" />
+                    <Label style="-fx-text-fill: #64748b; -fx-font-size: 10;" text="Choisissez le voyage auquel cet itinéraire appartient" />
+                </VBox>
+
+                <!-- Message d'erreur -->
+                <Label fx:id="errorLabel" managed="false" style="-fx-text-fill: #ef4444; -fx-font-size: 11;" visible="false" wrapText="true" />
+
+                <!-- Boutons d'action -->
+                <HBox alignment="CENTER_RIGHT" spacing="12">
+                    <Button onAction="#handleAnnuler" style="-fx-background-color: #f1f5f9; -fx-text-fill: #475569; -fx-background-radius: 10; -fx-padding: 8 16; -fx-font-weight: 600; -fx-cursor: hand;" text="Annuler" />
+                    <Button onAction="#handleModifier" style="-fx-background-color: #ff8c42; -fx-text-fill: white; -fx-background-radius: 10; -fx-padding: 8 16; -fx-font-weight: 600; -fx-cursor: hand;" text="Modifier l'itinéraire" />
+                </HBox>
+            </VBox>
+
+            <!-- BOTTOM DECORATION -->
+            <Rectangle arcHeight="6" arcWidth="6" fill="linear-gradient(to right, #ff8c42, #ff6b4a, #6366f1)" height="3" />
+        </VBox>
+    </center>
+</BorderPane>

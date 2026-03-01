@@ -2,7 +2,6 @@ package Controllers;
 
 import Entities.Voyage;
 import Services.*;
-import Services.QRCodeServicess;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -20,15 +19,18 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Callback;
+import Services.ExportService;
 
 import java.io.IOException;
 import java.net.URL;
 import java.sql.Date;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
@@ -38,8 +40,8 @@ public class VoyageBackController implements Initializable {
     // Constants for status values
     private static final String STATUT_A_VENIR = "a venir";
     private static final String STATUT_EN_COURS = "En cours";
-    private static final String STATUT_TERMINE = "Termin\u00e9";
-    private static final String STATUT_ANNULE = "Annul\u00e9";
+    private static final String STATUT_TERMINE = "Terminé";
+    private static final String STATUT_ANNULE = "Annulé";
     private static final String STATUT_TOUS = "Tous";
     private static final String DEST_INCONNUE = "Inconnue";
     private static final String PERCENT_FORMAT = "(%.1f%%)";
@@ -76,7 +78,7 @@ public class VoyageBackController implements Initializable {
     @FXML
     private TextField tfDestinationNom;
 
-    // Nouveaux champs pour la recherche
+    // Search fields
     @FXML
     private TextField tfSearchTitre;
     @FXML
@@ -97,6 +99,18 @@ public class VoyageBackController implements Initializable {
     @FXML
     private Label lblVoyagesCount;
 
+    // Sidebar labels
+    @FXML
+    private Label lblSidebarVoyagesCount;
+    @FXML
+    private Label statsTotalVoyages;
+    @FXML
+    private Label statsActifs;
+    @FXML
+    private Label statsTermines;
+    @FXML
+    private Label lblLastUpdate;
+
     @FXML
     private Button btnAjouter;
     @FXML
@@ -106,7 +120,7 @@ public class VoyageBackController implements Initializable {
     @FXML
     private Button btnRefresh;
 
-    // Statistiques
+    // Statistics
     @FXML
     private Label lblCountAVenir;
     @FXML
@@ -136,7 +150,7 @@ public class VoyageBackController implements Initializable {
     @FXML
     private PieChart pieChartStatuts;
 
-    // Boutons d'export
+    // Export buttons
     @FXML
     private Button btnExportPDF;
     @FXML
@@ -166,7 +180,7 @@ public class VoyageBackController implements Initializable {
             try {
                 int idDest = cellData.getValue().getId_destination();
                 String nomDest = voyageCRUD.getNomDestination(idDest);
-                return new javafx.beans.property.SimpleStringProperty(nomDest);
+                return new javafx.beans.property.SimpleStringProperty(nomDest != null ? nomDest : DEST_INCONNUE);
             } catch (SQLException e) {
                 return new javafx.beans.property.SimpleStringProperty(DEST_INCONNUE);
             }
@@ -182,15 +196,6 @@ public class VoyageBackController implements Initializable {
         cbSearchStatut.getItems().addAll(STATUT_TOUS, STATUT_A_VENIR, STATUT_EN_COURS, STATUT_TERMINE, STATUT_ANNULE);
         cbSearchStatut.setValue(STATUT_TOUS);
 
-        // Charger les données
-        chargerVoyages();
-
-        // Configurer le tri des colonnes
-        configurerTri();
-
-        // Configurer la recherche
-        configurerRecherche();
-
         // Configurer les DatePickers pour empêcher les dates incohérentes
         configurerDatePickers();
 
@@ -200,7 +205,7 @@ public class VoyageBackController implements Initializable {
                 try {
                     int idDest = Integer.parseInt(newVal);
                     String nomDest = voyageCRUD.getNomDestination(idDest);
-                    tfDestinationNom.setText(nomDest);
+                    tfDestinationNom.setText(nomDest != null ? nomDest : DEST_INCONNUE);
                 } catch (NumberFormatException | SQLException e) {
                     tfDestinationNom.setText(DEST_INCONNUE);
                 }
@@ -209,7 +214,7 @@ public class VoyageBackController implements Initializable {
             }
         });
 
-        // Configurer les boutons
+        // Configurer les boutons PRINCIPAUX (CEUX-CI DOIVENT ÊTRE AVANT chargerVoyages)
         btnAjouter.setOnAction(this::ajouterVoyage);
         btnModifier.setOnAction(this::modifierVoyage);
         btnAnnuler.setOnAction(this::annulerModification);
@@ -217,16 +222,29 @@ public class VoyageBackController implements Initializable {
         btnSearch.setOnAction(this::rechercherVoyages);
         btnReset.setOnAction(this::resetRecherche);
 
-        // Configurer les boutons d'export (vérifier qu'ils ne sont pas null)
+        // Configurer les boutons d'export (TRÈS IMPORTANT - à mettre ici)
         if (btnExportPDF != null) {
             btnExportPDF.setOnAction(this::exportToPDF);
-        }
-        if (btnExportExcel != null) {
-            btnExportExcel.setOnAction(this::exportToExcel);
+            System.out.println("✅ Bouton PDF configuré avec succès");
+        } else {
+            System.err.println("❌ btnExportPDF est null - vérifiez le fx:id dans le FXML");
         }
 
-        // Initialiser les statistiques
-        mettreAJourStatistiquesDetaillees();
+        if (btnExportExcel != null) {
+            btnExportExcel.setOnAction(this::exportToExcel);
+            System.out.println("✅ Bouton Excel configuré avec succès");
+        } else {
+            System.err.println("❌ btnExportExcel est null - vérifiez le fx:id dans le FXML");
+        }
+
+        // Configurer la recherche
+        configurerRecherche();
+
+        // Charger les données (APRÈS la configuration des boutons)
+        chargerVoyages();
+
+        // Mettre à jour la date de dernière mise à jour
+        mettreAJourDateMAJ();
     }
 
     private void ajouterBoutonsActions() {
@@ -284,18 +302,17 @@ public class VoyageBackController implements Initializable {
 
     // Configuration des DatePickers pour empêcher les dates incohérentes
     private void configurerDatePickers() {
-        // Date fin: doit être après date début
         dpDateDebut.valueProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null && dpDateFin.getValue() != null && dpDateFin.getValue().isBefore(newVal)) {
                 dpDateFin.setValue(null);
             }
         });
 
-        dpDateFin.setDayCellFactory(picker -> new javafx.scene.control.DateCell() {
+        dpDateFin.setDayCellFactory(picker -> new DateCell() {
             @Override
-            public void updateItem(java.time.LocalDate date, boolean empty) {
+            public void updateItem(LocalDate date, boolean empty) {
                 super.updateItem(date, empty);
-                java.time.LocalDate dateDebut = dpDateDebut.getValue();
+                LocalDate dateDebut = dpDateDebut.getValue();
                 if (dateDebut != null) {
                     setDisable(empty || !date.isAfter(dateDebut));
                 }
@@ -303,40 +320,25 @@ public class VoyageBackController implements Initializable {
         });
     }
 
-    // Configuration du tri des colonnes
-    private void configurerTri() {
-        // Permettre le tri multiple
-        tableVoyages.getSortOrder().addListener((javafx.collections.ListChangeListener.Change<? extends TableColumn<Voyage, ?>> c) -> {
-            while (c.next()) {
-                if (c.wasAdded() && sortedData != null) {
-                    sortedData.comparatorProperty().bind(tableVoyages.comparatorProperty());
-                }
-            }
-        });
-
-        // Tri par défaut sur date_debut (descendant)
-        colDateDebut.setSortType(TableColumn.SortType.DESCENDING);
-        tableVoyages.getSortOrder().add(colDateDebut);
-    }
-
     // Configuration de la recherche
     private void configurerRecherche() {
-        // Créer une liste filtrée
         filteredData = new FilteredList<>(voyageList, p -> true);
-
-        // Lier la liste triée à la liste filtrée
         sortedData = new SortedList<>(filteredData);
         sortedData.comparatorProperty().bind(tableVoyages.comparatorProperty());
-
-        // Ajouter les données triées au tableau
         tableVoyages.setItems(sortedData);
 
-        // Mettre à jour le compteur quand les données changent
         sortedData.addListener((javafx.collections.ListChangeListener<Voyage>) c -> {
-            lblVoyagesCount.setText(String.valueOf(sortedData.size()));
+            int size = sortedData.size();
+            lblVoyagesCount.setText(String.valueOf(size));
+            if (lblSidebarVoyagesCount != null) {
+                lblSidebarVoyagesCount.setText(String.valueOf(size));
+            }
             mettreAJourStatistiques();
             mettreAJourStatistiquesDetaillees();
         });
+
+        btnSearch.setOnAction(this::rechercherVoyages);
+        btnReset.setOnAction(this::resetRecherche);
     }
 
     // Méthode de recherche
@@ -347,13 +349,10 @@ public class VoyageBackController implements Initializable {
         String statut = cbSearchStatut.getValue();
 
         filteredData.setPredicate(voyage -> {
-            // Si tous les champs sont vides, afficher tout
-            if (titre.isEmpty() && idText.isEmpty()
-                    && (statut == null || STATUT_TOUS.equals(statut))) {
+            if (titre.isEmpty() && idText.isEmpty() && (statut == null || STATUT_TOUS.equals(statut))) {
                 return true;
             }
 
-            // Filtre par ID
             if (!idText.isEmpty()) {
                 try {
                     int id = Integer.parseInt(idText);
@@ -365,7 +364,6 @@ public class VoyageBackController implements Initializable {
                 }
             }
 
-            // Filtre par titre
             if (!titre.isEmpty()) {
                 String voyageTitre = voyage.getTitre_voyage();
                 if (voyageTitre == null || !voyageTitre.toLowerCase().contains(titre)) {
@@ -373,7 +371,6 @@ public class VoyageBackController implements Initializable {
                 }
             }
 
-            // Filtre par statut (null-safe)
             if (statut != null && !STATUT_TOUS.equals(statut)) {
                 String voyageStatut = voyage.getStatut();
                 if (voyageStatut == null || !voyageStatut.equals(statut)) {
@@ -384,7 +381,6 @@ public class VoyageBackController implements Initializable {
             return true;
         });
 
-        // Mettre à jour les statistiques
         mettreAJourStatistiques();
         mettreAJourStatistiquesDetaillees();
     }
@@ -396,13 +392,9 @@ public class VoyageBackController implements Initializable {
         tfSearchId.clear();
         cbSearchStatut.setValue(STATUT_TOUS);
 
-        // Réinitialiser le filtre pour tout afficher
         if (filteredData != null) {
             filteredData.setPredicate(p -> true);
         }
-
-        // Recharger les données
-        chargerVoyages();
     }
 
     // Mettre à jour les statistiques en fonction des données filtrées
@@ -410,16 +402,25 @@ public class VoyageBackController implements Initializable {
         if (sortedData != null) {
             int total = sortedData.size();
             lblTotalVoyages.setText(String.valueOf(total));
+            if (statsTotalVoyages != null) {
+                statsTotalVoyages.setText(String.valueOf(total));
+            }
 
             long actifs = sortedData.stream()
                     .filter(v -> STATUT_EN_COURS.equals(v.getStatut()) || STATUT_A_VENIR.equals(v.getStatut()))
                     .count();
             lblVoyagesActifs.setText(String.valueOf(actifs));
+            if (statsActifs != null) {
+                statsActifs.setText(String.valueOf(actifs));
+            }
 
             long termines = sortedData.stream()
                     .filter(v -> STATUT_TERMINE.equals(v.getStatut()))
                     .count();
             lblVoyagesTermines.setText(String.valueOf(termines));
+            if (statsTermines != null) {
+                statsTermines.setText(String.valueOf(termines));
+            }
         }
     }
 
@@ -430,26 +431,20 @@ public class VoyageBackController implements Initializable {
             voyageList.clear();
             voyageList.addAll(voyages);
 
-            // Mettre à jour les statistiques
-            lblTotalVoyages.setText(String.valueOf(voyages.size()));
-            lblVoyagesCount.setText(String.valueOf(voyages.size()));
-
-            long actifs = voyages.stream()
-                    .filter(v -> STATUT_EN_COURS.equals(v.getStatut()) || STATUT_A_VENIR.equals(v.getStatut()))
-                    .count();
-            lblVoyagesActifs.setText(String.valueOf(actifs));
-
-            long termines = voyages.stream()
-                    .filter(v -> STATUT_TERMINE.equals(v.getStatut()))
-                    .count();
-            lblVoyagesTermines.setText(String.valueOf(termines));
-
-            // Mettre à jour les statistiques détaillées
+            mettreAJourStatistiques();
             mettreAJourStatistiquesDetaillees();
+            mettreAJourDateMAJ();
 
         } catch (SQLException e) {
             e.printStackTrace();
             showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible de charger les voyages: " + e.getMessage());
+        }
+    }
+
+    private void mettreAJourDateMAJ() {
+        if (lblLastUpdate != null) {
+            lblLastUpdate.setText("Dernière mise à jour: " +
+                    java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm")));
         }
     }
 
@@ -515,6 +510,76 @@ public class VoyageBackController implements Initializable {
         resetRecherche(event);
     }
 
+    // Navigation methods
+    @FXML
+    private void handleDashboardClick(MouseEvent event) {
+        naviguerVers("/PageDashboardBack.fxml", "Dashboard");
+    }
+
+    @FXML
+    private void handleDestinationsClick(MouseEvent event) {
+        naviguerVers("/PageDestinationBack.fxml", "Destinations");
+    }
+
+    @FXML
+    private void handleHebergementClick(MouseEvent event) {
+        naviguerVers("/PageHebergementBack.fxml", "Hébergements");
+    }
+
+    @FXML
+    private void handleItinerairesClick(MouseEvent event) {
+        naviguerVers("/PageItineraireBack.fxml", "Itinéraires");
+    }
+
+    @FXML
+    private void handleActivitesClick(MouseEvent event) {
+        naviguerVers("/PageActiviteBack.fxml", "Activités");
+    }
+
+    @FXML
+    private void handleCategoriesClick(MouseEvent event) {
+        naviguerVers("/PageCategorieBack.fxml", "Catégories");
+    }
+
+    @FXML
+    private void handleBudgetsClick(MouseEvent event) {
+        naviguerVers("/PageBudgetBack.fxml", "Budgets");
+    }
+
+    @FXML
+    private void handleUsersClick(MouseEvent event) {
+        naviguerVers("/PageUtilisateurBack.fxml", "Utilisateurs");
+    }
+
+    @FXML
+    private void handleStatsClick(MouseEvent event) {
+        naviguerVers("/PageStatistiquesBack.fxml", "Statistiques");
+    }
+
+    private void naviguerVers(String fxmlPath, String titre) {
+        try {
+            // Vérifier si le fichier existe avant de charger
+            URL resourceUrl = getClass().getResource(fxmlPath);
+            if (resourceUrl == null) {
+                showAlert(Alert.AlertType.ERROR, "Erreur",
+                        "Fichier introuvable: " + fxmlPath + "\nVérifiez que le fichier existe dans le dossier resources.");
+                return;
+            }
+
+            FXMLLoader loader = new FXMLLoader(resourceUrl);
+            Parent root = loader.load();
+            Stage stage = (Stage) tableVoyages.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("TravelMate - " + titre);
+            stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+            showAlert(Alert.AlertType.ERROR, "Erreur",
+                    "Impossible de naviguer vers " + titre + ":\n" + e.getMessage() +
+                            "\nVérifiez que le fichier " + fxmlPath + " existe.");
+        }
+    }
+
     private void voirVoyage(Voyage voyage) {
         String nomDest = DEST_INCONNUE;
         try {
@@ -528,7 +593,7 @@ public class VoyageBackController implements Initializable {
 
         final String destination = nomDest;
 
-        // Build rich popup
+        // Build rich popup (code existant...)
         Stage popup = new Stage();
         popup.setTitle("📋 " + voyage.getTitre_voyage());
 
@@ -601,10 +666,7 @@ public class VoyageBackController implements Initializable {
 
         // === ASYNC LOADING ===
         new Thread(() -> {
-            // Load country info
             RestCountriesService.CountryInfo countryInfo = restCountriesService.getInfosPays(destination);
-
-            // Load QR code
             Image qrImage = null;
             try {
                 qrImage = qrCodeServicess.genererQRCodeVoyage(voyage, destination);
@@ -612,16 +674,12 @@ public class VoyageBackController implements Initializable {
                 System.out.println("⚠️ QR generation failed: " + e.getMessage());
             }
 
-            // Load Unsplash photo
             UnsplashService.PhotoInfo photoInfo = unsplashService.rechercherPhotoInfo(destination);
-
             final Image finalQr = qrImage;
 
             javafx.application.Platform.runLater(() -> {
-                // Update country section
                 countrySection.getChildren().remove(loadingLbl);
                 if (countryInfo != null) {
-                    // Flag + info in a horizontal layout
                     if (!countryInfo.drapeauUrl.isEmpty()) {
                         try {
                             ImageView flag = new ImageView(new Image(countryInfo.drapeauUrl, 50, 30, true, true));
@@ -647,7 +705,6 @@ public class VoyageBackController implements Initializable {
                     countrySection.getChildren().add(noData);
                 }
 
-                // Update QR code section
                 qrSection.getChildren().remove(qrLoading);
                 if (finalQr != null) {
                     ImageView qrView = new ImageView(finalQr);
@@ -657,7 +714,6 @@ public class VoyageBackController implements Initializable {
                     qrSection.getChildren().add(qrView);
                 }
 
-                // Add Unsplash photo if available
                 if (photoInfo != null && !photoInfo.urlRegular.isEmpty()) {
                     try {
                         VBox photoSection = new VBox(8);
@@ -676,7 +732,6 @@ public class VoyageBackController implements Initializable {
 
                         photoSection.getChildren().addAll(photoTitle, photoView, credit);
 
-                        // Insert before footer
                         int footerIdx = root.getChildren().indexOf(footer);
                         root.getChildren().add(footerIdx, photoSection);
                     } catch (Exception e) {
@@ -796,7 +851,6 @@ public class VoyageBackController implements Initializable {
             showAlert(Alert.AlertType.ERROR, "Erreur", "Le titre ne peut pas dépasser 100 caractères");
             return false;
         }
-        // Apply trimmed title back
         tfTitre.setText(titre);
 
         if (dpDateDebut.getValue() == null) {
@@ -863,11 +917,11 @@ public class VoyageBackController implements Initializable {
             long annule = voyageList.stream().filter(v -> STATUT_ANNULE.equals(v.getStatut())).count();
 
             // Mettre à jour les labels
-            lblCountAVenir.setText(String.valueOf(aVenir));
-            lblCountEnCours.setText(String.valueOf(enCours));
-            lblCountTermine.setText(String.valueOf(termine));
-            lblCountAnnule.setText(String.valueOf(annule));
-            lblTotalVoyages2.setText(String.valueOf(total));
+            if (lblCountAVenir != null) lblCountAVenir.setText(String.valueOf(aVenir));
+            if (lblCountEnCours != null) lblCountEnCours.setText(String.valueOf(enCours));
+            if (lblCountTermine != null) lblCountTermine.setText(String.valueOf(termine));
+            if (lblCountAnnule != null) lblCountAnnule.setText(String.valueOf(annule));
+            if (lblTotalVoyages2 != null) lblTotalVoyages2.setText(String.valueOf(total));
 
             // Calculer et afficher les pourcentages + progress bars
             if (total > 0) {
@@ -876,21 +930,20 @@ public class VoyageBackController implements Initializable {
                 double pctTermine = termine * 1.0 / total;
                 double pctAnnule = annule * 1.0 / total;
 
-                lblPourcentAVenir.setText(String.format(PERCENT_FORMAT, pctAVenir * 100));
-                lblPourcentEnCours.setText(String.format(PERCENT_FORMAT, pctEnCours * 100));
-                lblPourcentTermine.setText(String.format(PERCENT_FORMAT, pctTermine * 100));
-                lblPourcentAnnule.setText(String.format(PERCENT_FORMAT, pctAnnule * 100));
+                if (lblPourcentAVenir != null) lblPourcentAVenir.setText(String.format(PERCENT_FORMAT, pctAVenir * 100));
+                if (lblPourcentEnCours != null) lblPourcentEnCours.setText(String.format(PERCENT_FORMAT, pctEnCours * 100));
+                if (lblPourcentTermine != null) lblPourcentTermine.setText(String.format(PERCENT_FORMAT, pctTermine * 100));
+                if (lblPourcentAnnule != null) lblPourcentAnnule.setText(String.format(PERCENT_FORMAT, pctAnnule * 100));
 
-                // Update progress bars
                 if (pbAVenir != null) pbAVenir.setProgress(pctAVenir);
                 if (pbEnCours != null) pbEnCours.setProgress(pctEnCours);
                 if (pbTermine != null) pbTermine.setProgress(pctTermine);
                 if (pbAnnule != null) pbAnnule.setProgress(pctAnnule);
             } else {
-                lblPourcentAVenir.setText("(0.0%)");
-                lblPourcentEnCours.setText("(0.0%)");
-                lblPourcentTermine.setText("(0.0%)");
-                lblPourcentAnnule.setText("(0.0%)");
+                if (lblPourcentAVenir != null) lblPourcentAVenir.setText("(0.0%)");
+                if (lblPourcentEnCours != null) lblPourcentEnCours.setText("(0.0%)");
+                if (lblPourcentTermine != null) lblPourcentTermine.setText("(0.0%)");
+                if (lblPourcentAnnule != null) lblPourcentAnnule.setText("(0.0%)");
 
                 if (pbAVenir != null) pbAVenir.setProgress(0);
                 if (pbEnCours != null) pbEnCours.setProgress(0);
@@ -899,82 +952,103 @@ public class VoyageBackController implements Initializable {
             }
 
             // Mettre à jour le PieChart
-            ObservableList<PieChart.Data> pieChartData = FXCollections.observableArrayList(
-                    new PieChart.Data("À venir (" + aVenir + ")", aVenir),
-                    new PieChart.Data("En cours (" + enCours + ")", enCours),
-                    new PieChart.Data("Terminé (" + termine + ")", termine),
-                    new PieChart.Data("Annulé (" + annule + ")", annule)
-            );
+            if (pieChartStatuts != null) {
+                ObservableList<PieChart.Data> pieChartData = FXCollections.observableArrayList(
+                        new PieChart.Data("À venir (" + aVenir + ")", aVenir),
+                        new PieChart.Data("En cours (" + enCours + ")", enCours),
+                        new PieChart.Data("Terminé (" + termine + ")", termine),
+                        new PieChart.Data("Annulé (" + annule + ")", annule)
+                );
 
-            pieChartStatuts.setData(pieChartData);
-
-            // Personnaliser les couleurs du PieChart
-            pieChartData.forEach(data -> {
-                if (data.getName().startsWith("À venir")) {
-                    data.getNode().setStyle("-fx-pie-color: #ff8c42;");
-                } else if (data.getName().startsWith("En cours")) {
-                    data.getNode().setStyle("-fx-pie-color: #10b981;");
-                } else if (data.getName().startsWith("Terminé")) {
-                    data.getNode().setStyle("-fx-pie-color: #64748b;");
-                } else if (data.getName().startsWith("Annulé")) {
-                    data.getNode().setStyle("-fx-pie-color: #ec4899;");
-                }
-            });
+                pieChartStatuts.setData(pieChartData);
+            }
         }
     }
 
-    // Export PDF
     @FXML
     private void exportToPDF(ActionEvent event) {
         try {
+            System.out.println("=== DÉBUT EXPORT PDF ===");
+
             ObservableList<Voyage> voyagesToExport;
             if (filteredData != null && !filteredData.isEmpty()) {
                 voyagesToExport = FXCollections.observableArrayList(filteredData);
+                System.out.println("Export des données filtrées: " + voyagesToExport.size() + " voyages");
             } else {
                 voyagesToExport = voyageList;
+                System.out.println("Export de toutes les données: " + voyagesToExport.size() + " voyages");
             }
 
             if (!voyagesToExport.isEmpty()) {
+                System.out.println("Appel à ExportService.exportToPDF...");
+
                 ExportService.exportToPDF(
                         voyagesToExport,
                         (Stage) tableVoyages.getScene().getWindow(),
                         "Liste des voyages - TravelMate"
                 );
+
+                System.out.println("Export PDF terminé avec succès");
                 showAlert(Alert.AlertType.INFORMATION, "Succès", "Export PDF terminé avec succès!");
             } else {
+                System.out.println("Aucune donnée à exporter");
                 showAlert(Alert.AlertType.WARNING, "Attention", "Aucune donnée à exporter");
             }
 
-        } catch (IOException e) {
+        } catch (Exception e) {
+            System.err.println("=== ERREUR EXPORT PDF ===");
+            System.err.println("Type d'erreur: " + e.getClass().getName());
+            System.err.println("Message: " + e.getMessage());
             e.printStackTrace();
-            showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur lors de l'export PDF: " + e.getMessage());
+
+            String errorMessage = e.getMessage();
+            if (errorMessage == null) {
+                errorMessage = "Erreur inconnue";
+            }
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur lors de l'export PDF: " + errorMessage);
         }
     }
 
-    // Export Excel
     @FXML
     private void exportToExcel(ActionEvent event) {
         try {
+            System.out.println("=== DÉBUT EXPORT EXCEL ===");
+
             ObservableList<Voyage> voyagesToExport;
             if (filteredData != null && !filteredData.isEmpty()) {
                 voyagesToExport = FXCollections.observableArrayList(filteredData);
+                System.out.println("Export des données filtrées: " + voyagesToExport.size() + " voyages");
             } else {
                 voyagesToExport = voyageList;
+                System.out.println("Export de toutes les données: " + voyagesToExport.size() + " voyages");
             }
 
             if (!voyagesToExport.isEmpty()) {
+                System.out.println("Appel à ExportService.exportToExcel...");
+
                 ExportService.exportToExcel(
                         voyagesToExport,
                         (Stage) tableVoyages.getScene().getWindow()
                 );
+
+                System.out.println("Export Excel terminé avec succès");
                 showAlert(Alert.AlertType.INFORMATION, "Succès", "Export Excel terminé avec succès!");
             } else {
+                System.out.println("Aucune donnée à exporter");
                 showAlert(Alert.AlertType.WARNING, "Attention", "Aucune donnée à exporter");
             }
 
-        } catch (IOException e) {
+        } catch (Exception e) {
+            System.err.println("=== ERREUR EXPORT EXCEL ===");
+            System.err.println("Type d'erreur: " + e.getClass().getName());
+            System.err.println("Message: " + e.getMessage());
             e.printStackTrace();
-            showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur lors de l'export Excel: " + e.getMessage());
+
+            String errorMessage = e.getMessage();
+            if (errorMessage == null) {
+                errorMessage = "Erreur inconnue";
+            }
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur lors de l'export Excel: " + errorMessage);
         }
     }
 }

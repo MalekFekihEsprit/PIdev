@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : 127.0.0.1
--- Généré le : sam. 28 fév. 2026 à 16:01
+-- Généré le : dim. 01 mars 2026 à 14:28
 -- Version du serveur : 10.4.32-MariaDB
 -- Version de PHP : 8.2.12
 
@@ -165,11 +165,24 @@ INSERT INTO `destination` (`id_destination`, `nom_destination`, `pays_destinatio
 CREATE TABLE `etape` (
   `id_etape` int(11) NOT NULL,
   `heure` time NOT NULL,
-  `lieu` varchar(255) NOT NULL,
   `description_etape` text NOT NULL,
   `id_activite` int(11) NOT NULL,
-  `id_itineraire` int(11) NOT NULL
+  `id_itineraire` int(11) NOT NULL,
+  `numero_jour` int(11) NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Déchargement des données de la table `etape`
+--
+
+INSERT INTO `etape` (`id_etape`, `heure`, `description_etape`, `id_activite`, `id_itineraire`, `numero_jour`) VALUES
+(1, '08:00:00', 'hgfd', 21, 9, 1),
+(5, '08:00:00', 'n', 21, 11, 1),
+(9, '08:00:00', '', 6, 11, 2),
+(10, '07:00:00', '', 21, 11, 2),
+(11, '08:00:00', ';,hnbvc', 6, 9, 3),
+(12, '08:00:00', '', 21, 11, 0),
+(13, '08:00:00', '', 6, 11, 0);
 
 -- --------------------------------------------------------
 
@@ -214,11 +227,31 @@ INSERT INTO `hebergement` (`id_hebergement`, `nom_hebergement`, `type_hebergemen
 
 CREATE TABLE `itineraire` (
   `id_itineraire` int(11) NOT NULL,
-  `nom_iteneraire` varchar(100) NOT NULL,
-  `description_iteneraire` text NOT NULL,
-  `id_voyage` int(11) NOT NULL,
-  `nombre_jour` int(11) NOT NULL
+  `nom_itineraire` varchar(100) NOT NULL,
+  `description_itineraire` text NOT NULL,
+  `id_voyage` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Déchargement des données de la table `itineraire`
+--
+
+INSERT INTO `itineraire` (`id_itineraire`, `nom_itineraire`, `description_itineraire`, `id_voyage`) VALUES
+(1, 'meri', 'jhgf', 23),
+(2, 'llll', 'nnnn', 13),
+(3, 'bbb', 'jjkk;', 13),
+(4, ';,n', 'lkjhgfc', 23),
+(5, 'kjh', 'lkijh', 23),
+(6, 'khad', 'boug', 23),
+(8, 'dsfgh', 'eqrtdgfhyugjik', 23),
+(9, 'kjhgf', 'oiuy', 30),
+(11, 'mmmm', 'l,np,npl', 47),
+(12, ';lkjhgfds', 'mlkjhgfd', 51),
+(13, 'mploiuyt', 'mlkjuhygf', 31),
+(14, 'lkjhbv', 'lkjhb', 7),
+(15, 'sdfrtgy', 'zaerty', 47),
+(16, 'kjhg', 'kjhgn', 47),
+(17, 'xcvb', 'qsdfg', 47);
 
 -- --------------------------------------------------------
 
@@ -230,6 +263,16 @@ CREATE TABLE `liste_activite` (
   `id_voyage` int(11) NOT NULL,
   `id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Déchargement des données de la table `liste_activite`
+--
+
+INSERT INTO `liste_activite` (`id_voyage`, `id`) VALUES
+(30, 21),
+(30, 6),
+(47, 21),
+(47, 6);
 
 -- --------------------------------------------------------
 
@@ -317,10 +360,10 @@ CREATE TABLE `user` (
 --
 
 INSERT INTO `user` (`id`, `nom`, `prenom`, `date_naissance`, `email`, `telephone`, `mot_de_passe`, `role`, `photo_url`, `verification_code`, `is_verified`, `last_login_ip`, `last_login_location`, `created_at`, `photo_file_name`, `face_embedding`) VALUES
-(1, 'Chekir', 'Neyrouz', '2005-01-29', 'neyrouzchekir01@gmail.com', '+21629074810', '$2a$12$HZAHY7Nb1zbudlwU28ienuKGjzKDUlPPVw9wBOdEcCFZVbLLhN6Je', 'ADMIN', NULL, NULL, 1, '196.203.207.178', 'Tunis, Tunisia, El Menzah', '2026-02-26 18:12:29', NULL, NULL),
+(1, 'Chekir', 'Neyrouz', '2005-01-29', 'neyrouzchekir01@gmail.com', '+21629074810', '$2a$12$HZAHY7Nb1zbudlwU28ienuKGjzKDUlPPVw9wBOdEcCFZVbLLhN6Je', 'ADMIN', NULL, NULL, 1, '41.230.136.167', 'Tunis, Tunisia, ', '2026-02-26 18:12:29', NULL, NULL),
 (2, 'Boutaieb', 'Yosr', '2003-05-30', 'yosr.boutaieb@esprit.tn', NULL, '$2a$12$K52nqVrAtvx8EMHTyi7kFO1VFax0SQ5nlsExmunmWbG4h3JsKJ4YO', 'USER', NULL, NULL, 0, NULL, NULL, '2026-02-26 18:16:36', NULL, NULL),
 (3, 'Chekir', 'Neyrouz', '2003-02-08', 'neyrouz.chekir@esprit.tn', NULL, '$2a$12$xru.KeGJexFAPNBrxxdWk.20aMGwuZ/fZmdMfy/YttCSSCuVHtMva', 'USER', NULL, NULL, 1, '102.173.115.26', 'Tunis, Tunisia', '2026-02-26 18:40:58', NULL, NULL),
-(4, 'Boutaieb', 'Yosr', '2004-02-13', 'neyrouzchekir2005@gmail.com', NULL, '$2a$12$/KPn2qOG5U5wOBL7Wvr/XuPag3EvRbAJPivloQ1OKj8yQzi3B9Y/O', 'USER', NULL, NULL, 1, '196.203.207.178', 'Tunis, Tunisia, El Menzah', '2026-02-26 19:00:33', NULL, NULL),
+(4, 'Boutaieb', 'Yosr', '2004-02-13', 'neyrouzchekir2005@gmail.com', NULL, '$2a$12$/KPn2qOG5U5wOBL7Wvr/XuPag3EvRbAJPivloQ1OKj8yQzi3B9Y/O', 'USER', NULL, NULL, 1, '41.230.136.167', 'Tunis, Tunisia, ', '2026-02-26 19:00:33', NULL, NULL),
 (5, 'minyar', 'ghannem', '2026-02-14', 'minyarghannem06@gmail.com', '92559234', 'Travelmate123*', 'USER', '', NULL, 0, NULL, NULL, '2026-02-28 13:16:39', NULL, NULL);
 
 -- --------------------------------------------------------
@@ -359,7 +402,6 @@ INSERT INTO `voyage` (`id_voyage`, `titre_voyage`, `date_debut`, `date_fin`, `st
 (31, 'www', '2026-02-27 00:00:00', '2026-03-04 00:00:00', 'a venir', 2),
 (33, 'ssssminyar', '2026-02-26 00:00:00', '2026-02-28 00:00:00', 'a venir', 3),
 (47, 'aaaaaaaaaaaaaaaaaaaa', '2026-02-26 00:00:00', '2026-02-28 00:00:00', 'a venir', 3),
-(50, 'back', '2026-02-28 00:00:00', '2026-03-08 00:00:00', 'a venir', 1),
 (51, 'backtest', '2026-02-28 00:00:00', '2026-03-01 00:00:00', 'a venir', 1);
 
 --
@@ -497,7 +539,7 @@ ALTER TABLE `destination`
 -- AUTO_INCREMENT pour la table `etape`
 --
 ALTER TABLE `etape`
-  MODIFY `id_etape` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_etape` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT pour la table `hebergement`
@@ -509,7 +551,7 @@ ALTER TABLE `hebergement`
 -- AUTO_INCREMENT pour la table `itineraire`
 --
 ALTER TABLE `itineraire`
-  MODIFY `id_itineraire` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_itineraire` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT pour la table `paiement`

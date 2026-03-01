@@ -1,5 +1,6 @@
 package Controllers;
 
+import Controllers.ItineraireEtEtape.PageItineraire;
 import Entities.Voyage;
 import Services.*;
 import javafx.fxml.FXML;
@@ -29,6 +30,8 @@ import java.util.Optional;
 
 public class CarteVoyageController {
 
+    @FXML
+    private VBox carteVoyage; // AJOUTÉ : ID pour le VBox principal
     @FXML
     private Label iconLabel;
     @FXML
@@ -118,13 +121,119 @@ public class CarteVoyageController {
         // Initialiser la description
         descriptionVoyage.setText("Cliquez sur ✨ pour générer une description");
 
-        btnModifier.setOnMouseClicked(e -> handleModifier());
-        btnPaiement.setOnMouseClicked(e -> handlePaiement());
-        btnParticipants.setOnMouseClicked(e -> handleParticipants());
-        btnSupprimer.setOnMouseClicked(e -> handleSupprimer());
-        btnGenererDescription.setOnMouseClicked(e -> genererDescription());
-        btnQRCode.setOnMouseClicked(e -> afficherQRCode());
-        btnInfosPays.setOnMouseClicked(e -> afficherInfosPays());
+        btnModifier.setOnMouseClicked(e -> {
+            e.consume(); // ← AJOUTER CETTE LIGNE
+            handleModifier();
+        });
+
+        btnPaiement.setOnMouseClicked(e -> {
+            e.consume(); // ← AJOUTER CETTE LIGNE
+            handlePaiement();
+        });
+
+        btnParticipants.setOnMouseClicked(e -> {
+            e.consume(); // ← AJOUTER CETTE LIGNE
+            handleParticipants();
+        });
+
+        btnSupprimer.setOnMouseClicked(e -> {
+            e.consume(); // ← AJOUTER CETTE LIGNE
+            handleSupprimer();
+        });
+
+        btnGenererDescription.setOnMouseClicked(e -> {
+            e.consume(); // ← AJOUTER CETTE LIGNE
+            genererDescription();
+        });
+
+        btnQRCode.setOnMouseClicked(e -> {
+            e.consume(); // ← AJOUTER CETTE LIGNE
+            afficherQRCode();
+        });
+
+        btnInfosPays.setOnMouseClicked(e -> {
+            e.consume(); // ← AJOUTER CETTE LIGNE
+            afficherInfosPays();
+        });
+
+        // ✅ CORRECTION : Attendre que la carte soit complètement chargée
+        javafx.application.Platform.runLater(() -> {
+            ajouterGestionnaireClicCarte();
+        });
+    }
+
+    /**
+     * Ajoute un gestionnaire de clic sur la carte pour ouvrir la page des itinéraires
+     */
+    private void ajouterGestionnaireClicCarte() {
+        if (carteVoyage == null) {
+            System.err.println("ERREUR: carteVoyage est null");
+            return;
+        }
+
+        // Rendre la carte cliquable (sauf les boutons)
+        carteVoyage.setOnMouseClicked(event -> {
+            // Vérifier si le clic n'est pas sur un bouton
+            if (event.getTarget() instanceof Label) {
+                Label target = (Label) event.getTarget();
+                // Ne pas ouvrir si c'est un des boutons d'action
+                if (target == btnModifier || target == btnPaiement || target == btnParticipants ||
+                        target == btnSupprimer || target == btnGenererDescription ||
+                        target == btnQRCode || target == btnInfosPays) {
+                    return;
+                }
+            }
+
+            // Ouvrir la page des itinéraires
+            ouvrirPageItineraires();
+        });
+
+        // Style pour indiquer que la carte est cliquable (optionnel)
+        if (!carteVoyage.getStyle().contains("-fx-cursor: hand;")) {
+            carteVoyage.setStyle(carteVoyage.getStyle() + "; -fx-cursor: hand;");
+        }
+    }
+
+    /**
+     * Ouvre la page des itinéraires pour ce voyage
+     */
+    // Dans CarteVoyageController.java - la méthode ouvrirPageItineraires est correcte
+    private void ouvrirPageItineraires() {
+        try {
+            System.out.println("=== OUVERTURE PAGE ITINÉRAIRES ===");
+            System.out.println("Voyage ID: " + voyage.getId_voyage());
+            System.out.println("Voyage titre: " + voyage.getTitre_voyage());
+            System.out.println("Destination: " + nomDestination);
+
+            URL resource = getClass().getResource("/ItineraireEtEtape/PageItineraire.fxml");
+
+            if (resource == null) {
+                resource = Thread.currentThread().getContextClassLoader().getResource("ItineraireEtEtape/PageItineraire.fxml");
+            }
+
+            if (resource == null) {
+                showAlert(Alert.AlertType.ERROR, "Erreur",
+                        "Fichier PageItineraire.fxml non trouvé dans ItineraireEtEtape!");
+                return;
+            }
+
+            FXMLLoader loader = new FXMLLoader(resource);
+            Parent root = loader.load();
+
+            PageItineraire itineraireController = loader.getController();
+
+            // Passer les données du voyage
+            itineraireController.initData(voyage, nomDestination);
+
+            Stage stage = (Stage) titreVoyage.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.show();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            showAlert(Alert.AlertType.ERROR, "Erreur",
+                    "Erreur lors du chargement de la page des itinéraires: " + e.getMessage());
+        }
     }
 
     private String getIconePourDestination(String nomDestination) {
