@@ -213,8 +213,26 @@ public class AdminUsersController {
                 showInfoAlert("Voyages", "Cette fonctionnalité sera bientôt disponible"));
 
         setupSidebarButtonHover(btnBudgets, "💰", "Budgets");
-        if (btnBudgets != null) btnBudgets.setOnMouseClicked(event ->
-                showInfoAlert("Budgets", "Cette fonctionnalité sera bientôt disponible"));
+        if (btnBudgets != null) btnBudgets.setOnMouseClicked(event -> navigatetoBudgets());
+    }
+
+    private void navigatetoBudgets() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/BudgetDepenseBack.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) btnDestinations.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("TravelMate - Budgets");
+            stage.setMaximized(true);
+            stage.show();
+        } catch (IOException e) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Erreur");
+            alert.setHeaderText(null);
+            alert.setContentText("Impossible de charger les Budgets: " + e.getMessage());
+            alert.showAndWait();
+            e.printStackTrace();
+        }
     }
 
     private void setupSidebarButtonHover(HBox button, String icon, String text) {

@@ -250,15 +250,13 @@ public class ACTback implements Initializable {
 
         // Voyages
         if (btnVoyages != null) {
-            btnVoyages.setOnMouseClicked(event ->
-                    showInfo("Voyages", "Cette fonctionnalité sera bientôt disponible"));
+            btnVoyages.setOnMouseClicked(event -> navigatetoVoyages());
             setupSidebarButtonHover(btnVoyages, "✈️", "Voyages");
         }
 
         // Budgets
         if (btnBudgets != null) {
-            btnBudgets.setOnMouseClicked(event ->
-                    showInfo("Budgets", "Cette fonctionnalité sera bientôt disponible"));
+            btnBudgets.setOnMouseClicked(event -> navigatetoBudgets());
             setupSidebarButtonHover(btnBudgets, "💰", "Budgets");
         }
 
@@ -304,6 +302,43 @@ public class ACTback implements Initializable {
                     userProfileBox.setStyle("-fx-background-color: #2d3759; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand;"));
             userProfileBox.setOnMouseExited(event ->
                     userProfileBox.setStyle("-fx-background-color: #1e2749; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand;"));
+        }
+    }
+
+    private void navigatetoBudgets() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/BudgetDepenseBack.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) btnDestinations.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("TravelMate - Budgets");
+            stage.setMaximized(true);
+            stage.show();
+        } catch (IOException e) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Erreur");
+            alert.setHeaderText(null);
+            alert.setContentText("Impossible de charger les Budgets: " + e.getMessage());
+            alert.showAndWait();
+            e.printStackTrace();
+        }
+    }
+    private void navigatetoVoyages() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/PageVoyageBack.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) btnDestinations.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("TravelMate - Budgets");
+            stage.setMaximized(true);
+            stage.show();
+        } catch (IOException e) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Erreur");
+            alert.setHeaderText(null);
+            alert.setContentText("Impossible de charger les Budgets: " + e.getMessage());
+            alert.showAndWait();
+            e.printStackTrace();
         }
     }
 

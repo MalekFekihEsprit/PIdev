@@ -38,6 +38,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static Controllers.FaceCaptureDialog.showAlert;
+
 public class ACTfront implements Initializable {
 
     // ─── FXML Injections ───────────────────────────────────────────────
@@ -160,7 +162,7 @@ public class ACTfront implements Initializable {
 
         // Budgets button (pas encore implémenté)
         if (btnBudgets != null) {
-            btnBudgets.setOnMouseClicked(event -> showNotImplementedAlert("Budgets"));
+            btnBudgets.setOnMouseClicked(event -> navigatetoBudgets());
         }
 
         // User profile
@@ -168,6 +170,8 @@ public class ACTfront implements Initializable {
             userProfileBox.setOnMouseClicked(event -> navigateToProfile());
         }
     }
+
+
 
     private void updateUserInfo() {
         User currentUser = UserSession.getInstance().getCurrentUser();
@@ -213,6 +217,25 @@ public class ACTfront implements Initializable {
             stage.show();
         } catch (IOException e) {
             showError("Erreur de navigation", "Impossible de charger les hébergements: " + e.getMessage());
+        }
+    }
+
+    private void navigatetoBudgets() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/BudgetDepenseFront.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) btnDestinations.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("TravelMate - Budgets");
+            stage.setMaximized(true);
+            stage.show();
+        } catch (IOException e) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Erreur");
+            alert.setHeaderText(null);
+            alert.setContentText("Impossible de charger les Budgets: " + e.getMessage());
+            alert.showAndWait();
+            e.printStackTrace();
         }
     }
 

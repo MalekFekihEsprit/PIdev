@@ -1,0 +1,113 @@
+/* ================================================================
+   TRAVELMATE — Admin Dark Theme
+   Chemin : src/main/resources/Styles/budget-dark.css
+   Dans le FXML : stylesheets="@../Styles/budget-dark.css"
+   ================================================================ */
+
+/* ──────── PIE CHART : labels & légende en BLANC ──────── */
+.chart-pie-label {
+    -fx-fill: #ffffff !important;
+    -fx-font-size: 11px;
+    -fx-font-weight: 700;
+}
+.chart-pie-label-line {
+    -fx-stroke: #94a3b8;
+    -fx-stroke-width: 1.2;
+}
+.chart-legend {
+    -fx-background-color: transparent;
+}
+.chart-legend-item {
+    -fx-text-fill: #ffffff !important;
+    -fx-font-size: 12px;
+}
+.chart-legend-item-symbol {
+    -fx-background-radius: 50%;
+}
+.chart-title {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+/* ──────── TABLES ──────── */
+.table-view {
+    -fx-background-color: #0a0e27;
+    -fx-border-color: #1e2749;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+}
+.table-view .column-header-background {
+    -fx-background-color: #111633;
+    -fx-background-radius: 12 12 0 0;
+}
+.table-view .column-header,
+.table-view .filler {
+    -fx-background-color: #111633;
+    -fx-border-color: transparent;
+    -fx-size: 40;
+}
+.table-view .column-header .label {
+    -fx-text-fill: #94a3b8;
+    -fx-font-weight: 700;
+    -fx-font-size: 12px;
+    -fx-padding: 0 8;
+}
+.table-row-cell {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent transparent #1e2749 transparent;
+    -fx-table-cell-border-color: transparent;
+}
+.table-row-cell:odd  { -fx-background-color: rgba(30,39,73,0.35); }
+.table-row-cell:hover { -fx-background-color: rgba(255,140,66,0.08); }
+.table-row-cell:selected { -fx-background-color: rgba(255,140,66,0.20); }
+.table-cell {
+    -fx-text-fill: #e2e8f0;
+    -fx-font-size: 13px;
+    -fx-padding: 10 8;
+}
+
+/* ──────── SCROLL PANE ──────── */
+.scroll-pane { -fx-background-color: transparent; }
+.scroll-pane > .viewport { -fx-background-color: transparent; }
+.scroll-bar:vertical .thumb,
+.scroll-bar:horizontal .thumb {
+    -fx-background-color: #1e2749;
+    -fx-background-radius: 8;
+}
+.scroll-bar { -fx-background-color: transparent; }
+
+/* ──────── COMBO BOX ──────── */
+.combo-box {
+    -fx-background-color: #0a0e27;
+    -fx-border-color: #1e2749;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+}
+.combo-box .list-cell { -fx-text-fill: #e2e8f0; -fx-background-color: transparent; }
+.combo-box-popup .list-view { -fx-background-color: #111633; -fx-border-color: #1e2749; }
+.combo-box-popup .list-cell { -fx-text-fill: #e2e8f0; -fx-background-color: transparent; }
+.combo-box-popup .list-cell:hover { -fx-background-color: rgba(255,140,66,0.15); }
+
+/* ──────── DATE PICKER ──────── */
+.date-picker {
+    -fx-background-color: #0a0e27;
+    -fx-border-color: #1e2749;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+}
+.date-picker .text-field { -fx-text-fill: #e2e8f0; -fx-background-color: transparent; }
+
+/* ──────── TOGGLE BUTTON ──────── */
+.toggle-button {
+    -fx-background-color: #1e2749;
+    -fx-text-fill: #94a3b8;
+    -fx-background-radius: 8;
+    -fx-cursor: hand;
+}
+.toggle-button:selected {
+    -fx-background-color: #ff8c42;
+    -fx-text-fill: white;
+    -fx-font-weight: 700;
+}
+.button:hover { -fx-opacity: 0.86; }

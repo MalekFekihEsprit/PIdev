@@ -543,7 +543,7 @@ public class VoyageBackController implements Initializable {
 
     @FXML
     private void handleBudgetsClick(MouseEvent event) {
-        naviguerVers("/PageBudgetBack.fxml", "Budgets");
+        naviguerVers("/BudgetDepenseBack.fxml", "Budgets");
     }
 
     @FXML

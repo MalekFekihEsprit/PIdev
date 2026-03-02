@@ -79,7 +79,7 @@ public class FaceCaptureDialog {
         return capturedFile[0];
     }
 
-    private static void showAlert(Stage owner, String title, String msg) {
+    static void showAlert(Stage owner, String title, String msg) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.initOwner(owner);
         alert.setTitle(title);

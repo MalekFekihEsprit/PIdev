@@ -252,6 +252,9 @@ public class VoyageController {
         if (btnBudgets != null) {
             btnBudgets.setOnMouseClicked(event -> showNotImplementedAlert("Budgets"));
         }
+        if (btnVoyages != null) {
+            btnVoyages.setOnMouseClicked(event -> navigateToVoyages());
+        }
     }
 
     /**
@@ -311,6 +314,23 @@ public class VoyageController {
             e.printStackTrace();
         }
     }
+
+
+    private void navigateToVoyages() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/BudgetDepenseFront.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) btnDestinations.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("TravelMate - Budgets");
+            stage.setMaximized(true);
+            stage.show();
+        } catch (IOException e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible de charger les Budgets: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
 
     /**
      * Navigue vers la page des hébergements (NOUVEAU)
