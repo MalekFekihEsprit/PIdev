@@ -18,7 +18,7 @@ public class HomePage extends Application {
     public void start(Stage primaryStage) {
         try {
             // Charger le fichier FXML
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/BudgetDepenseBack.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/BudgetDepenseFront.fxml"));
             Parent root = loader.load();
 
             // Créer la scène avec les dimensions de votre interface

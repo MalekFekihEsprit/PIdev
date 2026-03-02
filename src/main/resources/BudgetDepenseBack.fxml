@@ -2,282 +2,507 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.chart.PieChart?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Circle?>
+<?import javafx.scene.shape.Rectangle?>
 
-<StackPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.BudgetBackController">
+<BorderPane prefHeight="900" prefWidth="1400"
+            style="-fx-background-color: #0a0e27;"
+            stylesheets="Styles/budget-dark.css"
+            xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="Controllers.BudgetBackController">
 
-    <BorderPane prefHeight="900" prefWidth="1400" style="-fx-background-color: #f8fafc;">
-
-        <!-- LEFT SIDEBAR -->
-        <left>
-            <VBox spacing="20" style="-fx-background-color: #0f172a; -fx-padding: 30 20; -fx-min-width: 260;" BorderPane.alignment="CENTER">
-
+    <!-- ═══════════ TOP NAV ═══════════ -->
+    <top>
+        <VBox>
+            <HBox alignment="CENTER_LEFT" spacing="20"
+                  style="-fx-background-color: #111633; -fx-border-color: #1e2749; -fx-border-width: 0 0 1 0;">
+                <padding><Insets bottom="18" left="32" right="32" top="18"/></padding>
                 <!-- Logo -->
-                <HBox alignment="CENTER_LEFT" spacing="12">
-                    <Circle fill="linear-gradient(from 0% 0% to 100% 100%, #ff8c42, #ff6b4a)" radius="22" />
-                    <Label style="-fx-font-size: 24; -fx-font-weight: bold; -fx-text-fill: white;" text="TravelMate" />
-                    <Label style="-fx-background-color: #ff8c42; -fx-text-fill: white; -fx-background-radius: 12; -fx-padding: 4 10; -fx-font-size: 10; -fx-font-weight: bold;" text="ADMIN" />
+                <HBox alignment="CENTER" spacing="10">
+                    <Circle fill="linear-gradient(from 0% 0% to 100% 100%, #ff8c42, #ff6b4a)" radius="16"/>
+                    <Label style="-fx-font-size: 24; -fx-font-weight: bold; -fx-text-fill: #ffffff;" text="TravelMate"/>
+                    <Label style="-fx-background-color: #ff8c42; -fx-text-fill: white; -fx-background-radius: 12; -fx-padding: 3 10; -fx-font-size: 10; -fx-font-weight: bold;" text="ADMIN"/>
                 </HBox>
-
-                <Separator style="-fx-background-color: #334155;" />
-
-                <!-- Profil admin -->
-                <VBox spacing="12" alignment="CENTER">
-                    <Circle fill="linear-gradient(from 0% 0% to 100% 100%, #ff8c42, #ff6b4a)" radius="40" />
-                    <VBox alignment="CENTER" spacing="4">
-                        <Label style="-fx-text-fill: white; -fx-font-weight: 700; -fx-font-size: 18;" text="Yosr Boutaieb" />
-                        <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 13; -fx-background-color: #1e293b; -fx-background-radius: 12; -fx-padding: 4 12;" text="Administrateur" />
+                <Region HBox.hgrow="ALWAYS"/>
+                <!-- Home -->
+                <HBox fx:id="btnHome" alignment="CENTER"
+                      style="-fx-background-color: #1e2749; -fx-background-radius: 12; -fx-min-width: 40; -fx-min-height: 40; -fx-cursor: hand;">
+                    <Label style="-fx-font-size: 18; -fx-text-fill: #94a3b8;" text="🏠"/>
+                </HBox>
+                <!-- Bell -->
+                <HBox alignment="CENTER"
+                      style="-fx-background-color: #1e2749; -fx-background-radius: 50%; -fx-min-width: 40; -fx-min-height: 40; -fx-cursor: hand;">
+                    <Label style="-fx-font-size: 16;" text="🔔"/>
+                </HBox>
+                <!-- User -->
+                <HBox alignment="CENTER" spacing="10"
+                      style="-fx-background-color: #1e2749; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand;">
+                    <Circle fill="linear-gradient(from 0% 0% to 100% 100%, #ff8c42, #ff6b4a)" radius="16"/>
+                    <VBox spacing="0">
+                        <Label style="-fx-text-fill: #ffffff; -fx-font-weight: 600; -fx-font-size: 13;" text="Administrateur"/>
+                        <Label style="-fx-text-fill: #64748b; -fx-font-size: 10;" text="Super Admin"/>
                     </VBox>
-                </VBox>
-
-                <Separator style="-fx-background-color: #334155;" />
-
-                <!-- Menu -->
-                <VBox spacing="6">
-                    <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 12; -fx-font-weight: 600; -fx-padding: 10 0 5 10;" text="NAVIGATION" />
-
-                    <HBox spacing="15" style="-fx-background-color: #334155; -fx-background-radius: 10; -fx-padding: 12 15;">
-                        <Label style="-fx-font-size: 18; -fx-text-fill: #ff8c42;" text="📊" />
-                        <Label style="-fx-text-fill: white; -fx-font-weight: 600; -fx-font-size: 14;" text="Dashboard" />
-                        <Region HBox.hgrow="ALWAYS" />
-                        <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 10;" text="3" />
-                    </HBox>
-
-                    <HBox spacing="15" style="-fx-background-color: transparent; -fx-background-radius: 10; -fx-padding: 12 15;">
-                        <Label style="-fx-font-size: 18; -fx-text-fill: #94a3b8;" text="🌍" />
-                        <Label style="-fx-text-fill: #cbd5e1; -fx-font-weight: 500; -fx-font-size: 14;" text="Destinations" />
-                    </HBox>
-
-                    <HBox spacing="15" style="-fx-background-color: transparent; -fx-background-radius: 10; -fx-padding: 12 15;">
-                        <Label style="-fx-font-size: 18; -fx-text-fill: #94a3b8;" text="🗺️" />
-                        <Label style="-fx-text-fill: #cbd5e1; -fx-font-weight: 500; -fx-font-size: 14;" text="Itinéraires" />
-                    </HBox>
-
-                    <HBox spacing="15" style="-fx-background-color: transparent; -fx-background-radius: 10; -fx-padding: 12 15;">
-                        <Label style="-fx-font-size: 18; -fx-text-fill: #94a3b8;" text="🏄" />
-                        <Label style="-fx-text-fill: #cbd5e1; -fx-font-weight: 500; -fx-font-size: 14;" text="Activités" />
-                    </HBox>
-
-                    <HBox spacing="15" style="-fx-background-color: transparent; -fx-background-radius: 10; -fx-padding: 12 15;">
-                        <Label style="-fx-font-size: 18; -fx-text-fill: #94a3b8;" text="🏨" />
-                        <Label style="-fx-text-fill: #cbd5e1; -fx-font-weight: 500; -fx-font-size: 14;" text="Hébergements" />
-                    </HBox>
-
-                    <HBox spacing="15" style="-fx-background-color: #ff8c42; -fx-background-radius: 10; -fx-padding: 12 15;">
-                        <Label style="-fx-font-size: 18; -fx-text-fill: white;" text="💰" />
-                        <Label style="-fx-text-fill: white; -fx-font-weight: 700; -fx-font-size: 14;" text="Budgets" />
-                        <Region HBox.hgrow="ALWAYS" />
-                        <Label fx:id="lblMenuBudgetCount" style="-fx-text-fill: white; -fx-background-color: rgba(255,255,255,0.2); -fx-background-radius: 12; -fx-padding: 2 8; -fx-font-size: 11;" text="0" />
-                    </HBox>
-
-                    <HBox spacing="15" style="-fx-background-color: transparent; -fx-background-radius: 10; -fx-padding: 12 15;">
-                        <Label style="-fx-font-size: 18; -fx-text-fill: #94a3b8;" text="📈" />
-                        <Label style="-fx-text-fill: #cbd5e1; -fx-font-weight: 500; -fx-font-size: 14;" text="Rapports" />
-                    </HBox>
-
-                    <HBox spacing="15" style="-fx-background-color: transparent; -fx-background-radius: 10; -fx-padding: 12 15;">
-                        <Label style="-fx-font-size: 18; -fx-text-fill: #94a3b8;" text="⚙️" />
-                        <Label style="-fx-text-fill: #cbd5e1; -fx-font-weight: 500; -fx-font-size: 14;" text="Paramètres" />
-                    </HBox>
-                </VBox>
-
-                <Region VBox.vgrow="ALWAYS" />
-
-                <!-- Pied de sidebar -->
-                <VBox spacing="10">
-                    <Separator style="-fx-background-color: #334155;" />
-                    <HBox alignment="CENTER" spacing="10">
-                        <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 11;" text="© 2026 TravelMate" />
-                        <Circle fill="#ff8c42" radius="3" />
-                        <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 11;" text="v3.0" />
-                    </HBox>
-                </VBox>
-            </VBox>
-        </left>
-
-        <!-- TOP BAR -->
-        <top>
-            <VBox>
-                <HBox alignment="CENTER_LEFT" spacing="20" style="-fx-background-color: #ffffff; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0; -fx-padding: 15 30;">
-                    <Label style="-fx-text-fill: #0f172a; -fx-font-size: 20; -fx-font-weight: 700;" text="Gestion des Budgets" />
-                    <Region HBox.hgrow="ALWAYS" />
-                    <HBox alignment="CENTER" spacing="20">
-                        <HBox spacing="5">
-                            <Label style="-fx-font-size: 18;" text="🔔" />
-                            <Label style="-fx-background-color: #ef4444; -fx-text-fill: white; -fx-background-radius: 50; -fx-min-width: 18; -fx-min-height: 18; -fx-font-size: 10; -fx-padding: 2;" text="3" />
-                        </HBox>
-                        <HBox spacing="10" style="-fx-background-color: #f1f5f9; -fx-background-radius: 20; -fx-padding: 5 15 5 5;">
-                            <Circle fill="linear-gradient(from 0% 0% to 100% 100%, #ff8c42, #ff6b4a)" radius="15" />
-                            <Label style="-fx-text-fill: #0f172a; -fx-font-weight: 600;" text="Yosr B." />
-                        </HBox>
-                    </HBox>
+                    <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 12;" text="▼"/>
                 </HBox>
-
-                <!-- Breadcrumb -->
-                <HBox alignment="CENTER_LEFT" spacing="8" style="-fx-background-color: #ffffff; -fx-padding: 8 30;">
-                    <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 11;" text="Accueil" />
-                    <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 11;" text="›" />
-                    <Label style="-fx-text-fill: #64748b; -fx-font-size: 11;" text="Backoffice" />
-                    <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 11;" text="›" />
-                    <Label style="-fx-text-fill: #ff8c42; -fx-font-size: 11; -fx-font-weight: 600;" text="Budgets" />
-                </HBox>
-            </VBox>
-        </top>
-
-        <!-- BOTTOM BAR -->
-        <bottom>
-            <HBox alignment="CENTER_LEFT" spacing="20" style="-fx-background-color: #ffffff; -fx-border-color: #e2e8f0; -fx-border-width: 1 0 0 0; -fx-padding: 8 30;">
-                <HBox alignment="CENTER" spacing="5">
-                    <Circle fill="#10b981" radius="4" />
-                    <Label style="-fx-text-fill: #10b981; -fx-font-size: 11;" text="Connecté" />
-                </HBox>
-                <Region HBox.hgrow="ALWAYS" />
-                <Label fx:id="lblLastUpdate" style="-fx-text-fill: #64748b; -fx-font-size: 11;" text="Dernière mise à jour: --" />
-                <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 11;" text="•" />
-                <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 11;" text="Serveur: OK" />
             </HBox>
-        </bottom>
+            <!-- Breadcrumb -->
+            <HBox alignment="CENTER_LEFT" spacing="16"
+                  style="-fx-background-color: #0a0e27; -fx-border-color: #1e2749; -fx-border-width: 0 0 1 0; -fx-padding: 8 32;">
+                <Label style="-fx-text-fill: #ff8c42; -fx-font-size: 12; -fx-font-weight: 600;" text="💰 Gestion des Budgets"/>
+                <Label style="-fx-text-fill: #1e2749;" text="›"/>
+                <Label style="-fx-text-fill: #64748b; -fx-font-size: 12;" text="Analyse Financière"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label fx:id="lblUpdateTime" style="-fx-text-fill: #64748b; -fx-font-size: 11;"/>
+            </HBox>
+        </VBox>
+    </top>
 
-        <!-- CENTER CONTENT -->
-        <center>
-            <ScrollPane fitToWidth="true" style="-fx-background: #f8fafc; -fx-border-color: transparent;">
-                <content>
-                    <VBox spacing="25">
-                        <padding>
-                            <Insets bottom="40" left="30" right="30" top="30" />
-                        </padding>
+    <!-- ═══════════ SIDEBAR ═══════════ -->
+    <left>
+        <VBox prefWidth="260" spacing="6"
+              style="-fx-background-color: #111633; -fx-border-color: #1e2749; -fx-border-width: 0 1 0 0;">
+            <padding><Insets bottom="24" left="16" right="16" top="24"/></padding>
 
-                        <!-- KPI CARDS -->
-                        <HBox spacing="20">
-                            <VBox spacing="8" style="-fx-background-color: white; -fx-background-radius: 16; -fx-padding: 20;" HBox.hgrow="ALWAYS">
-                                <HBox alignment="CENTER_LEFT" spacing="12">
-                                    <VBox alignment="CENTER" style="-fx-background-color: #fff7ed; -fx-background-radius: 12; -fx-min-width: 45; -fx-min-height: 45;">
-                                        <Label style="-fx-font-size: 22;" text="💰" />
-                                    </VBox>
-                                    <VBox spacing="2">
-                                        <Label style="-fx-text-fill: #64748b; -fx-font-size: 12; -fx-font-weight: 500;" text="TOTAL BUDGETS" />
-                                        <Label fx:id="lblTotalBudgets" style="-fx-font-size: 28; -fx-font-weight: bold;" text="0" />
-                                    </VBox>
-                                </HBox>
-                                <Label style="-fx-text-fill: #10b981; -fx-font-size: 11;" text="↑ 12% ce mois" />
+            <Label style="-fx-font-size: 11; -fx-font-weight: 700; -fx-text-fill: #64748b; -fx-letter-spacing: 2;" text="NAVIGATION"/>
+
+            <VBox spacing="2" style="-fx-padding: 8 0 0 0;">
+                <HBox fx:id="btnDestinations" alignment="CENTER_LEFT" spacing="12"
+                      style="-fx-background-color: transparent; -fx-background-radius: 10; -fx-padding: 11 14; -fx-cursor: hand;">
+                    <Label style="-fx-font-size: 15;" text="🌍"/>
+                    <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 13;" text="Destinations"/>
+                </HBox>
+                <HBox fx:id="btnHebergements" alignment="CENTER_LEFT" spacing="12"
+                      style="-fx-background-color: transparent; -fx-background-radius: 10; -fx-padding: 11 14; -fx-cursor: hand;">
+                    <Label style="-fx-font-size: 15;" text="🏨"/>
+                    <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 13;" text="Hébergements"/>
+                </HBox>
+                <HBox fx:id="btnItineraires" alignment="CENTER_LEFT" spacing="12"
+                      style="-fx-background-color: transparent; -fx-background-radius: 10; -fx-padding: 11 14; -fx-cursor: hand;">
+                    <Label style="-fx-font-size: 15;" text="🗺️"/>
+                    <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 13;" text="Itinéraires"/>
+                </HBox>
+                <HBox fx:id="btnActivites" alignment="CENTER_LEFT" spacing="12"
+                      style="-fx-background-color: transparent; -fx-background-radius: 10; -fx-padding: 11 14; -fx-cursor: hand;">
+                    <Label style="-fx-font-size: 15;" text="🏄"/>
+                    <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 13;" text="Activités"/>
+                </HBox>
+                <!-- Budgets — actif -->
+                <HBox fx:id="btnBudgets" alignment="CENTER_LEFT" spacing="12"
+                      style="-fx-background-color: linear-gradient(to right, #ff8c42, #ff6b4a); -fx-background-radius: 10; -fx-padding: 11 14; -fx-cursor: hand;">
+                    <Label style="-fx-font-size: 15;" text="💰"/>
+                    <Label style="-fx-text-fill: white; -fx-font-weight: 600; -fx-font-size: 13;" text="Budgets"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label fx:id="lblSidebarBudgetCount"
+                           style="-fx-background-color: rgba(255,255,255,0.25); -fx-background-radius: 10; -fx-padding: 2 8; -fx-text-fill: white; -fx-font-size: 11; -fx-font-weight: bold;" text="0"/>
+                </HBox>
+                <HBox fx:id="btnParametres" alignment="CENTER_LEFT" spacing="12"
+                      style="-fx-background-color: transparent; -fx-background-radius: 10; -fx-padding: 11 14; -fx-cursor: hand;">
+                    <Label style="-fx-font-size: 15;" text="⚙️"/>
+                    <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 13;" text="Paramètres"/>
+                </HBox>
+            </VBox>
+
+            <!-- Divider -->
+            <Rectangle fill="#1e2749" height="1" width="228">
+                <VBox.margin><Insets bottom="8" top="8"/></VBox.margin>
+            </Rectangle>
+
+            <!-- Sidebar stats -->
+            <Label style="-fx-font-size: 11; -fx-font-weight: 700; -fx-text-fill: #64748b; -fx-letter-spacing: 2;" text="STATISTIQUES"/>
+            <VBox spacing="10" style="-fx-background-color: #0a0e27; -fx-background-radius: 14; -fx-padding: 16; -fx-border-color: #1e2749; -fx-border-width: 1; -fx-border-radius: 14; -fx-margin: 8 0 0 0;">
+                <GridPane hgap="8" vgap="10">
+                    <Label style="-fx-text-fill: #64748b; -fx-font-size: 12;" text="Total budgets :" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                    <Label fx:id="lblTotalBudgetsCard" style="-fx-font-weight: bold; -fx-text-fill: #ff8c42; -fx-font-size: 12;" text="0" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                    <Label style="-fx-text-fill: #64748b; -fx-font-size: 12;" text="Actifs :" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                    <Label fx:id="lblActifsCard" style="-fx-font-weight: bold; -fx-text-fill: #34d399; -fx-font-size: 12;" text="0" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                    <Label style="-fx-text-fill: #64748b; -fx-font-size: 12;" text="Montant global :" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                    <Label fx:id="lblGlobalCard" style="-fx-font-weight: bold; -fx-text-fill: #f87171; -fx-font-size: 12;" text="0 €" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                    <columnConstraints>
+                        <ColumnConstraints/>
+                        <ColumnConstraints halignment="RIGHT"/>
+                    </columnConstraints>
+                    <rowConstraints>
+                        <RowConstraints/><RowConstraints/><RowConstraints/>
+                    </rowConstraints>
+                </GridPane>
+            </VBox>
+        </VBox>
+    </left>
+
+    <!-- ═══════════ STATUS BAR ═══════════ -->
+    <bottom>
+        <HBox alignment="CENTER_LEFT" spacing="20"
+              style="-fx-background-color: #111633; -fx-border-color: #1e2749; -fx-border-width: 1 0 0 0; -fx-padding: 10 28;">
+            <Label style="-fx-text-fill: #ff8c42; -fx-font-size: 11; -fx-font-weight: 600;" text="● Connecté"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="lblLastUpdate" style="-fx-text-fill: #64748b; -fx-font-size: 11;" text="—"/>
+            <Label style="-fx-text-fill: #64748b; -fx-font-size: 11;" text="© 2026 TravelMate"/>
+        </HBox>
+    </bottom>
+
+    <!-- ═══════════ MAIN CONTENT ═══════════ -->
+    <center>
+        <ScrollPane fitToWidth="true"
+                    style="-fx-background: #0a0e27; -fx-border-color: transparent; -fx-background-color: transparent;">
+            <content>
+                <VBox spacing="24">
+                    <padding><Insets bottom="60" left="32" right="32" top="32"/></padding>
+
+                    <!-- ── PAGE HEADER ── -->
+                    <HBox alignment="CENTER_LEFT" spacing="20">
+                        <VBox spacing="4">
+                            <Label style="-fx-font-size: 28; -fx-font-weight: bold; -fx-text-fill: #ffffff;"
+                                   text="Gestion des Budgets"/>
+                            <Label style="-fx-text-fill: #64748b; -fx-font-size: 13;"
+                                   text="Supervision complète des budgets et dépenses de voyage"/>
+                        </VBox>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <ComboBox fx:id="cmbVoyageSelector" prefWidth="290"
+                                  style="-fx-background-color: #1e2749; -fx-text-fill: #ffffff; -fx-border-color: #ff8c42; -fx-border-radius: 10; -fx-background-radius: 10;"/>
+                    </HBox>
+
+                    <!-- ── KPI CARDS ── -->
+                    <HBox spacing="16">
+                        <!-- Total budgets -->
+                        <VBox spacing="10" HBox.hgrow="ALWAYS"
+                              style="-fx-background-color: linear-gradient(to bottom right,#1e2749,#111633); -fx-background-radius: 18; -fx-padding: 22; -fx-border-color: #ff8c42; -fx-border-width: 2; -fx-border-radius: 18;">
+                            <HBox alignment="CENTER_LEFT" spacing="12">
+                                <VBox alignment="CENTER" style="-fx-background-color: rgba(255,140,66,0.15); -fx-background-radius: 12; -fx-min-width: 46; -fx-min-height: 46;">
+                                    <Label style="-fx-font-size: 22;" text="💰"/>
+                                </VBox>
+                                <VBox spacing="3">
+                                    <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 11; -fx-font-weight: 600;" text="TOTAL BUDGETS"/>
+                                    <Label fx:id="lblTotalBudgetsKpi" style="-fx-font-size: 26; -fx-font-weight: bold; -fx-text-fill: #ffffff;" text="0"/>
+                                </VBox>
+                            </HBox>
+                        </VBox>
+                        <!-- Actifs -->
+                        <VBox spacing="10" HBox.hgrow="ALWAYS"
+                              style="-fx-background-color: linear-gradient(to bottom right,#1e2749,#111633); -fx-background-radius: 18; -fx-padding: 22; -fx-border-color: #34d399; -fx-border-width: 1; -fx-border-radius: 18;">
+                            <HBox alignment="CENTER_LEFT" spacing="12">
+                                <VBox alignment="CENTER" style="-fx-background-color: rgba(52,211,153,0.15); -fx-background-radius: 12; -fx-min-width: 46; -fx-min-height: 46;">
+                                    <Label style="-fx-font-size: 22;" text="✅"/>
+                                </VBox>
+                                <VBox spacing="3">
+                                    <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 11; -fx-font-weight: 600;" text="BUDGETS ACTIFS"/>
+                                    <Label fx:id="lblActifsKpi" style="-fx-font-size: 26; -fx-font-weight: bold; -fx-text-fill: #34d399;" text="0"/>
+                                </VBox>
+                            </HBox>
+                            <Label style="-fx-background-color: rgba(52,211,153,0.12); -fx-text-fill: #34d399; -fx-background-radius: 20; -fx-padding: 4 12; -fx-font-size: 11; -fx-font-weight: 600;" text="✓ Statut ACTIF"/>
+                        </VBox>
+                        <!-- Montant global -->
+                        <VBox spacing="10" HBox.hgrow="ALWAYS"
+                              style="-fx-background-color: linear-gradient(to bottom right,#1e2749,#111633); -fx-background-radius: 18; -fx-padding: 22; -fx-border-color: #f87171; -fx-border-width: 1; -fx-border-radius: 18;">
+                            <HBox alignment="CENTER_LEFT" spacing="12">
+                                <VBox alignment="CENTER" style="-fx-background-color: rgba(248,113,113,0.15); -fx-background-radius: 12; -fx-min-width: 46; -fx-min-height: 46;">
+                                    <Label style="-fx-font-size: 22;" text="📊"/>
+                                </VBox>
+                                <VBox spacing="3">
+                                    <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 11; -fx-font-weight: 600;" text="MONTANT GLOBAL"/>
+                                    <Label fx:id="lblGlobalKpi" style="-fx-font-size: 26; -fx-font-weight: bold; -fx-text-fill: #f87171;" text="0 €"/>
+                                </VBox>
+                            </HBox>
+                            <Label style="-fx-background-color: rgba(248,113,113,0.12); -fx-text-fill: #f87171; -fx-background-radius: 20; -fx-padding: 4 12; -fx-font-size: 11; -fx-font-weight: 600;" text="💸 Tous budgets confondus"/>
+                        </VBox>
+                    </HBox>
+
+                    <!-- ── BUDGETS TABLE ── -->
+                    <VBox spacing="14">
+                        <HBox alignment="CENTER_LEFT" spacing="12">
+                            <Label style="-fx-font-size: 20; -fx-font-weight: 700; -fx-text-fill: #ffffff;" text="Liste des Budgets"/>
+                            <Label fx:id="lblBudgetCount"
+                                   style="-fx-background-color: rgba(255,140,66,0.15); -fx-text-fill: #ff8c42; -fx-background-radius: 20; -fx-padding: 4 14; -fx-font-weight: 600; -fx-font-size: 11;"
+                                   text="0 budgets"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                        </HBox>
+                        <TableView fx:id="tableBudgets"
+                                   style="-fx-background-color: #1e2749; -fx-background-radius: 16; -fx-border-color: #ff8c42; -fx-border-width: 1; -fx-border-radius: 16;"
+                                   VBox.vgrow="ALWAYS">
+                            <columns>
+                                <TableColumn fx:id="colIdBudget"      prefWidth="55"  text="ID"/>
+                                <TableColumn fx:id="colLibelleBudget" prefWidth="180" text="Libellé"/>
+                                <TableColumn fx:id="colMontantTotal"  prefWidth="140" text="Montant total"/>
+                                <TableColumn fx:id="colDeviseBudget"  prefWidth="75"  text="Devise"/>
+                                <TableColumn fx:id="colStatutBudget"  prefWidth="100" text="Statut"/>
+                                <TableColumn fx:id="colVoyageAssocie" prefWidth="160" text="Voyage"/>
+                                <TableColumn fx:id="colDestination"   prefWidth="150" text="Destination"/>
+                                <TableColumn fx:id="colActionsBudget" prefWidth="85"  text="Actions"/>
+                            </columns>
+                            <placeholder>
+                                <VBox alignment="CENTER" spacing="10">
+                                    <Label style="-fx-font-size: 30;" text="💰"/>
+                                    <Label style="-fx-text-fill: #64748b; -fx-font-size: 13;" text="Aucun budget à afficher"/>
+                                </VBox>
+                            </placeholder>
+                        </TableView>
+                    </VBox>
+
+                    <!-- ════════════════════════════════════════════
+                         ANALYSE FINANCIÈRE COMPLÈTE
+                         ════════════════════════════════════════════ -->
+                    <VBox spacing="20"
+                          style="-fx-background-color: linear-gradient(to bottom right,#1e2749,#111633); -fx-background-radius: 20; -fx-padding: 28; -fx-border-color: #ff8c42; -fx-border-width: 1; -fx-border-radius: 20;">
+
+                        <!-- Titre -->
+                        <HBox alignment="CENTER_LEFT" spacing="14">
+                            <VBox alignment="CENTER"
+                                  style="-fx-background-color: rgba(255,140,66,0.15); -fx-background-radius: 14; -fx-min-width: 50; -fx-min-height: 50;">
+                                <Label style="-fx-font-size: 24;" text="📈"/>
                             </VBox>
-
-                            <VBox spacing="8" style="-fx-background-color: white; -fx-background-radius: 16; -fx-padding: 20;" HBox.hgrow="ALWAYS">
-                                <HBox alignment="CENTER_LEFT" spacing="12">
-                                    <VBox alignment="CENTER" style="-fx-background-color: #e6f7e6; -fx-background-radius: 12; -fx-min-width: 45; -fx-min-height: 45;">
-                                        <Label style="-fx-font-size: 22;" text="✓" />
-                                    </VBox>
-                                    <VBox spacing="2">
-                                        <Label style="-fx-text-fill: #64748b; -fx-font-size: 12; -fx-font-weight: 500;" text="BUDGETS ACTIFS" />
-                                        <Label fx:id="lblBudgetsActifs" style="-fx-font-size: 28; -fx-font-weight: bold;" text="0" />
-                                    </VBox>
-                                </HBox>
-                                <Label style="-fx-text-fill: #64748b; -fx-font-size: 11;" text="Sur total budgets" />
+                            <VBox spacing="3">
+                                <Label style="-fx-font-size: 20; -fx-font-weight: 700; -fx-text-fill: #ffffff;"
+                                       text="Analyse Financière Globale"/>
+                                <Label style="-fx-text-fill: #64748b; -fx-font-size: 12;"
+                                       text="Vue consolidée de tous les budgets et dépenses"/>
                             </VBox>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Label fx:id="lblAnalyseDate"
+                                   style="-fx-background-color: rgba(255,140,66,0.12); -fx-text-fill: #ff8c42; -fx-background-radius: 20; -fx-padding: 5 14; -fx-font-size: 11; -fx-font-weight: 600;"
+                                   text="Mis à jour : —"/>
+                        </HBox>
 
-                            <VBox spacing="8" style="-fx-background-color: white; -fx-background-radius: 16; -fx-padding: 20;" HBox.hgrow="ALWAYS">
-                                <HBox alignment="CENTER_LEFT" spacing="12">
-                                    <VBox alignment="CENTER" style="-fx-background-color: #fff1e6; -fx-background-radius: 12; -fx-min-width: 45; -fx-min-height: 45;">
-                                        <Label style="-fx-font-size: 22;" text="€" />
-                                    </VBox>
-                                    <VBox spacing="2">
-                                        <Label style="-fx-text-fill: #64748b; -fx-font-size: 12; -fx-font-weight: 500;" text="MONTANT GLOBAL" />
-                                        <Label fx:id="lblMontantGlobal" style="-fx-font-size: 28; -fx-font-weight: bold;" text="0 €" />
-                                    </VBox>
+                        <!-- 4 KPI financiers -->
+                        <HBox spacing="14">
+                            <!-- Total dépensé -->
+                            <VBox spacing="8" HBox.hgrow="ALWAYS"
+                                  style="-fx-background-color: #0a0e27; -fx-background-radius: 14; -fx-padding: 18; -fx-border-color: #f87171; -fx-border-width: 0 0 0 3; -fx-border-radius: 14;">
+                                <HBox alignment="CENTER_LEFT" spacing="8">
+                                    <Label style="-fx-font-size: 18;" text="💸"/>
+                                    <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 11; -fx-font-weight: 700;" text="TOTAL DÉPENSÉ"/>
                                 </HBox>
-                                <Label style="-fx-text-fill: #64748b; -fx-font-size: 11;" text="Tous budgets confondus" />
+                                <Label fx:id="lblAnalyseTotalDepense"
+                                       style="-fx-font-size: 22; -fx-font-weight: bold; -fx-text-fill: #f87171;" text="0,00 €"/>
+                                <Label fx:id="lblAnalyseTotalDepenseSub"
+                                       style="-fx-text-fill: #64748b; -fx-font-size: 11;" text="sur tous les budgets"/>
+                            </VBox>
+                            <!-- Budget alloué -->
+                            <VBox spacing="8" HBox.hgrow="ALWAYS"
+                                  style="-fx-background-color: #0a0e27; -fx-background-radius: 14; -fx-padding: 18; -fx-border-color: #ff8c42; -fx-border-width: 0 0 0 3; -fx-border-radius: 14;">
+                                <HBox alignment="CENTER_LEFT" spacing="8">
+                                    <Label style="-fx-font-size: 18;" text="💰"/>
+                                    <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 11; -fx-font-weight: 700;" text="BUDGET ALLOUÉ"/>
+                                </HBox>
+                                <Label fx:id="lblAnalyseBudgetTotal"
+                                       style="-fx-font-size: 22; -fx-font-weight: bold; -fx-text-fill: #ff8c42;" text="0,00 €"/>
+                                <Label fx:id="lblAnalyseBudgetNb"
+                                       style="-fx-text-fill: #64748b; -fx-font-size: 11;" text="0 budget(s)"/>
+                            </VBox>
+                            <!-- Solde restant -->
+                            <VBox spacing="8" HBox.hgrow="ALWAYS"
+                                  style="-fx-background-color: #0a0e27; -fx-background-radius: 14; -fx-padding: 18; -fx-border-color: #34d399; -fx-border-width: 0 0 0 3; -fx-border-radius: 14;">
+                                <HBox alignment="CENTER_LEFT" spacing="8">
+                                    <Label style="-fx-font-size: 18;" text="✅"/>
+                                    <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 11; -fx-font-weight: 700;" text="SOLDE RESTANT"/>
+                                </HBox>
+                                <Label fx:id="lblAnalyseSolde"
+                                       style="-fx-font-size: 22; -fx-font-weight: bold; -fx-text-fill: #34d399;" text="0,00 €"/>
+                                <Label fx:id="lblAnalyseSoldePct"
+                                       style="-fx-text-fill: #64748b; -fx-font-size: 11;" text="0% disponible"/>
+                            </VBox>
+                            <!-- Moyenne / budget -->
+                            <VBox spacing="8" HBox.hgrow="ALWAYS"
+                                  style="-fx-background-color: #0a0e27; -fx-background-radius: 14; -fx-padding: 18; -fx-border-color: #818cf8; -fx-border-width: 0 0 0 3; -fx-border-radius: 14;">
+                                <HBox alignment="CENTER_LEFT" spacing="8">
+                                    <Label style="-fx-font-size: 18;" text="📐"/>
+                                    <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 11; -fx-font-weight: 700;" text="DÉPENSE MOYENNE"/>
+                                </HBox>
+                                <Label fx:id="lblAnalyseMoyenne"
+                                       style="-fx-font-size: 22; -fx-font-weight: bold; -fx-text-fill: #818cf8;" text="0,00 €"/>
+                                <Label fx:id="lblAnalyseMoyenneSub"
+                                       style="-fx-text-fill: #64748b; -fx-font-size: 11;" text="par budget"/>
                             </VBox>
                         </HBox>
 
-                        <!-- SECTION STATISTIQUES PAR CATÉGORIE -->
-                        <VBox spacing="20" style="-fx-background-color: white; -fx-background-radius: 16; -fx-padding: 20;">
-                            <Label style="-fx-font-size: 18; -fx-font-weight: 700;" text="📊 Statistiques par catégorie" />
 
-                            <HBox spacing="20">
-                                <!-- Graphique circulaire -->
-                                <VBox spacing="15" HBox.hgrow="ALWAYS">
-                                    <Label style="-fx-font-weight: 600;" text="Répartition des dépenses" />
-                                    <PieChart fx:id="pieChartRepartition" prefHeight="280" />
-                                </VBox>
+                        <!-- ── 3 indicateurs : Moyenne/jour | Jour le plus dépensier | Projection ── -->
+                        <HBox spacing="14">
 
-                                <!-- Top 5 catégories -->
-                                <VBox spacing="15" HBox.hgrow="ALWAYS">
-                                    <Label style="-fx-font-weight: 600;" text="Top 5 catégories les plus dépensées" />
-                                    <TableView fx:id="tableTopCategories" prefHeight="280">
-                                        <columns>
-                                            <TableColumn fx:id="colCategorieNom" prefWidth="150" text="Catégorie" />
-                                            <TableColumn fx:id="colCategorieMontant" prefWidth="120" text="Montant (€)" />
-                                            <TableColumn fx:id="colCategoriePourcentage" prefWidth="100" text="Pourcentage" />
-                                        </columns>
-                                    </TableView>
-                                </VBox>
+                            <!-- Dépense moyenne par jour (calculée sur la durée du voyage) -->
+                            <VBox spacing="8" HBox.hgrow="ALWAYS"
+                                  style="-fx-background-color: #0a0e27; -fx-background-radius: 14; -fx-padding: 18; -fx-border-color: #38bdf8; -fx-border-width: 0 0 0 3; -fx-border-radius: 14;">
+                                <HBox alignment="CENTER_LEFT" spacing="8">
+                                    <Label style="-fx-font-size: 18;" text="📅"/>
+                                    <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 11; -fx-font-weight: 700;" text="DÉPENSE MOYENNE / JOUR"/>
+                                </HBox>
+                                <Label fx:id="lblMoyenneParJour"
+                                       style="-fx-font-size: 24; -fx-font-weight: bold; -fx-text-fill: #38bdf8;" text="— €/j"/>
+                                <Label fx:id="lblMoyenneParJourSub"
+                                       style="-fx-text-fill: #64748b; -fx-font-size: 11;" text="durée du voyage : — jours"/>
+                            </VBox>
+
+                            <!-- Jour le plus dépensier -->
+                            <VBox spacing="8" HBox.hgrow="ALWAYS"
+                                  style="-fx-background-color: #0a0e27; -fx-background-radius: 14; -fx-padding: 18; -fx-border-color: #f59e0b; -fx-border-width: 0 0 0 3; -fx-border-radius: 14;">
+                                <HBox alignment="CENTER_LEFT" spacing="8">
+                                    <Label style="-fx-font-size: 18;" text="🔥"/>
+                                    <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 11; -fx-font-weight: 700;" text="JOUR LE PLUS DÉPENSIER"/>
+                                </HBox>
+                                <Label fx:id="lblJourPlusDep"
+                                       style="-fx-font-size: 22; -fx-font-weight: bold; -fx-text-fill: #f59e0b;" text="—"/>
+                                <Label fx:id="lblJourPlusDepMontant"
+                                       style="-fx-text-fill: #64748b; -fx-font-size: 11;" text="—"/>
+                            </VBox>
+
+                            <!-- Projection dépassement -->
+                            <VBox spacing="8" HBox.hgrow="ALWAYS"
+                                  style="-fx-background-color: #0a0e27; -fx-background-radius: 14; -fx-padding: 18; -fx-border-color: #f87171; -fx-border-width: 0 0 0 3; -fx-border-radius: 14;">
+                                <HBox alignment="CENTER_LEFT" spacing="8">
+                                    <Label style="-fx-font-size: 18;" text="🚨"/>
+                                    <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 11; -fx-font-weight: 700;" text="PROJECTION"/>
+                                </HBox>
+                                <Label fx:id="lblProjection"
+                                       style="-fx-font-size: 16; -fx-font-weight: bold; -fx-text-fill: #f87171;" text="—" wrapText="true"/>
+                                <Label fx:id="lblProjectionSub"
+                                       style="-fx-text-fill: #64748b; -fx-font-size: 11;" text="basé sur le rythme actuel" wrapText="true"/>
+                            </VBox>
+
+                            <!-- Taux d'utilisation global avec barre colorée -->
+                            <VBox spacing="10" HBox.hgrow="ALWAYS"
+                                  style="-fx-background-color: #0a0e27; -fx-background-radius: 14; -fx-padding: 18; -fx-border-color: #a78bfa; -fx-border-width: 0 0 0 3; -fx-border-radius: 14;">
+                                <HBox alignment="CENTER_LEFT" spacing="8">
+                                    <Label style="-fx-font-size: 18;" text="📊"/>
+                                    <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 11; -fx-font-weight: 700;" text="TAUX D'UTILISATION"/>
+                                </HBox>
+                                <HBox alignment="CENTER_LEFT" spacing="10">
+                                    <Label fx:id="lblTauxUtilisation"
+                                           style="-fx-font-size: 24; -fx-font-weight: bold; -fx-text-fill: #a78bfa;" text="0%"/>
+                                    <Label fx:id="lblTauxUtilisationEtat"
+                                           style="-fx-background-radius: 20; -fx-padding: 3 10; -fx-font-size: 11; -fx-font-weight: 700;" text="—"/>
+                                </HBox>
+                                <StackPane prefHeight="10"
+                                           style="-fx-background-color: #1e2749; -fx-background-radius: 6;">
+                                    <Rectangle fx:id="rectTauxBar" arcHeight="6" arcWidth="6" height="10" width="0"
+                                               style="-fx-fill: #a78bfa;">
+                                        <StackPane.alignment>CENTER_LEFT</StackPane.alignment>
+                                    </Rectangle>
+                                </StackPane>
+                                <Label fx:id="lblTauxUtilisationSub"
+                                       style="-fx-text-fill: #64748b; -fx-font-size: 11;" text="du budget total consommé"/>
+                            </VBox>
+
+                        </HBox>
+
+                        <!-- Résumé tabulaire par budget -->
+                        <VBox spacing="10"
+                              style="-fx-background-color: #0a0e27; -fx-background-radius: 14; -fx-padding: 18;">
+                            <HBox alignment="CENTER_LEFT" spacing="10">
+                                <Label style="-fx-font-size: 15;" text="📋"/>
+                                <Label style="-fx-text-fill: #ffffff; -fx-font-size: 14; -fx-font-weight: 700;" text="Résumé par budget — taux de consommation"/>
+                                <Region HBox.hgrow="ALWAYS"/>
                             </HBox>
-                        </VBox>
-
-                        <!-- SECTION BUDGETS -->
-                        <VBox spacing="15" style="-fx-background-color: white; -fx-background-radius: 16; -fx-padding: 20;">
-                            <Label style="-fx-font-size: 18; -fx-font-weight: 700;" text="📋 Liste des budgets" />
-
-                            <TableView fx:id="tableBudgets" prefHeight="200">
+                            <TableView fx:id="tableAnalyse" prefHeight="190"
+                                       style="-fx-background-color: transparent; -fx-border-color: #1e2749;">
                                 <columns>
-                                    <TableColumn fx:id="colIdBudget" prefWidth="50" text="ID" />
-                                    <TableColumn fx:id="colLibelleBudget" prefWidth="180" text="Libellé" />
-                                    <TableColumn fx:id="colMontantTotal" prefWidth="130" text="Montant" />
-                                    <TableColumn fx:id="colDeviseBudget" prefWidth="70" text="Devise" />
-                                    <TableColumn fx:id="colStatutBudget" prefWidth="100" text="Statut" />
-                                    <TableColumn fx:id="colVoyageAssocie" prefWidth="160" text="Voyage" />
-                                    <TableColumn fx:id="colDestination" prefWidth="130" text="Destination" />
-                                    <TableColumn fx:id="colActions" prefWidth="100" text="Actions" />
+                                    <TableColumn fx:id="colAnalyseNom"     prefWidth="195" text="Budget"/>
+                                    <TableColumn fx:id="colAnalyseAlloue"  prefWidth="125" text="Alloué"/>
+                                    <TableColumn fx:id="colAnalyseDepense" prefWidth="125" text="Dépensé"/>
+                                    <TableColumn fx:id="colAnalyseSolde"   prefWidth="125" text="Solde"/>
+                                    <TableColumn fx:id="colAnalyseTaux"    prefWidth="95"  text="Taux"/>
+                                    <TableColumn fx:id="colAnalyseStatut"  prefWidth="95"  text="Statut"/>
                                 </columns>
-                            </TableView>
-                        </VBox>
-
-                        <!-- SECTION DÉPENSES -->
-                        <VBox spacing="15" style="-fx-background-color: white; -fx-background-radius: 16; -fx-padding: 20;">
-                            <HBox alignment="CENTER_LEFT" spacing="15">
-                                <Label style="-fx-font-size: 18; -fx-font-weight: 700;" text="💸 Dépenses du budget sélectionné" />
-                                <Label fx:id="lblBudgetNom" style="-fx-text-fill: #ff8c42; -fx-font-weight: 600;" text="Aucun budget sélectionné" />
-                            </HBox>
-
-                            <HBox spacing="15">
-                                <VBox>
-                                    <Label style="-fx-text-fill: #64748b; -fx-font-size: 10;" text="TOTAL" />
-                                    <Label fx:id="lblMontantTotal" style="-fx-font-weight: bold; -fx-font-size: 16;" text="0 €" />
-                                </VBox>
-                                <VBox>
-                                    <Label style="-fx-text-fill: #64748b; -fx-font-size: 10;" text="DÉPENSÉ" />
-                                    <Label fx:id="lblDepense" style="-fx-font-weight: bold; -fx-font-size: 16;" text="0 €" />
-                                </VBox>
-                                <VBox>
-                                    <Label style="-fx-text-fill: #64748b; -fx-font-size: 10;" text="RESTANT" />
-                                    <Label fx:id="lblRestant" style="-fx-font-weight: bold; -fx-font-size: 16;" text="0 €" />
-                                </VBox>
-                            </HBox>
-
-                            <TableView fx:id="tableDepenses" prefHeight="200">
-                                <columns>
-                                    <TableColumn fx:id="colLibelle" prefWidth="180" text="Libellé" />
-                                    <TableColumn fx:id="colCategorie" prefWidth="130" text="Catégorie" />
-                                    <TableColumn fx:id="colMontant" prefWidth="120" text="Montant" />
-                                    <TableColumn fx:id="colDevise" prefWidth="70" text="Devise" />
-                                    <TableColumn fx:id="colDate" prefWidth="100" text="Date" />
-                                    <TableColumn fx:id="colPaiement" prefWidth="130" text="Paiement" />
-                                </columns>
+                                <placeholder>
+                                    <Label style="-fx-text-fill: #64748b; -fx-font-size: 12;"
+                                           text="Sélectionnez un budget pour voir l'analyse"/>
+                                </placeholder>
                             </TableView>
                         </VBox>
                     </VBox>
-                </content>
-            </ScrollPane>
-        </center>
-    </BorderPane>
-</StackPane>
+                    <!-- ════ FIN ANALYSE ════ -->
+
+                    <!-- ── PIE CHART ── -->
+                    <VBox spacing="14"
+                          style="-fx-background-color: linear-gradient(to bottom right,#1e2749,#111633); -fx-background-radius: 18; -fx-padding: 24; -fx-border-color: #1e2749; -fx-border-width: 1; -fx-border-radius: 18;">
+                        <Label style="-fx-font-size: 17; -fx-font-weight: 700; -fx-text-fill: #ffffff;"
+                               text="📊 Répartition des dépenses par catégorie"/>
+                        <PieChart fx:id="pieChartDepenses" prefHeight="300"
+                                  style="-fx-background-color: transparent;"/>
+                    </VBox>
+
+                    <!-- ── DÉPENSES TABLE ── -->
+                    <VBox spacing="16"
+                          style="-fx-background-color: linear-gradient(to bottom right,#1e2749,#111633); -fx-background-radius: 18; -fx-padding: 24; -fx-border-color: #1e2749; -fx-border-width: 1; -fx-border-radius: 18;">
+
+                        <!-- Header -->
+                        <HBox alignment="CENTER_LEFT" spacing="12">
+                            <Label style="-fx-font-size: 18; -fx-font-weight: 700; -fx-text-fill: #ffffff;"
+                                   text="Dépenses du budget sélectionné"/>
+                            <Label fx:id="lblNbDepenses"
+                                   style="-fx-background-color: rgba(255,140,66,0.15); -fx-text-fill: #ff8c42; -fx-background-radius: 20; -fx-padding: 4 12; -fx-font-weight: 600; -fx-font-size: 11;"
+                                   text="0 dépense"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                        </HBox>
+
+                        <!-- Filtres -->
+                        <HBox spacing="10" alignment="CENTER_LEFT">
+                            <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 12;" text="Catégorie :"/>
+                            <ComboBox fx:id="cmbFiltreCategorie" prefWidth="150"/>
+                            <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 12;" text="Du :"/>
+                            <DatePicker fx:id="dpDateDebut" prefWidth="128"/>
+                            <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 12;" text="Au :"/>
+                            <DatePicker fx:id="dpDateFin" prefWidth="128"/>
+                            <Button fx:id="btnAppliquerFiltres" onAction="#handleAppliquerFiltres"
+                                    style="-fx-background-color: #ff8c42; -fx-text-fill: white; -fx-font-weight: 600; -fx-font-size: 12; -fx-padding: 7 14; -fx-background-radius: 8; -fx-cursor: hand;"
+                                    text="🔍 Appliquer"/>
+                            <Button fx:id="btnReinitialiserFiltres" onAction="#handleReinitialiserFiltres"
+                                    style="-fx-background-color: #1e2749; -fx-text-fill: #94a3b8; -fx-font-weight: 600; -fx-font-size: 12; -fx-padding: 7 14; -fx-background-radius: 8; -fx-cursor: hand;"
+                                    text="↺ Réinitialiser"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Label style="-fx-text-fill: #64748b; -fx-font-size: 12;" text="Trier :"/>
+                            <ToggleButton fx:id="btnTriMontant" onAction="#handleTriMontant" text="Montant"/>
+                            <ToggleButton fx:id="btnTriDate"    onAction="#handleTriDate"    text="Date"/>
+                            <ToggleButton fx:id="btnTriLibelle" onAction="#handleTriLibelle" text="Libellé"/>
+                        </HBox>
+
+                        <!-- Table -->
+                        <TableView fx:id="tableDepenses"
+                                   style="-fx-background-color: #0a0e27; -fx-background-radius: 10; -fx-border-color: #1e2749;"
+                                   VBox.vgrow="ALWAYS">
+                            <columns>
+                                <TableColumn fx:id="colDepenseLibelle"     prefWidth="155" text="Libellé"/>
+                                <TableColumn fx:id="colDepenseCategorie"   prefWidth="120" text="Catégorie"/>
+                                <TableColumn fx:id="colDepenseMontant"     prefWidth="110" text="Montant"/>
+                                <TableColumn fx:id="colDepenseDevise"      prefWidth="68"  text="Devise"/>
+                                <TableColumn fx:id="colDepenseDate"        prefWidth="98"  text="Date"/>
+                                <TableColumn fx:id="colDepensePaiement"    prefWidth="110" text="Paiement"/>
+                                <TableColumn fx:id="colDepenseDescription" prefWidth="175" text="Description"/>
+                            </columns>
+                            <placeholder>
+                                <VBox alignment="CENTER" spacing="10">
+                                    <Label style="-fx-font-size: 30;" text="📋"/>
+                                    <Label style="-fx-text-fill: #64748b; -fx-font-size: 13;"
+                                           text="Sélectionnez un budget pour voir ses dépenses"/>
+                                </VBox>
+                            </placeholder>
+                        </TableView>
+                    </VBox>
+
+                    <!-- Bottom accent -->
+                    <Rectangle arcHeight="8" arcWidth="8"
+                               fill="linear-gradient(to right,#ff8c42,#ff6b4a,#6366f1)"
+                               height="4" width="1100">
+                        <VBox.margin><Insets top="12"/></VBox.margin>
+                    </Rectangle>
+
+                </VBox>
+            </content>
+        </ScrollPane>
+    </center>
+
+</BorderPane>

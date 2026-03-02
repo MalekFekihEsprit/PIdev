@@ -183,6 +183,8 @@ public class DepenseCRUD {
         }
         return false;
     }
+    private Budgetnotificationservice notifier =
+            new Budgetnotificationservice("budget-alerts-Yosr");
 
     // ===== EXTRACTION =====
     private Depense extractDepense(ResultSet rs) throws SQLException {

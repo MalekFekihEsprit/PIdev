@@ -67,27 +67,10 @@ public class VoyageHelper {
     }
 
     /**
-     * Récupère tous les voyages (simplifié)
-     */
-    public Map<Integer, String> getAllVoyages() throws SQLException {
-        Map<Integer, String> voyages = new HashMap<>();
-        String sql = "SELECT id_voyage, titre_voyage FROM voyage ORDER BY titre_voyage";
-
-        try (Statement st = conn.createStatement();
-             ResultSet rs = st.executeQuery(sql)) {
-            while (rs.next()) {
-                voyages.put(rs.getInt("id_voyage"), rs.getString("titre_voyage"));
-            }
-        }
-        return voyages;
-    }
-
-    /**
      * Récupère le titre d'un voyage
      */
     public String getVoyageNameById(int idVoyage) throws SQLException {
         if (idVoyage == 0) return "Sans voyage";
-
         String sql = "SELECT titre_voyage FROM voyage WHERE id_voyage = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, idVoyage);
@@ -101,26 +84,35 @@ public class VoyageHelper {
     }
 
     /**
-     * Récupère le nom de la destination
+     * Récupère tous les détails d'un voyage, y compris la destination et sa saison idéale.
      */
-    public String getDestinationNameById(int idDestination) throws SQLException {
-        if (idDestination == 0) return "Destination inconnue";
+    public VoyageDetails getVoyageDetails(int idVoyage) throws SQLException {
+        String sql = "SELECT v.id_voyage, v.titre_voyage, v.date_debut, v.date_fin, " +
+                "d.id_destination, d.nom_destination, d.saison_ideale " +
+                "FROM voyage v " +
+                "LEFT JOIN destination d ON v.id_destination = d.id_destination " +
+                "WHERE v.id_voyage = ?";
 
-        String sql = "SELECT nom_destination FROM destination WHERE id_destination = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, idDestination);
+            ps.setInt(1, idVoyage);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return rs.getString("nom_destination");
+                    return new VoyageDetails(
+                            rs.getInt("id_voyage"),
+                            rs.getString("titre_voyage"),
+                            rs.getDate("date_debut"),
+                            rs.getDate("date_fin"),
+                            rs.getInt("id_destination"),
+                            rs.getString("nom_destination"),
+                            rs.getString("saison_ideale")
+                    );
                 }
             }
         }
-        return "Destination inconnue";
+        return null;
     }
 
-    /**
-     * Classe interne pour les informations de voyage
-     */
+    // ===== Classes internes =====
     public static class VoyageInfo {
         private int idVoyage;
         private String titre;
@@ -150,15 +142,43 @@ public class VoyageHelper {
         public String getNomDestination() { return nomDestination; }
 
         public String getDatesFormatted() {
-            if (dateDebut == null || dateFin == null) {
-                return "Dates non définies";
-            }
+            if (dateDebut == null || dateFin == null) return "Dates non définies";
             return dateDebut.toString() + " → " + dateFin.toString();
         }
+    }
 
-        @Override
-        public String toString() {
-            return titre + " (" + getDatesFormatted() + ")";
+    public static class VoyageDetails {
+        private int idVoyage;
+        private String titre;
+        private Date dateDebut;
+        private Date dateFin;
+        private int idDestination;
+        private String nomDestination;
+        private String saisonIdeale;
+
+        public VoyageDetails(int idVoyage, String titre, Date dateDebut, Date dateFin,
+                             int idDestination, String nomDestination, String saisonIdeale) {
+            this.idVoyage = idVoyage;
+            this.titre = titre;
+            this.dateDebut = dateDebut;
+            this.dateFin = dateFin;
+            this.idDestination = idDestination;
+            this.nomDestination = nomDestination;
+            this.saisonIdeale = saisonIdeale;
+        }
+
+        public int getIdVoyage() { return idVoyage; }
+        public String getTitre() { return titre; }
+        public Date getDateDebut() { return dateDebut; }
+        public Date getDateFin() { return dateFin; }
+        public int getIdDestination() { return idDestination; }
+        public String getNomDestination() { return nomDestination; }
+        public String getSaisonIdeale() { return saisonIdeale; }
+
+        public long getDureeJours() {
+            if (dateDebut == null || dateFin == null) return 0;
+            long diff = dateFin.getTime() - dateDebut.getTime();
+            return diff / (1000 * 60 * 60 * 24);
         }
     }
 }
