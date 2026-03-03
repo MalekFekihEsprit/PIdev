@@ -35,7 +35,7 @@
             </HBox>
 
             <!-- Flèche gauche subtile (visible seulement si nécessaire) -->
-            <HBox fx:id="leftArrow" alignment="CENTER" visible="false" managed="false" style="-fx-background-color:rgba(255,255,255,0.3);-fx-background-radius:12;-fx-min-width:24;-fx-min-height:24;-fx-cursor:hand;-fx-padding:0 0 0 2;" onMouseClicked="#scrollLeft">
+            <HBox fx:id="leftArrow" alignment="CENTER" visible="false" managed="false" style="-fx-background-color:rgba(255,255,255,0.3);-fx-background-radius:12;-fx-min-width:24;-fx-min-height:24;-fx-cursor:hand;-fx-padding:0 0 0 2;">
                 <Label style="-fx-font-size:14;-fx-text-fill:white;-fx-font-weight:bold;" text="◀" />
             </HBox>
 
@@ -67,7 +67,11 @@
                             <Label style="-fx-text-fill:#1a1a1a;-fx-font-weight:500;-fx-font-size:13;" text="Catégories" />
                         </HBox>
 
-                        <!-- Activités (SUPPRIMÉ) -->
+                        <!-- Activités -->
+                        <HBox fx:id="btnActivites" alignment="CENTER" spacing="6" style="-fx-padding:8 14;-fx-cursor:hand;">
+                            <Label style="-fx-font-size:13;" text="🏄" />
+                            <Label style="-fx-text-fill:#1a1a1a;-fx-font-weight:500;-fx-font-size:13;" text="Activités" />
+                        </HBox>
 
                         <!-- Voyages -->
                         <HBox fx:id="btnVoyages" alignment="CENTER" spacing="6" style="-fx-padding:8 14;-fx-cursor:hand;">
@@ -85,7 +89,7 @@
             </ScrollPane>
 
             <!-- Flèche droite subtile (visible seulement si nécessaire) -->
-            <HBox fx:id="rightArrow" alignment="CENTER" visible="false" managed="false" style="-fx-background-color:rgba(255,255,255,0.3);-fx-background-radius:12;-fx-min-width:24;-fx-min-height:24;-fx-cursor:hand;-fx-padding:0 2 0 0;" onMouseClicked="#scrollRight">
+            <HBox fx:id="rightArrow" alignment="CENTER" visible="false" managed="false" style="-fx-background-color:rgba(255,255,255,0.3);-fx-background-radius:12;-fx-min-width:24;-fx-min-height:24;-fx-cursor:hand;-fx-padding:0 2 0 0;">
                 <Label style="-fx-font-size:14;-fx-text-fill:white;-fx-font-weight:bold;" text="▶" />
             </HBox>
 

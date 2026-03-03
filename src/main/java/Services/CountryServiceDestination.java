@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
  */
 public class CountryServiceDestination {
     private static final String BASE_URL = "https://restcountries.com/v3.1/name/";
-    private static final String FIELDS_PARAM = "?fields=currencies,flags,languages";
+    private static final String FIELDS_PARAM = "?fields=currencies,flags,languages,region";
     private static final int CONNECT_TIMEOUT = 5000;
     private static final int READ_TIMEOUT = 5000;
 
@@ -31,7 +31,7 @@ public class CountryServiceDestination {
      * Fetches country information for the specified country name
      *
      * @param countryName The name of the country to look up
-     * @return CountryInfo object containing currency, flag URL, and languages
+     * @return CountryInfo object containing currency, flag URL, languages, and region
      * @throws CountryNotFoundException if the country is not found
      * @throws ApiException for other API errors
      */
@@ -170,6 +170,11 @@ public class CountryServiceDestination {
                     }
                 }
 
+                // Parse region
+                if (countryObj.has("region") && !countryObj.get("region").isJsonNull()) {
+                    country.region = countryObj.get("region").getAsString();
+                }
+
                 countries.add(country);
             }
 
@@ -191,7 +196,10 @@ public class CountryServiceDestination {
         // Extract and join languages
         String languages = extractLanguages(country.languages);
 
-        return new CountryInfo(currency, flagUrl, languages);
+        // Extract region
+        String region = country.region != null ? country.region : "Région non spécifiée";
+
+        return new CountryInfo(currency, flagUrl, languages, region);
     }
 
     private String extractCurrency(Map<String, CurrencyDetails> currencies) {
@@ -248,6 +256,7 @@ public class CountryServiceDestination {
         Map<String, CurrencyDetails> currencies;
         Flags flags;
         Map<String, String> languages;
+        String region; // New field for region
     }
 
     private static class CurrencyDetails {
@@ -265,21 +274,24 @@ public class CountryServiceDestination {
         private final String currency;
         private final String flagUrl;
         private final String languages;
+        private final String region; // New field for region
 
-        public CountryInfo(String currency, String flagUrl, String languages) {
+        public CountryInfo(String currency, String flagUrl, String languages, String region) {
             this.currency = currency;
             this.flagUrl = flagUrl;
             this.languages = languages;
+            this.region = region;
         }
 
         public String getCurrency() { return currency; }
         public String getFlagUrl() { return flagUrl; }
         public String getLanguages() { return languages; }
+        public String getRegion() { return region; } // New getter
 
         @Override
         public String toString() {
-            return String.format("CountryInfo{currency='%s', flagUrl='%s', languages='%s'}",
-                    currency, flagUrl, languages);
+            return String.format("CountryInfo{currency='%s', flagUrl='%s', languages='%s', region='%s'}",
+                    currency, flagUrl, languages, region);
         }
     }
 }

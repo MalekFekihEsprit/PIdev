@@ -1,8 +1,10 @@
 package Controllers;
 
 import Entities.Destination;
+import Entities.User;
 import Services.*;
 import Services.CityService.CityCoordinates;
+import Utils.UserSession;
 import io.github.cdimascio.dotenv.Dotenv;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -53,6 +55,10 @@ public class AjouterDestinationController implements Initializable {
     private String currentCountryCode;
     private CityCoordinates validatedCityCoordinates;
 
+    // New fields for region and added_by
+    private String detectedRegion;
+    private User currentUser;
+
     private boolean hasSearched = false;
     private long lastApiCall = 0;
     private static final long MIN_TIME_BETWEEN_CALLS = 1000;
@@ -72,6 +78,13 @@ public class AjouterDestinationController implements Initializable {
         countryCodeService = new CountryCodeService();
         fallbackService = new LocalCityFallbackService();
         seasonService = new SeasonService();
+
+        // Get current user from session
+        currentUser = UserSession.getInstance().getCurrentUser();
+        if (currentUser == null) {
+            showErrorAlert("Erreur de session", "Aucun utilisateur connecté. Veuillez vous reconnecter.");
+            return;
+        }
 
         // Initialize AI service
         try {
@@ -518,7 +531,6 @@ public class AjouterDestinationController implements Initializable {
         }
 
         if (lblDescCounter != null) {
-            // REMOVED CHARACTER LIMIT - Just show count without max
             taDescription.textProperty().addListener((obs, old, newVal) ->
                     lblDescCounter.setText(newVal.length() + " caractères"));
         }
@@ -569,7 +581,6 @@ public class AjouterDestinationController implements Initializable {
             }
         }
 
-        // REMOVED DESCRIPTION LENGTH VALIDATION - No limit anymore
         boolean isValid = !nom.isEmpty() && nom.length() <= 30 &&
                 !pays.isEmpty() && pays.length() <= 30 &&
                 currentCountryCode != null &&
@@ -629,6 +640,13 @@ public class AjouterDestinationController implements Initializable {
         try {
             CountryServiceDestination countryServiceDestination = new CountryServiceDestination();
             countryInfo = countryServiceDestination.getCountryInfo(pays);
+
+            // Get region from countryInfo
+            if (countryInfo != null) {
+                detectedRegion = countryInfo.getRegion();
+                System.out.println("Detected region for " + pays + ": " + detectedRegion);
+            }
+
         } catch (Exception e) {
             showValidationAlert("Pays non trouvé dans l'API");
             return;
@@ -649,28 +667,16 @@ public class AjouterDestinationController implements Initializable {
         // Get the AI-generated content from the text area
         String fullContent = taDescription.getText().trim();
 
-        // If the text area is empty and AI service is available, generate automatically
-        if (fullContent.isEmpty() && aiService != null) {
-            try {
-                showInfoAlert("Génération de la description et de l'itinéraire en cours...");
-                fullContent = aiService.generateDescription(nom, pays);
-                taDescription.setText(fullContent);
-                taDescription.setStyle("-fx-text-fill: black; -fx-background-color: white;");
-            } catch (AIService.AIException e) {
-                showErrorAlert("Erreur IA", "Impossible de générer le contenu: " + e.getMessage());
-                // Continue with empty content
-            }
-        }
+        // REMOVED AUTOMATIC AI GENERATION - Now only manual via button
 
         Destination newDestination = new Destination();
         newDestination.setNom_destination(nom);
         newDestination.setPays_destination(pays);
+        newDestination.setRegion_destination(detectedRegion); // Set the region from API
         newDestination.setDescription_destination(fullContent);
-
-        // FIXED: Use user-selected climate for climat_destination
         newDestination.setClimat_destination(cbClimat.getValue());
 
-        // FIXED: Use detected season if available, otherwise use user selection for saison_destination
+        // Use detected season if available, otherwise use user selection
         if (detectedSeason != null && !detectedSeason.isEmpty()) {
             newDestination.setSaison_destination(detectedSeason);
         } else {
@@ -685,11 +691,21 @@ public class AjouterDestinationController implements Initializable {
         newDestination.setLanguages_destination(countryInfo.getLanguages());
         newDestination.setVideo_url(videoUrl);
 
+        // Set the added_by information from current user - using ID
+        if (currentUser != null) {
+            newDestination.setAdded_by(currentUser.getId()); // This is the user ID
+        } else {
+            showErrorAlert("Erreur de session", "Aucun utilisateur connecté");
+            return;
+        }
+
         try {
             destinationCRUD.ajouter(newDestination);
 
             String videoMsg = (videoUrl != null) ? "\n✓ Vidéo ajoutée" : "";
-            showSuccessAlert("Destination ajoutée avec succès!\n" + nom + ", " + pays);
+            String regionMsg = (detectedRegion != null && !detectedRegion.isEmpty()) ? "\n✓ Région: " + detectedRegion : "";
+
+            showSuccessAlert("Destination ajoutée avec succès!\n" + nom + ", " + pays + regionMsg + videoMsg);
 
             if (parentController != null) parentController.refreshAfterModification();
             closeWindow();
@@ -719,7 +735,6 @@ public class AjouterDestinationController implements Initializable {
             showValidationAlert("Pays non valide. Vérifiez le nom du pays.");
             return false;
         }
-        // REMOVED DESCRIPTION LENGTH VALIDATION - No limit
 
         String scoreText = tfScore.getText().trim();
         if (!scoreText.isEmpty()) {

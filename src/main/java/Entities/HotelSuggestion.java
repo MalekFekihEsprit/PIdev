@@ -5,28 +5,30 @@ public class HotelSuggestion {
     private String adresse;
     private Double rating;
     private Double prixEstime;
-    private Double latitude;
-    private Double longitude;
-    private boolean accepted = false;
+    private double latitude;
+    private double longitude;
+    private boolean accepted;
 
-    public HotelSuggestion(String nom, String adresse, Double rating, Double latitude, Double longitude) {
+    public HotelSuggestion(String nom, String adresse, Double rating, double latitude, double longitude) {
         this.nom = nom;
         this.adresse = adresse;
         this.rating = rating;
         this.latitude = latitude;
         this.longitude = longitude;
-        calculatePrixEstime();
+        this.accepted = false;
     }
 
-    private void calculatePrixEstime() {
-        if (rating != null) {
-            this.prixEstime = 50 + (rating * 25);
-        } else {
-            this.prixEstime = null;
-        }
+    public HotelSuggestion(String nom, String adresse, Double rating, Double prixEstime, double latitude, double longitude) {
+        this.nom = nom;
+        this.adresse = adresse;
+        this.rating = rating;
+        this.prixEstime = prixEstime;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.accepted = false;
     }
 
-    // Getters and setters
+    // Getters and Setters
     public String getNom() { return nom; }
     public void setNom(String nom) { this.nom = nom; }
 
@@ -34,24 +36,17 @@ public class HotelSuggestion {
     public void setAdresse(String adresse) { this.adresse = adresse; }
 
     public Double getRating() { return rating; }
-    public void setRating(Double rating) {
-        this.rating = rating;
-        calculatePrixEstime();
-    }
+    public void setRating(Double rating) { this.rating = rating; }
 
     public Double getPrixEstime() { return prixEstime; }
+    public void setPrixEstime(Double prixEstime) { this.prixEstime = prixEstime; }
 
-    public Double getLatitude() { return latitude; }
-    public void setLatitude(Double latitude) { this.latitude = latitude; }
+    public double getLatitude() { return latitude; }
+    public void setLatitude(double latitude) { this.latitude = latitude; }
 
-    public Double getLongitude() { return longitude; }
-    public void setLongitude(Double longitude) { this.longitude = longitude; }
+    public double getLongitude() { return longitude; }
+    public void setLongitude(double longitude) { this.longitude = longitude; }
 
     public boolean isAccepted() { return accepted; }
     public void setAccepted(boolean accepted) { this.accepted = accepted; }
-
-    @Override
-    public String toString() {
-        return nom + " - " + adresse;
-    }
 }

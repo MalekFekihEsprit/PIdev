@@ -2,9 +2,12 @@ package Controllers;
 
 import Entities.Destination;
 import Entities.Hebergement;
-import Services.HebergementCRUD;
-import Utils.UserSession;
+import Entities.DeleteNotification;
 import Entities.User;
+import Services.HebergementCRUD;
+import Services.DestinationCRUD;
+import Services.DeleteNotificationCRUD;
+import Utils.UserSession;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -16,7 +19,10 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 
 import java.io.IOException;
 import java.net.URL;
@@ -37,11 +43,10 @@ public class HebergementFrontController implements Initializable {
     @FXML private HBox btnActivites;
     @FXML private HBox btnVoyages;
     @FXML private HBox btnBudgets;
-    @FXML private HBox btnCategories;
+    @FXML private HBox btnCategories; // Added
     @FXML private HBox btnHome;
     @FXML private HBox userProfileBox;
-    @FXML private Label lblUserName;
-    @FXML private Label lblUserRole;
+    @FXML private HBox btnNotifications;
 
     // Bottom Status
     @FXML private Label lblLastUpdate;
@@ -68,48 +73,52 @@ public class HebergementFrontController implements Initializable {
     @FXML private TableColumn<Hebergement, String> colAdresse;
     @FXML private TableColumn<Hebergement, Double> colNote;
     @FXML private TableColumn<Hebergement, String> colDestination;
+    @FXML private TableColumn<Hebergement, String> colAddedBy;
     @FXML private TableColumn<Hebergement, Void> colActions;
 
     // Buttons
+    @FXML private Button btnAjouter;
     @FXML private HBox btnRefresh;
     @FXML private HBox btnSearch;
     @FXML private HBox btnFilter;
+    @FXML private Label lblUserName;
+    @FXML private Label lblUserRole;
 
-    // Scroll navigation
-    @FXML private ScrollPane navScrollPane;
-    @FXML private HBox navLinksContainer;
+    // Notification badge
+    @FXML private Label lblNotificationBadge;
 
     // ============== CLASS VARIABLES ==============
 
     private HebergementCRUD hebergementCRUD;
+    private DestinationCRUD destinationCRUD;
+    private DeleteNotificationCRUD notificationCRUD;
     private ObservableList<Hebergement> hebergementList = FXCollections.observableArrayList();
     private List<Hebergement> allHebergements = new ArrayList<>();
+    private User currentUser;
+    private List<DeleteNotification> unreadNotifications = new ArrayList<>();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         hebergementCRUD = new HebergementCRUD();
+        destinationCRUD = new DestinationCRUD();
+        notificationCRUD = new DeleteNotificationCRUD();
 
-        // Initialize table columns
+        currentUser = UserSession.getInstance().getCurrentUser();
+        if (currentUser == null) {
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Utilisateur non connecté");
+            return;
+        }
+
         setupTableColumns();
-
-        // Set table height
         setupTableHeight();
-
-        // Load data from database
         loadHebergements();
-
-        // Setup button actions
         setupButtonActions();
-
-        // Update last update time
         updateLastUpdateTime();
-
-        // Setup navigation buttons
         setupNavigationButtons();
-
-        // Setup user profile click
         setupUserProfile();
         updateUserInfo();
+        setupNotifications();
+        loadUnreadNotifications();
     }
 
     private void setupTableColumns() {
@@ -118,43 +127,58 @@ public class HebergementFrontController implements Initializable {
         colPrix.setCellValueFactory(new PropertyValueFactory<>("prixNuit_hebergement"));
         colAdresse.setCellValueFactory(new PropertyValueFactory<>("adresse_hebergement"));
         colNote.setCellValueFactory(new PropertyValueFactory<>("note_hebergement"));
+        colAddedBy.setCellValueFactory(new PropertyValueFactory<>("added_by_name"));
 
-        // Custom cell factory for destination column to show "nom, pays"
         colDestination.setCellValueFactory(cellData -> {
             Hebergement h = cellData.getValue();
             Destination dest = h.getDestination();
             String destDisplay = (dest != null) ?
-                    dest.getNom_destination() + ", " + dest.getPays_destination() : "Non spécifié";
+                    dest.getNom_destination() + ", " + dest.getPays_destination() : "-";
             return new javafx.beans.property.SimpleStringProperty(destDisplay);
         });
 
-        // Format price column
         colPrix.setCellFactory(col -> new TableCell<Hebergement, Double>() {
             @Override
             protected void updateItem(Double price, boolean empty) {
                 super.updateItem(price, empty);
-                if (empty || price == null) {
+                if (empty) {
                     setText(null);
+                } else if (price == null || price == 0.0) {
+                    setText("-");
                 } else {
                     setText(String.format("%.2f €", price));
                 }
             }
         });
 
-        // Format note column
         colNote.setCellFactory(col -> new TableCell<Hebergement, Double>() {
             @Override
             protected void updateItem(Double note, boolean empty) {
                 super.updateItem(note, empty);
-                if (empty || note == null) {
+                if (empty) {
                     setText(null);
+                } else if (note == null || note == 0.0) {
+                    setText("-");
                 } else {
                     setText(String.format("%.1f ⭐", note));
                 }
             }
         });
 
-        // Setup actions column with consulter button
+        colAddedBy.setCellFactory(col -> new TableCell<Hebergement, String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setText(null);
+                } else if (item == null || item.trim().isEmpty()) {
+                    setText("-");
+                } else {
+                    setText(item);
+                }
+            }
+        });
+
         setupActionsColumn();
     }
 
@@ -166,170 +190,254 @@ public class HebergementFrontController implements Initializable {
     }
 
     private void setupActionsColumn() {
-        colActions.setCellFactory(col -> new TableCell<>() {
-            private final HBox btnConsulter = new HBox();
-
-            {
-                btnConsulter.setAlignment(javafx.geometry.Pos.CENTER);
-                btnConsulter.setStyle("-fx-background-color: #3b82f6; -fx-background-radius: 8; -fx-min-width: 32; -fx-min-height: 32; -fx-cursor: hand;");
-                Label consulterIcon = new Label("👁️");
-                consulterIcon.setStyle("-fx-font-size: 16; -fx-text-fill: white;");
-                btnConsulter.getChildren().add(consulterIcon);
-                btnConsulter.setPadding(new Insets(4, 0, 4, 0));
-
-                Tooltip.install(btnConsulter, new Tooltip("Voir les détails"));
-            }
-
+        colActions.setCellFactory(new Callback<>() {
             @Override
-            protected void updateItem(Void item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty) {
-                    setGraphic(null);
-                } else {
-                    Hebergement hebergement = getTableView().getItems().get(getIndex());
-                    btnConsulter.setOnMouseClicked(event -> handleConsulter(hebergement));
-                    setGraphic(btnConsulter);
-                }
+            public TableCell<Hebergement, Void> call(final TableColumn<Hebergement, Void> param) {
+                return new TableCell<>() {
+                    private final HBox actionBox = new HBox(8);
+                    private final HBox btnConsulter = new HBox();
+                    private final HBox btnModifier = new HBox();
+                    private final HBox btnSupprimer = new HBox();
+
+                    {
+                        actionBox.setAlignment(javafx.geometry.Pos.CENTER);
+
+                        btnConsulter.setAlignment(javafx.geometry.Pos.CENTER);
+                        btnConsulter.setStyle("-fx-background-color: #3b82f6; -fx-background-radius: 8; -fx-min-width: 32; -fx-min-height: 32; -fx-cursor: hand;");
+                        Label consulterIcon = new Label("👁️");
+                        consulterIcon.setStyle("-fx-font-size: 16; -fx-text-fill: white;");
+                        btnConsulter.getChildren().add(consulterIcon);
+                        Tooltip.install(btnConsulter, new Tooltip("Consulter"));
+
+                        btnModifier.setAlignment(javafx.geometry.Pos.CENTER);
+                        btnModifier.setStyle("-fx-background-color: #f59e0b; -fx-background-radius: 8; -fx-min-width: 32; -fx-min-height: 32; -fx-cursor: hand;");
+                        Label modifierIcon = new Label("✏️");
+                        modifierIcon.setStyle("-fx-font-size: 16; -fx-text-fill: white;");
+                        btnModifier.getChildren().add(modifierIcon);
+                        Tooltip.install(btnModifier, new Tooltip("Modifier"));
+
+                        btnSupprimer.setAlignment(javafx.geometry.Pos.CENTER);
+                        btnSupprimer.setStyle("-fx-background-color: #ef4444; -fx-background-radius: 8; -fx-min-width: 32; -fx-min-height: 32; -fx-cursor: hand;");
+                        Label supprimerIcon = new Label("🗑️");
+                        supprimerIcon.setStyle("-fx-font-size: 16; -fx-text-fill: white;");
+                        btnSupprimer.getChildren().add(supprimerIcon);
+                        Tooltip.install(btnSupprimer, new Tooltip("Supprimer"));
+
+                        actionBox.setPadding(new Insets(4, 0, 4, 0));
+                    }
+
+                    @Override
+                    protected void updateItem(Void item, boolean empty) {
+                        super.updateItem(item, empty);
+                        if (empty) {
+                            setGraphic(null);
+                        } else {
+                            Hebergement hebergement = getTableView().getItems().get(getIndex());
+
+                            actionBox.getChildren().clear();
+
+                            btnConsulter.setOnMouseClicked(event -> handleConsulter(hebergement));
+                            actionBox.getChildren().add(btnConsulter);
+
+                            if (hebergement.getAdded_by() == currentUser.getId()) {
+                                btnModifier.setOnMouseClicked(event -> handleModifier(hebergement));
+                                btnSupprimer.setOnMouseClicked(event -> handleDeleteSingle(hebergement));
+                                actionBox.getChildren().addAll(btnModifier, btnSupprimer);
+                            }
+
+                            setGraphic(actionBox);
+                        }
+                    }
+                };
             }
         });
     }
 
-    private void setupNavigationButtons() {
-        // Destinations button
-        if (btnDestinations != null) {
-            btnDestinations.setOnMouseClicked(event -> navigateToDestinations());
-        }
+    private void setupNotifications() {
+        if (btnNotifications != null) {
+            btnNotifications.setOnMouseClicked(event -> showNotificationsDialog());
 
-        // Hébergement button (current page, no action needed)
+            btnNotifications.setOnMouseEntered(event -> {
+                btnNotifications.setStyle("-fx-background-color: #e2e8f0; -fx-background-radius: 50%; -fx-min-width: 40; -fx-min-height: 40; -fx-cursor: hand;");
+            });
 
-        // Itinéraires button (pas encore implémenté)
-        if (btnItineraires != null) {
-            btnItineraires.setOnMouseClicked(event -> showNotImplementedAlert("Itinéraires"));
-        }
-
-        // Activités button
-        if (btnActivites != null) {
-            btnActivites.setOnMouseClicked(event -> navigateToActivites());
-        }
-
-        // Catégories button
-        if (btnCategories != null) {
-            btnCategories.setOnMouseClicked(event -> navigateToCategories());
-        }
-
-        // Voyages button (pas encore implémenté)
-        if (btnVoyages != null) {
-            btnVoyages.setOnMouseClicked(event -> navigateToVoyages());
-        }
-
-        // Budgets button (pas encore implémenté)
-        if (btnBudgets != null) {
-            btnBudgets.setOnMouseClicked(event -> showNotImplementedAlert("Budgets"));
+            btnNotifications.setOnMouseExited(event -> {
+                btnNotifications.setStyle("-fx-background-color: #f1f5f9; -fx-background-radius: 50%; -fx-min-width: 40; -fx-min-height: 40; -fx-cursor: hand;");
+            });
         }
     }
 
-    private void navigateToDestinations() {
+    private void loadUnreadNotifications() {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/DestinationFront.fxml"));
-            Parent root = loader.load();
-            Scene scene = new Scene(root);
-            Stage stage = (Stage) btnDestinations.getScene().getWindow();
-            stage.setScene(scene);
-            stage.setTitle("TravelMate - Destinations");
-            stage.show();
-        } catch (IOException e) {
-            showAlert(Alert.AlertType.ERROR, "Erreur de navigation", "Impossible de charger les destinations: " + e.getMessage());
+            unreadNotifications = notificationCRUD.getUnreadNotificationsForUser(currentUser.getId());
+            updateNotificationBadge();
+        } catch (SQLException e) {
+            System.err.println("Error loading notifications: " + e.getMessage());
         }
     }
 
-    private void navigateToActivites() {
-        CategorieContext.categorieFiltre = null;
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/activitesfront.fxml"));
-            Parent root = loader.load();
-            Scene scene = new Scene(root);
-            Stage stage = (Stage) btnActivites.getScene().getWindow();
-            stage.setScene(scene);
-            stage.setTitle("TravelMate - Activités");
-            stage.show();
-        } catch (IOException e) {
-            showAlert(Alert.AlertType.ERROR, "Erreur de navigation", "Impossible de charger les activités: " + e.getMessage());
+    private void updateNotificationBadge() {
+        if (lblNotificationBadge != null) {
+            int count = unreadNotifications.size();
+            if (count > 0) {
+                lblNotificationBadge.setText(String.valueOf(count));
+                lblNotificationBadge.setVisible(true);
+            } else {
+                lblNotificationBadge.setVisible(false);
+            }
         }
     }
 
-    private void navigateToVoyages() {
+    private void showNotificationsDialog() {
         try {
-            System.out.println("=== NAVIGATION VERS PAGE VOYAGES ===");
+            loadUnreadNotifications();
 
-            // Charger le fichier FXML de la page des voyages
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/PageVoyage.fxml"));
-            Parent root = loader.load();
+            Dialog<Void> dialog = new Dialog<>();
+            dialog.setTitle("Notifications");
+            dialog.setHeaderText("Suppressions de vos contenus");
 
-            // Obtenir la scène actuelle et changer la scène
-            Stage stage = (Stage) btnVoyages.getScene().getWindow();
-            Scene scene = new Scene(root);
-            stage.setScene(scene);
-            stage.setTitle("TravelMate - Gestion des Voyages");
-            stage.setMaximized(true); // Garder la fenêtre maximisée
-            stage.show();
+            DialogPane dialogPane = dialog.getDialogPane();
+            dialogPane.setStyle("-fx-background-color: #ffffff; -fx-border-color: #e2e8f0; -fx-border-width: 1; -fx-border-radius: 8;");
+            dialogPane.setPrefWidth(600);
+            dialogPane.setPrefHeight(500);
 
-            System.out.println("✓ Navigation vers PageVoyage réussie");
+            VBox content = new VBox(15);
+            content.setPadding(new Insets(20));
 
-        } catch (IOException e) {
-            System.err.println("✗ Erreur lors du chargement de PageVoyage.fxml: " + e.getMessage());
-            e.printStackTrace();
-            showAlert(Alert.AlertType.ERROR, "Erreur de navigation",
-                    "Impossible de charger la page des voyages:\n" + e.getMessage() +
-                            "\n\nVérifiez que le fichier 'PageVoyage.fxml' existe dans le dossier resources.");
+            if (unreadNotifications.isEmpty()) {
+                VBox emptyBox = new VBox(10);
+                emptyBox.setAlignment(javafx.geometry.Pos.CENTER);
+                emptyBox.setPrefHeight(300);
+
+                Label emptyIcon = new Label("🔔");
+                emptyIcon.setStyle("-fx-font-size: 48;");
+
+                Label noNotifLabel = new Label("Aucune nouvelle notification");
+                noNotifLabel.setStyle("-fx-text-fill: #64748b; -fx-font-size: 14;");
+
+                emptyBox.getChildren().addAll(emptyIcon, noNotifLabel);
+                content.getChildren().add(emptyBox);
+            } else {
+                HBox headerBox = new HBox(10);
+                headerBox.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+
+                Label countLabel = new Label(unreadNotifications.size() + " notification(s) non lue(s)");
+                countLabel.setStyle("-fx-font-weight: 600; -fx-text-fill: #0f172a; -fx-font-size: 14;");
+
+                Region spacer = new Region();
+                HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
+
+                Button markAllRead = new Button("Tout marquer comme lu");
+                markAllRead.setStyle("-fx-background-color: #10b981; -fx-text-fill: white; -fx-font-weight: 600; -fx-font-size: 12; -fx-padding: 8 16; -fx-background-radius: 8; -fx-cursor: hand;");
+                markAllRead.setOnAction(e -> {
+                    try {
+                        notificationCRUD.markAllAsReadForUser(currentUser.getId());
+                        loadUnreadNotifications();
+                        showNotificationsDialog();
+                    } catch (SQLException ex) {
+                        showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible de marquer les notifications comme lues");
+                    }
+                });
+
+                headerBox.getChildren().addAll(countLabel, spacer, markAllRead);
+                content.getChildren().add(headerBox);
+
+                ListView<DeleteNotification> listView = new ListView<>();
+                listView.setPrefHeight(350);
+                listView.setCellFactory(param -> new ListCell<DeleteNotification>() {
+                    @Override
+                    protected void updateItem(DeleteNotification notification, boolean empty) {
+                        super.updateItem(notification, empty);
+                        if (empty || notification == null) {
+                            setText(null);
+                            setGraphic(null);
+                        } else {
+                            VBox cellContent = new VBox(8);
+                            cellContent.setPadding(new Insets(12));
+                            cellContent.setStyle("-fx-background-color: #f8fafc; -fx-background-radius: 8; -fx-border-color: #e2e8f0; -fx-border-width: 1; -fx-border-radius: 8;");
+
+                            HBox header = new HBox(10);
+                            header.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+
+                            Label iconLabel = new Label("🗑️");
+                            iconLabel.setStyle("-fx-font-size: 20;");
+
+                            Label titleLabel = new Label(notification.getItem_type() + " supprimé");
+                            titleLabel.setStyle("-fx-font-weight: 700; -fx-text-fill: #ef4444; -fx-font-size: 14;");
+
+                            Region spacer1 = new Region();
+                            HBox.setHgrow(spacer1, javafx.scene.layout.Priority.ALWAYS);
+
+                            Label dateLabel = new Label(notification.getDeleted_at().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
+                            dateLabel.setStyle("-fx-text-fill: #64748b; -fx-font-size: 11;");
+
+                            header.getChildren().addAll(iconLabel, titleLabel, spacer1, dateLabel);
+
+                            Label itemLabel = new Label("📌 " + notification.getItem_name());
+                            itemLabel.setStyle("-fx-text-fill: #0f172a; -fx-font-size: 13; -fx-font-weight: 500;");
+
+                            Label adminLabel = new Label("Supprimé par: " + notification.getAdmin_name());
+                            adminLabel.setStyle("-fx-text-fill: #ef4444; -fx-font-size: 12;");
+
+                            Label reasonLabel = new Label("Raison: " + notification.getFullReason());
+                            reasonLabel.setStyle("-fx-text-fill: #475569; -fx-font-size: 12;");
+                            reasonLabel.setWrapText(true);
+
+                            Button markReadBtn = new Button("✓ Marquer comme lu");
+                            markReadBtn.setStyle("-fx-background-color: #3b82f6; -fx-text-fill: white; -fx-font-size: 11; -fx-padding: 6 12; -fx-background-radius: 6; -fx-cursor: hand;");
+                            markReadBtn.setOnAction(e -> {
+                                try {
+                                    notificationCRUD.markAsRead(notification.getId_notification());
+                                    loadUnreadNotifications();
+                                    showNotificationsDialog();
+                                } catch (SQLException ex) {
+                                    showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible de marquer la notification comme lue");
+                                }
+                            });
+
+                            HBox buttonBox = new HBox();
+                            buttonBox.setAlignment(javafx.geometry.Pos.CENTER_RIGHT);
+                            buttonBox.getChildren().add(markReadBtn);
+
+                            cellContent.getChildren().addAll(header, itemLabel, adminLabel, reasonLabel, buttonBox);
+                            setGraphic(cellContent);
+                        }
+                    }
+                });
+
+                ObservableList<DeleteNotification> items = FXCollections.observableArrayList(unreadNotifications);
+                listView.setItems(items);
+                content.getChildren().add(listView);
+            }
+
+            dialogPane.setContent(content);
+            dialogPane.getButtonTypes().add(ButtonType.CLOSE);
+
+            Button closeButton = (Button) dialogPane.lookupButton(ButtonType.CLOSE);
+            closeButton.setStyle("-fx-background-color: #64748b; -fx-text-fill: white; -fx-font-weight: 600; -fx-padding: 8 16; -fx-background-radius: 8; -fx-cursor: hand;");
+
+            dialog.showAndWait();
+
         } catch (Exception e) {
-            System.err.println("✗ Erreur inattendue: " + e.getMessage());
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir les notifications: " + e.getMessage());
             e.printStackTrace();
-            showAlert(Alert.AlertType.ERROR, "Erreur", "Erreur inattendue: " + e.getMessage());
         }
     }
 
-
-
-    private void navigateToCategories() {
-        CategorieContext.categorieFiltre = null;
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/categoriesfront.fxml"));
-            Parent root = loader.load();
-            Scene scene = new Scene(root);
-            Stage stage = (Stage) btnCategories.getScene().getWindow();
-            stage.setScene(scene);
-            stage.setTitle("TravelMate - Catégories");
-            stage.show();
-        } catch (IOException e) {
-            showAlert(Alert.AlertType.ERROR, "Erreur de navigation", "Impossible de charger les catégories: " + e.getMessage());
-        }
-    }
-
-    private void showNotImplementedAlert(String feature) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Fonctionnalité à venir");
-        alert.setHeaderText(null);
-        alert.setContentText("La fonctionnalité \"" + feature + "\" sera bientôt disponible !");
-        alert.showAndWait();
-    }
-
-    @FXML
-    private void scrollNavLeft() {
-        if (navScrollPane != null && navLinksContainer != null) {
-            double newHvalue = navScrollPane.getHvalue() - 0.2;
-            navScrollPane.setHvalue(Math.max(0, newHvalue));
-        }
-    }
-
-    @FXML
-    private void scrollNavRight() {
-        if (navScrollPane != null && navLinksContainer != null) {
-            double newHvalue = navScrollPane.getHvalue() + 0.2;
-            navScrollPane.setHvalue(Math.min(1, newHvalue));
+    private void updateUserInfo() {
+        if (currentUser != null) {
+            lblUserName.setText(currentUser.getPrenom() + " " + currentUser.getNom());
+            lblUserRole.setText(currentUser.getRole());
+        } else {
+            lblUserName.setText("Utilisateur");
+            lblUserRole.setText("Non connecté");
         }
     }
 
     private void setupButtonActions() {
+        if (btnAjouter != null) {
+            btnAjouter.setOnAction(event -> handleAjouter());
+        }
         if (btnRefresh != null) {
             btnRefresh.setOnMouseClicked(event -> refreshData());
         }
@@ -339,12 +447,45 @@ public class HebergementFrontController implements Initializable {
         if (btnFilter != null) {
             btnFilter.setOnMouseClicked(event -> handleFilter());
         }
+    }
+
+    private void setupUserProfile() {
+        if (userProfileBox != null) {
+            userProfileBox.setOnMouseClicked(event -> navigateToProfile());
+
+            userProfileBox.setOnMouseEntered(event -> {
+                userProfileBox.setStyle("-fx-background-color: #e2e8f0; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand;");
+            });
+
+            userProfileBox.setOnMouseExited(event -> {
+                userProfileBox.setStyle("-fx-background-color: #f1f5f9; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand;");
+            });
+        }
+    }
+
+    private void navigateToProfile() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/profile.fxml"));
+            Parent root = loader.load();
+
+            Stage stage = (Stage) userProfileBox.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("TravelMate - Mon Profil");
+            stage.setMaximized(true);
+
+        } catch (IOException e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir le profil: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void setupNavigationButtons() {
+        // Home button
         if (btnHome != null) {
             btnHome.setOnMouseClicked(event -> navigateToHome());
 
-            // Hover effect
             btnHome.setOnMouseEntered(event -> {
-                btnHome.setStyle("-fx-background-color: #ff8c42; -fx-background-radius: 12; -fx-min-width: 40; -fx-min-height: 40; -fx-cursor: hand;");
+                btnHome.setStyle("-fx-background-color: #10b981; -fx-background-radius: 12; -fx-min-width: 40; -fx-min-height: 40; -fx-cursor: hand;");
                 btnHome.lookupAll(".label").forEach(label -> {
                     if (label instanceof Label) {
                         ((Label) label).setStyle("-fx-text-fill: white; -fx-font-size: 18;");
@@ -361,54 +502,86 @@ public class HebergementFrontController implements Initializable {
                 });
             });
         }
-    }
 
-    private void setupUserProfile() {
-        if (userProfileBox != null) {
-            userProfileBox.setOnMouseClicked(event -> navigateToProfile());
+        // Navigation buttons
+        setupNavButtonHover(btnDestinations, "🌍", "Destinations");
+        if (btnDestinations != null) {
+            btnDestinations.setOnMouseClicked(event -> navigateTo("/DestinationFront.fxml", "Destinations"));
+        }
 
-            // Hover effect
-            userProfileBox.setOnMouseEntered(event -> {
-                userProfileBox.setStyle("-fx-background-color: #e2e8f0; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand;");
-            });
+        setupNavButtonHover(btnCategories, "📑", "Catégories");
+        if (btnCategories != null) {
+            btnCategories.setOnMouseClicked(event -> navigateTo("/categoriesfront.fxml", "Catégories"));
+        }
 
-            userProfileBox.setOnMouseExited(event -> {
-                userProfileBox.setStyle("-fx-background-color: #f1f5f9; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand;");
-            });
+        setupNavButtonHover(btnActivites, "🏄", "Activités");
+        if (btnActivites != null) {
+            btnActivites.setOnMouseClicked(event -> navigateTo("/activitesfront.fxml", "Activités"));
+        }
+
+        setupNavButtonHover(btnVoyages, "✈️", "Voyages");
+        if (btnVoyages != null) {
+            btnVoyages.setOnMouseClicked(event -> navigateTo("/PageVoyage.fxml", "Voyages"));
+        }
+
+        setupNavButtonHover(btnBudgets, "💰", "Budgets");
+        if (btnBudgets != null) {
+            btnBudgets.setOnMouseClicked(event -> navigateTo("/BudgetDepenseFront.fxml", "Budgets"));
+        }
+
+        // Remove Itinéraires from navigation
+        if (btnItineraires != null) {
+            btnItineraires.setVisible(false);
+            btnItineraires.setManaged(false);
         }
     }
 
-    private void updateUserInfo() {
-        User currentUser = UserSession.getInstance().getCurrentUser();
-        if (currentUser != null) {
-            if (lblUserName != null) {
-                lblUserName.setText(currentUser.getPrenom() + " " + currentUser.getNom());
-            }
-            if (lblUserRole != null) {
-                lblUserRole.setText(currentUser.getRole());
-            }
-        } else {
-            if (lblUserName != null) {
-                lblUserName.setText("Utilisateur");
-            }
-            if (lblUserRole != null) {
-                lblUserRole.setText("Non connecté");
-            }
-        }
-    }
-
-    private void navigateToProfile() {
+    private void navigateTo(String fxmlPath, String title) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/profile.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
             Parent root = loader.load();
-            Stage stage = (Stage) userProfileBox.getScene().getWindow();
+
+            Stage stage = (Stage) btnHebergement.getScene().getWindow();
             stage.setScene(new Scene(root));
-            stage.setTitle("TravelMate - Mon Profil");
+            stage.setTitle("TravelMate - " + title);
             stage.setMaximized(true);
+
         } catch (IOException e) {
-            showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir le profil: " + e.getMessage());
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir " + title + ": " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    private void setupNavButtonHover(HBox button, String icon, String text) {
+        if (button == null) return;
+
+        button.setOnMouseEntered(event -> {
+            button.setStyle("-fx-background-color: rgba(16,185,129,0.1); -fx-background-radius: 12; -fx-padding: 8 16; -fx-cursor: hand; -fx-border-color: #10b981; -fx-border-width: 1; -fx-border-radius: 12;");
+            button.lookupAll(".label").forEach(label -> {
+                if (label instanceof Label) {
+                    Label lbl = (Label) label;
+                    if (lbl.getText().equals(icon)) {
+                        lbl.setStyle("-fx-font-size: 16;");
+                    } else {
+                        lbl.setStyle("-fx-text-fill: #10b981; -fx-font-weight: 600; -fx-font-size: 14;");
+                    }
+                }
+            });
+        });
+
+        button.setOnMouseExited(event -> {
+            button.setStyle("-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 8 16; -fx-cursor: hand;");
+            button.lookupAll(".label").forEach(label -> {
+                if (label instanceof Label) {
+                    Label lbl = (Label) label;
+                    if (lbl.getText().equals(icon)) {
+                        lbl.setStyle("-fx-font-size: 16;");
+                    } else {
+                        lbl.setStyle("-fx-text-fill: #475569; -fx-font-weight: 500; -fx-font-size: 14;");
+                    }
+                }
+            });
+        });
     }
 
     private void loadHebergements() {
@@ -429,56 +602,51 @@ public class HebergementFrontController implements Initializable {
 
     private void updateStats() {
         int total = allHebergements.size();
-        if (lblTotalHebergements != null) lblTotalHebergements.setText(String.valueOf(total));
-        if (lblHebergementCount != null) lblHebergementCount.setText(total + " hébergement" + (total > 1 ? "s" : ""));
-        if (lblStatut != null) lblStatut.setText("● " + total + " hébergement" + (total > 1 ? "s" : ""));
+        lblTotalHebergements.setText(String.valueOf(total));
+        lblHebergementCount.setText(total + " hébergement" + (total > 1 ? "s" : ""));
+        lblStatut.setText("● " + total + " hébergement" + (total > 1 ? "s" : ""));
 
-        // Count unique types
         long typesCount = allHebergements.stream()
                 .map(Hebergement::getType_hebergement)
                 .filter(Objects::nonNull)
                 .distinct()
                 .count();
-        if (lblTypesCount != null) lblTypesCount.setText(typesCount + " type" + (typesCount > 1 ? "s" : "") + " différents");
+        lblTypesCount.setText(typesCount + " type" + (typesCount > 1 ? "s" : "") + " différents");
 
-        // Count unique destinations
         long destsCount = allHebergements.stream()
                 .map(Hebergement::getDestination)
                 .filter(Objects::nonNull)
                 .map(Destination::getId_destination)
                 .distinct()
                 .count();
-        if (lblDestinationsCount != null) lblDestinationsCount.setText(destsCount + " destination" + (destsCount > 1 ? "s" : ""));
-        if (lblTotalDestinationsLiees != null) lblTotalDestinationsLiees.setText("Dans " + destsCount + " destination" + (destsCount > 1 ? "s" : ""));
+        lblDestinationsCount.setText(destsCount + " destination" + (destsCount > 1 ? "s" : ""));
+        lblTotalDestinationsLiees.setText("Dans " + destsCount + " destination" + (destsCount > 1 ? "s" : ""));
 
-        // Average price
         double avgPrice = allHebergements.stream()
                 .mapToDouble(Hebergement::getPrixNuit_hebergement)
                 .average()
                 .orElse(0.0);
-        if (lblPrixMoyen != null) lblPrixMoyen.setText(String.format("%.2f €", avgPrice));
+        lblPrixMoyen.setText(String.format("%.2f €", avgPrice));
 
-        // Average note
         double avgNote = allHebergements.stream()
                 .mapToDouble(Hebergement::getNote_hebergement)
                 .average()
                 .orElse(0.0);
-        if (lblNoteMoyenne != null) lblNoteMoyenne.setText(String.format("Note moyenne: %.1f ⭐", avgNote));
-        if (lblNoteMoyenneKPI != null) lblNoteMoyenneKPI.setText(String.format("%.1f", avgNote));
-        if (progressNote != null) progressNote.setProgress(avgNote / 5.0);
+        lblNoteMoyenne.setText(String.format("Note moyenne: %.1f ⭐", avgNote));
+        lblNoteMoyenneKPI.setText(String.format("%.1f", avgNote));
+        progressNote.setProgress(avgNote / 5.0);
     }
 
     private void refreshData() {
         loadHebergements();
+        loadUnreadNotifications();
         updateLastUpdateTime();
         showAlert(Alert.AlertType.INFORMATION, "Succès", "Données rafraîchies avec succès!");
     }
 
     private void updateLastUpdateTime() {
-        if (lblLastUpdate != null) {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm");
-            lblLastUpdate.setText("Dernière mise à jour: " + LocalDateTime.now().format(formatter));
-        }
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm");
+        lblLastUpdate.setText("Dernière mise à jour: " + LocalDateTime.now().format(formatter));
     }
 
     private void handleSearch() {
@@ -500,9 +668,7 @@ public class HebergementFrontController implements Initializable {
                 } else {
                     hebergementList.setAll(searchResults);
                     tableHebergements.setItems(hebergementList);
-                    if (lblHebergementCount != null) {
-                        lblHebergementCount.setText(searchResults.size() + " résultat" + (searchResults.size() > 1 ? "s" : ""));
-                    }
+                    lblHebergementCount.setText(searchResults.size() + " résultat(s)");
                 }
             }
         });
@@ -532,9 +698,7 @@ public class HebergementFrontController implements Initializable {
             if ("Tous".equals(type)) {
                 hebergementList.setAll(allHebergements);
                 tableHebergements.setItems(hebergementList);
-                if (lblHebergementCount != null) {
-                    lblHebergementCount.setText(allHebergements.size() + " hébergement" + (allHebergements.size() > 1 ? "s" : ""));
-                }
+                lblHebergementCount.setText(allHebergements.size() + " hébergement(s)");
             } else {
                 List<Hebergement> filteredResults = allHebergements.stream()
                         .filter(h -> type.equals(h.getType_hebergement()))
@@ -545,12 +709,76 @@ public class HebergementFrontController implements Initializable {
                 } else {
                     hebergementList.setAll(filteredResults);
                     tableHebergements.setItems(hebergementList);
-                    if (lblHebergementCount != null) {
-                        lblHebergementCount.setText(filteredResults.size() + " résultat" + (filteredResults.size() > 1 ? "s" : ""));
-                    }
+                    lblHebergementCount.setText(filteredResults.size() + " résultat(s)");
                 }
             }
         });
+    }
+
+    private void handleAjouter() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/AjouterHebergement.fxml"));
+            Parent root = loader.load();
+            AjouterHebergementController controller = loader.getController();
+            controller.setParentController(null);
+
+            Stage stage = new Stage();
+            stage.setTitle("Ajouter un hébergement");
+            stage.setScene(new Scene(root));
+            stage.setResizable(false);
+            stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+            stage.showAndWait();
+
+            refreshData();
+
+        } catch (IOException e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir le formulaire: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void handleModifier(Hebergement hebergement) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ModifierHebergement.fxml"));
+            Parent root = loader.load();
+            ModifierHebergementController controller = loader.getController();
+            controller.setHebergement(hebergement);
+            controller.setParentController(null);
+
+            Stage stage = new Stage();
+            stage.setTitle("Modifier - " + hebergement.getNom_hebergement());
+            stage.setScene(new Scene(root));
+            stage.setResizable(false);
+            stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+            stage.showAndWait();
+
+            refreshData();
+
+        } catch (IOException e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir le formulaire: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void handleDeleteSingle(Hebergement hebergement) {
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Confirmation");
+        confirm.setHeaderText("Supprimer l'hébergement");
+        confirm.setContentText("Êtes-vous sûr de vouloir supprimer " + hebergement.getNom_hebergement() + " ?");
+
+        Optional<ButtonType> result = confirm.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            try {
+                hebergementCRUD.supprimer(hebergement);
+                allHebergements.remove(hebergement);
+                hebergementList.setAll(allHebergements);
+                tableHebergements.setItems(hebergementList);
+                updateStats();
+                showAlert(Alert.AlertType.INFORMATION, "Succès", "Hébergement supprimé avec succès!");
+            } catch (SQLException e) {
+                showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible de supprimer: " + e.getMessage());
+            }
+        }
     }
 
     private void handleConsulter(Hebergement hebergement) {
@@ -599,6 +827,14 @@ public class HebergementFrontController implements Initializable {
         alert.showAndWait();
     }
 
+    private void showInfoAlert(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
     public void filterByDestination(Destination destination) {
         if (destination == null) return;
 
@@ -609,22 +845,16 @@ public class HebergementFrontController implements Initializable {
 
         hebergementList.setAll(filtered);
         tableHebergements.setItems(hebergementList);
-        if (lblHebergementCount != null) {
-            lblHebergementCount.setText(filtered.size() + " hébergement" + (filtered.size() > 1 ? "s" : "") +
-                    " à " + destination.getNom_destination());
-        }
-        if (lblStatut != null) {
-            lblStatut.setText("● " + filtered.size() + " hébergement" + (filtered.size() > 1 ? "s" : "") +
-                    " • " + destination.getNom_destination());
-        }
+        lblHebergementCount.setText(filtered.size() + " hébergement" + (filtered.size() > 1 ? "s" : "") +
+                " à " + destination.getNom_destination());
+        lblStatut.setText("● " + filtered.size() + " hébergement" + (filtered.size() > 1 ? "s" : "") +
+                " • " + destination.getNom_destination());
     }
 
     public void clearFilter() {
         hebergementList.setAll(allHebergements);
         tableHebergements.setItems(hebergementList);
-        if (lblHebergementCount != null) {
-            lblHebergementCount.setText(allHebergements.size() + " hébergement" + (allHebergements.size() > 1 ? "s" : ""));
-        }
+        lblHebergementCount.setText(allHebergements.size() + " hébergement" + (allHebergements.size() > 1 ? "s" : ""));
         updateStats();
     }
 }

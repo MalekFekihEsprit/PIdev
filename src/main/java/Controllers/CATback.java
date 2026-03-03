@@ -2,7 +2,6 @@ package Controllers;
 
 import Entities.Categories;
 import Services.CategoriesCRUD;
-import Services.ActivitesCRUD;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -21,6 +20,8 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.net.URL;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
@@ -68,7 +69,6 @@ public class CATback implements Initializable {
     @FXML private HBox btnStats;
     @FXML private HBox btnActivites;
     @FXML private HBox btnCategories;
-    @FXML private Label lblCategoriesCount;
     @FXML private HBox userProfileBox;
     @FXML private Label lblUserName;
     @FXML private Label lblUserRole;
@@ -92,15 +92,16 @@ public class CATback implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // Initialiser le service CRUD
         categoriesCRUD = new CategoriesCRUD();
         categoriesData = FXCollections.observableArrayList();
 
-        // Configurer les colonnes du TableView
         setupTableColumns();
-
-        // Charger les données
         loadCategories();
+        setupSearch();
+        setupNavigationButtons();
+        setupUserProfile();
+        updateUserInfo();
+        updateLastUpdateTime();
 
         // Activer/désactiver les boutons selon la sélection
         tableCategories.getSelectionModel().selectedItemProperty().addListener(
@@ -110,15 +111,6 @@ public class CATback implements Initializable {
                     btnSupprimer.setDisable(!isSelected);
                 }
         );
-
-        // Recherche en temps réel
-        setupSearch();
-
-        // Configuration des boutons de navigation
-        setupNavigationButtons();
-
-        // Charger le nombre de catégories
-        loadCategoriesCount();
 
         // Style spécial pour la page active (Catégories)
         if (btnCategories != null) {
@@ -219,37 +211,22 @@ public class CATback implements Initializable {
 
     private void setupNavigationButtons() {
         // Destinations
-        if (btnDestinations != null) {
-            btnDestinations.setOnMouseClicked(event -> navigateToDestinationsBack());
-            setupSidebarButtonHover(btnDestinations, "🌍", "Destinations");
-        }
+        setupSidebarButtonHover(btnDestinations, "🌍", "Destinations");
+        if (btnDestinations != null) btnDestinations.setOnMouseClicked(event -> navigateTo("/DestinationBack.fxml", "Gestion des Destinations"));
 
         // Hébergement
-        if (btnHebergement != null) {
-            btnHebergement.setOnMouseClicked(event -> navigateToHebergementBack());
-            setupSidebarButtonHover(btnHebergement, "🏨", "Hébergement");
-        }
+        setupSidebarButtonHover(btnHebergement, "🏨", "Hébergement");
+        if (btnHebergement != null) btnHebergement.setOnMouseClicked(event -> navigateTo("/HebergementBack.fxml", "Gestion des Hébergements"));
 
         // Utilisateurs
-        if (btnUsers != null) {
-            btnUsers.setOnMouseClicked(event ->
-                    showInfo("Utilisateurs", "Cette fonctionnalité sera bientôt disponible"));
-            setupSidebarButtonHover(btnUsers, "👥", "Utilisateurs");
-        }
+        setupSidebarButtonHover(btnUsers, "👥", "Utilisateurs");
+        if (btnUsers != null) btnUsers.setOnMouseClicked(event -> navigateTo("/fxml/admin_users.fxml", "Gestion des Utilisateurs"));
 
         // Statistiques
-        if (btnStats != null) {
-            btnStats.setOnMouseClicked(event ->
-                    showInfo("Statistiques", "Cette fonctionnalité sera bientôt disponible"));
-            setupSidebarButtonHover(btnStats, "📊", "Statistiques");
-        }
+        setupSidebarButtonHover(btnStats, "📊", "Statistiques");
+        if (btnStats != null) btnStats.setOnMouseClicked(event -> navigateTo("/fxml/admin_stats.fxml", "Statistiques"));
 
-        // Itinéraires
-        if (btnItineraires != null) {
-            btnItineraires.setOnMouseClicked(event ->
-                    showInfo("Itinéraires", "Cette fonctionnalité sera bientôt disponible"));
-            setupSidebarButtonHover(btnItineraires, "🗺️", "Itinéraires");
-        }
+
 
         // Catégories - Page courante
         if (btnCategories != null) {
@@ -260,32 +237,29 @@ public class CATback implements Initializable {
         }
 
         // Activités
-        if (btnActivites != null) {
-            btnActivites.setOnMouseClicked(event -> navigateToActivitesBack());
-            setupSidebarButtonHover(btnActivites, "🏄", "Activités");
-        }
+        setupSidebarButtonHover(btnActivites, "🏄", "Activités");
+        if (btnActivites != null) btnActivites.setOnMouseClicked(event -> navigateTo("/activitesback.fxml", "Gestion des Activités"));
 
         // Voyages
-        if (btnVoyages != null) {
-            btnVoyages.setOnMouseClicked(event ->
-                    showInfo("Voyages", "Cette fonctionnalité sera bientôt disponible"));
-            setupSidebarButtonHover(btnVoyages, "✈️", "Voyages");
-        }
+        setupSidebarButtonHover(btnVoyages, "✈️", "Voyages");
+        if (btnVoyages != null) btnVoyages.setOnMouseClicked(event -> navigateTo("/PageVoyageBack.fxml", "Gestion des Voyages"));
 
         // Budgets
-        if (btnBudgets != null) {
-            btnBudgets.setOnMouseClicked(event ->
-                    showInfo("Budgets", "Cette fonctionnalité sera bientôt disponible"));
-            setupSidebarButtonHover(btnBudgets, "💰", "Budgets");
-        }
+        setupSidebarButtonHover(btnBudgets, "💰", "Budgets");
+        if (btnBudgets != null) btnBudgets.setOnMouseClicked(event -> navigateTo("/BudgetDepenseBack.fxml", "Gestion des Budgets"));
+    }
 
-        // User profile
-        if (userProfileBox != null) {
-            userProfileBox.setOnMouseClicked(event -> navigateToProfile());
-            userProfileBox.setOnMouseEntered(event ->
-                    userProfileBox.setStyle("-fx-background-color: #2d3759; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand;"));
-            userProfileBox.setOnMouseExited(event ->
-                    userProfileBox.setStyle("-fx-background-color: #1e2749; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand;"));
+    private void navigateTo(String fxmlPath, String title) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+            Parent root = loader.load();
+            Stage stage = (Stage) btnCategories.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("TravelMate - " + title);
+            stage.setMaximized(true);
+        } catch (IOException e) {
+            showError("Erreur de navigation", "Impossible d'ouvrir: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -321,45 +295,13 @@ public class CATback implements Initializable {
         });
     }
 
-    private void navigateToDestinationsBack() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/DestinationBack.fxml"));
-            Parent root = loader.load();
-            Stage stage = (Stage) btnDestinations.getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.setTitle("TravelMate - Gestion des Destinations");
-            stage.setMaximized(true);
-        } catch (IOException e) {
-            showError("Erreur de navigation", "Impossible d'ouvrir les destinations: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
-    private void navigateToHebergementBack() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/HebergementBack.fxml"));
-            Parent root = loader.load();
-            Stage stage = (Stage) btnHebergement.getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.setTitle("TravelMate - Gestion des Hébergements");
-            stage.setMaximized(true);
-        } catch (IOException e) {
-            showError("Erreur de navigation", "Impossible d'ouvrir les hébergements: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
-    private void navigateToActivitesBack() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/activitesback.fxml"));
-            Parent root = loader.load();
-            Stage stage = (Stage) btnActivites.getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.setTitle("TravelMate - Gestion des Activités");
-            stage.setMaximized(true);
-        } catch (IOException e) {
-            showError("Erreur de navigation", "Impossible d'ouvrir la gestion des activités: " + e.getMessage());
-            e.printStackTrace();
+    private void setupUserProfile() {
+        if (userProfileBox != null) {
+            userProfileBox.setOnMouseClicked(event -> navigateToProfile());
+            userProfileBox.setOnMouseEntered(event ->
+                    userProfileBox.setStyle("-fx-background-color: #2d3759; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand;"));
+            userProfileBox.setOnMouseExited(event ->
+                    userProfileBox.setStyle("-fx-background-color: #1e2749; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand;"));
         }
     }
 
@@ -377,18 +319,15 @@ public class CATback implements Initializable {
         }
     }
 
-    private void loadCategoriesCount() {
-        try {
-            CategoriesCRUD crud = new CategoriesCRUD();
-            int count = crud.afficher().size();
-            if (lblCategoriesCount != null) {
-                lblCategoriesCount.setText(String.valueOf(count));
-            }
-        } catch (SQLException e) {
-            if (lblCategoriesCount != null) {
-                lblCategoriesCount.setText("0");
-            }
-        }
+    private void updateUserInfo() {
+        // This would be implemented with UserSession
+        lblUserName.setText("Utilisateur");
+        lblUserRole.setText("Administrateur");
+    }
+
+    private void updateLastUpdateTime() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm");
+        lblLastUpdate.setText("Dernière mise à jour: " + LocalDateTime.now().format(formatter));
     }
 
     /**
@@ -892,19 +831,7 @@ public class CATback implements Initializable {
      */
     @FXML
     private void handleVersActivites() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/activitesback.fxml"));
-            Parent root = loader.load();
-            Scene scene = new Scene(root);
-            Stage stage = (Stage) btnVersActivites.getScene().getWindow();
-            stage.setScene(scene);
-            stage.setTitle("TravelMate - Gestion des Activités");
-            stage.show();
-        } catch (IOException e) {
-            showError("Erreur de navigation",
-                    "Impossible de charger l'interface des activités : " + e.getMessage());
-            e.printStackTrace();
-        }
+        navigateTo("/activitesback.fxml", "Gestion des Activités");
     }
 
     /**

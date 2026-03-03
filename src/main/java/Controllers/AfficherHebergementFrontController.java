@@ -70,7 +70,7 @@ public class AfficherHebergementFrontController implements Initializable {
         lblHebergementType.setText(hebergement.getType_hebergement().toUpperCase());
         lblBreadcrumbHebergement.setText(hebergement.getNom_hebergement());
 
-        // Price (score removed - only price remains)
+        // Price
         lblPrix.setText(String.format("%.2f €", hebergement.getPrixNuit_hebergement()));
 
         // Address
@@ -100,7 +100,7 @@ public class AfficherHebergementFrontController implements Initializable {
             lblDestClimat.setText("Non spécifié");
         }
 
-        // Tags (score tag removed)
+        // Tags
         lblTagType.setText("🏨 " + hebergement.getType_hebergement());
         lblTagNote.setText(String.format("⭐ %.1f/5", hebergement.getNote_hebergement()));
         lblTagPrix.setText(String.format("💰 %.2f€/nuit", hebergement.getPrixNuit_hebergement()));
@@ -128,12 +128,15 @@ public class AfficherHebergementFrontController implements Initializable {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/AfficherDestinationFront.fxml"));
             Parent root = loader.load();
 
-            AfficherDestinationfrontController controller = loader.getController();
+            AfficherDestinationFrontController controller = loader.getController();
             controller.setDestination(hebergement.getDestination());
 
             Stage stage = new Stage();
             stage.setTitle("Destination - " + hebergement.getDestination().getNom_destination());
             stage.setScene(new Scene(root));
+            stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+            stage.initOwner(btnClose.getScene().getWindow());
+            stage.setResizable(true);
             stage.show();
 
         } catch (IOException e) {

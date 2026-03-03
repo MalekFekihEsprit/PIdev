@@ -1,6 +1,7 @@
 package Controllers;
 
 import Entities.Destination;
+import Services.HebergementCRUD;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -19,7 +20,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-public class AfficherDestinationBackController implements Initializable {
+public class AfficherDestinationFrontController implements Initializable {
 
     @FXML private Label lblBreadcrumbDestination;
     @FXML private Label lblDestinationIcon;
@@ -36,13 +37,11 @@ public class AfficherDestinationBackController implements Initializable {
     @FXML private Label lblStatClimate;
     @FXML private Label lblStatSeason;
     @FXML private Label lblStatCountry;
-    @FXML private Label lblStatRegion;
     @FXML private Label lblStatId;
     @FXML private Label lblTagCountry;
     @FXML private Label lblTagClimate;
     @FXML private Label lblTagSeason;
     @FXML private Label lblTagScore;
-    @FXML private Label lblTagRegion;
     @FXML private Label lblCurrency;
     @FXML private Label lblLanguages;
     @FXML private Label lblRegion;
@@ -51,18 +50,20 @@ public class AfficherDestinationBackController implements Initializable {
     @FXML private Button btnClose2;
     @FXML private Button btnVoirHebergements;
 
-    // New elements for flag and video
+    // Flag and video elements
     @FXML private ImageView flagImageView;
     @FXML private WebView videoWebView;
     @FXML private Label lblNoVideo;
     @FXML private VBox videoContainer;
 
     private Destination destination;
-    private DestinationBackController parentController;
+    private HebergementCRUD hebergementCRUD;
     private WebEngine webEngine;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        hebergementCRUD = new HebergementCRUD();
+
         // Setup close buttons
         btnClose.setOnMouseClicked(event -> closeWindow());
         btnClose2.setOnAction(event -> closeWindow());
@@ -76,8 +77,6 @@ public class AfficherDestinationBackController implements Initializable {
         if (videoWebView != null) {
             webEngine = videoWebView.getEngine();
             webEngine.setJavaScriptEnabled(true);
-
-            // Set user agent
             webEngine.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36");
 
             // Add error handling
@@ -92,18 +91,15 @@ public class AfficherDestinationBackController implements Initializable {
         if (taDescription != null) {
             taDescription.setEditable(false);
             taDescription.setWrapText(true);
-            // Set larger font for better readability
-            taDescription.setStyle("-fx-font-size: 15;");
+            taDescription.setStyle("-fx-font-size: 14;");
         }
     }
 
     public void setDestination(Destination destination) {
         this.destination = destination;
         populateFields();
-    }
-
-    public void setParentController(DestinationBackController controller) {
-        this.parentController = controller;
+        loadFlagImage();
+        loadVideo();
     }
 
     private void populateFields() {
@@ -119,10 +115,11 @@ public class AfficherDestinationBackController implements Initializable {
         lblDestinationId.setText("ID: " + destination.getId_destination());
         lblBreadcrumbDestination.setText(destination.getNom_destination());
 
-        // Region - NEW
+        // Region
         String region = destination.getRegion_destination() != null ? destination.getRegion_destination() : "Non spécifiée";
-        if (lblRegion != null) lblRegion.setText(region);
-        if (lblStatRegion != null) lblStatRegion.setText(region);
+        if (lblRegion != null) {
+            lblRegion.setText(region);
+        }
 
         // Climate and season
         String climate = destination.getClimat_destination() != null ? destination.getClimat_destination() : "Non spécifié";
@@ -167,18 +164,11 @@ public class AfficherDestinationBackController implements Initializable {
         double progress = Math.min(score / 5.0, 1.0);
         scoreProgress.setProgress(progress);
 
-        // Tags - Add region tag
+        // Tags
         lblTagCountry.setText("🇫🇷 " + destination.getPays_destination());
         lblTagClimate.setText("🌡️ " + climate);
         lblTagSeason.setText("🗓️ " + season);
         lblTagScore.setText("⭐ " + scoreText);
-        if (lblTagRegion != null) lblTagRegion.setText("📍 " + region);
-
-        // Load flag image
-        loadFlagImage();
-
-        // Load video
-        loadVideo();
     }
 
     private void loadFlagImage() {
@@ -187,7 +177,7 @@ public class AfficherDestinationBackController implements Initializable {
         String flagUrl = destination.getFlag_destination();
         if (flagUrl != null && !flagUrl.isEmpty()) {
             try {
-                Image flagImage = new Image(flagUrl, 60, 40, true, true);
+                Image flagImage = new Image(flagUrl, 45, 30, true, true);
                 flagImageView.setImage(flagImage);
                 flagImageView.setVisible(true);
             } catch (Exception e) {
@@ -218,9 +208,9 @@ public class AfficherDestinationBackController implements Initializable {
                                 "<html>" +
                                 "<head>" +
                                 "<style>" +
-                                "html, body { margin: 0; padding: 0; width: 100%%; height: 100%%; overflow: hidden; background: #000; }" +
+                                "html, body { margin: 0; padding: 0; width: 100%%; height: 100%%; overflow: hidden; background: #f8fafc; }" +
                                 ".video-container { position: relative; width: 100%%; height: 100%%; }" +
-                                "iframe { position: absolute; top: 0; left: 0; width: 100%%; height: 100%%; border: 0; }" +
+                                "iframe { position: absolute; top: 0; left: 0; width: 100%%; height: 100%%; border: 0; border-radius: 12px; }" +
                                 "</style>" +
                                 "</head>" +
                                 "<body>" +
@@ -235,14 +225,15 @@ public class AfficherDestinationBackController implements Initializable {
                 );
 
                 // Ensure WebView fills its container
-                videoWebView.setPrefHeight(450);
-                videoWebView.setMinHeight(450);
+                videoWebView.setPrefHeight(400);
+                videoWebView.setMinHeight(400);
                 videoWebView.setMaxHeight(Double.MAX_VALUE);
 
                 // Make sure the container expands properly
-                videoContainer.setPrefHeight(500);
-                videoContainer.setMinHeight(500);
+                videoContainer.setPrefHeight(450);
+                videoContainer.setMinHeight(450);
                 videoContainer.setMaxHeight(Double.MAX_VALUE);
+                videoContainer.setStyle("-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.02), 10, 0, 0, 2);");
 
                 // Load the HTML
                 webEngine.loadContent(embedHtml, "text/html");
@@ -272,10 +263,12 @@ public class AfficherDestinationBackController implements Initializable {
     }
 
     private void showNoVideo() {
-        videoContainer.setVisible(false);
-        videoContainer.setManaged(false);
-        lblNoVideo.setVisible(true);
-        lblNoVideo.setManaged(true);
+        if (videoContainer != null && lblNoVideo != null) {
+            videoContainer.setVisible(false);
+            videoContainer.setManaged(false);
+            lblNoVideo.setVisible(true);
+            lblNoVideo.setManaged(true);
+        }
     }
 
     private String extractVideoId(String videoUrl) {
@@ -348,8 +341,11 @@ public class AfficherDestinationBackController implements Initializable {
         }
 
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/HebergementBack.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/HebergementFront.fxml"));
             Parent root = loader.load();
+
+            HebergementFrontController controller = loader.getController();
+            controller.filterByDestination(destination);
 
             Stage stage = (Stage) btnVoirHebergements.getScene().getWindow();
             stage.setScene(new Scene(root));

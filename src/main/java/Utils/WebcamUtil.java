@@ -1,6 +1,7 @@
 package Utils;
 
 import com.github.sarxos.webcam.Webcam;
+
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;

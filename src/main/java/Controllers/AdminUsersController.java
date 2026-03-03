@@ -49,9 +49,10 @@ public class AdminUsersController {
     @FXML private Label formTitle;
     @FXML private Button saveButton, updateButton, deleteButton, clearButton;
     @FXML private Label totalUsersLabel, sidebarTotalLabel, statsAdmins, statsUsers;
+    @FXML private Label totalUsersCard, adminsCard, usersCard;
     @FXML private Button filterAllButton, filterAdminsButton, filterUsersButton;
     @FXML private Label lblLastUpdate;
-    @FXML private HBox btnDestinations, btnHebergement, btnStats, btnItineraires, btnActivites, btnVoyages, btnBudgets;
+    @FXML private HBox btnDestinations, btnHebergement, btnUsers, btnStats, btnCategories, btnActivites, btnVoyages, btnBudgets;
     @FXML private HBox userProfileBox;
     @FXML private Label lblUserName, lblUserRole;
 
@@ -166,12 +167,18 @@ public class AdminUsersController {
 
     private void updateStats() {
         int total = userList.size();
-        totalUsersLabel.setText(total + " utilisateurs");
-        sidebarTotalLabel.setText(String.valueOf(total));
+
+        if (totalUsersLabel != null) totalUsersLabel.setText(total + " utilisateurs");
+        if (sidebarTotalLabel != null) sidebarTotalLabel.setText(String.valueOf(total));
+        if (totalUsersCard != null) totalUsersCard.setText(String.valueOf(total));
+
         long adminCount = userList.stream().filter(u -> "ADMIN".equals(u.getRole())).count();
         long userCount = userList.stream().filter(u -> "USER".equals(u.getRole())).count();
-        statsAdmins.setText(String.valueOf(adminCount));
-        statsUsers.setText(String.valueOf(userCount));
+
+        if (statsAdmins != null) statsAdmins.setText(String.valueOf(adminCount));
+        if (adminsCard != null) adminsCard.setText(String.valueOf(adminCount));
+        if (statsUsers != null) statsUsers.setText(String.valueOf(userCount));
+        if (usersCard != null) usersCard.setText(String.valueOf(userCount));
     }
 
     private void updateUserInfo() {
@@ -192,45 +199,37 @@ public class AdminUsersController {
 
     private void setupNavigationButtons() {
         setupSidebarButtonHover(btnDestinations, "🌍", "Destinations");
-        if (btnDestinations != null) btnDestinations.setOnMouseClicked(event -> navigateToDestinations());
+        if (btnDestinations != null) btnDestinations.setOnMouseClicked(event -> navigateTo("/DestinationBack.fxml", "Gestion des Destinations"));
 
         setupSidebarButtonHover(btnHebergement, "🏨", "Hébergement");
-        if (btnHebergement != null) btnHebergement.setOnMouseClicked(event -> navigateToHebergement());
+        if (btnHebergement != null) btnHebergement.setOnMouseClicked(event -> navigateTo("/HebergementBack.fxml", "Gestion des Hébergements"));
 
         setupSidebarButtonHover(btnStats, "📊", "Statistiques");
-        if (btnStats != null) btnStats.setOnMouseClicked(event -> navigateToStats());
+        if (btnStats != null) btnStats.setOnMouseClicked(event -> navigateTo("/fxml/admin_stats.fxml", "Statistiques"));
 
-        setupSidebarButtonHover(btnItineraires, "🗺️", "Itinéraires");
-        if (btnItineraires != null) btnItineraires.setOnMouseClicked(event ->
-                showInfoAlert("Itinéraires", "Cette fonctionnalité sera bientôt disponible"));
+        setupSidebarButtonHover(btnCategories, "📑", "Catégories");
+        if (btnCategories != null) btnCategories.setOnMouseClicked(event -> navigateTo("/categoriesback.fxml", "Gestion des Catégories"));
 
         setupSidebarButtonHover(btnActivites, "🏄", "Activités");
-        if (btnActivites != null) btnActivites.setOnMouseClicked(event ->
-                showInfoAlert("Activités", "Cette fonctionnalité sera bientôt disponible"));
+        if (btnActivites != null) btnActivites.setOnMouseClicked(event -> navigateTo("/activitesback.fxml", "Gestion des Activités"));
 
         setupSidebarButtonHover(btnVoyages, "✈️", "Voyages");
-        if (btnVoyages != null) btnVoyages.setOnMouseClicked(event ->
-                showInfoAlert("Voyages", "Cette fonctionnalité sera bientôt disponible"));
+        if (btnVoyages != null) btnVoyages.setOnMouseClicked(event -> navigateTo("/PageVoyageBack.fxml", "Gestion des Voyages"));
 
         setupSidebarButtonHover(btnBudgets, "💰", "Budgets");
-        if (btnBudgets != null) btnBudgets.setOnMouseClicked(event -> navigatetoBudgets());
+        if (btnBudgets != null) btnBudgets.setOnMouseClicked(event -> navigateTo("/BudgetDepenseBack.fxml", "Gestion des Budgets"));
     }
 
-    private void navigatetoBudgets() {
+    private void navigateTo(String fxmlPath, String title) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/BudgetDepenseBack.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
             Parent root = loader.load();
             Stage stage = (Stage) btnDestinations.getScene().getWindow();
             stage.setScene(new Scene(root));
-            stage.setTitle("TravelMate - Budgets");
+            stage.setTitle("TravelMate - " + title);
             stage.setMaximized(true);
-            stage.show();
         } catch (IOException e) {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Erreur");
-            alert.setHeaderText(null);
-            alert.setContentText("Impossible de charger les Budgets: " + e.getMessage());
-            alert.showAndWait();
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -274,48 +273,6 @@ public class AdminUsersController {
                     userProfileBox.setStyle("-fx-background-color: #2d3759; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand;"));
             userProfileBox.setOnMouseExited(event ->
                     userProfileBox.setStyle("-fx-background-color: #1e2749; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand;"));
-        }
-    }
-
-    private void navigateToDestinations() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/DestinationBack.fxml"));
-            Parent root = loader.load();
-            Stage stage = (Stage) btnDestinations.getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.setTitle("TravelMate - Gestion des Destinations");
-            stage.setMaximized(true);
-        } catch (IOException e) {
-            showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir les destinations: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
-    private void navigateToHebergement() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/HebergementBack.fxml"));
-            Parent root = loader.load();
-            Stage stage = (Stage) btnHebergement.getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.setTitle("TravelMate - Gestion des Hébergements");
-            stage.setMaximized(true);
-        } catch (IOException e) {
-            showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir la gestion des hébergements: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
-    private void navigateToStats() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/admin_stats.fxml"));
-            Parent root = loader.load();
-            Stage stage = (Stage) btnStats.getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.setTitle("TravelMate - Statistiques");
-            stage.setMaximized(true);
-        } catch (IOException e) {
-            showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir les statistiques: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 
@@ -448,7 +405,7 @@ public class AdminUsersController {
         }
 
         try {
-            userCRUD.modifier(selectedUser, false);
+            userCRUD.modifier(selectedUser, !newPwd.isEmpty());
             showAlert(Alert.AlertType.INFORMATION, "Succès", "Utilisateur modifié avec succès.");
             loadUsers();
             updateStats();
@@ -588,19 +545,6 @@ public class AdminUsersController {
             e.printStackTrace();
             showAlert(Alert.AlertType.ERROR, "Erreur", "Échec de l'export : " + e.getMessage());
         }
-    }
-
-    @FXML
-    private void goToStats() {
-        navigateToStats();
-    }
-
-    private void showInfoAlert(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
     }
 
     private void showAlert(Alert.AlertType type, String title, String msg) {

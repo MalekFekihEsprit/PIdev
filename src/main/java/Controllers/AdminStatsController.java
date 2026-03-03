@@ -12,6 +12,7 @@ import javafx.scene.Scene;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.PieChart;
 import javafx.scene.chart.XYChart;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
@@ -22,13 +23,15 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+import static Controllers.FaceCaptureDialog.showAlert;
+
 public class AdminStatsController {
 
     @FXML private PieChart rolePieChart;
     @FXML private BarChart<String, Number> inscriptionsBarChart;
     @FXML private Label totalUsersStat, totalAdminsStat, totalUsersOnlyStat;
     @FXML private Label lblLastUpdate;
-    @FXML private HBox btnDestinations, btnHebergement, btnUsers, btnItineraires, btnActivites, btnVoyages, btnBudgets;
+    @FXML private HBox btnDestinations, btnHebergement, btnUsers, btnItineraires, btnActivites, btnVoyages, btnBudgets,btnCategories;
     @FXML private HBox userProfileBox;
     @FXML private Label lblUserName, lblUserRole;
 
@@ -102,29 +105,39 @@ public class AdminStatsController {
 
     private void setupNavigationButtons() {
         setupSidebarButtonHover(btnDestinations, "🌍", "Destinations");
-        if (btnDestinations != null) btnDestinations.setOnMouseClicked(event -> navigateToDestinations());
+        if (btnDestinations != null) btnDestinations.setOnMouseClicked(event -> navigateTo("/DestinationBack.fxml", "Gestion des Destinations"));
 
         setupSidebarButtonHover(btnHebergement, "🏨", "Hébergement");
-        if (btnHebergement != null) btnHebergement.setOnMouseClicked(event -> navigateToHebergement());
+        if (btnHebergement != null) btnHebergement.setOnMouseClicked(event -> navigateTo("/HebergementBack.fxml", "Gestion des Hébergements"));
 
         setupSidebarButtonHover(btnUsers, "👥", "Utilisateurs");
-        if (btnUsers != null) btnUsers.setOnMouseClicked(event -> navigateToUsers());
+        if (btnUsers != null) btnUsers.setOnMouseClicked(event -> navigateTo("/fxml/admin_users.fxml", "Gestion des Utilisateurs"));
 
-        setupSidebarButtonHover(btnItineraires, "🗺️", "Itinéraires");
-        if (btnItineraires != null) btnItineraires.setOnMouseClicked(event ->
-                showInfoAlert("Itinéraires", "Cette fonctionnalité sera bientôt disponible"));
+        setupSidebarButtonHover(btnCategories, "📑", "Catégories");
+        if (btnCategories != null) btnCategories.setOnMouseClicked(event -> navigateTo("/categoriesback.fxml", "Gestion des Catégories"));
 
         setupSidebarButtonHover(btnActivites, "🏄", "Activités");
-        if (btnActivites != null) btnActivites.setOnMouseClicked(event ->
-                showInfoAlert("Activités", "Cette fonctionnalité sera bientôt disponible"));
+        if (btnActivites != null) btnActivites.setOnMouseClicked(event -> navigateTo("/activitesback.fxml", "Gestion des Activités"));
 
         setupSidebarButtonHover(btnVoyages, "✈️", "Voyages");
-        if (btnVoyages != null) btnVoyages.setOnMouseClicked(event ->
-                showInfoAlert("Voyages", "Cette fonctionnalité sera bientôt disponible"));
+        if (btnVoyages != null) btnVoyages.setOnMouseClicked(event -> navigateTo("/PageVoyageBack.fxml", "Gestion des Voyages"));
 
         setupSidebarButtonHover(btnBudgets, "💰", "Budgets");
-        if (btnBudgets != null) btnBudgets.setOnMouseClicked(event ->
-                showInfoAlert("Budgets", "Cette fonctionnalité sera bientôt disponible"));
+        if (btnBudgets != null) btnBudgets.setOnMouseClicked(event -> navigateTo("/BudgetDepenseBack.fxml", "Gestion des Budgets"));
+    }
+
+    private void navigateTo(String fxmlPath, String title) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+            Parent root = loader.load();
+            Stage stage = (Stage) btnDestinations.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("TravelMate - " + title);
+            stage.setMaximized(true);
+        } catch (IOException e) {
+
+            e.printStackTrace();
+        }
     }
 
     private void setupSidebarButtonHover(HBox button, String icon, String text) {

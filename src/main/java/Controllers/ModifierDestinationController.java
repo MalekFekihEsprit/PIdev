@@ -62,6 +62,7 @@ public class ModifierDestinationController implements Initializable {
     private String currentCountryCode;
     private CityCoordinates validatedCityCoordinates;
     private String fetchedVideoUrl;
+    private String detectedRegion;
 
     private boolean hasSearched = false;
     private long lastApiCall = 0;
@@ -283,6 +284,11 @@ public class ModifierDestinationController implements Initializable {
 
             if (city.isEmpty() || country.isEmpty()) {
                 showWarning("Veuillez d'abord saisir une ville et un pays");
+                return;
+            }
+
+            if (!validateCityAndCountry()) {
+                showWarning("Veuillez d'abord sélectionner une ville valide");
                 return;
             }
 
@@ -554,6 +560,10 @@ public class ModifierDestinationController implements Initializable {
         }
     }
 
+    private boolean validateCityAndCountry() {
+        return validatedCityCoordinates != null && currentCountryCode != null;
+    }
+
     private void loadExistingDestinations() {
         try {
             existingDestinations = destinationCRUD.afficher();
@@ -578,6 +588,8 @@ public class ModifierDestinationController implements Initializable {
         tfPays.textProperty().addListener((obs, old, newVal) -> {
             if (newVal != null && newVal.length() >= 2) {
                 fetchCountryCode(newVal);
+                // Fetch new country info when pays changes
+                fetchCountryInfo(newVal);
             } else {
                 currentCountryCode = null;
                 lblCityValidation.setText("");
@@ -609,6 +621,25 @@ public class ModifierDestinationController implements Initializable {
             currentCountryCode = null;
             lblCityValidation.setText("⚠️ Erreur de validation du pays");
             lblCityValidation.setStyle("-fx-text-fill: #ef4444;");
+        }
+    }
+
+    private void fetchCountryInfo(String countryName) {
+        try {
+            CountryServiceDestination countryServiceDestination = new CountryServiceDestination();
+            CountryServiceDestination.CountryInfo countryInfo = countryServiceDestination.getCountryInfo(countryName);
+
+            if (countryInfo != null) {
+                detectedRegion = countryInfo.getRegion();
+                // Update destination object with new info
+                destinationToEdit.setRegion_destination(detectedRegion);
+                destinationToEdit.setCurrency_destination(countryInfo.getCurrency());
+                destinationToEdit.setFlag_destination(countryInfo.getFlagUrl());
+                destinationToEdit.setLanguages_destination(countryInfo.getLanguages());
+                System.out.println("✅ Updated country info for " + countryName + ": region=" + detectedRegion);
+            }
+        } catch (Exception e) {
+            System.err.println("Could not fetch country info: " + e.getMessage());
         }
     }
 
@@ -704,8 +735,14 @@ public class ModifierDestinationController implements Initializable {
             videoUrl = null;
         }
 
+        // Fetch fresh country info if not already done
+        if (detectedRegion == null && currentCountryCode != null) {
+            fetchCountryInfo(pays);
+        }
+
         destinationToEdit.setNom_destination(nom);
         destinationToEdit.setPays_destination(pays);
+        destinationToEdit.setRegion_destination(detectedRegion);
         destinationToEdit.setDescription_destination(taDescription.getText().trim());
         destinationToEdit.setClimat_destination(cbClimat.getValue());
         destinationToEdit.setSaison_destination(cbSaison.getValue());
@@ -718,7 +755,9 @@ public class ModifierDestinationController implements Initializable {
             destinationCRUD.modifier(destinationToEdit);
 
             String videoMsg = (videoUrl != null && !videoUrl.isEmpty()) ? "\n✓ Vidéo mise à jour" : "";
-            showSuccessAlert("Destination modifiée avec succès!\n" + nom + ", " + pays + videoMsg);
+            String regionMsg = (detectedRegion != null && !detectedRegion.isEmpty()) ? "\n✓ Région: " + detectedRegion : "";
+
+            showSuccessAlert("Destination modifiée avec succès!\n" + nom + ", " + pays + regionMsg + videoMsg);
 
             if (parentController != null) parentController.refreshAfterModification();
             closeWindow();

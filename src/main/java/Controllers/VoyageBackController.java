@@ -523,7 +523,7 @@ public class VoyageBackController implements Initializable {
 
     @FXML
     private void handleHebergementClick(MouseEvent event) {
-        naviguerVers("/PageHebergementBack.fxml", "Hébergements");
+        naviguerVers("/HebergementBack.fxml", "Hébergements");
     }
 
     @FXML
@@ -533,12 +533,12 @@ public class VoyageBackController implements Initializable {
 
     @FXML
     private void handleActivitesClick(MouseEvent event) {
-        naviguerVers("/PageActiviteBack.fxml", "Activités");
+        naviguerVers("/activitesback.fxml", "Activités");
     }
 
     @FXML
     private void handleCategoriesClick(MouseEvent event) {
-        naviguerVers("/PageCategorieBack.fxml", "Catégories");
+        naviguerVers("/categoriesback.fxml", "Catégories");
     }
 
     @FXML
@@ -548,12 +548,12 @@ public class VoyageBackController implements Initializable {
 
     @FXML
     private void handleUsersClick(MouseEvent event) {
-        naviguerVers("/PageUtilisateurBack.fxml", "Utilisateurs");
+        naviguerVers("/fxml/admin_users.fxml", "Utilisateurs");
     }
 
     @FXML
     private void handleStatsClick(MouseEvent event) {
-        naviguerVers("/PageStatistiquesBack.fxml", "Statistiques");
+        naviguerVers("/fxml/admin_stats.fxml", "Statistiques");
     }
 
     private void naviguerVers(String fxmlPath, String titre) {

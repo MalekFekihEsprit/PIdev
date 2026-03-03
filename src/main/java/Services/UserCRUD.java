@@ -3,6 +3,7 @@ package Services;
 import Entities.User;
 import Utils.MyBD;
 import org.json.JSONObject;
+import org.mindrot.jbcrypt.BCrypt;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -12,7 +13,6 @@ import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import org.mindrot.jbcrypt.BCrypt;
 
 public class UserCRUD implements InterfaceCRUD<User> {
     private Connection conn;

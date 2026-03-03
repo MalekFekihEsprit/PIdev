@@ -141,6 +141,7 @@ public class BudgetBackController implements Initializable {
     // ══════════════════════════════════════════════════
     @FXML private HBox btnDestinations;
     @FXML private HBox btnActivites;
+    @FXML private HBox btnCategories;
     @FXML private HBox btnHebergements;
     @FXML private HBox btnVoyages;
     @FXML private HBox btnBudgets;
@@ -850,6 +851,7 @@ public class BudgetBackController implements Initializable {
         navigateToBudgets(btnBudgets, "Budgets");
         navigateToUtilisateurs(btnUtilisateurs, "Utilisateurs");
         navigateToStatistiques(btnStatistiques, "Statistiques");
+        navigateToCategories(btnCategories, "Categories");
     }
 
     private void navigateToDestinations(HBox btn, String page) {
@@ -859,6 +861,21 @@ public class BudgetBackController implements Initializable {
                 Stage stage = (Stage) btn.getScene().getWindow();
                 stage.setScene(new Scene(root));
                 stage.setTitle("TravelMate - Destinations (Admin)");
+                stage.setMaximized(true);
+            } catch (IOException ex) {
+                showAlert("Erreur", "Impossible de charger la page: " + ex.getMessage());
+                ex.printStackTrace();
+            }
+        });
+    }
+
+    private void navigateToCategories(HBox btn, String page) {
+        if (btn != null) btn.setOnMouseClicked(e -> {
+            try {
+                Parent root = FXMLLoader.load(getClass().getResource("/categoriesback.fxml"));
+                Stage stage = (Stage) btn.getScene().getWindow();
+                stage.setScene(new Scene(root));
+                stage.setTitle("TravelMate - Categories (Admin)");
                 stage.setMaximized(true);
             } catch (IOException ex) {
                 showAlert("Erreur", "Impossible de charger la page: " + ex.getMessage());
@@ -900,7 +917,7 @@ public class BudgetBackController implements Initializable {
     private void navigateToVoyages(HBox btn, String page) {
         if (btn != null) btn.setOnMouseClicked(e -> {
             try {
-                Parent root = FXMLLoader.load(getClass().getResource("/VoyageBack.fxml"));
+                Parent root = FXMLLoader.load(getClass().getResource("/PageVoyageBack.fxml"));
                 Stage stage = (Stage) btn.getScene().getWindow();
                 stage.setScene(new Scene(root));
                 stage.setTitle("TravelMate - Voyages (Admin)");
@@ -930,7 +947,7 @@ public class BudgetBackController implements Initializable {
     private void navigateToUtilisateurs(HBox btn, String page) {
         if (btn != null) btn.setOnMouseClicked(e -> {
             try {
-                Parent root = FXMLLoader.load(getClass().getResource("/UserBack.fxml"));
+                Parent root = FXMLLoader.load(getClass().getResource("/fxml/admin_users.fxml"));
                 Stage stage = (Stage) btn.getScene().getWindow();
                 stage.setScene(new Scene(root));
                 stage.setTitle("TravelMate - Utilisateurs (Admin)");
@@ -945,7 +962,7 @@ public class BudgetBackController implements Initializable {
     private void navigateToStatistiques(HBox btn, String page) {
         if (btn != null) btn.setOnMouseClicked(e -> {
             try {
-                Parent root = FXMLLoader.load(getClass().getResource("/StatistiquesBack.fxml"));
+                Parent root = FXMLLoader.load(getClass().getResource("/fxml/admin_stats.fxml"));
                 Stage stage = (Stage) btn.getScene().getWindow();
                 stage.setScene(new Scene(root));
                 stage.setTitle("TravelMate - Statistiques (Admin)");

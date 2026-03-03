@@ -92,8 +92,8 @@
                 </HBox>
 
                 <!-- Utilisateurs - Active -->
-                <HBox fx:id="btnUsersActive" alignment="CENTER_LEFT" spacing="12" style="-fx-background-color: linear-gradient(to right, #ff8c42, #ff6b4a); -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;">
-                    <Label style="-fx-font-size: 16;" text="👥" />
+                <HBox fx:id="btnUsers" alignment="CENTER_LEFT" spacing="12" style="-fx-background-color: linear-gradient(to right, #ff8c42, #ff6b4a); -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;">
+                    <Label style="-fx-font-size: 16; -fx-text-fill: white;" text="👥" />
                     <Label style="-fx-text-fill: white; -fx-font-weight: 600; -fx-font-size: 14;" text="Utilisateurs" />
                     <Region HBox.hgrow="ALWAYS" />
                     <Label fx:id="sidebarTotalLabel" style="-fx-background-color: rgba(255,255,255,0.2); -fx-background-radius: 10; -fx-padding: 2 8; -fx-text-fill: white; -fx-font-size: 11; -fx-font-weight: bold;" text="0" />
@@ -105,10 +105,10 @@
                     <Label style="-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;" text="Statistiques" />
                 </HBox>
 
-                <!-- Itinéraires -->
-                <HBox fx:id="btnItineraires" alignment="CENTER_LEFT" spacing="12" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;">
-                    <Label style="-fx-font-size: 16;" text="🗺️" />
-                    <Label style="-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;" text="Itinéraires" />
+                <!-- Catégories -->
+                <HBox fx:id="btnCategories" alignment="CENTER_LEFT" spacing="12" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;">
+                    <Label style="-fx-font-size: 16;" text="📑" />
+                    <Label style="-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;" text="Catégories" />
                 </HBox>
 
                 <!-- Activités -->
@@ -119,7 +119,7 @@
 
                 <!-- Voyages -->
                 <HBox fx:id="btnVoyages" alignment="CENTER_LEFT" spacing="12" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;">
-                    <Label style="-fx-font-size: 16;" text="✈️" />
+                    <Label style="-fx-font-size: 16;" text="✈" />
                     <Label style="-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;" text="Voyages" />
                 </HBox>
 
@@ -184,7 +184,7 @@
                                 </VBox>
                                 <VBox spacing="4">
                                     <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 12; -fx-font-weight: 500;" text="TOTAL UTILISATEURS" />
-                                    <Label style="-fx-font-family: 'Clash Display'; -fx-font-size: 28; -fx-font-weight: bold; -fx-text-fill: #ffffff;" text="0" />
+                                    <Label fx:id="totalUsersCard" style="-fx-font-family: 'Clash Display'; -fx-font-size: 28; -fx-font-weight: bold; -fx-text-fill: #ffffff;" text="0" />
                                 </VBox>
                             </HBox>
                         </VBox>
@@ -197,7 +197,7 @@
                                 </VBox>
                                 <VBox spacing="4">
                                     <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 12; -fx-font-weight: 500;" text="ADMINISTRATEURS" />
-                                    <Label style="-fx-font-family: 'Clash Display'; -fx-font-size: 28; -fx-font-weight: bold; -fx-text-fill: #f87171;" text="0" />
+                                    <Label fx:id="adminsCard" style="-fx-font-family: 'Clash Display'; -fx-font-size: 28; -fx-font-weight: bold; -fx-text-fill: #f87171;" text="0" />
                                 </VBox>
                             </HBox>
                             <Label style="-fx-background-color: rgba(248,113,113,0.15); -fx-text-fill: #f87171; -fx-background-radius: 20; -fx-padding: 6 14; -fx-font-weight: 600; -fx-font-size: 11;" text="👥 Accès complet" />
@@ -211,7 +211,7 @@
                                 </VBox>
                                 <VBox spacing="4">
                                     <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 12; -fx-font-weight: 500;" text="UTILISATEURS" />
-                                    <Label style="-fx-font-family: 'Clash Display'; -fx-font-size: 28; -fx-font-weight: bold; -fx-text-fill: #34d399;" text="0" />
+                                    <Label fx:id="usersCard" style="-fx-font-family: 'Clash Display'; -fx-font-size: 28; -fx-font-weight: bold; -fx-text-fill: #34d399;" text="0" />
                                 </VBox>
                             </HBox>
                             <Label style="-fx-background-color: rgba(52,211,153,0.15); -fx-text-fill: #34d399; -fx-background-radius: 20; -fx-padding: 6 14; -fx-font-weight: 600; -fx-font-size: 11;" text="✓ Utilisateurs standards" />

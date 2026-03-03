@@ -36,6 +36,7 @@ public class ModifierHebergementController implements Initializable {
     private DestinationCRUD destinationCRUD;
     private HebergementBackController parentController;
     private Hebergement hebergementToEdit;
+    private List<Hebergement> existingHebergements;
 
     private final String[] types = {"Hôtel", "Appartement", "Villa", "Auberge", "Camping", "Chalet", "Riad", "Maison d'hôte"};
 
@@ -43,6 +44,9 @@ public class ModifierHebergementController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         hebergementCRUD = new HebergementCRUD();
         destinationCRUD = new DestinationCRUD();
+
+        // Load existing hébergements for uniqueness check
+        loadExistingHebergements();
 
         // Initialize type combo box
         cbType.getItems().addAll(types);
@@ -57,6 +61,15 @@ public class ModifierHebergementController implements Initializable {
         btnCancel.setOnAction(event -> closeWindow());
 
         btnUpdate.setDisable(true);
+    }
+
+    private void loadExistingHebergements() {
+        try {
+            existingHebergements = hebergementCRUD.afficher();
+        } catch (SQLException e) {
+            existingHebergements = List.of();
+            System.err.println("Could not load existing hébergements: " + e.getMessage());
+        }
     }
 
     public void setParentController(HebergementBackController controller) {
@@ -125,12 +138,30 @@ public class ModifierHebergementController implements Initializable {
     }
 
     private void setupValidation() {
-        tfNom.textProperty().addListener((obs, old, newVal) -> validateForm());
-        cbType.valueProperty().addListener((obs, old, newVal) -> validateForm());
-        tfPrix.textProperty().addListener((obs, old, newVal) -> validateForm());
-        tfAdresse.textProperty().addListener((obs, old, newVal) -> validateForm());
-        tfNote.textProperty().addListener((obs, old, newVal) -> validateForm());
-        cbDestination.valueProperty().addListener((obs, old, newVal) -> validateForm());
+        tfNom.textProperty().addListener((obs, old, newVal) -> {
+            validateForm();
+            checkUniqueness();
+        });
+        cbType.valueProperty().addListener((obs, old, newVal) -> {
+            validateForm();
+            checkUniqueness();
+        });
+        tfPrix.textProperty().addListener((obs, old, newVal) -> {
+            validateForm();
+            checkUniqueness();
+        });
+        tfAdresse.textProperty().addListener((obs, old, newVal) -> {
+            validateForm();
+            checkUniqueness();
+        });
+        tfNote.textProperty().addListener((obs, old, newVal) -> {
+            validateForm();
+            checkUniqueness();
+        });
+        cbDestination.valueProperty().addListener((obs, old, newVal) -> {
+            validateForm();
+            checkUniqueness();
+        });
 
         // Numeric validation for price and note
         tfPrix.textProperty().addListener((observable, oldValue, newValue) -> {
@@ -151,6 +182,23 @@ public class ModifierHebergementController implements Initializable {
                 lblNomCounter.setText(newVal.length() + "/100"));
     }
 
+    private void checkUniqueness() {
+        String nom = tfNom.getText().trim();
+        Destination destination = cbDestination.getValue();
+
+        if (nom.isEmpty() || destination == null || existingHebergements == null || hebergementToEdit == null) {
+            return;
+        }
+
+        boolean exists = existingHebergements.stream()
+                .anyMatch(h -> h.getId_hebergement() != hebergementToEdit.getId_hebergement() &&
+                        h.getNom_hebergement().equalsIgnoreCase(nom) &&
+                        h.getDestination() != null &&
+                        h.getDestination().getId_destination() == destination.getId_destination());
+
+        // You could add a warning label if needed
+    }
+
     private void validateForm() {
         boolean isValid = !tfNom.getText().trim().isEmpty() &&
                 tfNom.getText().trim().length() <= 100 &&
@@ -166,13 +214,37 @@ public class ModifierHebergementController implements Initializable {
     private void handleUpdate() {
         if (!validateAllFields()) return;
 
+        String nom = tfNom.getText().trim();
+        Destination destination = cbDestination.getValue();
+
+        // Check for duplicates (excluding current hebergement)
+        if (existingHebergements != null && destination != null && hebergementToEdit != null) {
+            boolean exists = existingHebergements.stream()
+                    .anyMatch(h -> h.getId_hebergement() != hebergementToEdit.getId_hebergement() &&
+                            h.getNom_hebergement().equalsIgnoreCase(nom) &&
+                            h.getDestination() != null &&
+                            h.getDestination().getId_destination() == destination.getId_destination());
+
+            if (exists) {
+                showValidationAlert("Un autre hébergement avec ce nom existe déjà dans cette destination!");
+                return;
+            }
+        }
+
         try {
+            // Store the original added_by value
+            int originalAddedBy = hebergementToEdit.getAdded_by();
+
+            // Update only the fields that should be modified
             hebergementToEdit.setNom_hebergement(tfNom.getText().trim());
             hebergementToEdit.setType_hebergement(cbType.getValue());
             hebergementToEdit.setPrixNuit_hebergement(Double.parseDouble(tfPrix.getText().trim()));
             hebergementToEdit.setAdresse_hebergement(tfAdresse.getText().trim());
             hebergementToEdit.setNote_hebergement(Double.parseDouble(tfNote.getText().trim()));
             hebergementToEdit.setDestination(cbDestination.getValue());
+
+            // Ensure added_by is preserved (don't change it)
+            hebergementToEdit.setAdded_by(originalAddedBy);
 
             hebergementCRUD.modifier(hebergementToEdit);
 
@@ -182,7 +254,11 @@ public class ModifierHebergementController implements Initializable {
             closeWindow();
 
         } catch (SQLException e) {
-            showErrorAlert("Erreur lors de la modification", e.getMessage());
+            if (e.getMessage().contains("Duplicate") || e.getMessage().contains("duplicate")) {
+                showValidationAlert("Cet hébergement existe déjà dans cette destination!");
+            } else {
+                showErrorAlert("Erreur lors de la modification", e.getMessage());
+            }
         } catch (NumberFormatException e) {
             showValidationAlert("Veuillez vérifier les valeurs numériques");
         }
@@ -213,6 +289,11 @@ public class ModifierHebergementController implements Initializable {
             }
         } catch (NumberFormatException e) {
             showValidationAlert("Note invalide");
+            return false;
+        }
+
+        if (cbDestination.getValue() == null) {
+            showValidationAlert("Veuillez sélectionner une destination");
             return false;
         }
 

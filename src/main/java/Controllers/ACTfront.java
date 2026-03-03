@@ -71,15 +71,19 @@ public class ACTfront implements Initializable {
     @FXML private Button btnAllActivities;
     @FXML private Button btnSimulateQR;
 
-    // Navigation buttons (navbar)
+    // Navigation buttons (navbar) - MUST MATCH FXML IDs
     @FXML private HBox btnDestinations;
     @FXML private HBox btnHebergements;
     @FXML private HBox btnItineraires;
     @FXML private HBox btnVoyages;
     @FXML private HBox btnBudgets;
+    @FXML private HBox btnCategories; // This is the Categories button in navbar
+    @FXML private HBox btnActivites; // This is the active Activities button
     @FXML private HBox userProfileBox;
     @FXML private Label lblUserName;
     @FXML private Label lblUserRole;
+    @FXML private HBox btnHome; // Home button in breadcrumb
+    @FXML private HBox btnRefresh; // Refresh button in breadcrumb
 
     // Scroll navigation
     @FXML private ScrollPane navScrollPane;
@@ -140,38 +144,168 @@ public class ACTfront implements Initializable {
     }
 
     private void setupNavigationButtons() {
+        // Home button
+        if (btnHome != null) {
+            btnHome.setOnMouseClicked(event -> navigateToHome());
+
+            btnHome.setOnMouseEntered(event -> {
+                btnHome.setStyle("-fx-background-color: #ff6b00; -fx-background-radius: 12; -fx-min-width: 40; -fx-min-height: 40; -fx-cursor: hand;");
+                btnHome.lookupAll(".label").forEach(label -> {
+                    if (label instanceof Label) {
+                        ((Label) label).setStyle("-fx-text-fill: white; -fx-font-size: 18;");
+                    }
+                });
+            });
+
+            btnHome.setOnMouseExited(event -> {
+                btnHome.setStyle("-fx-background-color: #f1f5f9; -fx-background-radius: 12; -fx-min-width: 40; -fx-min-height: 40; -fx-cursor: hand;");
+                btnHome.lookupAll(".label").forEach(label -> {
+                    if (label instanceof Label) {
+                        ((Label) label).setStyle("-fx-font-size: 18; -fx-text-fill: #475569;");
+                    }
+                });
+            });
+        }
+
+        // Refresh button
+        if (btnRefresh != null) {
+            btnRefresh.setOnMouseClicked(event -> refreshData());
+
+            btnRefresh.setOnMouseEntered(event -> {
+                btnRefresh.setStyle("-fx-background-color: #e2e8f0; -fx-background-radius: 10; -fx-min-width: 32; -fx-min-height: 32; -fx-cursor: hand;");
+            });
+
+            btnRefresh.setOnMouseExited(event -> {
+                btnRefresh.setStyle("-fx-background-color: #f1f5f9; -fx-background-radius: 10; -fx-min-width: 32; -fx-min-height: 32; -fx-cursor: hand;");
+            });
+        }
+
         // Destinations button
         if (btnDestinations != null) {
-            btnDestinations.setOnMouseClicked(event -> navigateToDestinations());
+            btnDestinations.setOnMouseClicked(event -> navigateTo("/DestinationFront.fxml", "Destinations"));
+            setupNavButtonHover(btnDestinations, "🌍", "Destinations");
         }
 
         // Hébergements button
         if (btnHebergements != null) {
-            btnHebergements.setOnMouseClicked(event -> navigateToHebergements());
+            btnHebergements.setOnMouseClicked(event -> navigateTo("/HebergementFront.fxml", "Hébergements"));
+            setupNavButtonHover(btnHebergements, "🏨", "Hébergements");
         }
 
-        // Itinéraires button (pas encore implémenté)
+        // Itinéraires button (hidden but kept for compatibility)
         if (btnItineraires != null) {
             btnItineraires.setOnMouseClicked(event -> showNotImplementedAlert("Itinéraires"));
+            setupNavButtonHover(btnItineraires, "🗺️", "Itinéraires");
         }
 
-        // Voyages button - Navigue vers PageVoyage.fxml
+        // Catégories button (btnVersCategories in navbar)
+        if (btnVersCategories != null) {
+            btnVersCategories.setOnMouseClicked(event -> navigateTo("/categoriesfront.fxml", "Catégories"));
+            setupNavButtonHover(btnVersCategories, "📑", "Catégories");
+        }
+
+        // Activités button - already active, but keep navigation to self
+        if (btnActivites != null) {
+            btnActivites.setOnMouseClicked(event -> {
+                // Already on activities page, could refresh or do nothing
+                refreshData();
+            });
+        }
+
+        // Voyages button
         if (btnVoyages != null) {
-            btnVoyages.setOnMouseClicked(event -> navigateToVoyages());
+            btnVoyages.setOnMouseClicked(event -> navigateTo("/PageVoyage.fxml", "Voyages"));
+            setupNavButtonHover(btnVoyages, "✈️", "Voyages");
         }
 
-        // Budgets button (pas encore implémenté)
+        // Budgets button
         if (btnBudgets != null) {
-            btnBudgets.setOnMouseClicked(event -> navigatetoBudgets());
+            btnBudgets.setOnMouseClicked(event -> navigateTo("/BudgetDepenseFront.fxml", "Budgets"));
+            setupNavButtonHover(btnBudgets, "💰", "Budgets");
         }
 
         // User profile
         if (userProfileBox != null) {
             userProfileBox.setOnMouseClicked(event -> navigateToProfile());
+
+            userProfileBox.setOnMouseEntered(event -> {
+                userProfileBox.setStyle("-fx-background-color: #e2e8f0; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand;");
+            });
+
+            userProfileBox.setOnMouseExited(event -> {
+                userProfileBox.setStyle("-fx-background-color: #f1f5f9; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand;");
+            });
         }
     }
 
+    private void navigateTo(String fxmlPath, String title) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+            Parent root = loader.load();
+            Scene scene = new Scene(root);
+            Stage stage = (Stage) btnDestinations.getScene().getWindow();
+            stage.setScene(scene);
+            stage.setTitle("TravelMate - " + title);
+            stage.setMaximized(true);
+            stage.show();
+        } catch (IOException e) {
+            showError("Erreur de navigation", "Impossible de charger " + title + ": " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
 
+    private void navigateToHome() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/HomePage.fxml"));
+            Parent root = loader.load();
+            Scene scene = new Scene(root);
+            Stage stage = (Stage) btnHome.getScene().getWindow();
+            stage.setScene(scene);
+            stage.setTitle("TravelMate - Accueil");
+            stage.setMaximized(true);
+            stage.show();
+        } catch (IOException e) {
+            showError("Erreur de navigation", "Impossible de charger l'accueil: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void refreshData() {
+        loadActivitesWithFilter();
+        showInfo("Actualisation", "Données rafraîchies avec succès!");
+    }
+
+    private void setupNavButtonHover(HBox button, String icon, String text) {
+        if (button == null) return;
+
+        button.setOnMouseEntered(event -> {
+            button.setStyle("-fx-background-color: rgba(255,107,0,0.1); -fx-background-radius: 12; -fx-padding: 6 10; -fx-cursor: hand; -fx-border-color: #ff6b00; -fx-border-width: 1; -fx-border-radius: 12;");
+            button.lookupAll(".label").forEach(label -> {
+                if (label instanceof Label) {
+                    Label lbl = (Label) label;
+                    if (lbl.getText().equals(icon)) {
+                        lbl.setStyle("-fx-font-size: 12;");
+                    } else {
+                        lbl.setStyle("-fx-text-fill: #ff6b00; -fx-font-weight: 600; -fx-font-size: 12;");
+                    }
+                }
+            });
+        });
+
+        button.setOnMouseExited(event -> {
+            button.setStyle("-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 6 10; -fx-cursor: hand;");
+            button.lookupAll(".label").forEach(label -> {
+                if (label instanceof Label) {
+                    Label lbl = (Label) label;
+                    if (lbl.getText().equals(icon)) {
+                        lbl.setStyle("-fx-font-size: 12;");
+                    } else {
+                        lbl.setStyle("-fx-text-fill: #1a1a1a; -fx-font-weight: 500; -fx-font-size: 12;");
+                    }
+                }
+            });
+        });
+    }
 
     private void updateUserInfo() {
         User currentUser = UserSession.getInstance().getCurrentUser();
@@ -189,71 +323,6 @@ public class ACTfront implements Initializable {
             if (lblUserRole != null) {
                 lblUserRole.setText("Non connecté");
             }
-        }
-    }
-
-    private void navigateToDestinations() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/DestinationFront.fxml"));
-            Parent root = loader.load();
-            Scene scene = new Scene(root);
-            Stage stage = (Stage) btnDestinations.getScene().getWindow();
-            stage.setScene(scene);
-            stage.setTitle("TravelMate - Destinations");
-            stage.show();
-        } catch (IOException e) {
-            showError("Erreur de navigation", "Impossible de charger les destinations: " + e.getMessage());
-        }
-    }
-
-    private void navigateToHebergements() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/HebergementFront.fxml"));
-            Parent root = loader.load();
-            Scene scene = new Scene(root);
-            Stage stage = (Stage) btnHebergements.getScene().getWindow();
-            stage.setScene(scene);
-            stage.setTitle("TravelMate - Hébergements");
-            stage.show();
-        } catch (IOException e) {
-            showError("Erreur de navigation", "Impossible de charger les hébergements: " + e.getMessage());
-        }
-    }
-
-    private void navigatetoBudgets() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/BudgetDepenseFront.fxml"));
-            Parent root = loader.load();
-            Stage stage = (Stage) btnDestinations.getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.setTitle("TravelMate - Budgets");
-            stage.setMaximized(true);
-            stage.show();
-        } catch (IOException e) {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Erreur");
-            alert.setHeaderText(null);
-            alert.setContentText("Impossible de charger les Budgets: " + e.getMessage());
-            alert.showAndWait();
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Navigue vers la page PageVoyage.fxml
-     */
-    private void navigateToVoyages() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/PageVoyage.fxml"));
-            Parent root = loader.load();
-            Scene scene = new Scene(root);
-            Stage stage = (Stage) btnVoyages.getScene().getWindow();
-            stage.setScene(scene);
-            stage.setTitle("TravelMate - Gestion des Voyages");
-            stage.show();
-        } catch (IOException e) {
-            showError("Erreur de navigation", "Impossible de charger la page des voyages: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 
@@ -741,7 +810,6 @@ public class ACTfront implements Initializable {
 
         for (Map.Entry<String, Long> entry : countByType.entrySet()) {
             double percentage = (entry.getValue() * 100.0) / total;
-            // Format du label avec le nom et le pourcentage
             String label = String.format("%s (%.1f%%)", entry.getKey(), percentage);
 
             PieChart.Data slice = new PieChart.Data(label, entry.getValue());
@@ -791,18 +859,7 @@ public class ACTfront implements Initializable {
 
     @FXML
     private void handleVersCategories() {
-        CategorieContext.categorieFiltre = null;
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/categoriesfront.fxml"));
-            Parent root = loader.load();
-            Scene scene = new Scene(root);
-            Stage stage = (Stage) btnVersCategories.getScene().getWindow();
-            stage.setScene(scene);
-            stage.setTitle("TravelMate - Front Office Catégories");
-            stage.show();
-        } catch (IOException e) {
-            showError("Erreur de navigation", "Impossible de charger les catégories: " + e.getMessage());
-        }
+        navigateTo("/categoriesfront.fxml", "Catégories");
     }
 
     @FXML
@@ -920,4 +977,11 @@ public class ACTfront implements Initializable {
         alert.showAndWait();
     }
 
+    private void showInfo(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
 }

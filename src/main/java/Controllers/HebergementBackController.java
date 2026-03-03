@@ -2,11 +2,12 @@ package Controllers;
 
 import Entities.Destination;
 import Entities.Hebergement;
+import Entities.DeleteNotification;
+import Entities.User;
 import Services.DestinationCRUD;
 import Services.HebergementCRUD;
-import Services.CategoriesCRUD;
+import Services.DeleteNotificationCRUD;
 import Utils.UserSession;
-import Entities.User;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -17,6 +18,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import javafx.util.Callback;
@@ -59,6 +61,7 @@ public class HebergementBackController implements Initializable {
     @FXML private TableColumn<Hebergement, String> colAdresse;
     @FXML private TableColumn<Hebergement, Double> colNote;
     @FXML private TableColumn<Hebergement, String> colDestination;
+    @FXML private TableColumn<Hebergement, String> colAddedBy;
     @FXML private TableColumn<Hebergement, Void> colActions;
 
     // Buttons
@@ -73,9 +76,7 @@ public class HebergementBackController implements Initializable {
     @FXML private HBox btnBudgets;
     @FXML private HBox btnUsers;
     @FXML private HBox btnStats;
-    @FXML private HBox btnCategories;
     @FXML private HBox userProfileBox;
-    @FXML private Label lblCategoriesCount;
 
     // Pagination
     @FXML private Label lblPaginationInfo;
@@ -87,18 +88,17 @@ public class HebergementBackController implements Initializable {
 
     private HebergementCRUD hebergementCRUD;
     private DestinationCRUD destinationCRUD;
+    private DeleteNotificationCRUD notificationCRUD;
     private ObservableList<Hebergement> hebergementList = FXCollections.observableArrayList();
     private List<Hebergement> allHebergements = new ArrayList<>();
     private int currentPage = 1;
     private final int rowsPerPage = 10;
 
-    // Ajout de la référence manquante pour btnHebergement
-    @FXML private HBox btnHebergement;
-
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         hebergementCRUD = new HebergementCRUD();
         destinationCRUD = new DestinationCRUD();
+        notificationCRUD = new DeleteNotificationCRUD();
 
         setupTableColumns();
         setupTableProperties();
@@ -109,22 +109,6 @@ public class HebergementBackController implements Initializable {
         setupUserProfile();
         updateLastUpdateTime();
         updateUserInfo();
-        loadCategoriesCount();
-
-        // Style spécial pour la page active (Hébergement)
-        if (btnHebergement != null) {
-            btnHebergement.setStyle("-fx-background-color: linear-gradient(to right, #ff8c42, #ff6b4a); -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;");
-            btnHebergement.lookupAll(".label").forEach(label -> {
-                if (label instanceof Label) {
-                    Label lbl = (Label) label;
-                    if (lbl.getText().equals("🏨")) {
-                        lbl.setStyle("-fx-font-size: 16; -fx-text-fill: white;");
-                    } else if (!lbl.getText().matches("\\d+")) {
-                        lbl.setStyle("-fx-text-fill: white; -fx-font-weight: 600; -fx-font-size: 14;");
-                    }
-                }
-            });
-        }
     }
 
     private void setupTableColumns() {
@@ -135,10 +119,13 @@ public class HebergementBackController implements Initializable {
         colAdresse.setCellValueFactory(new PropertyValueFactory<>("adresse_hebergement"));
         colNote.setCellValueFactory(new PropertyValueFactory<>("note_hebergement"));
 
+        // FIXED: Properly set up the added_by column to show the user's full name
+        colAddedBy.setCellValueFactory(new PropertyValueFactory<>("added_by_name"));
+
         colDestination.setCellValueFactory(cellData -> {
             Hebergement h = cellData.getValue();
             Destination dest = h.getDestination();
-            String destDisplay = (dest != null) ? dest.getNom_destination() + ", " + dest.getPays_destination() : "Non spécifié";
+            String destDisplay = (dest != null) ? dest.getNom_destination() + ", " + dest.getPays_destination() : "-";
             return new javafx.beans.property.SimpleStringProperty(destDisplay);
         });
 
@@ -146,8 +133,13 @@ public class HebergementBackController implements Initializable {
             @Override
             protected void updateItem(Double price, boolean empty) {
                 super.updateItem(price, empty);
-                if (empty || price == null) setText(null);
-                else setText(String.format("%.2f €", price));
+                if (empty) {
+                    setText(null);
+                } else if (price == null || price == 0.0) {
+                    setText("-");
+                } else {
+                    setText(String.format("%.2f €", price));
+                }
             }
         });
 
@@ -155,8 +147,28 @@ public class HebergementBackController implements Initializable {
             @Override
             protected void updateItem(Double note, boolean empty) {
                 super.updateItem(note, empty);
-                if (empty || note == null) setText(null);
-                else setText(String.format("%.1f ⭐", note));
+                if (empty) {
+                    setText(null);
+                } else if (note == null || note == 0.0) {
+                    setText("-");
+                } else {
+                    setText(String.format("%.1f ⭐", note));
+                }
+            }
+        });
+
+        // Format null/empty values for added_by
+        colAddedBy.setCellFactory(col -> new TableCell<Hebergement, String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setText(null);
+                } else if (item == null || item.trim().isEmpty()) {
+                    setText("-");
+                } else {
+                    setText(item);
+                }
             }
         });
     }
@@ -254,38 +266,27 @@ public class HebergementBackController implements Initializable {
     }
 
     private void setupNavigationButtons() {
-        // Destinations
         setupSidebarButtonHover(btnDestinations, "🌍", "Destinations");
         if (btnDestinations != null) btnDestinations.setOnMouseClicked(event -> navigateToDestinations());
 
-        // Utilisateurs
         setupSidebarButtonHover(btnUsers, "👥", "Utilisateurs");
-        if (btnUsers != null) btnUsers.setOnMouseClicked(event ->
-                showInfoAlert("Utilisateurs", "Cette fonctionnalité sera bientôt disponible"));
+        if (btnUsers != null) btnUsers.setOnMouseClicked(event -> navigateToUsers());
 
-        // Statistiques
         setupSidebarButtonHover(btnStats, "📊", "Statistiques");
-        if (btnStats != null) btnStats.setOnMouseClicked(event ->
-                showInfoAlert("Statistiques", "Cette fonctionnalité sera bientôt disponible"));
+        if (btnStats != null) btnStats.setOnMouseClicked(event -> navigateToStats());
 
-        // Itinéraires
         setupSidebarButtonHover(btnItineraires, "🗺️", "Itinéraires");
         if (btnItineraires != null) btnItineraires.setOnMouseClicked(event ->
                 showInfoAlert("Itinéraires", "Cette fonctionnalité sera bientôt disponible"));
 
-        // Activités
         setupSidebarButtonHover(btnActivites, "🏄", "Activités");
-        if (btnActivites != null) btnActivites.setOnMouseClicked(event -> navigateToActivitesBack());
+        if (btnActivites != null) btnActivites.setOnMouseClicked(event ->
+                showInfoAlert("Activités", "Cette fonctionnalité sera bientôt disponible"));
 
-        // Catégories
-        setupSidebarButtonHover(btnCategories, "📑", "Catégories");
-        if (btnCategories != null) btnCategories.setOnMouseClicked(event -> navigateToCategoriesBack());
-
-        // Voyages
         setupSidebarButtonHover(btnVoyages, "✈️", "Voyages");
-        if (btnVoyages != null) btnVoyages.setOnMouseClicked(event -> navigateToVoyagesBack()); // CORRIGÉ
+        if (btnVoyages != null) btnVoyages.setOnMouseClicked(event ->
+                showInfoAlert("Voyages", "Cette fonctionnalité sera bientôt disponible"));
 
-        // Budgets
         setupSidebarButtonHover(btnBudgets, "💰", "Budgets");
         if (btnBudgets != null) btnBudgets.setOnMouseClicked(event ->
                 showInfoAlert("Budgets", "Cette fonctionnalité sera bientôt disponible"));
@@ -295,14 +296,14 @@ public class HebergementBackController implements Initializable {
         if (button == null) return;
 
         button.setOnMouseEntered(event -> {
-            button.setStyle("-fx-background-color: rgba(255,140,66,0.15); -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand; -fx-border-color: #ff8c42; -fx-border-width: 1; -fx-border-radius: 12;");
+            button.setStyle("-fx-background-color: rgba(16,185,129,0.15); -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand; -fx-border-color: #10b981; -fx-border-width: 1; -fx-border-radius: 12;");
             button.lookupAll(".label").forEach(label -> {
                 if (label instanceof Label) {
                     Label lbl = (Label) label;
                     if (lbl.getText().equals(icon)) {
                         lbl.setStyle("-fx-font-size: 16;");
                     } else {
-                        lbl.setStyle("-fx-text-fill: #ff8c42; -fx-font-weight: 600; -fx-font-size: 14;");
+                        lbl.setStyle("-fx-text-fill: #10b981; -fx-font-weight: 600; -fx-font-size: 14;");
                     }
                 }
             });
@@ -323,66 +324,6 @@ public class HebergementBackController implements Initializable {
         });
     }
 
-    // Navigation vers Voyages Back
-    private void navigateToVoyagesBack() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/PageVoyageBack.fxml"));
-            Parent root = loader.load();
-            Stage stage = (Stage) btnVoyages.getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.setTitle("TravelMate - Gestion des Voyages");
-            stage.setMaximized(true);
-        } catch (IOException e) {
-            showAlert(Alert.AlertType.ERROR, "Erreur",
-                    "Impossible d'ouvrir la gestion des voyages: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
-    private void navigateToActivitesBack() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/activitesback.fxml"));
-            Parent root = loader.load();
-            Stage stage = (Stage) btnActivites.getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.setTitle("TravelMate - Gestion des Activités");
-            stage.setMaximized(true);
-        } catch (IOException e) {
-            showAlert(Alert.AlertType.ERROR, "Erreur",
-                    "Impossible d'ouvrir la gestion des activités: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
-    private void navigateToCategoriesBack() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/categoriesback.fxml"));
-            Parent root = loader.load();
-            Stage stage = (Stage) btnCategories.getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.setTitle("TravelMate - Gestion des Catégories");
-            stage.setMaximized(true);
-        } catch (IOException e) {
-            showAlert(Alert.AlertType.ERROR, "Erreur",
-                    "Impossible d'ouvrir la gestion des catégories: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
-    private void loadCategoriesCount() {
-        try {
-            CategoriesCRUD crud = new CategoriesCRUD();
-            int count = crud.afficher().size();
-            if (lblCategoriesCount != null) {
-                lblCategoriesCount.setText(String.valueOf(count));
-            }
-        } catch (SQLException e) {
-            if (lblCategoriesCount != null) {
-                lblCategoriesCount.setText("0");
-            }
-        }
-    }
-
     private void navigateToDestinations() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/DestinationBack.fxml"));
@@ -393,6 +334,34 @@ public class HebergementBackController implements Initializable {
             stage.setMaximized(true);
         } catch (IOException e) {
             showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir les destinations: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void navigateToUsers() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/admin_users.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) btnUsers.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("TravelMate - Gestion des Utilisateurs");
+            stage.setMaximized(true);
+        } catch (IOException e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir la gestion des utilisateurs: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void navigateToStats() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/admin_stats.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) btnStats.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("TravelMate - Statistiques");
+            stage.setMaximized(true);
+        } catch (IOException e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir les statistiques: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -449,6 +418,45 @@ public class HebergementBackController implements Initializable {
     }
 
     private void handleDeleteSingle(Hebergement hebergement) {
+        User currentUser = UserSession.getInstance().getCurrentUser();
+        if (currentUser == null) {
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Utilisateur non connecté");
+            return;
+        }
+
+        // Check if this hebergement was added by someone else
+        if (hebergement.getAdded_by() != currentUser.getId()) {
+            showDeleteReasonDialog(hebergement);
+        } else {
+            showSimpleDeleteConfirmation(hebergement);
+        }
+    }
+
+    private void showDeleteReasonDialog(Hebergement hebergement) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/HebergementDeleteReasonDialog.fxml"));
+            GridPane root = loader.load();
+
+            HebergementDeleteReasonController controller = loader.getController();
+            controller.setHebergement(hebergement);
+            controller.setOnConfirm(result -> {
+                performDeletionWithReason(hebergement, result);
+            });
+
+            Stage stage = new Stage();
+            stage.setTitle("Raison de suppression");
+            stage.setScene(new Scene(root));
+            stage.setResizable(false);
+            stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+            stage.showAndWait();
+
+        } catch (IOException e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir la boîte de dialogue: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void showSimpleDeleteConfirmation(Hebergement hebergement) {
         String details = String.format(
                 "Êtes-vous sûr de vouloir supprimer cet hébergement ?\n\n" +
                         "🏨 Nom: %s\n" +
@@ -478,25 +486,68 @@ public class HebergementBackController implements Initializable {
 
         Optional<ButtonType> result = confirm.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
-            try {
-                String nomHebergement = hebergement.getNom_hebergement();
-                String typeHebergement = hebergement.getType_hebergement();
+            performDeletion(hebergement, null, null);
+        }
+    }
 
-                hebergementCRUD.supprimer(hebergement);
-                allHebergements.remove(hebergement);
-                updateTableData();
-                updateStats();
+    private void performDeletionWithReason(Hebergement hebergement, HebergementDeleteReasonController.DeleteReasonResult result) {
+        User currentUser = UserSession.getInstance().getCurrentUser();
+        if (currentUser == null) return;
 
+        try {
+            // Create notification for the user who added this hebergement
+            if (hebergement.getAdded_by() > 0) {
+                DeleteNotification notification = new DeleteNotification();
+                notification.setUser_id(hebergement.getAdded_by());
+                notification.setUser_name(hebergement.getAdded_by_name());
+                notification.setAdmin_id(currentUser.getId());
+                notification.setAdmin_name(currentUser.getPrenom() + " " + currentUser.getNom());
+                notification.setItem_type("Hébergement");
+                notification.setItem_id(hebergement.getId_hebergement());
+                notification.setItem_name(hebergement.getNom_hebergement() + " (" + hebergement.getType_hebergement() + ")");
+                notification.setReason(result.getReason());
+                notification.setCustom_reason(result.getCustomReason());
+
+                notificationCRUD.ajouter(notification);
+            }
+
+            // Then perform the deletion
+            performDeletion(hebergement, result.getReason(), result.getCustomReason());
+
+        } catch (SQLException e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur",
+                    "Impossible de créer la notification: " + e.getMessage());
+        }
+    }
+
+    private void performDeletion(Hebergement hebergement, String reason, String customReason) {
+        try {
+            String nomHebergement = hebergement.getNom_hebergement();
+            String typeHebergement = hebergement.getType_hebergement();
+
+            hebergementCRUD.supprimer(hebergement);
+            allHebergements.remove(hebergement);
+            updateTableData();
+            updateStats();
+
+            if (reason != null) {
+                String fullReason = reason.equals("Autre") ? customReason : reason;
+                showAlert(Alert.AlertType.INFORMATION, "Succès",
+                        "Hébergement supprimé avec succès !\n\n" +
+                                "🏨 " + nomHebergement + "\n" +
+                                "📋 Type: " + typeHebergement + "\n" +
+                                "Raison: " + fullReason);
+            } else {
                 showAlert(Alert.AlertType.INFORMATION, "Succès",
                         "Hébergement supprimé avec succès !\n\n" +
                                 "🏨 " + nomHebergement + "\n" +
                                 "📋 Type: " + typeHebergement);
-            } catch (SQLException e) {
-                showAlert(Alert.AlertType.ERROR, "Erreur",
-                        "Impossible de supprimer l'hébergement :\n\n" +
-                                "🏨 " + hebergement.getNom_hebergement() + "\n" +
-                                "Raison: " + e.getMessage());
             }
+        } catch (SQLException e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur",
+                    "Impossible de supprimer l'hébergement :\n\n" +
+                            "🏨 " + hebergement.getNom_hebergement() + "\n" +
+                            "Raison: " + e.getMessage());
         }
     }
 
@@ -507,64 +558,104 @@ public class HebergementBackController implements Initializable {
             return;
         }
 
-        StringBuilder namesList = new StringBuilder();
-        for (Hebergement h : selectedItems) {
-            namesList.append("• ").append(h.getNom_hebergement())
-                    .append(" (").append(h.getType_hebergement()).append(")")
-                    .append(" - ").append(String.format("%.2f €", h.getPrixNuit_hebergement())).append("\n");
+        User currentUser = UserSession.getInstance().getCurrentUser();
+        if (currentUser == null) {
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Utilisateur non connecté");
+            return;
         }
 
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-        confirm.setTitle("Confirmation de suppression");
-        confirm.setHeaderText("Supprimer " + selectedItems.size() + " hébergement(s)");
-        confirm.setContentText("Hébergements à supprimer :\n\n" + namesList.toString() +
-                "\nÊtes-vous sûr de vouloir continuer ?");
+        // Check if any selected items were added by others
+        boolean hasOthersItems = selectedItems.stream()
+                .anyMatch(h -> h.getAdded_by() != currentUser.getId());
 
-        DialogPane dialogPane = confirm.getDialogPane();
-        dialogPane.setStyle("-fx-background-color: #111633;");
-        dialogPane.lookup(".content.label").setStyle("-fx-text-fill: white; -fx-font-size: 13;");
+        if (hasOthersItems) {
+            TextInputDialog dialog = new TextInputDialog();
+            dialog.setTitle("Raison de suppression");
+            dialog.setHeaderText("Suppression de " + selectedItems.size() + " hébergement(s)");
+            dialog.setContentText("Raison de la suppression (s'affichera pour les créateurs):");
 
-        Optional<ButtonType> result = confirm.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
-            int successCount = 0;
-            int failCount = 0;
-            List<String> successfulNames = new ArrayList<>();
-            List<String> failedNames = new ArrayList<>();
+            Optional<String> result = dialog.showAndWait();
+            result.ifPresent(reason -> {
+                performBulkDeletion(selectedItems, reason, currentUser);
+            });
+        } else {
+            StringBuilder namesList = new StringBuilder();
+            for (Hebergement h : selectedItems) {
+                namesList.append("• ").append(h.getNom_hebergement())
+                        .append(" (").append(h.getType_hebergement()).append(")")
+                        .append(" - ").append(String.format("%.2f €", h.getPrixNuit_hebergement())).append("\n");
+            }
 
-            for (Hebergement hebergement : new ArrayList<>(selectedItems)) {
-                try {
-                    String name = hebergement.getNom_hebergement();
-                    String type = hebergement.getType_hebergement();
+            Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+            confirm.setTitle("Confirmation de suppression");
+            confirm.setHeaderText("Supprimer " + selectedItems.size() + " hébergement(s)");
+            confirm.setContentText("Hébergements à supprimer :\n\n" + namesList.toString() +
+                    "\nÊtes-vous sûr de vouloir continuer ?");
 
-                    hebergementCRUD.supprimer(hebergement);
-                    allHebergements.remove(hebergement);
-                    successCount++;
-                    successfulNames.add(name + " (" + type + ")");
-                } catch (SQLException e) {
-                    failCount++;
-                    failedNames.add(hebergement.getNom_hebergement() + " (" + hebergement.getType_hebergement() + ")");
-                    System.err.println("Erreur lors de la suppression de " + hebergement.getNom_hebergement() + ": " + e.getMessage());
+            DialogPane dialogPane = confirm.getDialogPane();
+            dialogPane.setStyle("-fx-background-color: #111633;");
+            dialogPane.lookup(".content.label").setStyle("-fx-text-fill: white; -fx-font-size: 13;");
+
+            Optional<ButtonType> result = confirm.showAndWait();
+            if (result.isPresent() && result.get() == ButtonType.OK) {
+                performBulkDeletion(selectedItems, null, currentUser);
+            }
+        }
+    }
+
+    private void performBulkDeletion(ObservableList<Hebergement> selectedItems, String globalReason, User currentUser) {
+        int successCount = 0;
+        int failCount = 0;
+        List<String> successfulNames = new ArrayList<>();
+        List<String> failedNames = new ArrayList<>();
+
+        for (Hebergement hebergement : new ArrayList<>(selectedItems)) {
+            try {
+                // Create notification if this item belongs to someone else
+                if (hebergement.getAdded_by() != currentUser.getId() && globalReason != null && !globalReason.isEmpty()) {
+                    DeleteNotification notification = new DeleteNotification();
+                    notification.setUser_id(hebergement.getAdded_by());
+                    notification.setUser_name(hebergement.getAdded_by_name());
+                    notification.setAdmin_id(currentUser.getId());
+                    notification.setAdmin_name(currentUser.getPrenom() + " " + currentUser.getNom());
+                    notification.setItem_type("Hébergement");
+                    notification.setItem_id(hebergement.getId_hebergement());
+                    notification.setItem_name(hebergement.getNom_hebergement() + " (" + hebergement.getType_hebergement() + ")");
+                    notification.setReason("Suppression groupée");
+                    notification.setCustom_reason(globalReason);
+
+                    notificationCRUD.ajouter(notification);
                 }
-            }
 
-            updateTableData();
-            updateStats();
+                hebergementCRUD.supprimer(hebergement);
+                allHebergements.remove(hebergement);
+                successCount++;
+                successfulNames.add(hebergement.getNom_hebergement() + " (" + hebergement.getType_hebergement() + ")");
 
-            if (failCount == 0) {
-                StringBuilder successList = new StringBuilder();
-                for (String name : successfulNames) successList.append("✓ ").append(name).append("\n");
-                showAlert(Alert.AlertType.INFORMATION, "Succès",
-                        successCount + " hébergement(s) supprimé(s) avec succès !\n\n" + successList.toString());
-            } else {
-                StringBuilder successList = new StringBuilder();
-                for (String name : successfulNames) successList.append("✓ ").append(name).append("\n");
-                StringBuilder failList = new StringBuilder();
-                for (String name : failedNames) failList.append("✗ ").append(name).append("\n");
-                showAlert(Alert.AlertType.WARNING, "Suppression partielle",
-                        successCount + " supprimé(s), " + failCount + " échec(s)\n\n" +
-                                "✅ Réussis :\n" + successList.toString() + "\n" +
-                                "❌ Échecs :\n" + failList.toString());
+            } catch (SQLException e) {
+                failCount++;
+                failedNames.add(hebergement.getNom_hebergement() + " (" + hebergement.getType_hebergement() + ")");
+                System.err.println("Erreur lors de la suppression de " + hebergement.getNom_hebergement() + ": " + e.getMessage());
             }
+        }
+
+        updateTableData();
+        updateStats();
+
+        if (failCount == 0) {
+            StringBuilder successList = new StringBuilder();
+            for (String name : successfulNames) successList.append("✓ ").append(name).append("\n");
+            showAlert(Alert.AlertType.INFORMATION, "Succès",
+                    successCount + " hébergement(s) supprimé(s) avec succès !\n\n" + successList.toString());
+        } else {
+            StringBuilder successList = new StringBuilder();
+            for (String name : successfulNames) successList.append("✓ ").append(name).append("\n");
+            StringBuilder failList = new StringBuilder();
+            for (String name : failedNames) failList.append("✗ ").append(name).append("\n");
+            showAlert(Alert.AlertType.WARNING, "Suppression partielle",
+                    successCount + " supprimé(s), " + failCount + " échec(s)\n\n" +
+                            "✅ Réussis :\n" + successList.toString() + "\n" +
+                            "❌ Échecs :\n" + failList.toString());
         }
     }
 

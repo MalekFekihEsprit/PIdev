@@ -48,14 +48,40 @@
 .progress-bar .track { -fx-background-color: #f0f0f0; -fx-background-radius: 3; }
 .progress-bar .bar   { -fx-background-color: #ff6b00; -fx-background-radius: 3; -fx-background-insets: 0; }
 
-/* ─── Bouton toggle office ─── */
-#btnToggleOffice {
+/* ─── Bouton back office ─── */
+#btnBackOffice {
     -fx-background-color: #6366f1;
     -fx-text-fill: white;
     -fx-font-weight: bold;
-    -fx-background-radius: 15;
-    -fx-padding: 6 16;
+    -fx-background-radius: 12;
+    -fx-padding: 4 12;
+    -fx-font-size: 11;
     -fx-cursor: hand;
     -fx-border-width: 0;
 }
-#btnToggleOffice:hover { -fx-background-color: #4f46e5; }
+#btnBackOffice:hover { -fx-background-color: #4f46e5; }
+
+/* ─── Bouton traduction ─── */
+#btnTranslate {
+    -fx-background-color: #10b981;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 12;
+    -fx-padding: 4 12;
+    -fx-font-size: 11;
+    -fx-cursor: hand;
+    -fx-border-width: 0;
+}
+#btnTranslate:hover { -fx-background-color: #059669; }
+
+/* ─── Bouton rafraîchir ─── */
+#btnRefresh {
+    -fx-background-color: #f1f5f9;
+    -fx-background-radius: 10;
+    -fx-min-width: 32;
+    -fx-min-height: 32;
+    -fx-cursor: hand;
+}
+#btnRefresh:hover {
+    -fx-background-color: #e2e8f0;
+}

@@ -3,7 +3,6 @@ package Controllers;
 import Services.UserCRUD;
 import Utils.EmailSender;
 import Utils.ValidationUtils;
-import Entities.User;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;

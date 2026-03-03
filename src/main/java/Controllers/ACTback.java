@@ -6,6 +6,8 @@ import Services.ActivitesCRUD;
 import Services.AIServiceActivites;
 import Services.CategoriesCRUD;
 import Utils.FileManager;
+import Utils.UserSession;
+import Entities.User;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -30,6 +32,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
@@ -78,6 +82,9 @@ public class ACTback implements Initializable {
     @FXML private HBox btnCategories;
     @FXML private Label lblCategoriesCount;
     @FXML private HBox userProfileBox;
+    @FXML private Label lblUserName;
+    @FXML private Label lblUserRole;
+    @FXML private Label lblLastUpdate;
 
     // Patterns de validation
     private static final Pattern NOM_PATTERN = Pattern.compile("^[a-zA-ZÀ-ÿ\\s\\-']+$");
@@ -102,6 +109,8 @@ public class ACTback implements Initializable {
     private File selectedImageFile;
     private String currentImagePath;
 
+    @FXML private HBox btnActivites;
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         activitesCRUD = new ActivitesCRUD();
@@ -109,6 +118,13 @@ public class ACTback implements Initializable {
 
         setupTableColumns();
         loadActivites();
+        setupSearch();
+        testAIConnection();
+        setupNavigationButtons();
+        setupUserProfile();
+        updateUserInfo();
+        updateLastUpdateTime();
+        loadCategoriesCount();
 
         tableActivites.getSelectionModel().selectedItemProperty().addListener(
                 (obs, oldSelection, newSelection) -> {
@@ -118,10 +134,36 @@ public class ACTback implements Initializable {
                 }
         );
 
-        setupSearch();
-        testAIConnection();
-        setupNavigationButtons();
-        loadCategoriesCount();
+        // Style spécial pour la page active (Activités)
+        if (btnActivites != null) {
+            btnActivites.setStyle("-fx-background-color: linear-gradient(to right, #ff8c42, #ff6b4a); -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;");
+            btnActivites.lookupAll(".label").forEach(label -> {
+                if (label instanceof Label) {
+                    Label lbl = (Label) label;
+                    if (lbl.getText().equals("🏄")) {
+                        lbl.setStyle("-fx-font-size: 16; -fx-text-fill: white;");
+                    } else if (!lbl.getText().matches("\\d+")) {
+                        lbl.setStyle("-fx-text-fill: white; -fx-font-weight: 600; -fx-font-size: 14;");
+                    }
+                }
+            });
+        }
+    }
+
+    private void updateUserInfo() {
+        User currentUser = UserSession.getInstance().getCurrentUser();
+        if (currentUser != null) {
+            lblUserName.setText(currentUser.getPrenom() + " " + currentUser.getNom());
+            lblUserRole.setText(currentUser.getRole());
+        } else {
+            lblUserName.setText("Utilisateur");
+            lblUserRole.setText("Administrateur");
+        }
+    }
+
+    private void updateLastUpdateTime() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm");
+        lblLastUpdate.setText("Dernière mise à jour: " + LocalDateTime.now().format(formatter));
     }
 
     private void setupTableColumns() {
@@ -226,124 +268,52 @@ public class ACTback implements Initializable {
         });
     }
 
-    // ==================== MÉTHODES DE NAVIGATION CORRIGÉES ====================
+    // ==================== MÉTHODES DE NAVIGATION ====================
 
     private void setupNavigationButtons() {
         // Destinations
-        if (btnDestinations != null) {
-            btnDestinations.setOnMouseClicked(event -> navigateToDestinationsBack());
-            setupSidebarButtonHover(btnDestinations, "🌍", "Destinations");
-        }
+        setupSidebarButtonHover(btnDestinations, "🌍", "Destinations");
+        if (btnDestinations != null) btnDestinations.setOnMouseClicked(event -> navigateTo("/DestinationBack.fxml", "Gestion des Destinations"));
 
         // Hébergement
-        if (btnHebergement != null) {
-            btnHebergement.setOnMouseClicked(event -> navigateToHebergementBack());
-            setupSidebarButtonHover(btnHebergement, "🏨", "Hébergement");
-        }
-
-        // Itinéraires
-        if (btnItineraires != null) {
-            btnItineraires.setOnMouseClicked(event ->
-                    showInfo("Itinéraires", "Cette fonctionnalité sera bientôt disponible"));
-            setupSidebarButtonHover(btnItineraires, "🗺️", "Itinéraires");
-        }
-
-        // Voyages
-        if (btnVoyages != null) {
-            btnVoyages.setOnMouseClicked(event -> navigatetoVoyages());
-            setupSidebarButtonHover(btnVoyages, "✈️", "Voyages");
-        }
-
-        // Budgets
-        if (btnBudgets != null) {
-            btnBudgets.setOnMouseClicked(event -> navigatetoBudgets());
-            setupSidebarButtonHover(btnBudgets, "💰", "Budgets");
-        }
+        setupSidebarButtonHover(btnHebergement, "🏨", "Hébergement");
+        if (btnHebergement != null) btnHebergement.setOnMouseClicked(event -> navigateTo("/HebergementBack.fxml", "Gestion des Hébergements"));
 
         // Utilisateurs
-        if (btnUsers != null) {
-            btnUsers.setOnMouseClicked(event ->
-                    showInfo("Utilisateurs", "Cette fonctionnalité sera bientôt disponible"));
-            setupSidebarButtonHover(btnUsers, "👥", "Utilisateurs");
-        }
+        setupSidebarButtonHover(btnUsers, "👥", "Utilisateurs");
+        if (btnUsers != null) btnUsers.setOnMouseClicked(event -> navigateTo("/fxml/admin_users.fxml", "Gestion des Utilisateurs"));
 
         // Statistiques
-        if (btnStats != null) {
-            btnStats.setOnMouseClicked(event ->
-                    showInfo("Statistiques", "Cette fonctionnalité sera bientôt disponible"));
-            setupSidebarButtonHover(btnStats, "📊", "Statistiques");
-        }
+        setupSidebarButtonHover(btnStats, "📊", "Statistiques");
+        if (btnStats != null) btnStats.setOnMouseClicked(event -> navigateTo("/fxml/admin_stats.fxml", "Statistiques"));
+
 
         // Catégories
-        if (btnCategories != null) {
-            btnCategories.setOnMouseClicked(event -> navigateToCategoriesBack());
-            setupSidebarButtonHover(btnCategories, "📑", "Catégories");
-        }
+        setupSidebarButtonHover(btnCategories, "📑", "Catégories");
+        if (btnCategories != null) btnCategories.setOnMouseClicked(event -> navigateTo("/categoriesback.fxml", "Gestion des Catégories"));
 
-        // Style spécial pour la page active (Activités)
-        if (btnActivites != null) {
-            btnActivites.setStyle("-fx-background-color: linear-gradient(to right, #ff8c42, #ff6b4a); -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;");
-            btnActivites.lookupAll(".label").forEach(label -> {
-                if (label instanceof Label) {
-                    Label lbl = (Label) label;
-                    if (lbl.getText().equals("🏄")) {
-                        lbl.setStyle("-fx-font-size: 16; -fx-text-fill: white;");
-                    } else if (!lbl.getText().matches("\\d+")) {
-                        lbl.setStyle("-fx-text-fill: white; -fx-font-weight: 600; -fx-font-size: 14;");
-                    }
-                }
-            });
-        }
+        // Voyages
+        setupSidebarButtonHover(btnVoyages, "✈️", "Voyages");
+        if (btnVoyages != null) btnVoyages.setOnMouseClicked(event -> navigateTo("/PageVoyageBack.fxml", "Gestion des Voyages"));
 
-        // User profile
-        if (userProfileBox != null) {
-            userProfileBox.setOnMouseClicked(event -> navigateToProfile());
-            userProfileBox.setOnMouseEntered(event ->
-                    userProfileBox.setStyle("-fx-background-color: #2d3759; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand;"));
-            userProfileBox.setOnMouseExited(event ->
-                    userProfileBox.setStyle("-fx-background-color: #1e2749; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand;"));
-        }
+        // Budgets
+        setupSidebarButtonHover(btnBudgets, "💰", "Budgets");
+        if (btnBudgets != null) btnBudgets.setOnMouseClicked(event -> navigateTo("/BudgetDepenseBack.fxml", "Gestion des Budgets"));
     }
 
-    private void navigatetoBudgets() {
+    private void navigateTo(String fxmlPath, String title) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/BudgetDepenseBack.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
             Parent root = loader.load();
-            Stage stage = (Stage) btnDestinations.getScene().getWindow();
+            Stage stage = (Stage) btnActivites.getScene().getWindow();
             stage.setScene(new Scene(root));
-            stage.setTitle("TravelMate - Budgets");
+            stage.setTitle("TravelMate - " + title);
             stage.setMaximized(true);
-            stage.show();
         } catch (IOException e) {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Erreur");
-            alert.setHeaderText(null);
-            alert.setContentText("Impossible de charger les Budgets: " + e.getMessage());
-            alert.showAndWait();
+            showError("Erreur de navigation", "Impossible d'ouvrir: " + e.getMessage());
             e.printStackTrace();
         }
     }
-    private void navigatetoVoyages() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/PageVoyageBack.fxml"));
-            Parent root = loader.load();
-            Stage stage = (Stage) btnDestinations.getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.setTitle("TravelMate - Budgets");
-            stage.setMaximized(true);
-            stage.show();
-        } catch (IOException e) {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Erreur");
-            alert.setHeaderText(null);
-            alert.setContentText("Impossible de charger les Budgets: " + e.getMessage());
-            alert.showAndWait();
-            e.printStackTrace();
-        }
-    }
-
-    // Ajout de la référence manquante pour btnActivites
-    @FXML private HBox btnActivites;
 
     private void setupSidebarButtonHover(HBox button, String icon, String text) {
         if (button == null) return;
@@ -377,45 +347,13 @@ public class ACTback implements Initializable {
         });
     }
 
-    private void navigateToDestinationsBack() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/DestinationBack.fxml"));
-            Parent root = loader.load();
-            Stage stage = (Stage) btnDestinations.getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.setTitle("TravelMate - Gestion des Destinations");
-            stage.setMaximized(true);
-        } catch (IOException e) {
-            showError("Erreur de navigation", "Impossible d'ouvrir les destinations: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
-    private void navigateToHebergementBack() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/HebergementBack.fxml"));
-            Parent root = loader.load();
-            Stage stage = (Stage) btnHebergement.getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.setTitle("TravelMate - Gestion des Hébergements");
-            stage.setMaximized(true);
-        } catch (IOException e) {
-            showError("Erreur de navigation", "Impossible d'ouvrir les hébergements: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
-    private void navigateToCategoriesBack() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/categoriesback.fxml"));
-            Parent root = loader.load();
-            Stage stage = (Stage) btnCategories.getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.setTitle("TravelMate - Gestion des Catégories");
-            stage.setMaximized(true);
-        } catch (IOException e) {
-            showError("Erreur de navigation", "Impossible d'ouvrir la gestion des catégories: " + e.getMessage());
-            e.printStackTrace();
+    private void setupUserProfile() {
+        if (userProfileBox != null) {
+            userProfileBox.setOnMouseClicked(event -> navigateToProfile());
+            userProfileBox.setOnMouseEntered(event ->
+                    userProfileBox.setStyle("-fx-background-color: #2d3759; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand;"));
+            userProfileBox.setOnMouseExited(event ->
+                    userProfileBox.setStyle("-fx-background-color: #1e2749; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand;"));
         }
     }
 
@@ -446,7 +384,6 @@ public class ACTback implements Initializable {
             }
         }
     }
-    // ==================== MÉTHODES EXISTANTES (inchangées) ====================
 
     private void loadActivites() {
         try {
@@ -851,8 +788,6 @@ public class ACTback implements Initializable {
         }
     }
 
-    // ==================== MÉTHODES UTILITAIRES POUR LE FORMULAIRE ====================
-
     private VBox createSection(String title) {
         VBox section = new VBox(15);
         section.setPadding(new Insets(20));
@@ -882,7 +817,6 @@ public class ACTback implements Initializable {
         combo.setPrefHeight(40);
         combo.setMaxWidth(600);
 
-        // Style pour que le texte sélectionné soit blanc
         combo.setButtonCell(new ListCell<String>() {
             @Override
             protected void updateItem(String item, boolean empty) {
@@ -896,7 +830,6 @@ public class ACTback implements Initializable {
             }
         });
 
-        // Style pour les éléments de la liste déroulante
         combo.setCellFactory(param -> new ListCell<String>() {
             @Override
             protected void updateItem(String item, boolean empty) {
@@ -919,7 +852,6 @@ public class ACTback implements Initializable {
         combo.setPrefHeight(40);
         combo.setMaxWidth(600);
 
-        // Style pour que le texte sélectionné soit blanc
         combo.setButtonCell(new ListCell<Categories>() {
             @Override
             protected void updateItem(Categories item, boolean empty) {
@@ -933,7 +865,6 @@ public class ACTback implements Initializable {
             }
         });
 
-        // Style pour les éléments de la liste déroulante
         combo.setCellFactory(param -> new ListCell<Categories>() {
             @Override
             protected void updateItem(Categories item, boolean empty) {
@@ -999,19 +930,16 @@ public class ACTback implements Initializable {
         dialog.setTitle("Nouvelle Activité");
         dialog.setHeaderText(null);
 
-        // Style personnalisé pour le dialogue
         DialogPane dialogPane = dialog.getDialogPane();
         dialogPane.setStyle("-fx-background-color: #0a0e27;");
         dialogPane.setPrefWidth(900);
         dialogPane.setPrefHeight(800);
 
-        // Création du conteneur principal avec padding
         VBox mainContainer = new VBox(25);
         mainContainer.setPadding(new Insets(30));
         mainContainer.setStyle("-fx-background-color: #0a0e27;");
         mainContainer.setAlignment(Pos.TOP_CENTER);
 
-        // === TITRE DU FORMULAIRE ===
         HBox titleBox = new HBox(15);
         titleBox.setAlignment(Pos.CENTER_LEFT);
         titleBox.setPadding(new Insets(0, 0, 10, 0));
@@ -1034,29 +962,25 @@ public class ACTback implements Initializable {
 
         titleBox.getChildren().addAll(iconTitle, textTitle, badgeTitle, spacer, infoTitle);
 
-        // Conteneur centré pour le titre
         VBox titleContainer = new VBox(titleBox);
         titleContainer.setAlignment(Pos.CENTER);
         mainContainer.getChildren().add(titleContainer);
 
-        // === SECTION 1: INFORMATIONS PRINCIPALES ===
+        // SECTION 1: INFORMATIONS PRINCIPALES
         VBox section1 = createSection("📋 INFORMATIONS PRINCIPALES");
         section1.setAlignment(Pos.CENTER);
 
-        // Conteneur pour aligner les champs à gauche dans la section centrée
         VBox fieldsContainer1 = new VBox(15);
         fieldsContainer1.setPadding(new Insets(10, 0, 0, 0));
         fieldsContainer1.setMaxWidth(600);
         fieldsContainer1.setAlignment(Pos.CENTER_LEFT);
 
-        // Champs du formulaire
         TextField nomField = createStyledTextField("Ex: Randonnée en montagne", "Nom de l'activité");
 
         ComboBox<String> difficulteCombo = createStyledComboBox();
         difficulteCombo.getItems().addAll("Facile", "Moyen", "Difficile", "Expert");
         difficulteCombo.setPromptText("Sélectionnez un niveau");
 
-        // CHAMP LIEU AMÉLIORÉ
         HBox lieuBox = new HBox(10);
         TextField lieuField = createStyledTextField("Choisissez sur la carte", "Lieu");
         lieuField.setEditable(false);
@@ -1067,7 +991,6 @@ public class ACTback implements Initializable {
         btnChoisirLieu.setStyle("-fx-background-color: #ff8c42; -fx-text-fill: white; -fx-font-weight: 600; -fx-background-radius: 10; -fx-padding: 8 20; -fx-cursor: hand; -fx-font-size: 12;");
         btnChoisirLieu.setPrefHeight(40);
 
-        // Variables pour stocker les coordonnées
         final double[] selectedLat = {0};
         final double[] selectedLon = {0};
         final String[] selectedAddress = {""};
@@ -1105,12 +1028,10 @@ public class ACTback implements Initializable {
 
         lieuBox.getChildren().addAll(lieuField, btnChoisirLieu);
 
-        // Labels d'erreur
         Label errorNom = createErrorLabel();
         Label errorDifficulte = createErrorLabel();
         Label errorLieu = createErrorLabel();
 
-        // Ajout des champs au conteneur (un en dessous de l'autre)
         fieldsContainer1.getChildren().addAll(
                 createFormField("Nom *", nomField, errorNom),
                 createFormField("Difficulté *", difficulteCombo, errorDifficulte),
@@ -1119,12 +1040,11 @@ public class ACTback implements Initializable {
 
         section1.getChildren().add(fieldsContainer1);
 
-        // Conteneur centré pour la section
         VBox sectionContainer1 = new VBox(section1);
         sectionContainer1.setAlignment(Pos.CENTER);
         mainContainer.getChildren().add(sectionContainer1);
 
-        // === SECTION 2: DESCRIPTION AVEC IA ===
+        // SECTION 2: DESCRIPTION AVEC IA
         VBox section2 = createSection("🤖 DESCRIPTION INTELLIGENTE");
         section2.setAlignment(Pos.CENTER);
 
@@ -1135,7 +1055,6 @@ public class ACTback implements Initializable {
 
         TextArea descriptionField = createStyledTextArea();
 
-        // Bouton IA à côté de la description
         HBox descriptionButtonBox = new HBox(15);
         descriptionButtonBox.setAlignment(Pos.CENTER_LEFT);
 
@@ -1158,7 +1077,7 @@ public class ACTback implements Initializable {
         sectionContainer2.setAlignment(Pos.CENTER);
         mainContainer.getChildren().add(sectionContainer2);
 
-        // === SECTION 3: DÉTAILS & BUDGET ===
+        // SECTION 3: DÉTAILS & BUDGET
         VBox section3 = createSection("💰 DÉTAILS & BUDGET");
         section3.setAlignment(Pos.CENTER);
 
@@ -1178,7 +1097,6 @@ public class ACTback implements Initializable {
 
         ComboBox<Categories> categorieCombo = createStyledCategoryComboBox();
 
-        // Charger les catégories
         try {
             CategoriesCRUD categoriesCRUD = new CategoriesCRUD();
             List<Categories> categoriesList = categoriesCRUD.afficher();
@@ -1210,7 +1128,7 @@ public class ACTback implements Initializable {
         sectionContainer3.setAlignment(Pos.CENTER);
         mainContainer.getChildren().add(sectionContainer3);
 
-        // === SECTION 4: IMAGE ===
+        // SECTION 4: IMAGE
         VBox section4 = createSection("🖼️ IMAGE DE L'ACTIVITÉ");
         section4.setAlignment(Pos.CENTER);
 
@@ -1236,7 +1154,6 @@ public class ACTback implements Initializable {
         sectionContainer4.setAlignment(Pos.CENTER);
         mainContainer.getChildren().add(sectionContainer4);
 
-        // === CONFIGURATION IA ===
         setupAutoDescriptionGeneration(nomField, difficulteCombo, lieuField, descriptionField);
         generateAIBtn.setOnAction(e -> {
             if (nomField.getText().trim().isEmpty() || difficulteCombo.getValue() == null || lieuField.getText().trim().isEmpty()) {
@@ -1248,7 +1165,6 @@ public class ACTback implements Initializable {
             generateAttractiveDescription(nomField, difficulteCombo, lieuField, descriptionField, isGenerating);
         });
 
-        // === BOUTONS D'ACTION ===
         HBox buttonBar = new HBox(15);
         buttonBar.setAlignment(Pos.CENTER_RIGHT);
         buttonBar.setPadding(new Insets(20, 0, 0, 0));
@@ -1265,12 +1181,10 @@ public class ACTback implements Initializable {
         HBox.setHgrow(buttonSpacer, Priority.ALWAYS);
         buttonBar.getChildren().addAll(buttonSpacer, cancelButton, saveButton);
 
-        // Conteneur centré pour les boutons
         VBox buttonContainer = new VBox(buttonBar);
         buttonContainer.setAlignment(Pos.CENTER);
         mainContainer.getChildren().add(buttonContainer);
 
-        // ScrollPane pour le contenu
         ScrollPane scrollPane = new ScrollPane(mainContainer);
         scrollPane.setFitToWidth(true);
         scrollPane.setStyle("-fx-background: #0a0e27; -fx-background-color: #0a0e27; -fx-border-color: #ff8c42; -fx-border-width: 1; -fx-border-radius: 10;");
@@ -1278,7 +1192,6 @@ public class ACTback implements Initializable {
         dialogPane.setContent(scrollPane);
         dialogPane.getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
 
-        // Cacher les boutons par défaut
         Node okButtonNode = dialogPane.lookupButton(ButtonType.OK);
         Node cancelButtonNode = dialogPane.lookupButton(ButtonType.CANCEL);
         if (okButtonNode != null) {
@@ -1290,7 +1203,6 @@ public class ACTback implements Initializable {
             cancelButtonNode.setManaged(false);
         }
 
-        // Validation avec le bouton personnalisé
         saveButton.setOnAction(event -> {
             boolean isDateValid = datePicker.getValue() != null;
             if (!isDateValid) {
@@ -1369,19 +1281,16 @@ public class ACTback implements Initializable {
         dialog.setTitle("Modifier Activité");
         dialog.setHeaderText("Modifier l'activité: " + selectedActivite.getNom());
 
-        // Style personnalisé pour le dialogue
         DialogPane dialogPane = dialog.getDialogPane();
         dialogPane.setStyle("-fx-background-color: #0a0e27;");
         dialogPane.setPrefWidth(900);
         dialogPane.setPrefHeight(800);
 
-        // Création du conteneur principal avec padding
         VBox mainContainer = new VBox(25);
         mainContainer.setPadding(new Insets(30));
         mainContainer.setStyle("-fx-background-color: #0a0e27;");
         mainContainer.setAlignment(Pos.TOP_CENTER);
 
-        // === TITRE DU FORMULAIRE ===
         HBox titleBox = new HBox(15);
         titleBox.setAlignment(Pos.CENTER_LEFT);
         titleBox.setPadding(new Insets(0, 0, 10, 0));
@@ -1408,7 +1317,7 @@ public class ACTback implements Initializable {
         titleContainer.setAlignment(Pos.CENTER);
         mainContainer.getChildren().add(titleContainer);
 
-        // === SECTION 1: INFORMATIONS PRINCIPALES ===
+        // SECTION 1: INFORMATIONS PRINCIPALES
         VBox section1 = createSection("📋 INFORMATIONS PRINCIPALES");
         section1.setAlignment(Pos.CENTER);
 
@@ -1491,7 +1400,7 @@ public class ACTback implements Initializable {
         sectionContainer1.setAlignment(Pos.CENTER);
         mainContainer.getChildren().add(sectionContainer1);
 
-        // === SECTION 2: DESCRIPTION AVEC IA ===
+        // SECTION 2: DESCRIPTION AVEC IA
         VBox section2 = createSection("🤖 DESCRIPTION INTELLIGENTE");
         section2.setAlignment(Pos.CENTER);
 
@@ -1529,7 +1438,7 @@ public class ACTback implements Initializable {
         sectionContainer2.setAlignment(Pos.CENTER);
         mainContainer.getChildren().add(sectionContainer2);
 
-        // === SECTION 3: DÉTAILS & BUDGET ===
+        // SECTION 3: DÉTAILS & BUDGET
         VBox section3 = createSection("💰 DÉTAILS & BUDGET");
         section3.setAlignment(Pos.CENTER);
 
@@ -1605,7 +1514,7 @@ public class ACTback implements Initializable {
         sectionContainer3.setAlignment(Pos.CENTER);
         mainContainer.getChildren().add(sectionContainer3);
 
-        // === SECTION 4: IMAGE ===
+        // SECTION 4: IMAGE
         VBox section4 = createSection("🖼️ IMAGE DE L'ACTIVITÉ");
         section4.setAlignment(Pos.CENTER);
 
@@ -1629,7 +1538,6 @@ public class ACTback implements Initializable {
         sectionContainer4.setAlignment(Pos.CENTER);
         mainContainer.getChildren().add(sectionContainer4);
 
-        // === CONFIGURATION IA ===
         setupAutoDescriptionGeneration(nomField, difficulteCombo, lieuField, descriptionField);
         generateAIBtn.setOnAction(e -> {
             if (nomField.getText().trim().isEmpty() || difficulteCombo.getValue() == null || lieuField.getText().trim().isEmpty()) {
@@ -1641,7 +1549,6 @@ public class ACTback implements Initializable {
             generateAttractiveDescription(nomField, difficulteCombo, lieuField, descriptionField, isGenerating);
         });
 
-        // === BOUTONS D'ACTION ===
         HBox buttonBar = new HBox(15);
         buttonBar.setAlignment(Pos.CENTER_RIGHT);
         buttonBar.setPadding(new Insets(20, 0, 0, 0));
@@ -1774,18 +1681,7 @@ public class ACTback implements Initializable {
 
     @FXML
     private void handleVersCategories() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/categoriesback.fxml"));
-            Parent root = loader.load();
-            Scene scene = new Scene(root);
-            Stage stage = (Stage) btnVersCategories.getScene().getWindow();
-            stage.setScene(scene);
-            stage.setTitle("TravelMate - Gestion des Catégories");
-            stage.show();
-        } catch (IOException e) {
-            showError("Erreur de navigation", "Impossible de charger l'interface des catégories : " + e.getMessage());
-            e.printStackTrace();
-        }
+        navigateTo("/categoriesback.fxml", "Gestion des Catégories");
     }
 
     @FXML

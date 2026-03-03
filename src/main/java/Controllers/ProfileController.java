@@ -158,6 +158,10 @@ public class ProfileController {
 
     private void setupScrollArrows() {
         if (navScrollPane != null && leftArrow != null && rightArrow != null) {
+            // Set click handlers programmatically
+            leftArrow.setOnMouseClicked(event -> scrollLeft());
+            rightArrow.setOnMouseClicked(event -> scrollRight());
+
             // Masquer les flèches initialement
             leftArrow.setVisible(false);
             leftArrow.setManaged(false);
@@ -177,6 +181,17 @@ public class ProfileController {
             navScrollPane.hvalueProperty().addListener((obs, oldVal, newVal) -> {
                 updateArrowVisibility();
             });
+
+            // Add hover effects for arrows
+            leftArrow.setOnMouseEntered(event ->
+                    leftArrow.setStyle("-fx-background-color: rgba(255,140,66,0.5); -fx-background-radius: 12; -fx-min-width: 24; -fx-min-height: 24; -fx-cursor: hand; -fx-padding: 0 0 0 2;"));
+            leftArrow.setOnMouseExited(event ->
+                    leftArrow.setStyle("-fx-background-color: rgba(255,255,255,0.3); -fx-background-radius: 12; -fx-min-width: 24; -fx-min-height: 24; -fx-cursor: hand; -fx-padding: 0 0 0 2;"));
+
+            rightArrow.setOnMouseEntered(event ->
+                    rightArrow.setStyle("-fx-background-color: rgba(255,140,66,0.5); -fx-background-radius: 12; -fx-min-width: 24; -fx-min-height: 24; -fx-cursor: hand; -fx-padding: 0 2 0 0;"));
+            rightArrow.setOnMouseExited(event ->
+                    rightArrow.setStyle("-fx-background-color: rgba(255,255,255,0.3); -fx-background-radius: 12; -fx-min-width: 24; -fx-min-height: 24; -fx-cursor: hand; -fx-padding: 0 2 0 0;"));
         }
     }
 
@@ -198,7 +213,6 @@ public class ProfileController {
         rightArrow.setManaged(showRight);
     }
 
-    @FXML
     private void scrollLeft() {
         if (navScrollPane != null) {
             double newHvalue = navScrollPane.getHvalue() - 0.15;
@@ -206,7 +220,6 @@ public class ProfileController {
         }
     }
 
-    @FXML
     private void scrollRight() {
         if (navScrollPane != null) {
             double newHvalue = navScrollPane.getHvalue() + 0.15;

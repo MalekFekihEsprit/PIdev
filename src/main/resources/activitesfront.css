@@ -177,8 +177,10 @@
     -fx-background-color: #6366f1;
     -fx-text-fill: white;
     -fx-font-weight: bold;
-    -fx-background-radius: 15;
-    -fx-padding: 5 16;
+    -fx-background-radius: 12;
+    -fx-padding: 4 12;
+    -fx-font-size: 11;
+    -fx-cursor: hand;
     -fx-border-width: 0;
     -fx-effect: dropshadow(three-pass-box, rgba(99,102,241,0.3), 8, 0, 0, 2);
 }
@@ -193,8 +195,10 @@
     -fx-background-color: #10b981;
     -fx-text-fill: white;
     -fx-font-weight: bold;
-    -fx-background-radius: 15;
-    -fx-padding: 5 16;
+    -fx-background-radius: 12;
+    -fx-padding: 4 12;
+    -fx-font-size: 11;
+    -fx-cursor: hand;
     -fx-border-width: 0;
     -fx-effect: dropshadow(three-pass-box, rgba(16,185,129,0.3), 8, 0, 0, 2);
 }
@@ -202,6 +206,19 @@
 #btnTranslate:hover {
     -fx-background-color: #059669;
     -fx-effect: dropshadow(three-pass-box, rgba(5,150,105,0.4), 12, 0, 0, 3);
+}
+
+/* Bouton rafraîchir */
+#btnRefresh {
+    -fx-background-color: #f1f5f9;
+    -fx-background-radius: 10;
+    -fx-min-width: 32;
+    -fx-min-height: 32;
+    -fx-cursor: hand;
+}
+
+#btnRefresh:hover {
+    -fx-background-color: #e2e8f0;
 }
 
 /* Bouton toutes activités */

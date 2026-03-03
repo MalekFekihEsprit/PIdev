@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
-public class HotelSuggestionController implements Initializable {
+public class HotelSuggestionFrontController implements Initializable {
 
     @FXML private Label lblDestinationInfo;
     @FXML private TextField tfRadius;
@@ -46,7 +46,7 @@ public class HotelSuggestionController implements Initializable {
     private HotelSuggestionService hotelService;
     private HebergementCRUD hebergementCRUD;
     private List<HotelSuggestion> currentSuggestions = new ArrayList<>();
-    private DestinationBackController parentController;
+    private DestinationFrontController parentController;
     private User currentUser;
 
     Dotenv dotenv = Dotenv.load();
@@ -57,11 +57,10 @@ public class HotelSuggestionController implements Initializable {
         hotelService = new HotelSuggestionService(geoapifyKey);
         hebergementCRUD = new HebergementCRUD();
 
-        // Get current user from session
+        // Get current user
         currentUser = UserSession.getInstance().getCurrentUser();
         if (currentUser == null) {
-            showAlert(Alert.AlertType.ERROR, "Erreur de session",
-                    "Aucun utilisateur connecté. Veuillez vous reconnecter.");
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Utilisateur non connecté");
             return;
         }
 
@@ -74,7 +73,7 @@ public class HotelSuggestionController implements Initializable {
         lblDestinationInfo.setText("Hôtels pour " + destination.getNom_destination() + ", " + destination.getPays_destination());
     }
 
-    public void setParentController(DestinationBackController controller) {
+    public void setParentController(DestinationFrontController controller) {
         this.parentController = controller;
     }
 
@@ -221,17 +220,17 @@ public class HotelSuggestionController implements Initializable {
 
     private VBox createHotelCard(HotelSuggestion hotel, int index) {
         VBox card = new VBox(8);
-        card.setStyle("-fx-background-color: #1e2749; -fx-background-radius: 16; -fx-padding: 16; -fx-border-color: #2d3a5f; -fx-border-width: 1; -fx-border-radius: 16;");
+        card.setStyle("-fx-background-color: #f8fafc; -fx-background-radius: 16; -fx-padding: 16; -fx-border-color: #e2e8f0; -fx-border-width: 1; -fx-border-radius: 16;");
 
         // Header with checkbox and name
         HBox header = new HBox(10);
         header.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
 
         CheckBox checkBox = new CheckBox();
-        checkBox.setStyle("-fx-text-fill: white;");
+        checkBox.setStyle("-fx-text-fill: #0f172a;");
 
         Label nameLabel = new Label((index + 1) + ". " + hotel.getNom());
-        nameLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14; -fx-text-fill: white;");
+        nameLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14; -fx-text-fill: #0f172a;");
 
         header.getChildren().addAll(checkBox, nameLabel);
 
@@ -245,23 +244,22 @@ public class HotelSuggestionController implements Initializable {
         Label addressIcon = new Label("📍");
         addressIcon.setStyle("-fx-font-size: 14;");
         Label addressLabel = new Label(hotel.getAdresse());
-        addressLabel.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 12;");
+        addressLabel.setStyle("-fx-text-fill: #475569; -fx-font-size: 12;");
         addressLabel.setWrapText(true);
         details.add(addressIcon, 0, 0);
         details.add(addressLabel, 1, 0);
 
-        // Rating - UPDATED to show float values
+        // Rating
         Label ratingIcon = new Label("⭐");
         ratingIcon.setStyle("-fx-font-size: 14;");
         Label ratingLabel;
         if (hotel.getRating() != null) {
-            // Format to 1 decimal place
             String ratingText = String.format("%.1f", hotel.getRating());
             ratingLabel = new Label(ratingText + " / 5");
-            ratingLabel.setStyle("-fx-text-fill: #fbbf24; -fx-font-size: 12; -fx-font-weight: 600;");
+            ratingLabel.setStyle("-fx-text-fill: #f59e0b; -fx-font-size: 12; -fx-font-weight: 600;");
         } else {
             ratingLabel = new Label("⭐ No official rating");
-            ratingLabel.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 12; -fx-font-style: italic;");
+            ratingLabel.setStyle("-fx-text-fill: #64748b; -fx-font-size: 12; -fx-font-style: italic;");
         }
         details.add(ratingIcon, 0, 1);
         details.add(ratingLabel, 1, 1);
@@ -275,7 +273,7 @@ public class HotelSuggestionController implements Initializable {
             priceLabel.setStyle("-fx-text-fill: #10b981; -fx-font-size: 12; -fx-font-weight: 500;");
         } else {
             priceLabel = new Label("💰 No available price");
-            priceLabel.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 12; -fx-font-style: italic;");
+            priceLabel.setStyle("-fx-text-fill: #64748b; -fx-font-size: 12; -fx-font-style: italic;");
         }
         details.add(priceIcon, 0, 2);
         details.add(priceLabel, 1, 2);
@@ -397,21 +395,21 @@ public class HotelSuggestionController implements Initializable {
 
         Optional<ButtonType> result = success.showAndWait();
         if (result.isPresent() && result.get() == voirButton) {
-            navigateToHebergementBack();
+            navigateToHebergementFront();
         } else {
             closeWindow();
             if (parentController != null) {
-                parentController.refreshAfterModification();
+                parentController.refreshData();
             }
         }
     }
 
-    private void navigateToHebergementBack() {
+    private void navigateToHebergementFront() {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/HebergementBack.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/HebergementFront.fxml"));
             Parent root = loader.load();
 
-            HebergementBackController controller = loader.getController();
+            HebergementFrontController controller = loader.getController();
             controller.filterByDestination(destination);
 
             Stage stage = (Stage) btnCancel.getScene().getWindow();

@@ -2,8 +2,10 @@ package Controllers;
 
 import Entities.Destination;
 import Entities.Hebergement;
+import Entities.User;
 import Services.DestinationCRUD;
 import Services.HebergementCRUD;
+import Utils.UserSession;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
@@ -31,6 +33,7 @@ public class AjouterHebergementController implements Initializable {
     private DestinationCRUD destinationCRUD;
     private HebergementBackController parentController;
     private List<Hebergement> existingHebergements;
+    private User currentUser;
 
     private final String[] types = {"Hôtel", "Appartement", "Villa", "Auberge", "Camping", "Chalet", "Riad", "Maison d'hôte"};
 
@@ -38,6 +41,13 @@ public class AjouterHebergementController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         hebergementCRUD = new HebergementCRUD();
         destinationCRUD = new DestinationCRUD();
+
+        // Get current user from session
+        currentUser = UserSession.getInstance().getCurrentUser();
+        if (currentUser == null) {
+            showErrorAlert("Erreur de session", "Aucun utilisateur connecté. Veuillez vous reconnecter.");
+            return;
+        }
 
         // Load existing hébergements for uniqueness check
         loadExistingHebergements();
@@ -235,6 +245,14 @@ public class AjouterHebergementController implements Initializable {
                     0.0, // longitude par défaut
                     destination
             );
+
+            // Set the added_by information from current user - FIXED: using ID
+            if (currentUser != null) {
+                newHebergement.setAdded_by(currentUser.getId()); // This is the user ID
+            } else {
+                showErrorAlert("Erreur de session", "Aucun utilisateur connecté");
+                return;
+            }
 
             hebergementCRUD.ajouter(newHebergement);
 
