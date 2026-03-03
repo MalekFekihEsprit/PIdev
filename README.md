@@ -75,6 +75,7 @@ User account management, security, and access control.
 - Java 17+
 - MySQL 8.0+
 - Maven 3.8+
+- Python 3.10+
 
 ### Installation
 ```bash
