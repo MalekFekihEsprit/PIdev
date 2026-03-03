@@ -30,6 +30,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
+
 public class CATfront implements Initializable {
 
     // ─── FXML ─────────────────────────────────────────────────────────
@@ -57,12 +58,12 @@ public class CATfront implements Initializable {
     // Navigation buttons (navbar) - MUST MATCH FXML IDs
     @FXML private HBox btnDestinations;
     @FXML private HBox btnHebergements;
-    @FXML private HBox btnItineraires;
     @FXML private HBox btnVoyages;
     @FXML private HBox btnBudgets;
     @FXML private HBox btnCategories; // This is the active Categories button
     @FXML private HBox btnActivites; // Activities button in navbar
     @FXML private HBox userProfileBox;
+    @FXML private HBox btnNotifications;
     @FXML private Label lblUserName;
     @FXML private Label lblUserRole;
     @FXML private HBox btnHome; // Home button in breadcrumb
@@ -105,7 +106,7 @@ public class CATfront implements Initializable {
             btnHome.setOnMouseClicked(event -> navigateToHome());
 
             btnHome.setOnMouseEntered(event -> {
-                btnHome.setStyle("-fx-background-color: #ff6b00; -fx-background-radius: 12; -fx-min-width: 40; -fx-min-height: 40; -fx-cursor: hand;");
+                btnHome.setStyle("-fx-background-color: #ff8c42; -fx-background-radius: 12; -fx-min-width: 40; -fx-min-height: 40; -fx-cursor: hand;");
                 btnHome.lookupAll(".label").forEach(label -> {
                     if (label instanceof Label) {
                         ((Label) label).setStyle("-fx-text-fill: white; -fx-font-size: 18;");
@@ -148,18 +149,10 @@ public class CATfront implements Initializable {
             setupNavButtonHover(btnHebergements, "🏨", "Hébergements");
         }
 
-        // Itinéraires button (hidden but kept for compatibility)
-        if (btnItineraires != null) {
-            btnItineraires.setOnMouseClicked(event -> showNotImplementedAlert("Itinéraires"));
-            setupNavButtonHover(btnItineraires, "🗺️", "Itinéraires");
-        }
-
-        // Catégories button - already active, but keep navigation to self
+        // Catégories button - ACTIVE
         if (btnCategories != null) {
-            btnCategories.setOnMouseClicked(event -> {
-                // Already on categories page, could refresh or do nothing
-                refreshData();
-            });
+            btnCategories.setOnMouseClicked(event -> refreshData());
+            // Active style already set in FXML
         }
 
         // Activités button
@@ -180,6 +173,19 @@ public class CATfront implements Initializable {
             setupNavButtonHover(btnBudgets, "💰", "Budgets");
         }
 
+        // Notifications
+        if (btnNotifications != null) {
+            btnNotifications.setOnMouseClicked(event -> showNotificationsDialog());
+
+            btnNotifications.setOnMouseEntered(event -> {
+                btnNotifications.setStyle("-fx-background-color: #e2e8f0; -fx-background-radius: 50%; -fx-min-width: 40; -fx-min-height: 40; -fx-cursor: hand;");
+            });
+
+            btnNotifications.setOnMouseExited(event -> {
+                btnNotifications.setStyle("-fx-background-color: #f1f5f9; -fx-background-radius: 50%; -fx-min-width: 40; -fx-min-height: 40; -fx-cursor: hand;");
+            });
+        }
+
         // User profile
         if (userProfileBox != null) {
             userProfileBox.setOnMouseClicked(event -> navigateToProfile());
@@ -193,10 +199,11 @@ public class CATfront implements Initializable {
             });
         }
 
-        // Bouton Voir toutes les activités
-        if (btnVoirActivites != null) {
-            btnVoirActivites.setOnAction(event -> navigateToActivites());
-        }
+    }
+
+    // Ajoutez cette méthode
+    private void showNotificationsDialog() {
+        showInfo("Notifications", "Fonctionnalité à venir");
     }
 
     private void navigateTo(String fxmlPath, String title) {

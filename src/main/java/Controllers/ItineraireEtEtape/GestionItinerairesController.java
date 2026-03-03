@@ -288,17 +288,47 @@ public class GestionItinerairesController {
 
     @FXML
     private void handleBudgetsClick() {
-        showInfoAlert("Budgets", "Cette fonctionnalité sera bientôt disponible");
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/BudgetDepenseBack.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) tableItineraires.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("TravelMate - Gestion des Budgets");
+            stage.setMaximized(true);
+        } catch (IOException e) {
+            showAlert("Erreur", "Impossible d'ouvrir la gestion des budgets: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     @FXML
     private void handleUsersClick() {
-        showInfoAlert("Utilisateurs", "Cette fonctionnalité sera bientôt disponible");
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/admin_users.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) tableItineraires.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("TravelMate - Gestion des Utilisateurs");
+            stage.setMaximized(true);
+        } catch (IOException e) {
+            showAlert("Erreur", "Impossible d'ouvrir la gestion des utilisateurs: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     @FXML
     private void handleStatsClick() {
-        showInfoAlert("Statistiques", "Cette fonctionnalité sera bientôt disponible");
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/admin_stats.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) tableItineraires.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("TravelMate - Statistiques");
+            stage.setMaximized(true);
+        } catch (IOException e) {
+            showAlert("Erreur", "Impossible d'ouvrir les statistiques: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
     public void refreshAfterModification() {
         loadItineraires();

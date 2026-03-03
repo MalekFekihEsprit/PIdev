@@ -528,7 +528,7 @@ public class VoyageBackController implements Initializable {
 
     @FXML
     private void handleItinerairesClick(MouseEvent event) {
-        naviguerVers("/PageItineraireBack.fxml", "Itinéraires");
+        naviguerVers("/ItineraireEtEtape/PageGestionItineraires.fxml", "Itinéraires");
     }
 
     @FXML

@@ -113,6 +113,10 @@ public class AdminStatsController {
         setupSidebarButtonHover(btnUsers, "👥", "Utilisateurs");
         if (btnUsers != null) btnUsers.setOnMouseClicked(event -> navigateTo("/fxml/admin_users.fxml", "Gestion des Utilisateurs"));
 
+        setupSidebarButtonHover(btnItineraires, "🗺️", "Itinéraires");
+        if (btnItineraires != null) btnItineraires.setOnMouseClicked(event -> navigateTo("/ItineraireEtEtape/PageGestionItineraires.fxml", "Itineraire"));
+
+
         setupSidebarButtonHover(btnCategories, "📑", "Catégories");
         if (btnCategories != null) btnCategories.setOnMouseClicked(event -> navigateTo("/categoriesback.fxml", "Gestion des Catégories"));
 

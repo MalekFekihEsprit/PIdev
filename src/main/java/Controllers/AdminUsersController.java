@@ -54,6 +54,7 @@ public class AdminUsersController {
     @FXML private Label lblLastUpdate;
     @FXML private HBox btnDestinations, btnHebergement, btnUsers, btnStats, btnCategories, btnActivites, btnVoyages, btnBudgets;
     @FXML private HBox userProfileBox;
+    @FXML private HBox btnItineraires;
     @FXML private Label lblUserName, lblUserRole;
 
     private UserCRUD userCRUD = new UserCRUD();
@@ -206,6 +207,10 @@ public class AdminUsersController {
 
         setupSidebarButtonHover(btnStats, "📊", "Statistiques");
         if (btnStats != null) btnStats.setOnMouseClicked(event -> navigateTo("/fxml/admin_stats.fxml", "Statistiques"));
+
+        setupSidebarButtonHover(btnItineraires, "🗺️", "Itinéraires");
+        if (btnItineraires != null) btnItineraires.setOnMouseClicked(event -> navigateTo("/ItineraireEtEtape/PageGestionItineraires.fxml", "Itineraire"));
+
 
         setupSidebarButtonHover(btnCategories, "📑", "Catégories");
         if (btnCategories != null) btnCategories.setOnMouseClicked(event -> navigateTo("/categoriesback.fxml", "Gestion des Catégories"));

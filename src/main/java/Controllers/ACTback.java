@@ -287,6 +287,9 @@ public class ACTback implements Initializable {
         setupSidebarButtonHover(btnStats, "📊", "Statistiques");
         if (btnStats != null) btnStats.setOnMouseClicked(event -> navigateTo("/fxml/admin_stats.fxml", "Statistiques"));
 
+        setupSidebarButtonHover(btnItineraires, "🗺️", "Itinéraires");
+        if (btnItineraires != null) btnItineraires.setOnMouseClicked(event -> navigateTo("/ItineraireEtEtape/PageGestionItineraires.fxml", "Itineraire"));
+
 
         // Catégories
         setupSidebarButtonHover(btnCategories, "📑", "Catégories");

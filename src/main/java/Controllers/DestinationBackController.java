@@ -317,8 +317,7 @@ public class DestinationBackController implements Initializable {
         if (btnStats != null) btnStats.setOnMouseClicked(event -> navigateToStats());
 
         setupSidebarButtonHover(btnItineraires, "🗺️", "Itinéraires");
-        if (btnItineraires != null) btnItineraires.setOnMouseClicked(event ->
-                showInfoAlert("Itinéraires", "Cette fonctionnalité sera bientôt disponible"));
+        if (btnItineraires != null) btnItineraires.setOnMouseClicked(event -> navigateToItineraires());
 
         setupSidebarButtonHover(btnActivites, "🏄", "Activités");
         if (btnActivites != null) btnActivites.setOnMouseClicked(event ->
@@ -403,6 +402,20 @@ public class DestinationBackController implements Initializable {
             stage.setMaximized(true);
         } catch (IOException e) {
             showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir les statistiques: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void navigateToItineraires() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ItineraireEtEtape/PageGestionItineraires.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) btnItineraires.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("TravelMate - Gestion des Itinéraires");
+            stage.setMaximized(true);
+        } catch (IOException e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir la gestion des itinéraires: " + e.getMessage());
             e.printStackTrace();
         }
     }

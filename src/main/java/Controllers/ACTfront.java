@@ -1,5 +1,6 @@
 package Controllers;
 
+import javafx.scene.Node;
 import Entities.Activites;
 import Services.ActivitesCRUD;
 import Services.ModerationService;
@@ -74,9 +75,9 @@ public class ACTfront implements Initializable {
     // Navigation buttons (navbar) - MUST MATCH FXML IDs
     @FXML private HBox btnDestinations;
     @FXML private HBox btnHebergements;
-    @FXML private HBox btnItineraires;
     @FXML private HBox btnVoyages;
     @FXML private HBox btnBudgets;
+    @FXML private HBox btnNotifications;
     @FXML private HBox btnCategories; // This is the Categories button in navbar
     @FXML private HBox btnActivites; // This is the active Activities button
     @FXML private HBox userProfileBox;
@@ -149,7 +150,7 @@ public class ACTfront implements Initializable {
             btnHome.setOnMouseClicked(event -> navigateToHome());
 
             btnHome.setOnMouseEntered(event -> {
-                btnHome.setStyle("-fx-background-color: #ff6b00; -fx-background-radius: 12; -fx-min-width: 40; -fx-min-height: 40; -fx-cursor: hand;");
+                btnHome.setStyle("-fx-background-color: #ff8c42; -fx-background-radius: 12; -fx-min-width: 40; -fx-min-height: 40; -fx-cursor: hand;");
                 btnHome.lookupAll(".label").forEach(label -> {
                     if (label instanceof Label) {
                         ((Label) label).setStyle("-fx-text-fill: white; -fx-font-size: 18;");
@@ -192,24 +193,16 @@ public class ACTfront implements Initializable {
             setupNavButtonHover(btnHebergements, "🏨", "Hébergements");
         }
 
-        // Itinéraires button (hidden but kept for compatibility)
-        if (btnItineraires != null) {
-            btnItineraires.setOnMouseClicked(event -> showNotImplementedAlert("Itinéraires"));
-            setupNavButtonHover(btnItineraires, "🗺️", "Itinéraires");
-        }
-
         // Catégories button (btnVersCategories in navbar)
         if (btnVersCategories != null) {
             btnVersCategories.setOnMouseClicked(event -> navigateTo("/categoriesfront.fxml", "Catégories"));
             setupNavButtonHover(btnVersCategories, "📑", "Catégories");
         }
 
-        // Activités button - already active, but keep navigation to self
+        // Activités button - ACTIVE (maintain active style)
         if (btnActivites != null) {
-            btnActivites.setOnMouseClicked(event -> {
-                // Already on activities page, could refresh or do nothing
-                refreshData();
-            });
+            btnActivites.setOnMouseClicked(event -> refreshData());
+            // Active style already set in FXML
         }
 
         // Voyages button
@@ -224,6 +217,19 @@ public class ACTfront implements Initializable {
             setupNavButtonHover(btnBudgets, "💰", "Budgets");
         }
 
+        // Notifications
+        if (btnNotifications != null) {
+            btnNotifications.setOnMouseClicked(event -> showNotificationsDialog());
+
+            btnNotifications.setOnMouseEntered(event -> {
+                btnNotifications.setStyle("-fx-background-color: #e2e8f0; -fx-background-radius: 50%; -fx-min-width: 40; -fx-min-height: 40; -fx-cursor: hand;");
+            });
+
+            btnNotifications.setOnMouseExited(event -> {
+                btnNotifications.setStyle("-fx-background-color: #f1f5f9; -fx-background-radius: 50%; -fx-min-width: 40; -fx-min-height: 40; -fx-cursor: hand;");
+            });
+        }
+
         // User profile
         if (userProfileBox != null) {
             userProfileBox.setOnMouseClicked(event -> navigateToProfile());
@@ -236,6 +242,12 @@ public class ACTfront implements Initializable {
                 userProfileBox.setStyle("-fx-background-color: #f1f5f9; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand;");
             });
         }
+    }
+
+    // Ajoutez cette méthode pour gérer les notifications
+    private void showNotificationsDialog() {
+        // Implémentez la logique des notifications ou appelez une méthode existante
+        showInfo("Notifications", "Fonctionnalité à venir");
     }
 
     private void navigateTo(String fxmlPath, String title) {

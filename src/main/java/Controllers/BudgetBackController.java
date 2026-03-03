@@ -147,6 +147,7 @@ public class BudgetBackController implements Initializable {
     @FXML private HBox btnBudgets;
     @FXML private HBox btnUtilisateurs;
     @FXML private HBox btnStatistiques;
+    @FXML private HBox btnItineraires;
 
     // ══════════════════════════════════════════════════
     //  Services & data
@@ -852,6 +853,7 @@ public class BudgetBackController implements Initializable {
         navigateToUtilisateurs(btnUtilisateurs, "Utilisateurs");
         navigateToStatistiques(btnStatistiques, "Statistiques");
         navigateToCategories(btnCategories, "Categories");
+        navigateToItineraire(btnItineraires, "Itineraires");
     }
 
     private void navigateToDestinations(HBox btn, String page) {
@@ -966,6 +968,21 @@ public class BudgetBackController implements Initializable {
                 Stage stage = (Stage) btn.getScene().getWindow();
                 stage.setScene(new Scene(root));
                 stage.setTitle("TravelMate - Statistiques (Admin)");
+                stage.setMaximized(true);
+            } catch (IOException ex) {
+                showAlert("Erreur", "Impossible de charger la page: " + ex.getMessage());
+                ex.printStackTrace();
+            }
+        });
+    }
+
+    private void navigateToItineraire(HBox btn, String page) {
+        if (btn != null) btn.setOnMouseClicked(e -> {
+            try {
+                Parent root = FXMLLoader.load(getClass().getResource("/ItineraireEtEtape/PageGestionItineraire.fxml"));
+                Stage stage = (Stage) btn.getScene().getWindow();
+                stage.setScene(new Scene(root));
+                stage.setTitle("TravelMate - Itineraires (Admin)");
                 stage.setMaximized(true);
             } catch (IOException ex) {
                 showAlert("Erreur", "Impossible de charger la page: " + ex.getMessage());

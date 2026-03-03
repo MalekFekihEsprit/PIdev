@@ -92,6 +92,18 @@
                         <Label style="-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;" text="Hébergement" />
                     </HBox>
 
+                    <!-- Utilisateurs -->
+                    <HBox alignment="CENTER_LEFT" onMouseClicked="#handleUsersClick" spacing="12" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;">
+                        <Label style="-fx-font-size: 16;" text="👥" />
+                        <Label style="-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;" text="Utilisateurs" />
+                    </HBox>
+
+                    <!-- Statistiques -->
+                    <HBox alignment="CENTER_LEFT" onMouseClicked="#handleStatsClick" spacing="12" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;">
+                        <Label style="-fx-font-size: 16;" text="📊" />
+                        <Label style="-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;" text="Statistiques" />
+                    </HBox>
+
                     <!-- Itinéraires - ACTIF -->
                     <HBox alignment="CENTER_LEFT" spacing="12" style="-fx-background-color: linear-gradient(to right, #ff8c42, #ff6b4a); -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;">
                         <Label style="-fx-font-size: 16; -fx-text-fill: white;" text="🗺️" />
@@ -100,16 +112,16 @@
                         <Label fx:id="lblSidebarItinerairesCount" style="-fx-background-color: rgba(255,255,255,0.2); -fx-background-radius: 10; -fx-padding: 2 8; -fx-text-fill: white; -fx-font-size: 11; -fx-font-weight: bold;" text="0" />
                     </HBox>
 
-                    <!-- Activités -->
-                    <HBox alignment="CENTER_LEFT" onMouseClicked="#handleActivitesClick" spacing="12" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;">
-                        <Label style="-fx-font-size: 16;" text="🏄" />
-                        <Label style="-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;" text="Activités" />
-                    </HBox>
-
                     <!-- Catégories -->
                     <HBox alignment="CENTER_LEFT" onMouseClicked="#handleCategoriesClick" spacing="12" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;">
                         <Label style="-fx-font-size: 16;" text="📑" />
                         <Label style="-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;" text="Catégories" />
+                    </HBox>
+
+                    <!-- Activités -->
+                    <HBox alignment="CENTER_LEFT" onMouseClicked="#handleActivitesClick" spacing="12" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;">
+                        <Label style="-fx-font-size: 16;" text="🏄" />
+                        <Label style="-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;" text="Activités" />
                     </HBox>
 
                     <!-- Voyages -->
@@ -122,18 +134,6 @@
                     <HBox alignment="CENTER_LEFT" onMouseClicked="#handleBudgetsClick" spacing="12" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;">
                         <Label style="-fx-font-size: 16;" text="💰" />
                         <Label style="-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;" text="Budgets" />
-                    </HBox>
-
-                    <!-- Utilisateurs -->
-                    <HBox alignment="CENTER_LEFT" onMouseClicked="#handleUsersClick" spacing="12" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;">
-                        <Label style="-fx-font-size: 16;" text="👥" />
-                        <Label style="-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;" text="Utilisateurs" />
-                    </HBox>
-
-                    <!-- Statistiques -->
-                    <HBox alignment="CENTER_LEFT" onMouseClicked="#handleStatsClick" spacing="12" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;">
-                        <Label style="-fx-font-size: 16;" text="📊" />
-                        <Label style="-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;" text="Statistiques" />
                     </HBox>
                 </VBox>
 
