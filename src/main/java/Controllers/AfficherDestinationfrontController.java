@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-public class AfficherDestinationFrontController implements Initializable {
+public class AfficherDestinationfrontController implements Initializable {
 
     @FXML private Label lblBreadcrumbDestination;
     @FXML private Label lblDestinationIcon;

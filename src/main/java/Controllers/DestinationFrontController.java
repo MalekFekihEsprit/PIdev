@@ -867,7 +867,7 @@ public class DestinationFrontController implements Initializable {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/AfficherDestinationFront.fxml"));
             Parent root = loader.load();
 
-            AfficherDestinationFrontController controller = loader.getController();
+            AfficherDestinationfrontController controller = loader.getController();
             controller.setDestination(destination);
 
             Stage stage = new Stage();
