@@ -2,10 +2,10 @@
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- Hôte : 127.0.0.1
--- Généré le : dim. 01 mars 2026 à 14:28
--- Version du serveur : 10.4.32-MariaDB
--- Version de PHP : 8.2.12
+-- Host: localhost
+-- Generation Time: Mar 03, 2026 at 04:09 AM
+-- Server version: 10.4.28-MariaDB
+-- PHP Version: 8.2.4
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,13 +18,13 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Base de données : `travelmate`
+-- Database: `travelmate`
 --
 
 -- --------------------------------------------------------
 
 --
--- Structure de la table `activites`
+-- Table structure for table `activites`
 --
 
 CREATE TABLE `activites` (
@@ -43,7 +43,7 @@ CREATE TABLE `activites` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Déchargement des données de la table `activites`
+-- Dumping data for table `activites`
 --
 
 INSERT INTO `activites` (`id`, `nom`, `description`, `budget`, `niveaudifficulte`, `lieu`, `agemin`, `statut`, `duree`, `categorie_id`, `image_path`, `date_prevue`) VALUES
@@ -64,11 +64,12 @@ INSERT INTO `activites` (`id`, `nom`, `description`, `budget`, `niveaudifficulte
 -- --------------------------------------------------------
 
 --
--- Structure de la table `budget`
+-- Table structure for table `budget`
 --
 
 CREATE TABLE `budget` (
   `id_budget` int(11) NOT NULL,
+  `libelle_budget` varchar(150) NOT NULL,
   `montant_total` double(10,2) NOT NULL,
   `devise_budget` varchar(3) DEFAULT 'EUR',
   `statut_budget` varchar(20) DEFAULT 'ACTIF',
@@ -80,7 +81,7 @@ CREATE TABLE `budget` (
 -- --------------------------------------------------------
 
 --
--- Structure de la table `categories`
+-- Table structure for table `categories`
 --
 
 CREATE TABLE `categories` (
@@ -94,7 +95,7 @@ CREATE TABLE `categories` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Déchargement des données de la table `categories`
+-- Dumping data for table `categories`
 --
 
 INSERT INTO `categories` (`id`, `nom`, `description`, `type`, `saison`, `niveauintensite`, `publiccible`) VALUES
@@ -109,7 +110,41 @@ INSERT INTO `categories` (`id`, `nom`, `description`, `type`, `saison`, `niveaui
 -- --------------------------------------------------------
 
 --
--- Structure de la table `depense`
+-- Table structure for table `delete_notifications`
+--
+
+CREATE TABLE `delete_notifications` (
+  `id_notification` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `user_name` varchar(255) NOT NULL,
+  `admin_id` int(11) NOT NULL,
+  `admin_name` varchar(255) NOT NULL,
+  `item_type` varchar(50) NOT NULL,
+  `item_id` int(11) NOT NULL,
+  `item_name` varchar(255) NOT NULL,
+  `reason` varchar(255) DEFAULT NULL,
+  `custom_reason` text DEFAULT NULL,
+  `deleted_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `is_read` tinyint(1) DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `delete_notifications`
+--
+
+INSERT INTO `delete_notifications` (`id_notification`, `user_id`, `user_name`, `admin_id`, `admin_name`, `item_type`, `item_id`, `item_name`, `reason`, `custom_reason`, `deleted_at`, `is_read`) VALUES
+(1, 2, 'Boutaieb Yosr', 1, 'Neyrouz Chekir', 'Destination', 5, 'Angers (FRANCE)', 'Doublon', NULL, '2026-03-02 16:00:59', 0),
+(2, 2, 'Boutaieb Yosr', 1, 'Neyrouz Chekir', 'Hébergement', 15, 'hotel (Appartement)', 'Informations incorrectes', NULL, '2026-03-02 16:04:58', 0),
+(3, 3, 'Chekiir Neyrouzz', 1, 'Neyrouz Chekir', 'Destination', 10, 'Hammamet (Tunisia)', 'Informations incorrectes', NULL, '2026-03-02 18:37:34', 1),
+(4, 3, 'Chekiir Neyrouzz', 1, 'Neyrouz Chekir', 'Hébergement', 24, 'ihrvz (Villa)', 'Autre', 'jb zvfr', '2026-03-02 18:41:48', 1),
+(5, 3, 'Chekiir Neyrouzz', 1, 'Neyrouz Chekir', 'Hébergement', 25, 'Millennium (Hôtel)', 'Autre', 'bcz', '2026-03-02 19:15:41', 1),
+(6, 3, 'Boutaieb Yosr', 1, 'Neyrouz Chekir', 'Destination', 11, 'Paris (France)', 'Autre', 'incompatible', '2026-03-03 02:52:24', 1),
+(7, 3, 'Boutaieb Yosr', 1, 'Neyrouz Chekir', 'Hébergement', 35, 'hjkrzva hekrv hekfv (Appartement)', 'Informations incorrectes', NULL, '2026-03-03 02:52:35', 1);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `depense`
 --
 
 CREATE TABLE `depense` (
@@ -127,13 +162,14 @@ CREATE TABLE `depense` (
 -- --------------------------------------------------------
 
 --
--- Structure de la table `destination`
+-- Table structure for table `destination`
 --
 
 CREATE TABLE `destination` (
   `id_destination` int(11) NOT NULL,
   `nom_destination` varchar(30) NOT NULL,
   `pays_destination` varchar(30) NOT NULL,
+  `region_destination` varchar(100) DEFAULT NULL,
   `description_destination` text DEFAULT NULL,
   `climat_destination` varchar(40) DEFAULT NULL,
   `saison_destination` varchar(40) DEFAULT NULL,
@@ -143,23 +179,26 @@ CREATE TABLE `destination` (
   `currency_destination` varchar(255) DEFAULT NULL,
   `flag_destination` varchar(500) DEFAULT NULL,
   `languages_destination` varchar(255) DEFAULT NULL,
-  `video_url` varchar(255) DEFAULT NULL
+  `video_url` varchar(255) DEFAULT NULL,
+  `added_by` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Déchargement des données de la table `destination`
+-- Dumping data for table `destination`
 --
 
-INSERT INTO `destination` (`id_destination`, `nom_destination`, `pays_destination`, `description_destination`, `climat_destination`, `saison_destination`, `latitude_destination`, `longitude_destination`, `score_destination`, `currency_destination`, `flag_destination`, `languages_destination`, `video_url`) VALUES
-(1, 'Nice', 'France', 'Nice, France, is a vibrant Mediterranean jewel...', 'Tropical', 'Été', 43.701944444, 7.268333333, 0, 'EUR (€)', 'https://flagcdn.com/w320/fr.png', 'French', 'https://www.youtube.com/watch?v=jyIux-2o69Y'),
-(2, 'Rome', 'Italy', 'Historic capital with ancient monuments and vibrant culture.', 'Mediterranean', 'Spring', 41.9028, 12.4964, 4.6, 'Euro', 'https://flagcdn.com/w320/it.png', 'Italian', 'https://example.com/rome.mp4'),
-(3, 'Paris', 'France', 'City of lights known for art, fashion and gastronomy.', 'Oceanic', 'Summer', 48.8566, 2.3522, 4.8, 'Euro', 'https://flagcdn.com/w320/fr.png', 'French', 'https://example.com/paris.mp4'),
-(4, 'Tokyo', 'Japan', 'Modern metropolis blending tradition and technology.', 'Humid Subtropical', 'Autumn', 35.6762, 139.6503, 4.7, 'Yen', 'https://flagcdn.com/w320/jp.png', 'Japanese', 'https://example.com/tokyo.mp4');
+INSERT INTO `destination` (`id_destination`, `nom_destination`, `pays_destination`, `region_destination`, `description_destination`, `climat_destination`, `saison_destination`, `latitude_destination`, `longitude_destination`, `score_destination`, `currency_destination`, `flag_destination`, `languages_destination`, `video_url`, `added_by`) VALUES
+(1, 'Nice', 'France', NULL, 'Nice, France, is a vibrant Mediterranean jewel...', 'Tropical', 'Été', 43.701944444, 7.268333333, 0, 'EUR (€)', 'https://flagcdn.com/w320/fr.png', 'French', 'https://www.youtube.com/watch?v=jyIux-2o69Y', NULL),
+(2, 'Rome', 'Italy', NULL, 'Historic capital with ancient monuments and vibrant culture.', 'Mediterranean', 'Spring', 41.9028, 12.4964, 4.6, 'Euro', 'https://flagcdn.com/w320/it.png', 'Italian', 'https://example.com/rome.mp4', NULL),
+(4, 'Tokyo', 'Japan', NULL, 'Modern metropolis blending tradition and technology.', 'Humid Subtropical', 'Autumn', 35.6762, 139.6503, 4.7, 'Yen', 'https://flagcdn.com/w320/jp.png', 'Japanese', 'https://example.com/tokyo.mp4', NULL),
+(8, 'New York City', 'USA', 'Americas', 'New York City pulsates with a vibrant energy, a global hub where iconic landmarks like the Statue of Liberty and Times Square meet world-class museums, Broadway shows, and diverse culinary experiences. Immerse yourself in a melting pot of cultures and discover the relentless spirit of the Big Apple.\n\nDay 1: Arrival & Midtown Marvels – Arrive at JFK or Newark, transfer to your hotel in Midtown. Spend the afternoon exploring Times Square, marveling at the lights and energy. Enjoy dinner at a classic New York steakhouse.\n\nDay 2: Statue of Liberty & Financial District – Take a ferry to Liberty Island and Ellis Island, experiencing American history. Afterwards, explore the Financial District, visit Wall Street, and see the Charging Bull statue. Consider a guided walking tour.\n\nDay 3: Museum Mile & Central Park – Dedicate the day to culture! Visit the Metropolitan Museum of Art or the Museum of Modern Art (MoMA). In the afternoon, relax and stroll through Central Park – rent a bike, have a picnic, or visit the Bethesda Terrace.\n\nDay 4: Greenwich Village & Chelsea – Explore the bohemian charm of Greenwich Village, browse independent shops, and enjoy live music.  Head to Chelsea, known for its art galleries and the High Line, an elevated park built on former railway lines.\n\nDay 5: Brooklyn Exploration – Cross the Brooklyn Bridge for stunning city views. Explore DUMBO (Down Under the Manhattan Bridge Overpass) with its cobblestone streets and waterfront park. Enjoy dinner in Brooklyn – pizza is a must!\n\nDay 6: Broadway & Theater District – Immerse yourself in the magic of Broadway!  Attend a show in the Theater District – book tickets in advance.  Explore nearby shops and restaurants before or after the performance.\n\nDay 7:  Shopping & Departure – Depending on your flight time, enjoy some last-minute shopping on Fifth Avenue or in SoHo.  Visit Grand Central Terminal for a final iconic New York moment before heading to the airport for your departure.', 'Tropical', 'Été', 40.71427, -74.00597, 0, 'USD ($)', 'https://flagcdn.com/w320/us.png', 'English', 'https://www.youtube.com/watch?v=nMcvb32H_Hg', 1),
+(9, 'Sfax', 'Tunisia', 'Africa', 'Hammamet, Tunisia offers a rich cultural experience, with famous landmarks like the Hammamet Medina and Yasmin Mosque, set amidst a vibrant atmosphere of beautiful beaches and historic architecture.\n\nDay 1: Introduction to Hammamet - Explore the city\'s charming Medina, visit the Great Mosque, and enjoy the local cuisine at a traditional restaurant.\nDay 2: Beach Relaxation - Spend the day relaxing on Hammamet\'s beautiful beaches, such as Hammamet Beach or Yasmin Beach, and take a sunset stroll along the coast.\nDay 3: Historic Excursions - Visit the ancient city of Carthage, a UNESCO World Heritage Site, and explore the Bardo Museum to learn about Tunisia\'s history and culture.\nDay 4: Nature Escapes - Take a day trip to the nearby Cape Bon, known for its stunning natural beauty, and visit the scenic town of Nabeul, famous for its pottery and ceramics.\nDay 5: Water Sports - Enjoy a day of water sports, such as snorkeling, kayaking, or paddleboarding, in the crystal-clear waters of the Mediterranean Sea.\nDay 6: Cultural Immersion - Visit a local market, such as the Souk, to experience the vibrant colors and sounds of Tunisian culture, and attend a traditional folk show in the evening.\nDay 7: Departure - Spend the morning shopping for souvenirs or visiting any last-minute sights, before departing Hammamet and bringing back memories of this enchanting Tunisian city.', 'Méditerranéen', 'Été', 34.74056, 10.76028, 0, 'TND (د.ت)', 'https://flagcdn.com/w320/tn.png', 'Arabic', 'https://www.youtube.com/watch?v=mbEdwymjdq8', 1),
+(12, 'Istanbul', 'Turkey', 'Asia', 'Istanbul, a vibrant metropolis straddling Europe and Asia, seamlessly blends ancient history with modern dynamism. Explore magnificent mosques, bustling bazaars, and opulent palaces, immersing yourself in a rich tapestry of Ottoman and Byzantine culture. Experience a captivating atmosphere of contrasts, where East meets West in a truly unforgettable destination.\n\n\n\nDay 1: Arrival & Sultanahmet Exploration – Arrive at Istanbul Airport (IST), transfer to your hotel in the Sultanahmet district. After settling in, begin your exploration with the iconic Hagia Sophia, marveling at its architectural grandeur and historical significance. Finish the day with a delicious Turkish dinner at a local restaurant.\n\nDay 2: Imperial Grandeur – Dedicate the day to the Topkapi Palace, the former residence of Ottoman Sultans. Explore the Harem, Treasury, and Imperial Council chambers. Afterwards, visit the Blue Mosque, famed for its stunning blue Iznik tiles and serene atmosphere.\n\nDay 3: Spice Market & Bazaars – Immerse yourself in the sensory overload of the Spice Market (Egyptian Bazaar), overflowing with fragrant spices, Turkish delight, and local delicacies.  Then, venture into the Grand Bazaar, one of the oldest and largest covered markets in the world, for some serious shopping and people-watching.\n\nDay 4: Cruise the Bosphorus – Embark on a scenic Bosphorus cruise, navigating the waterway that separates Europe and Asia. Admire the waterfront mansions, palaces, and fortresses lining the shores, offering breathtaking views of the city skyline. Enjoy lunch onboard with traditional Turkish cuisine.\n\nDay 5: Süleymaniye Mosque & Local Neighborhoods – Visit the magnificent Süleymaniye Mosque, designed by the renowned architect Sinan. Afterwards, explore the charming neighborhood of Balat, known for its colorful houses and historic synagogues.  Enjoy a traditional Turkish coffee in a local cafe.\n\nDay 6:  Chora Church & Artistic Exploration – Journey to the Chora Church (Kariye Museum), renowned for its exquisite Byzantine mosaics and frescoes.  In the afternoon, explore the trendy Karaköy district, known for its art galleries, cafes, and independent boutiques. Consider a Turkish cooking class for a hands-on cultural experience.\n\nDay 7: Departure – Enjoy a final Turkish breakfast before transferring to Istanbul Airport (IST) for your departure, filled with memories of this captivating city.  Perhaps squeeze in a last-minute souvenir purchase at a local shop.', 'Méditerranéen', 'Été', 41.01, 28.960277777, 3, 'TRY (₺)', 'https://flagcdn.com/w320/tr.png', 'Turkish', 'https://www.youtube.com/watch?v=7A1q7v4btbk', 3);
 
 -- --------------------------------------------------------
 
 --
--- Structure de la table `etape`
+-- Table structure for table `etape`
 --
 
 CREATE TABLE `etape` (
@@ -171,23 +210,10 @@ CREATE TABLE `etape` (
   `numero_jour` int(11) NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Déchargement des données de la table `etape`
---
-
-INSERT INTO `etape` (`id_etape`, `heure`, `description_etape`, `id_activite`, `id_itineraire`, `numero_jour`) VALUES
-(1, '08:00:00', 'hgfd', 21, 9, 1),
-(5, '08:00:00', 'n', 21, 11, 1),
-(9, '08:00:00', '', 6, 11, 2),
-(10, '07:00:00', '', 21, 11, 2),
-(11, '08:00:00', ';,hnbvc', 6, 9, 3),
-(12, '08:00:00', '', 21, 11, 0),
-(13, '08:00:00', '', 6, 11, 0);
-
 -- --------------------------------------------------------
 
 --
--- Structure de la table `hebergement`
+-- Table structure for table `hebergement`
 --
 
 CREATE TABLE `hebergement` (
@@ -199,30 +225,24 @@ CREATE TABLE `hebergement` (
   `note_hebergement` double DEFAULT NULL,
   `latitude_hebergement` double DEFAULT NULL,
   `longitude_hebergement` double DEFAULT NULL,
-  `destination_hebergement` int(11) NOT NULL
+  `destination_hebergement` int(11) NOT NULL,
+  `added_by` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Déchargement des données de la table `hebergement`
+-- Dumping data for table `hebergement`
 --
 
-INSERT INTO `hebergement` (`id_hebergement`, `nom_hebergement`, `type_hebergement`, `prixNuit_hebergement`, `adresse_hebergement`, `note_hebergement`, `latitude_hebergement`, `longitude_hebergement`, `destination_hebergement`) VALUES
-(1, 'Hôtel Locarno', 'Hôtel', 125, '4 Avenue des Baumettes, 06000 Nice, France', 3, 43.69472300054007, 7.251776289308175, 1),
-(2, 'Hôtel Negresco', 'Hôtel', 175, 'Rue du Commandant Berretta, 06000 Nice, France', 5, 43.69470965054007, 7.257752071044015, 1),
-(3, 'Goldstar Suites', 'Hôtel', 150, 'Passage Meyerbeer, 06000 Nice, France', 4, 43.69753050054002, 7.260538197109449, 1),
-(4, 'Splendid Hôtel & Spa Nice', 'Hôtel', 150, 'Rue Gounod, 06000 Nice, France', 4, 43.69875250054001, 7.259834457727271, 1),
-(5, 'Le Méridien Nice', 'Hôtel', 150, 'Avenue Gustave V, 06000 Nice, France', 4, 43.695280300540055, 7.265958300000001, 1),
-(6, 'Colosseum Hotel', 'Hotel', 120, 'Via Roma 1, Rome', 4.3, 41.903, 12.495, 2),
-(7, 'Vatican Stay', 'Hotel', 150, 'Via Vaticano 10, Rome', 4.5, 41.9022, 12.4539, 2),
-(8, 'Eiffel View Hotel', 'Hotel', 200, 'Avenue Gustave Eiffel, Paris', 4.7, 48.8584, 2.2945, 3),
-(9, 'Montmartre Lodge', 'Hotel', 110, 'Montmartre Street 5, Paris', 4.2, 48.8867, 2.3431, 3),
-(10, 'Shinjuku Grand', 'Hotel', 180, 'Shinjuku District, Tokyo', 4.6, 35.6938, 139.7034, 4),
-(11, 'Asakusa Ryokan', 'Ryokan', 90, 'Asakusa 2-3-1, Tokyo', 4.4, 35.7148, 139.7967, 4);
+INSERT INTO `hebergement` (`id_hebergement`, `nom_hebergement`, `type_hebergement`, `prixNuit_hebergement`, `adresse_hebergement`, `note_hebergement`, `latitude_hebergement`, `longitude_hebergement`, `destination_hebergement`, `added_by`) VALUES
+(33, 'Eventi', 'Hôtel', 0, 'Eventi, 851 6th Avenue, New York, NY 10001, United States of America', 0, 40.74716785036294, -73.99009722639826, 8, 1),
+(34, 'The Bowery Hotel', 'Hôtel', 0, 'The Bowery Hotel, 335 Bowery, New York, NY 10003, United States of America', 0, 40.726037350360414, -73.9914423397135, 8, 1),
+(36, 'Grand Hyatt Istanbul', 'Hôtel', 0, 'Grand Hyatt Istanbul, Asker Ocağı Caddesi 1, 34367 Şişli, Turkey', 5, 41.04100715039671, 28.988474371069866, 12, 3),
+(37, 'Grand Hotel de Londres', 'Hôtel', 0, 'Grand Hotel de Londres, Meşrutiyet Caddesi 53, 34430 Beyoğlu, Turkey', 4, 41.03239540039574, 28.975235000000005, 12, 3);
 
 -- --------------------------------------------------------
 
 --
--- Structure de la table `itineraire`
+-- Table structure for table `itineraire`
 --
 
 CREATE TABLE `itineraire` (
@@ -232,31 +252,10 @@ CREATE TABLE `itineraire` (
   `id_voyage` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Déchargement des données de la table `itineraire`
---
-
-INSERT INTO `itineraire` (`id_itineraire`, `nom_itineraire`, `description_itineraire`, `id_voyage`) VALUES
-(1, 'meri', 'jhgf', 23),
-(2, 'llll', 'nnnn', 13),
-(3, 'bbb', 'jjkk;', 13),
-(4, ';,n', 'lkjhgfc', 23),
-(5, 'kjh', 'lkijh', 23),
-(6, 'khad', 'boug', 23),
-(8, 'dsfgh', 'eqrtdgfhyugjik', 23),
-(9, 'kjhgf', 'oiuy', 30),
-(11, 'mmmm', 'l,np,npl', 47),
-(12, ';lkjhgfds', 'mlkjhgfd', 51),
-(13, 'mploiuyt', 'mlkjuhygf', 31),
-(14, 'lkjhbv', 'lkjhb', 7),
-(15, 'sdfrtgy', 'zaerty', 47),
-(16, 'kjhg', 'kjhgn', 47),
-(17, 'xcvb', 'qsdfg', 47);
-
 -- --------------------------------------------------------
 
 --
--- Structure de la table `liste_activite`
+-- Table structure for table `liste_activite`
 --
 
 CREATE TABLE `liste_activite` (
@@ -264,20 +263,10 @@ CREATE TABLE `liste_activite` (
   `id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Déchargement des données de la table `liste_activite`
---
-
-INSERT INTO `liste_activite` (`id_voyage`, `id`) VALUES
-(30, 21),
-(30, 6),
-(47, 21),
-(47, 6);
-
 -- --------------------------------------------------------
 
 --
--- Structure de la table `paiement`
+-- Table structure for table `paiement`
 --
 
 CREATE TABLE `paiement` (
@@ -296,24 +285,24 @@ CREATE TABLE `paiement` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Déchargement des données de la table `paiement`
+-- Dumping data for table `paiement`
 --
 
 INSERT INTO `paiement` (`id_paiement`, `id_voyage`, `id_utilisateur`, `montant`, `devise`, `methode`, `statut`, `transaction_id`, `sale_id`, `date_paiement`, `description`, `email_payeur`) VALUES
-(1, 23, 1, 150.00, 'EUR', 'STRIPE', 'COMPLETE', 'pi_3T46etBBrkfMn6Hw0qXRSJ06', NULL, '2026-02-23 21:27:13', 'Paiement pour le voyage : amal (Modifié)', 'client@example.com'),
-(2, 23, 1, 150.00, 'EUR', 'STRIPE', 'COMPLETE', 'pi_3T46fvBBrkfMn6Hw1EOb0huN', NULL, '2026-02-23 21:28:18', 'Paiement pour le voyage : amal (Modifié)', 'minyar.ghannem@esprit.tn'),
-(3, 23, 1, 150.00, 'EUR', 'STRIPE', 'COMPLETE', 'pi_3T46g8BBrkfMn6Hw1vta3DUU', NULL, '2026-02-23 21:28:30', 'Paiement pour le voyage : amal (Modifié)', 'minyar.ghannem@esprit.tn'),
-(4, 23, 1, 150.00, 'EUR', 'STRIPE', 'COMPLETE', 'pi_3T474EBBrkfMn6Hw1nmNpWVP', NULL, '2026-02-23 21:53:24', 'Paiement pour le voyage : amal (Modifié)', 'mimi@gmail.com'),
-(5, 23, 1, 150.00, 'EUR', 'STRIPE', 'COMPLETE', 'pi_3T47khBBrkfMn6Hw1ka9p8C5', NULL, '2026-02-23 22:37:18', 'Paiement pour le voyage : amal (Modifié)', 'mimi@gmail.com'),
-(6, 23, 1, 150.00, 'EUR', 'STRIPE', 'COMPLETE', 'pi_3T4JRLBBrkfMn6Hw0Su8emQh', NULL, '2026-02-24 11:06:05', 'Paiement pour le voyage : amal (Modifié)', 'client@example.com'),
-(7, 23, 1, 150.00, 'EUR', 'STRIPE', 'COMPLETE', 'pi_3T4V0xBBrkfMn6Hw0saTG70H', NULL, '2026-02-24 23:27:38', 'Paiement pour le voyage : amal (Modifié)', 'mimi@gmail.com'),
-(8, 23, 1, 150.00, 'EUR', 'STRIPE', 'COMPLETE', 'pi_3T4V1LBBrkfMn6Hw0GDdhdZR', NULL, '2026-02-24 23:28:03', 'Paiement pour le voyage : amal (Modifié)', 'ilyessguesmi7@gmail.com'),
-(9, 23, 1, 150.00, 'EUR', 'STRIPE', 'COMPLETE', 'pi_3T4V9vBBrkfMn6Hw0sztRk2v', NULL, '2026-02-24 23:36:55', 'Paiement pour le voyage : amal (Modifié)', 'ilyessguesmi7@gmail.com');
+(1, 23, 1, 150.00, 'EUR', 'STRIPE', 'COMPLETE', 'pi_3T46etBBrkfMn6Hw0qXRSJ06', NULL, '2026-02-23 20:27:13', 'Paiement pour le voyage : amal (Modifié)', 'client@example.com'),
+(2, 23, 1, 150.00, 'EUR', 'STRIPE', 'COMPLETE', 'pi_3T46fvBBrkfMn6Hw1EOb0huN', NULL, '2026-02-23 20:28:18', 'Paiement pour le voyage : amal (Modifié)', 'minyar.ghannem@esprit.tn'),
+(3, 23, 1, 150.00, 'EUR', 'STRIPE', 'COMPLETE', 'pi_3T46g8BBrkfMn6Hw1vta3DUU', NULL, '2026-02-23 20:28:30', 'Paiement pour le voyage : amal (Modifié)', 'minyar.ghannem@esprit.tn'),
+(4, 23, 1, 150.00, 'EUR', 'STRIPE', 'COMPLETE', 'pi_3T474EBBrkfMn6Hw1nmNpWVP', NULL, '2026-02-23 20:53:24', 'Paiement pour le voyage : amal (Modifié)', 'mimi@gmail.com'),
+(5, 23, 1, 150.00, 'EUR', 'STRIPE', 'COMPLETE', 'pi_3T47khBBrkfMn6Hw1ka9p8C5', NULL, '2026-02-23 21:37:18', 'Paiement pour le voyage : amal (Modifié)', 'mimi@gmail.com'),
+(6, 23, 1, 150.00, 'EUR', 'STRIPE', 'COMPLETE', 'pi_3T4JRLBBrkfMn6Hw0Su8emQh', NULL, '2026-02-24 10:06:05', 'Paiement pour le voyage : amal (Modifié)', 'client@example.com'),
+(7, 23, 1, 150.00, 'EUR', 'STRIPE', 'COMPLETE', 'pi_3T4V0xBBrkfMn6Hw0saTG70H', NULL, '2026-02-24 22:27:38', 'Paiement pour le voyage : amal (Modifié)', 'mimi@gmail.com'),
+(8, 23, 1, 150.00, 'EUR', 'STRIPE', 'COMPLETE', 'pi_3T4V1LBBrkfMn6Hw0GDdhdZR', NULL, '2026-02-24 22:28:03', 'Paiement pour le voyage : amal (Modifié)', 'ilyessguesmi7@gmail.com'),
+(9, 23, 1, 150.00, 'EUR', 'STRIPE', 'COMPLETE', 'pi_3T4V9vBBrkfMn6Hw0sztRk2v', NULL, '2026-02-24 22:36:55', 'Paiement pour le voyage : amal (Modifié)', 'ilyessguesmi7@gmail.com');
 
 -- --------------------------------------------------------
 
 --
--- Structure de la table `participation`
+-- Table structure for table `participation`
 --
 
 CREATE TABLE `participation` (
@@ -324,7 +313,7 @@ CREATE TABLE `participation` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Déchargement des données de la table `participation`
+-- Dumping data for table `participation`
 --
 
 INSERT INTO `participation` (`id_participation`, `id`, `role_participation`, `id_voyage`) VALUES
@@ -333,7 +322,7 @@ INSERT INTO `participation` (`id_participation`, `id`, `role_participation`, `id
 -- --------------------------------------------------------
 
 --
--- Structure de la table `user`
+-- Table structure for table `user`
 --
 
 CREATE TABLE `user` (
@@ -356,20 +345,20 @@ CREATE TABLE `user` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Déchargement des données de la table `user`
+-- Dumping data for table `user`
 --
 
 INSERT INTO `user` (`id`, `nom`, `prenom`, `date_naissance`, `email`, `telephone`, `mot_de_passe`, `role`, `photo_url`, `verification_code`, `is_verified`, `last_login_ip`, `last_login_location`, `created_at`, `photo_file_name`, `face_embedding`) VALUES
-(1, 'Chekir', 'Neyrouz', '2005-01-29', 'neyrouzchekir01@gmail.com', '+21629074810', '$2a$12$HZAHY7Nb1zbudlwU28ienuKGjzKDUlPPVw9wBOdEcCFZVbLLhN6Je', 'ADMIN', NULL, NULL, 1, '41.230.136.167', 'Tunis, Tunisia, ', '2026-02-26 18:12:29', NULL, NULL),
+(1, 'Chekir', 'Neyrouz', '2005-01-29', 'neyrouzchekir01@gmail.com', '+21629074810', '$2a$12$HZAHY7Nb1zbudlwU28ienuKGjzKDUlPPVw9wBOdEcCFZVbLLhN6Je', 'ADMIN', NULL, NULL, 1, '197.16.51.235', 'Tunis, Tunisia, ', '2026-02-26 18:12:29', NULL, NULL),
 (2, 'Boutaieb', 'Yosr', '2003-05-30', 'yosr.boutaieb@esprit.tn', NULL, '$2a$12$K52nqVrAtvx8EMHTyi7kFO1VFax0SQ5nlsExmunmWbG4h3JsKJ4YO', 'USER', NULL, NULL, 0, NULL, NULL, '2026-02-26 18:16:36', NULL, NULL),
-(3, 'Chekir', 'Neyrouz', '2003-02-08', 'neyrouz.chekir@esprit.tn', NULL, '$2a$12$xru.KeGJexFAPNBrxxdWk.20aMGwuZ/fZmdMfy/YttCSSCuVHtMva', 'USER', NULL, NULL, 1, '102.173.115.26', 'Tunis, Tunisia', '2026-02-26 18:40:58', NULL, NULL),
+(3, 'Boutaieb', 'Yosr', '2003-02-08', 'neyrouz.chekir@esprit.tn', NULL, '$2a$12$xru.KeGJexFAPNBrxxdWk.20aMGwuZ/fZmdMfy/YttCSSCuVHtMva', 'USER', NULL, NULL, 1, '197.16.51.235', 'Tunis, Tunisia, ', '2026-02-26 18:40:58', NULL, NULL),
 (4, 'Boutaieb', 'Yosr', '2004-02-13', 'neyrouzchekir2005@gmail.com', NULL, '$2a$12$/KPn2qOG5U5wOBL7Wvr/XuPag3EvRbAJPivloQ1OKj8yQzi3B9Y/O', 'USER', NULL, NULL, 1, '41.230.136.167', 'Tunis, Tunisia, ', '2026-02-26 19:00:33', NULL, NULL),
 (5, 'minyar', 'ghannem', '2026-02-14', 'minyarghannem06@gmail.com', '92559234', 'Travelmate123*', 'USER', '', NULL, 0, NULL, NULL, '2026-02-28 13:16:39', NULL, NULL);
 
 -- --------------------------------------------------------
 
 --
--- Structure de la table `voyage`
+-- Table structure for table `voyage`
 --
 
 CREATE TABLE `voyage` (
@@ -382,7 +371,7 @@ CREATE TABLE `voyage` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Déchargement des données de la table `voyage`
+-- Dumping data for table `voyage`
 --
 
 INSERT INTO `voyage` (`id_voyage`, `titre_voyage`, `date_debut`, `date_fin`, `statut`, `id_destination`) VALUES
@@ -398,25 +387,22 @@ INSERT INTO `voyage` (`id_voyage`, `titre_voyage`, `date_debut`, `date_fin`, `st
 (23, 'amal (Modifié)', '2026-07-16 00:00:00', '2026-08-01 00:00:00', 'a venir', 1),
 (28, 'ILYES', '2026-02-25 00:00:00', '2026-02-27 00:00:00', 'a venir', 2),
 (29, 'voyageillll', '2026-02-25 00:00:00', '2026-02-26 00:00:00', 'a venir', 1),
-(30, 'nouuuuuuuur', '2026-02-27 00:00:00', '2026-03-08 00:00:00', 'a venir', 3),
 (31, 'www', '2026-02-27 00:00:00', '2026-03-04 00:00:00', 'a venir', 2),
-(33, 'ssssminyar', '2026-02-26 00:00:00', '2026-02-28 00:00:00', 'a venir', 3),
-(47, 'aaaaaaaaaaaaaaaaaaaa', '2026-02-26 00:00:00', '2026-02-28 00:00:00', 'a venir', 3),
 (51, 'backtest', '2026-02-28 00:00:00', '2026-03-01 00:00:00', 'a venir', 1);
 
 --
--- Index pour les tables déchargées
+-- Indexes for dumped tables
 --
 
 --
--- Index pour la table `activites`
+-- Indexes for table `activites`
 --
 ALTER TABLE `activites`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_activites_categories` (`categorie_id`);
 
 --
--- Index pour la table `budget`
+-- Indexes for table `budget`
 --
 ALTER TABLE `budget`
   ADD PRIMARY KEY (`id_budget`),
@@ -424,26 +410,35 @@ ALTER TABLE `budget`
   ADD KEY `fk_budget_voyage` (`id_voyage`);
 
 --
--- Index pour la table `categories`
+-- Indexes for table `categories`
 --
 ALTER TABLE `categories`
   ADD PRIMARY KEY (`id`);
 
 --
--- Index pour la table `depense`
+-- Indexes for table `delete_notifications`
+--
+ALTER TABLE `delete_notifications`
+  ADD PRIMARY KEY (`id_notification`),
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `admin_id` (`admin_id`);
+
+--
+-- Indexes for table `depense`
 --
 ALTER TABLE `depense`
   ADD PRIMARY KEY (`id_depense`),
   ADD KEY `depense_fk` (`id_budget`);
 
 --
--- Index pour la table `destination`
+-- Indexes for table `destination`
 --
 ALTER TABLE `destination`
-  ADD PRIMARY KEY (`id_destination`);
+  ADD PRIMARY KEY (`id_destination`),
+  ADD KEY `fk_destination_user` (`added_by`);
 
 --
--- Index pour la table `etape`
+-- Indexes for table `etape`
 --
 ALTER TABLE `etape`
   ADD PRIMARY KEY (`id_etape`),
@@ -451,28 +446,29 @@ ALTER TABLE `etape`
   ADD KEY `fk_etape_activite` (`id_activite`);
 
 --
--- Index pour la table `hebergement`
+-- Indexes for table `hebergement`
 --
 ALTER TABLE `hebergement`
   ADD PRIMARY KEY (`id_hebergement`),
-  ADD KEY `hebergement_fk` (`destination_hebergement`);
+  ADD KEY `hebergement_fk` (`destination_hebergement`),
+  ADD KEY `fk_hebergement_user` (`added_by`);
 
 --
--- Index pour la table `itineraire`
+-- Indexes for table `itineraire`
 --
 ALTER TABLE `itineraire`
   ADD PRIMARY KEY (`id_itineraire`),
   ADD KEY `fk_itineraire_voyage` (`id_voyage`);
 
 --
--- Index pour la table `liste_activite`
+-- Indexes for table `liste_activite`
 --
 ALTER TABLE `liste_activite`
   ADD KEY `fk_liste_activite_voyage` (`id_voyage`),
   ADD KEY `fk_liste_activite_activite` (`id`);
 
 --
--- Index pour la table `paiement`
+-- Indexes for table `paiement`
 --
 ALTER TABLE `paiement`
   ADD PRIMARY KEY (`id_paiement`),
@@ -480,7 +476,7 @@ ALTER TABLE `paiement`
   ADD KEY `id_utilisateur` (`id_utilisateur`);
 
 --
--- Index pour la table `participation`
+-- Indexes for table `participation`
 --
 ALTER TABLE `participation`
   ADD PRIMARY KEY (`id_participation`),
@@ -488,160 +484,180 @@ ALTER TABLE `participation`
   ADD KEY `fk_participation_voyage` (`id_voyage`);
 
 --
--- Index pour la table `user`
+-- Indexes for table `user`
 --
 ALTER TABLE `user`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `email` (`email`);
 
 --
--- Index pour la table `voyage`
+-- Indexes for table `voyage`
 --
 ALTER TABLE `voyage`
   ADD PRIMARY KEY (`id_voyage`),
   ADD KEY `fk_voyage_destination` (`id_destination`);
 
 --
--- AUTO_INCREMENT pour les tables déchargées
+-- AUTO_INCREMENT for dumped tables
 --
 
 --
--- AUTO_INCREMENT pour la table `activites`
+-- AUTO_INCREMENT for table `activites`
 --
 ALTER TABLE `activites`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
 
 --
--- AUTO_INCREMENT pour la table `budget`
+-- AUTO_INCREMENT for table `budget`
 --
 ALTER TABLE `budget`
   MODIFY `id_budget` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
--- AUTO_INCREMENT pour la table `categories`
+-- AUTO_INCREMENT for table `categories`
 --
 ALTER TABLE `categories`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
--- AUTO_INCREMENT pour la table `depense`
+-- AUTO_INCREMENT for table `delete_notifications`
+--
+ALTER TABLE `delete_notifications`
+  MODIFY `id_notification` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+
+--
+-- AUTO_INCREMENT for table `depense`
 --
 ALTER TABLE `depense`
   MODIFY `id_depense` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
--- AUTO_INCREMENT pour la table `destination`
+-- AUTO_INCREMENT for table `destination`
 --
 ALTER TABLE `destination`
-  MODIFY `id_destination` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id_destination` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
--- AUTO_INCREMENT pour la table `etape`
+-- AUTO_INCREMENT for table `etape`
 --
 ALTER TABLE `etape`
   MODIFY `id_etape` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
--- AUTO_INCREMENT pour la table `hebergement`
+-- AUTO_INCREMENT for table `hebergement`
 --
 ALTER TABLE `hebergement`
-  MODIFY `id_hebergement` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id_hebergement` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
 
 --
--- AUTO_INCREMENT pour la table `itineraire`
+-- AUTO_INCREMENT for table `itineraire`
 --
 ALTER TABLE `itineraire`
   MODIFY `id_itineraire` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
--- AUTO_INCREMENT pour la table `paiement`
+-- AUTO_INCREMENT for table `paiement`
 --
 ALTER TABLE `paiement`
   MODIFY `id_paiement` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
--- AUTO_INCREMENT pour la table `participation`
+-- AUTO_INCREMENT for table `participation`
 --
 ALTER TABLE `participation`
   MODIFY `id_participation` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
--- AUTO_INCREMENT pour la table `user`
+-- AUTO_INCREMENT for table `user`
 --
 ALTER TABLE `user`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
--- AUTO_INCREMENT pour la table `voyage`
+-- AUTO_INCREMENT for table `voyage`
 --
 ALTER TABLE `voyage`
   MODIFY `id_voyage` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=52;
 
 --
--- Contraintes pour les tables déchargées
+-- Constraints for dumped tables
 --
 
 --
--- Contraintes pour la table `activites`
+-- Constraints for table `activites`
 --
 ALTER TABLE `activites`
   ADD CONSTRAINT `fk_activites_categories` FOREIGN KEY (`categorie_id`) REFERENCES `categories` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 --
--- Contraintes pour la table `budget`
+-- Constraints for table `budget`
 --
 ALTER TABLE `budget`
   ADD CONSTRAINT `fk_budget_user` FOREIGN KEY (`id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_budget_voyage` FOREIGN KEY (`id_voyage`) REFERENCES `voyage` (`id_voyage`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- Contraintes pour la table `depense`
+-- Constraints for table `delete_notifications`
+--
+ALTER TABLE `delete_notifications`
+  ADD CONSTRAINT `fk_notification_admin` FOREIGN KEY (`admin_id`) REFERENCES `user` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_notification_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `depense`
 --
 ALTER TABLE `depense`
   ADD CONSTRAINT `depense_fk` FOREIGN KEY (`id_budget`) REFERENCES `budget` (`id_budget`) ON DELETE CASCADE;
 
 --
--- Contraintes pour la table `etape`
+-- Constraints for table `destination`
+--
+ALTER TABLE `destination`
+  ADD CONSTRAINT `fk_destination_user` FOREIGN KEY (`added_by`) REFERENCES `user` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+--
+-- Constraints for table `etape`
 --
 ALTER TABLE `etape`
   ADD CONSTRAINT `fk_etape_activite` FOREIGN KEY (`id_activite`) REFERENCES `activites` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_etape_itineraire` FOREIGN KEY (`id_itineraire`) REFERENCES `itineraire` (`id_itineraire`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- Contraintes pour la table `hebergement`
+-- Constraints for table `hebergement`
 --
 ALTER TABLE `hebergement`
-  ADD CONSTRAINT `hebergement_fk` FOREIGN KEY (`destination_hebergement`) REFERENCES `destination` (`id_destination`) ON DELETE CASCADE;
+  ADD CONSTRAINT `fk_hebergement_user` FOREIGN KEY (`added_by`) REFERENCES `user` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  ADD CONSTRAINT `hebergement_fk` FOREIGN KEY (`destination_hebergement`) REFERENCES `destination` (`id_destination`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- Contraintes pour la table `itineraire`
+-- Constraints for table `itineraire`
 --
 ALTER TABLE `itineraire`
   ADD CONSTRAINT `fk_itineraire_voyage` FOREIGN KEY (`id_voyage`) REFERENCES `voyage` (`id_voyage`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- Contraintes pour la table `liste_activite`
+-- Constraints for table `liste_activite`
 --
 ALTER TABLE `liste_activite`
   ADD CONSTRAINT `fk_liste_activite_activite` FOREIGN KEY (`id`) REFERENCES `activites` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_liste_activite_voyage` FOREIGN KEY (`id_voyage`) REFERENCES `voyage` (`id_voyage`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- Contraintes pour la table `paiement`
+-- Constraints for table `paiement`
 --
 ALTER TABLE `paiement`
   ADD CONSTRAINT `paiement_ibfk_1` FOREIGN KEY (`id_voyage`) REFERENCES `voyage` (`id_voyage`) ON DELETE CASCADE,
   ADD CONSTRAINT `paiement_ibfk_2` FOREIGN KEY (`id_utilisateur`) REFERENCES `user` (`id`) ON DELETE CASCADE;
 
 --
--- Contraintes pour la table `participation`
+-- Constraints for table `participation`
 --
 ALTER TABLE `participation`
   ADD CONSTRAINT `fk_participation_user` FOREIGN KEY (`id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_participation_voyage` FOREIGN KEY (`id_voyage`) REFERENCES `voyage` (`id_voyage`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- Contraintes pour la table `voyage`
+-- Constraints for table `voyage`
 --
 ALTER TABLE `voyage`
   ADD CONSTRAINT `fk_voyage_destination` FOREIGN KEY (`id_destination`) REFERENCES `destination` (`id_destination`) ON DELETE CASCADE ON UPDATE CASCADE;
