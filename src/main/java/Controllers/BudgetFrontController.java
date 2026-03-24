@@ -186,6 +186,8 @@ public class BudgetFrontController implements Initializable {
 
     // ===== Navigation buttons (Updated) =====
     @FXML private HBox btnDestinations;
+    @FXML private HBox btnHebergement;
+    @FXML private HBox btnCategories;
     @FXML private HBox btnActivites;
     @FXML private HBox btnVoyages;
     @FXML private HBox btnBudgets;
@@ -644,6 +646,16 @@ public class BudgetFrontController implements Initializable {
         if (btnDestinations != null) {
             btnDestinations.setOnMouseClicked(e -> navigateTo("Destinations", "/DestinationFront.fxml"));
             setupNavButtonHover(btnDestinations, "🌍", "Destinations");
+        }
+
+        if (btnHebergement != null) {
+            btnHebergement.setOnMouseClicked(e -> navigateTo("Hebergement", "/HebergementFront.fxml"));
+            setupNavButtonHover(btnHebergement, "🌍", "Hebergement");
+        }
+
+        if (btnCategories != null) {
+            btnCategories.setOnMouseClicked(e -> navigateTo("Categories", "/categoriesfront.fxml"));
+            setupNavButtonHover(btnCategories, "🌍", "Categories");
         }
 
         if (btnActivites != null) {

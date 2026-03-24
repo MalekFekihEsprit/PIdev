@@ -10,9 +10,11 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 
+import static Utils.ConfigV.dotenv;
+
 public class InflationService {
 
-    private static final String FRED_API_KEY = "InflationBudget"; // Remplacez par votre clé
+    private static final String FRED_API_KEY = dotenv.get("InflationBudget"); // Remplacez par votre clé
     private static final String BASE_URL = "https://api.stlouisfed.org/fred/series/observations";
     private static final int TIMEOUT_SECONDS = 10;
 

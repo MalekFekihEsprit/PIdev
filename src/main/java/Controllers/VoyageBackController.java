@@ -518,7 +518,7 @@ public class VoyageBackController implements Initializable {
 
     @FXML
     private void handleDestinationsClick(MouseEvent event) {
-        naviguerVers("/PageDestinationBack.fxml", "Destinations");
+        naviguerVers("/DestinationBack.fxml", "Destinations");
     }
 
     @FXML

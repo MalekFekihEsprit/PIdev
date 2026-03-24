@@ -320,16 +320,13 @@ public class DestinationBackController implements Initializable {
         if (btnItineraires != null) btnItineraires.setOnMouseClicked(event -> navigateToItineraires());
 
         setupSidebarButtonHover(btnActivites, "🏄", "Activités");
-        if (btnActivites != null) btnActivites.setOnMouseClicked(event ->
-                showInfoAlert("Activités", "Cette fonctionnalité sera bientôt disponible"));
+        if (btnActivites != null) btnActivites.setOnMouseClicked(event -> navigateToActivites());
 
         setupSidebarButtonHover(btnVoyages, "✈️", "Voyages");
-        if (btnVoyages != null) btnVoyages.setOnMouseClicked(event ->
-                showInfoAlert("Voyages", "Cette fonctionnalité sera bientôt disponible"));
+        if (btnVoyages != null) btnVoyages.setOnMouseClicked(event -> navigateToVoyages());
 
         setupSidebarButtonHover(btnBudgets, "💰", "Budgets");
-        if (btnBudgets != null) btnBudgets.setOnMouseClicked(event ->
-                showInfoAlert("Budgets", "Cette fonctionnalité sera bientôt disponible"));
+        if (btnBudgets != null) btnBudgets.setOnMouseClicked(event -> navigateToBudgets());
     }
 
     private void setupSidebarButtonHover(HBox button, String icon, String text) {
@@ -362,6 +359,48 @@ public class DestinationBackController implements Initializable {
                 }
             });
         });
+    }
+
+    private void navigateToBudgets() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/BudgetDepenseBack.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) btnHebergement.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("TravelMate - Gestion des budgets");
+            stage.setMaximized(true);
+        } catch (IOException e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir la gestion des hébergements: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void navigateToVoyages() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/PageVoyageBack.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) btnHebergement.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("TravelMate - Gestion des Voyages");
+            stage.setMaximized(true);
+        } catch (IOException e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir la gestion des hébergements: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void navigateToActivites() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/activitesback.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) btnHebergement.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("TravelMate - Gestion des activites");
+            stage.setMaximized(true);
+        } catch (IOException e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir la gestion: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     private void navigateToHebergement() {

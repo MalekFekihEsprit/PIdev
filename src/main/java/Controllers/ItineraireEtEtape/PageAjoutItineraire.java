@@ -311,8 +311,8 @@ public class PageAjoutItineraire {
             return;
         }
 
-        if (nomField.getText().length() > 10) {
-            showError("Le nom ne doit pas dépasser 10 caractères");
+        if (nomField.getText().length() > 100) {
+            showError("Le nom ne doit pas dépasser 100 caractères");
             return;
         }
 

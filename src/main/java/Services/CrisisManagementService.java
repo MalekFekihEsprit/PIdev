@@ -39,7 +39,7 @@ public class CrisisManagementService {
     private static String loadApiKey() {
         try {
             // Essayer d'abord la variable d'environnement
-            String envKey = System.getenv("AI_AGENT");
+            String envKey = System.getenv("AI_AGENTBudget");
             if (envKey != null && !envKey.isBlank()) {
                 System.out.println("✅ CrisisManagementService: Clé chargée depuis variable d'environnement");
                 return envKey;
@@ -52,7 +52,7 @@ public class CrisisManagementService {
                     .ignoreIfMissing()
                     .load();
 
-            String dotenvKey = dotenv.get("AI_AGENT");
+            String dotenvKey = dotenv.get("AI_AGENTBudget");
             if (dotenvKey != null && !dotenvKey.isBlank()) {
                 System.out.println("✅ CrisisManagementService: Clé chargée depuis fichier .env");
                 return dotenvKey;

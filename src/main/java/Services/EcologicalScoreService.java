@@ -28,14 +28,14 @@ public class EcologicalScoreService {
 
     static {
         try {
-            API_KEY = System.getenv("AI_AGENT");
+            API_KEY = System.getenv("AI_AGENTBudget");
             if (API_KEY == null || API_KEY.isBlank()) {
                 Dotenv dotenv = Dotenv.configure()
                         .directory(".")
                         .filename(".env")
                         .ignoreIfMissing()
                         .load();
-                API_KEY = dotenv.get("AI_AGENT");
+                API_KEY = dotenv.get("AI_AGENTBudget");
             }
             if (API_KEY != null && !API_KEY.isBlank()) {
                 System.out.println("✅ EcologicalScoreService: Clé API chargée");

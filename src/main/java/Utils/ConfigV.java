@@ -5,7 +5,7 @@ import io.github.cdimascio.dotenv.Dotenv;
 public class ConfigV {
 
     // ==================== CHARGEMENT DES VARIABLES D'ENVIRONNEMENT ====================
-    private static final Dotenv dotenv = Dotenv.configure()
+    public static final Dotenv dotenv = Dotenv.configure()
             .ignoreIfMissing()
             .load();
 

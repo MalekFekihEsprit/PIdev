@@ -8,6 +8,8 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
+import static Utils.ConfigV.dotenv;
+
 /**
  * Services/CurrencyConverter.java
  * Convertit des montants entre devises via ExchangeRate-API (gratuit).
@@ -17,7 +19,7 @@ import java.util.Map;
 public class CurrencyConverter {
 
     // ✅ Remplacez par votre clé API
-    private static final String API_KEY = "CurrencyConverterBudget";
+    private static final String API_KEY = dotenv.get("CurrencyConverterBudget");
     private static final String BASE_URL = "https://v6.exchangerate-api.com/v6/";
     private static final int TIMEOUT_SECONDS = 10;
 
