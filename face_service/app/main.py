@@ -82,7 +82,7 @@ async def compare_embeddings(request: Request):
 
         return JSONResponse({
             "similarity": similarity,
-            "is_match": similarity > 0.5   # Seuil ajustable (0.5 est raisonnable)
+            "is_match": similarity > 0.8
         })
 
     except Exception as e:
