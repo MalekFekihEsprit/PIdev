@@ -6,6 +6,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.layout.VBox;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 import java.net.URL;
@@ -50,9 +51,10 @@ public class HomePageController implements Initializable {
             Parent root = loader.load();
 
             Stage stage = (Stage) frontOfficeCard.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - Front Office");
             stage.setMaximized(true);
+            stage.show();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -65,9 +67,10 @@ public class HomePageController implements Initializable {
             Parent root = loader.load();
 
             Stage stage = (Stage) backOfficeCard.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - Back Office (Administration)");
             stage.setMaximized(true);
+            stage.show();
 
         } catch (Exception e) {
             e.printStackTrace();

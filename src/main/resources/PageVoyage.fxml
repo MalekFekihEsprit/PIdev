@@ -17,84 +17,79 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.shape.Circle?>
-<?import javafx.scene.shape.Rectangle?>
 
-<BorderPane prefHeight="750" prefWidth="1100" style="-fx-background-color: #f8fafc;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.VoyageController">
+<BorderPane maxHeight="Infinity" maxWidth="Infinity" style="-fx-background-color: #f8fafc;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.VoyageController">
 
     <!-- ══════════════════════════════════════════════════════════ -->
     <!-- TOP NAVIGATION BAR                                        -->
     <!-- ══════════════════════════════════════════════════════════ -->
     <top>
         <VBox>
-            <!-- Main Navigation Bar -->
-            <HBox alignment="CENTER_LEFT" spacing="15" style="-fx-background-color: #ffffff; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.04), 12, 0, 0, 3);">
+                        <!-- Main Navigation Bar -->
+            <HBox alignment="CENTER_LEFT" spacing="12" style="-fx-background-color: #ffffff; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.02), 10, 0, 0, 2);">
                 <padding>
-                    <Insets bottom="12" left="24" right="24" top="12" />
+                    <Insets bottom="16" left="32" right="32" top="16" />
                 </padding>
 
                 <!-- Logo -->
                 <HBox alignment="CENTER" spacing="10">
                     <Circle fill="linear-gradient(from 0% 0% to 100% 100%, #ff8c42, #ff6b4a)" radius="16" />
-                    <Label style="-fx-font-size: 22; -fx-font-weight: bold; -fx-text-fill: #0f172a;" text="TravelMate" />
-                    <Label style="-fx-background-color: linear-gradient(to right, #ff8c42, #ff6b4a); -fx-text-fill: white; -fx-background-radius: 12; -fx-padding: 3 10; -fx-font-size: 9; -fx-font-weight: bold;" text="PRO" />
+                    <Label style="-fx-font-family: 'Clash Display'; -fx-font-size: 22; -fx-font-weight: bold; -fx-text-fill: #0f172a;" text="TravelMate" />
+                    <Label style="-fx-background-color: #ff8c42; -fx-text-fill: white; -fx-background-radius: 12; -fx-padding: 4 10; -fx-font-size: 10; -fx-font-weight: bold;" text="PRO" />
                 </HBox>
 
-                <!-- Navigation Menu - TOUS LES BOUTONS -->
+                <!-- Navigation Menu -->
                 <HBox alignment="CENTER_LEFT" spacing="4" style="-fx-padding: 0 0 0 20;">
-
-                    <!-- Destinations -->
-                    <HBox fx:id="btnDestinations" alignment="CENTER" spacing="6" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 8 14; -fx-cursor: hand;">
-                        <Label style="-fx-font-size: 14;" text="🌍" />
-                        <Label style="-fx-text-fill: #475569; -fx-font-weight: 500; -fx-font-size: 12;" text="Destinations" />
+                    <HBox fx:id="btnDestinations" alignment="CENTER" spacing="8" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 6 10; -fx-cursor: hand;">
+                        <Label style="-fx-font-size: 16;" text="🌍" />
+                        <Label style="-fx-text-fill: #475569; -fx-font-weight: 500; -fx-font-size: 13;" text="Destinations" />
                     </HBox>
-
-                    <!-- Hébergements (NOUVEAU) -->
-                    <HBox fx:id="btnHebergement" alignment="CENTER" spacing="6" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 8 14; -fx-cursor: hand;">
-                        <Label style="-fx-font-size: 14;" text="🏨" />
-                        <Label style="-fx-text-fill: #475569; -fx-font-weight: 500; -fx-font-size: 12;" text="Hébergements" />
+                    <HBox fx:id="btnHebergements" alignment="CENTER" spacing="8" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 6 10; -fx-cursor: hand;">
+                        <Label style="-fx-font-size: 16;" text="🏨" />
+                        <Label style="-fx-text-fill: #475569; -fx-font-weight: 500; -fx-font-size: 13;" text="Hébergements" />
                     </HBox>
-
-                    <!-- Activités -->
-                    <HBox fx:id="btnActivites" alignment="CENTER" spacing="6" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 8 14; -fx-cursor: hand;">
-                        <Label style="-fx-font-size: 14;" text="🏄" />
-                        <Label style="-fx-text-fill: #475569; -fx-font-weight: 500; -fx-font-size: 12;" text="Activités" />
+                    <HBox fx:id="btnCategories" alignment="CENTER" spacing="8" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 6 10; -fx-cursor: hand;">
+                        <Label style="-fx-font-size: 16;" text="📑" />
+                        <Label style="-fx-text-fill: #475569; -fx-font-weight: 500; -fx-font-size: 13;" text="Catégories" />
                     </HBox>
-
-                    <!-- Catégories -->
-                    <HBox fx:id="btnCategories" alignment="CENTER" spacing="6" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 8 14; -fx-cursor: hand;">
-                        <Label style="-fx-font-size: 14;" text="📑" />
-                        <Label style="-fx-text-fill: #475569; -fx-font-weight: 500; -fx-font-size: 12;" text="Catégories" />
+                    <HBox fx:id="btnActivites" alignment="CENTER" spacing="8" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 6 10; -fx-cursor: hand;">
+                        <Label style="-fx-font-size: 16;" text="🏄" />
+                        <Label style="-fx-text-fill: #475569; -fx-font-weight: 500; -fx-font-size: 13;" text="Activités" />
                     </HBox>
-
-                    <!-- Voyages (ACTIF) -->
-                    <HBox fx:id="btnVoyages" alignment="CENTER" spacing="6" style="-fx-background-color: rgba(255,140,66,0.08); -fx-background-radius: 12; -fx-padding: 8 14; -fx-cursor: hand; -fx-border-color: rgba(255,140,66,0.5); -fx-border-width: 1; -fx-border-radius: 12;">
-                        <Label style="-fx-font-size: 14;" text="✈" />
-                        <Label style="-fx-text-fill: #ff8c42; -fx-font-weight: 700; -fx-font-size: 12;" text="Voyages" />
+                    <HBox fx:id="btnEvenements" alignment="CENTER" spacing="8" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 6 10; -fx-cursor: hand;">
+                        <Label style="-fx-font-size: 16;" text="🎉" />
+                        <Label style="-fx-text-fill: #475569; -fx-font-weight: 500; -fx-font-size: 13;" text="Événements" />
                     </HBox>
-
-                    <!-- Budgets -->
-                    <HBox fx:id="btnBudgets" alignment="CENTER" spacing="6" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 8 14; -fx-cursor: hand;">
-                        <Label style="-fx-font-size: 14;" text="💰" />
-                        <Label style="-fx-text-fill: #475569; -fx-font-weight: 500; -fx-font-size: 12;" text="Budgets" />
+                    <HBox fx:id="btnVoyages" alignment="CENTER" spacing="8" style="-fx-background-color: rgba(255,140,66,0.1); -fx-background-radius: 12; -fx-padding: 6 10; -fx-cursor: hand; -fx-border-color: #ff8c42; -fx-border-width: 1; -fx-border-radius: 12;">
+                        <Label style="-fx-font-size: 16;" text="✈️" />
+                        <Label style="-fx-text-fill: #ff8c42; -fx-font-weight: 600; -fx-font-size: 13;" text="Voyages" />
+                    </HBox>
+                    <HBox fx:id="btnBudgets" alignment="CENTER" spacing="8" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 6 10; -fx-cursor: hand;">
+                        <Label style="-fx-font-size: 16;" text="💰" />
+                        <Label style="-fx-text-fill: #475569; -fx-font-weight: 500; -fx-font-size: 13;" text="Budgets" />
                     </HBox>
                 </HBox>
 
                 <Region HBox.hgrow="ALWAYS" />
 
                 <!-- Notifications -->
-                <HBox alignment="CENTER" style="-fx-background-color: #f8fafc; -fx-background-radius: 50; -fx-min-width: 38; -fx-min-height: 38; -fx-cursor: hand; -fx-border-color: #e2e8f0; -fx-border-width: 1; -fx-border-radius: 50;">
-                    <Label style="-fx-font-size: 15;" text="🔔" />
-                </HBox>
+                <StackPane>
+                    <HBox fx:id="btnNotifications" alignment="CENTER" style="-fx-background-color: #f1f5f9; -fx-background-radius: 50%; -fx-min-width: 40; -fx-min-height: 40; -fx-cursor: hand;">
+                        <Label style="-fx-font-size: 16;" text="🔔" />
+                    </HBox>
+                    <Label fx:id="lblNotificationBadge" style="-fx-background-color: #ef4444; -fx-text-fill: white; -fx-background-radius: 50%; -fx-min-width: 18; -fx-min-height: 18; -fx-alignment: center; -fx-font-size: 10; -fx-font-weight: bold; -fx-translate-x: 12; -fx-translate-y: -12;" text="0" visible="false" />
+                </StackPane>
 
                 <!-- User Profile -->
-                <HBox fx:id="userProfileBox" alignment="CENTER" spacing="10" style="-fx-background-color: #f8fafc; -fx-background-radius: 25; -fx-padding: 5 14 5 5; -fx-cursor: hand; -fx-border-color: #e2e8f0; -fx-border-width: 1; -fx-border-radius: 25;">
-                    <Circle fill="linear-gradient(from 0% 0% to 100% 100%, #ff8c42, #ff6b4a)" radius="15" />
+                <HBox fx:id="userProfileBox" alignment="CENTER" minWidth="140" spacing="10" style="-fx-background-color: #f1f5f9; -fx-background-radius: 25; -fx-padding: 6 12 6 6; -fx-cursor: hand;">
+                    <Circle fill="linear-gradient(from 0% 0% to 100% 100%, #ff8c42, #ff6b4a)" radius="16" />
                     <VBox spacing="0">
-                        <Label fx:id="lblUserName" style="-fx-text-fill: #0f172a; -fx-font-weight: 600; -fx-font-size: 11;" text="Chargement..." />
-                        <Label fx:id="lblUserRole" style="-fx-text-fill: #94a3b8; -fx-font-size: 9;" text="Utilisateur" />
+                        <Label fx:id="lblUserName" style="-fx-text-fill: #0f172a; -fx-font-weight: 600; -fx-font-size: 13;" text="Chargement..." />
+                        <Label fx:id="lblUserRole" style="-fx-text-fill: #64748b; -fx-font-size: 10;" text="..." />
                     </VBox>
-                    <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 8;" text="▼" />
+                    <Label style="-fx-text-fill: #64748b; -fx-font-size: 12;" text="▼" />
                 </HBox>
             </HBox>
 
@@ -104,6 +99,7 @@
                 <Label style="-fx-text-fill: #cbd5e1; -fx-font-size: 11;" text="›" />
                 <Label style="-fx-text-fill: #ff8c42; -fx-font-size: 11; -fx-font-weight: 700;" text="✈️ Voyages" />
                 <Region HBox.hgrow="ALWAYS" />
+                <Button fx:id="btnTranslate" onAction="#handleTranslate" style="-fx-background-color:#10b981;-fx-text-fill:white;-fx-background-radius:12;-fx-padding:4 12;-fx-font-size:11;-fx-cursor:hand;-fx-border-width:0;" text="🌐 Traduire" />
             </HBox>
         </VBox>
     </top>
@@ -117,7 +113,7 @@
                 <Circle fill="#10b981" radius="3.5" />
                 <Label style="-fx-text-fill: #10b981; -fx-font-size: 10; -fx-font-weight: 600;" text="Connecté" />
             </HBox>
-            <Rectangle fill="#e2e8f0" height="12" width="1" />
+            <Region maxWidth="Infinity" minHeight="12" prefHeight="12" style="-fx-background-color: #e2e8f0;" />
             <Label fx:id="lblVoyagesActifsFooter" style="-fx-text-fill: #64748b; -fx-font-size: 10;" text="0 voyages actifs" />
             <Region HBox.hgrow="ALWAYS" />
             <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 10;" text="© 2026 TravelMate" />
@@ -128,11 +124,11 @@
     <!-- MAIN CONTENT - PAGE VOYAGES                               -->
     <!-- ══════════════════════════════════════════════════════════ -->
     <center>
-        <ScrollPane fitToWidth="true" style="-fx-background: #f8fafc; -fx-border-color: transparent; -fx-background-color: transparent;">
+        <ScrollPane fitToWidth="true" fitToHeight="false" VBox.vgrow="ALWAYS" style="-fx-background: #f8fafc; -fx-border-color: transparent; -fx-background-color: transparent;">
             <content>
-                <VBox maxWidth="1100" spacing="20">
+                <VBox spacing="20" maxWidth="Infinity">
                     <padding>
-                        <Insets bottom="40" left="30" right="30" top="24" />
+                        <Insets bottom="40" left="48" right="48" top="24" />
                     </padding>
 
                     <!-- PAGE HEADER -->
@@ -154,7 +150,7 @@
                         <!-- Section title -->
                         <HBox alignment="CENTER_LEFT" spacing="8">
                             <Label style="-fx-font-size: 15; -fx-font-weight: 700; -fx-text-fill: #0f172a;" text="🔍 Recherche et filtres" />
-                            <Rectangle fill="#ff8c42" height="2" width="40" />
+                            <Region maxWidth="Infinity" minHeight="2" prefHeight="2" style="-fx-background-color: #ff8c42;" />
                         </HBox>
 
                         <GridPane hgap="15" vgap="12">
@@ -171,11 +167,11 @@
 
                             <!-- Recherche par titre -->
                             <Label style="-fx-text-fill: #475569; -fx-font-size: 11; -fx-font-weight: 600;" text="🔍 Rechercher par titre:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-                            <TextField fx:id="tfSearchTitre" promptText="Titre du voyage..." style="-fx-background-color: #f8fafc; -fx-background-radius: 12; -fx-padding: 10; -fx-border-color: #e2e8f0; -fx-border-radius: 12; -fx-border-width: 1;" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                            <TextField fx:id="tfSearchTitre" promptText="Titre du voyage..." maxWidth="Infinity" style="-fx-background-color: #f8fafc; -fx-background-radius: 12; -fx-padding: 10; -fx-border-color: #e2e8f0; -fx-border-radius: 12; -fx-border-width: 1;" GridPane.columnIndex="1" GridPane.rowIndex="0" />
 
                             <!-- Filtre par statut -->
                             <Label style="-fx-text-fill: #475569; -fx-font-size: 11; -fx-font-weight: 600;" text="📊 Filtrer par statut:" GridPane.columnIndex="2" GridPane.rowIndex="0" />
-                            <ComboBox fx:id="cbFilterStatut" prefWidth="150" style="-fx-background-color: #f8fafc; -fx-background-radius: 12; -fx-border-color: #e2e8f0; -fx-border-radius: 12;" GridPane.columnIndex="3" GridPane.rowIndex="0">
+                            <ComboBox fx:id="cbFilterStatut" maxWidth="Infinity" style="-fx-background-color: #f8fafc; -fx-background-radius: 12; -fx-border-color: #e2e8f0; -fx-border-radius: 12;" GridPane.columnIndex="3" GridPane.rowIndex="0">
                                 <items>
                                     <FXCollections fx:factory="observableArrayList">
                                         <String fx:value="Tous" />
@@ -202,7 +198,7 @@
                         <!-- Title and action buttons -->
                         <HBox alignment="CENTER_LEFT" spacing="8">
                             <Label style="-fx-font-size: 15; -fx-font-weight: 700; -fx-text-fill: #0f172a;" text="➕ Nouveau voyage" />
-                            <Rectangle fill="#10b981" height="2" width="40" />
+                            <Region maxWidth="Infinity" minHeight="2" prefHeight="2" style="-fx-background-color: #10b981;" />
                             <Region HBox.hgrow="ALWAYS" />
 
                             <Button fx:id="btnAnnulerModification" managed="false" onAction="#annulerModification" style="-fx-background-color: #f1f5f9; -fx-text-fill: #475569; -fx-background-radius: 12; -fx-padding: 8 20; -fx-font-weight: 600; -fx-cursor: hand; -fx-border-color: #e2e8f0; -fx-border-radius: 12; -fx-border-width: 1;" text="✕ Annuler" visible="false" />
@@ -226,27 +222,27 @@
                             <!-- Titre et Destination -->
                             <VBox spacing="6" GridPane.columnIndex="0">
                                 <Label style="-fx-text-fill: #475569; -fx-font-size: 11; -fx-font-weight: 600;" text="📝 Titre" />
-                                <TextField fx:id="fxtitre" promptText="Nom du voyage" style="-fx-background-color: #f8fafc; -fx-background-radius: 12; -fx-padding: 10; -fx-border-color: #e2e8f0; -fx-border-radius: 12; -fx-border-width: 1;" />
+                                <TextField fx:id="fxtitre" promptText="Nom du voyage" maxWidth="Infinity" style="-fx-background-color: #f8fafc; -fx-background-radius: 12; -fx-padding: 10; -fx-border-color: #e2e8f0; -fx-border-radius: 12; -fx-border-width: 1;" />
                                 <Label style="-fx-text-fill: #475569; -fx-font-size: 11; -fx-font-weight: 600;" text="📍 Destination" />
-                                <ComboBox fx:id="cbDestination" prefWidth="250" promptText="Choisir une destination" style="-fx-background-color: #f8fafc; -fx-background-radius: 12; -fx-border-color: #e2e8f0; -fx-border-radius: 12; -fx-border-width: 1;" />
+                                <ComboBox fx:id="cbDestination" promptText="Choisir une destination" maxWidth="Infinity" style="-fx-background-color: #f8fafc; -fx-background-radius: 12; -fx-border-color: #e2e8f0; -fx-border-radius: 12; -fx-border-width: 1;" />
                             </VBox>
 
                             <!-- Date début -->
                             <VBox spacing="6" GridPane.columnIndex="1">
                                 <Label style="-fx-text-fill: #475569; -fx-font-size: 11; -fx-font-weight: 600;" text="📅 Date début" />
-                                <DatePicker fx:id="fxdated" editable="false" promptText="JJ/MM/AAAA" style="-fx-background-color: #f8fafc; -fx-background-radius: 12; -fx-padding: 8; -fx-border-color: #e2e8f0; -fx-border-radius: 12;" />
+                                <DatePicker fx:id="fxdated" editable="false" maxWidth="Infinity" promptText="JJ/MM/AAAA" style="-fx-background-color: #f8fafc; -fx-background-radius: 12; -fx-padding: 8; -fx-border-color: #e2e8f0; -fx-border-radius: 12;" />
                             </VBox>
 
                             <!-- Date fin -->
                             <VBox spacing="6" GridPane.columnIndex="2">
                                 <Label style="-fx-text-fill: #475569; -fx-font-size: 11; -fx-font-weight: 600;" text="🏁 Date fin" />
-                                <DatePicker fx:id="fxdatef" editable="false" promptText="JJ/MM/AAAA" style="-fx-background-color: #f8fafc; -fx-background-radius: 12; -fx-padding: 8; -fx-border-color: #e2e8f0; -fx-border-radius: 12;" />
+                                <DatePicker fx:id="fxdatef" editable="false" maxWidth="Infinity" promptText="JJ/MM/AAAA" style="-fx-background-color: #f8fafc; -fx-background-radius: 12; -fx-padding: 8; -fx-border-color: #e2e8f0; -fx-border-radius: 12;" />
                             </VBox>
 
                             <!-- Statut -->
                             <VBox spacing="6" GridPane.columnIndex="3">
                                 <Label style="-fx-text-fill: #475569; -fx-font-size: 11; -fx-font-weight: 600;" text="📊 Statut" />
-                                <ComboBox fx:id="fxstatut" prefWidth="150" promptText="Sélectionner" style="-fx-background-color: #f8fafc; -fx-background-radius: 12; -fx-border-color: #e2e8f0; -fx-border-radius: 12;">
+                                <ComboBox fx:id="fxstatut" promptText="Sélectionner" maxWidth="Infinity" style="-fx-background-color: #f8fafc; -fx-background-radius: 12; -fx-border-color: #e2e8f0; -fx-border-radius: 12;">
                                     <items>
                                         <FXCollections fx:factory="observableArrayList">
                                             <String fx:value="a venir" />
@@ -266,7 +262,7 @@
                         <VBox spacing="10" style="-fx-background-color: #f8fafc; -fx-background-radius: 16; -fx-padding: 16; -fx-border-color: #e2e8f0; -fx-border-width: 1; -fx-border-radius: 16;">
                             <HBox alignment="CENTER_LEFT" spacing="8">
                                 <Label style="-fx-font-size: 14; -fx-font-weight: 700; -fx-text-fill: #0f172a;" text="🎯 Sélection des activités" />
-                                <Rectangle fill="#ff8c42" height="2" width="30" />
+                                <Region maxWidth="Infinity" minHeight="2" prefHeight="2" style="-fx-background-color: #ff8c42;" />
                                 <Region HBox.hgrow="ALWAYS" />
                                 <Label fx:id="lblActivitesCount" style="-fx-text-fill: #64748b; -fx-font-size: 11; -fx-font-weight: 600;" text="0 activité(s) sélectionnée(s)" />
                             </HBox>
@@ -284,19 +280,19 @@
 
                                 <!-- Lieu -->
                                 <Label style="-fx-text-fill: #475569; -fx-font-size: 11; -fx-font-weight: 600;" text="📍 Lieu" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-                                <ComboBox fx:id="cbLieuActivite" prefWidth="250" promptText="Choisir un lieu" style="-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #e2e8f0; -fx-border-radius: 12;" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                                <ComboBox fx:id="cbLieuActivite" promptText="Choisir un lieu" maxWidth="Infinity" style="-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #e2e8f0; -fx-border-radius: 12;" GridPane.columnIndex="0" GridPane.rowIndex="1" />
 
                                 <!-- Activité -->
                                 <Label style="-fx-text-fill: #475569; -fx-font-size: 11; -fx-font-weight: 600;" text="🎯 Activité" GridPane.columnIndex="2" GridPane.rowIndex="0" />
                                 <HBox alignment="CENTER_LEFT" spacing="5" GridPane.columnIndex="2" GridPane.rowIndex="1">
-                                    <ComboBox fx:id="cbActivite" prefWidth="180" promptText="Choisir une activité" style="-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #e2e8f0; -fx-border-radius: 12;" />
+                                    <ComboBox fx:id="cbActivite" promptText="Choisir une activité" maxWidth="Infinity" HBox.hgrow="ALWAYS" style="-fx-background-color: white; -fx-background-radius: 12; -fx-border-color: #e2e8f0; -fx-border-radius: 12;" />
                                     <Button fx:id="btnAjouterActivite" style="-fx-background-color: #10b981; -fx-text-fill: white; -fx-background-radius: 12; -fx-padding: 8 15; -fx-font-weight: 600; -fx-cursor: hand;" text="➕" />
                                 </HBox>
                             </GridPane>
 
                             <!-- Selected activities list -->
                             <HBox alignment="CENTER_LEFT" spacing="10">
-                                <ListView fx:id="lvActivitesSelectionnees" prefHeight="100" prefWidth="400" style="-fx-background-radius: 12; -fx-border-color: #e2e8f0; -fx-border-radius: 12;" />
+                                <ListView fx:id="lvActivitesSelectionnees" prefHeight="90" HBox.hgrow="ALWAYS" style="-fx-background-radius: 12; -fx-border-color: #e2e8f0; -fx-border-radius: 12;" />
                                 <Button fx:id="btnRetirerActivite" style="-fx-background-color: #ef4444; -fx-text-fill: white; -fx-background-radius: 12; -fx-padding: 8 15; -fx-font-weight: 600; -fx-cursor: hand;" text="🗑️ Retirer" />
                             </HBox>
                         </VBox>
@@ -319,11 +315,8 @@
                     </VBox>
 
                     <!-- Bottom decoration -->
-                    <Rectangle arcHeight="6" arcWidth="6" fill="linear-gradient(to right, #ff8c42, #ff6b4a, #6366f1)" height="3" width="1100">
-                        <VBox.margin>
-                            <Insets top="10" />
-                        </VBox.margin>
-                    </Rectangle>
+                    <Region maxWidth="Infinity" minHeight="3" prefHeight="3" style="-fx-background-color: linear-gradient(to right, rgba(245,166,35,0.5), rgba(255,107,0,0.5), rgba(99,102,241,0.5));" />
+
 
                 </VBox>
             </content>

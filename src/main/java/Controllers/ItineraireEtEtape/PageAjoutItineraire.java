@@ -13,6 +13,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -192,7 +193,7 @@ public class PageAjoutItineraire {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
             Parent root = loader.load();
             Stage stage = (Stage) btnDestinations.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - " + title);
             stage.setMaximized(true);
             stage.show();
@@ -360,7 +361,7 @@ public class PageAjoutItineraire {
             }
 
             Stage stage = (Stage) nomField.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - Itinéraires");
             stage.setMaximized(true);
             stage.show();
@@ -393,7 +394,7 @@ public class PageAjoutItineraire {
             }
 
             Stage stage = (Stage) nomField.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - Itinéraires");
             stage.setMaximized(true);
             stage.show();

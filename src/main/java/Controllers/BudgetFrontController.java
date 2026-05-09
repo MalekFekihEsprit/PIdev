@@ -40,6 +40,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.FileChooser;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
@@ -87,7 +88,7 @@ public class BudgetFrontController implements Initializable {
     // ===== Date formatter =====
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-    // ===== Variable pour stocker la saison du voyage sélectionné =====
+    // ===== Variable pour stocker la saison du voyage sÃ©lectionnÃ© =====
     private String currentSaisonIdeale;
 
     // ===== FXML injected fields =====
@@ -186,11 +187,12 @@ public class BudgetFrontController implements Initializable {
 
     // ===== Navigation buttons (Updated) =====
     @FXML private HBox btnDestinations;
-    @FXML private HBox btnHebergement;
+    @FXML private HBox btnHebergements;
     @FXML private HBox btnCategories;
     @FXML private HBox btnActivites;
     @FXML private HBox btnVoyages;
     @FXML private HBox btnBudgets;
+    @FXML private HBox btnEvenements;
     @FXML private HBox btnHome;
 
     // ===== User Profile elements =====
@@ -204,7 +206,7 @@ public class BudgetFrontController implements Initializable {
     @FXML private VBox modalEcologique;
     @FXML private VBox modalCrise;
 
-    // Modal Écologique — champs
+    // Modal Ã‰cologique â€” champs
     @FXML private Label lblEcoScore;
     @FXML private Label lblEcoLabel;
     @FXML private Label lblEcoCO2;
@@ -213,7 +215,7 @@ public class BudgetFrontController implements Initializable {
     @FXML private Rectangle rectEcoBar;
     @FXML private Label lblEcoLoading;
 
-    // Modal Crise — champs
+    // Modal Crise â€” champs
     @FXML private Label lblCriseStatus;
     @FXML private Label lblCriseSummary;
     @FXML private Label lblCrisePlan;
@@ -270,7 +272,7 @@ public class BudgetFrontController implements Initializable {
             lblUserRole.setText(currentUser.getRole());
         } else {
             lblUserName.setText("Utilisateur");
-            lblUserRole.setText("Non connecté");
+            lblUserRole.setText("Non connectÃ©");
         }
 
         if (userProfileBox != null) {
@@ -286,7 +288,7 @@ public class BudgetFrontController implements Initializable {
         try {
             Parent root = FXMLLoader.load(getClass().getResource("/fxml/Profile.fxml"));
             Stage stage = (Stage) userProfileBox.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - Profil");
             stage.setMaximized(true);
             stage.show();
@@ -296,15 +298,15 @@ public class BudgetFrontController implements Initializable {
         }
     }
 
-    // ===== IA — SCORE ÉCOLOGIQUE =====
+    // ===== IA â€” SCORE Ã‰COLOGIQUE =====
     @FXML
     public void handleEcologicalAnalysis(ActionEvent event) {
         if (selectedBudget == null) {
-            showAlert("IA Score Écologique", "Sélectionnez d'abord un budget.");
+            showAlert("IA Score Ã‰cologique", "SÃ©lectionnez d'abord un budget.");
             return;
         }
         if (depensesList.isEmpty()) {
-            showAlert("IA Score Écologique", "Aucune dépense à analyser.");
+            showAlert("IA Score Ã‰cologique", "Aucune dÃ©pense Ã  analyser.");
             return;
         }
 
@@ -332,9 +334,9 @@ public class BudgetFrontController implements Initializable {
                     Platform.runLater(() -> {
                         if (modalEcologique != null) {
                             setEcoLoading(false);
-                            if (lblEcoLabel != null) lblEcoLabel.setText("⚠️ Erreur : " + ex.getMessage());
+                            if (lblEcoLabel != null) lblEcoLabel.setText("âš ï¸ Erreur : " + ex.getMessage());
                         }
-                        System.err.println("[IA Écologie] " + ex.getMessage());
+                        System.err.println("[IA Ã‰cologie] " + ex.getMessage());
                     });
                     return null;
                 });
@@ -343,7 +345,7 @@ public class BudgetFrontController implements Initializable {
     private void fillEcoModal(EcologicalScoreService.EcologicalResult result) {
         if (lblEcoScore != null) lblEcoScore.setText(result.score + "/100");
         if (lblEcoLabel != null) lblEcoLabel.setText(result.label);
-        if (lblEcoCO2 != null) lblEcoCO2.setText("🌍 Empreinte carbone estimée : " + result.co2Estimate);
+        if (lblEcoCO2 != null) lblEcoCO2.setText("ðŸŒ Empreinte carbone estimÃ©e : " + result.co2Estimate);
         if (lblEcoAnalysis != null) { lblEcoAnalysis.setText(result.analysis); lblEcoAnalysis.setWrapText(true); }
         if (lblEcoAlternatives != null) { lblEcoAlternatives.setText(result.alternatives); lblEcoAlternatives.setWrapText(true); }
 
@@ -376,15 +378,15 @@ public class BudgetFrontController implements Initializable {
     }
 
     private void showEcologicalDialog(EcologicalScoreService.EcologicalResult result) {
-        // Fallback dialog (identique à l'original)
-        // ... (code inchangé, omis pour brièveté)
+        // Fallback dialog (identique Ã  l'original)
+        // ... (code inchangÃ©, omis pour briÃ¨vetÃ©)
     }
 
-    // ===== IA — GESTION DE CRISE / PLAN B =====
+    // ===== IA â€” GESTION DE CRISE / PLAN B =====
     @FXML
     public void handleCrisisAnalysis(ActionEvent event) {
         if (selectedBudget == null) {
-            showAlert("IA Plan B", "Sélectionnez d'abord un budget.");
+            showAlert("IA Plan B", "SÃ©lectionnez d'abord un budget.");
             return;
         }
 
@@ -464,14 +466,14 @@ public class BudgetFrontController implements Initializable {
     }
 
     private void showCrisisDialog(CrisisManagementService.CrisisResult result) {
-        // Fallback dialog (identique à l'original)
-        // ... (code inchangé, omis pour brièveté)
+        // Fallback dialog (identique Ã  l'original)
+        // ... (code inchangÃ©, omis pour briÃ¨vetÃ©)
     }
 
     // ===== Helpers IA =====
     private String getDestinationText() {
         String dest = lblBudgetDestination != null ? lblBudgetDestination.getText() : null;
-        return (dest == null || dest.equals("—") || dest.equals("Destination non définie"))
+        return (dest == null || dest.equals("â€”") || dest.equals("Destination non dÃ©finie"))
                 ? "destination inconnue" : dest;
     }
 
@@ -500,13 +502,13 @@ public class BudgetFrontController implements Initializable {
 
         String pays = null;
         String dest = lblBudgetDestination.getText();
-        if (dest != null && !dest.equals("—") && !dest.equals("Destination non définie")) {
+        if (dest != null && !dest.equals("â€”") && !dest.equals("Destination non dÃ©finie")) {
             pays = dest.contains(",") ? dest.split(",")[1].trim() : getCountryFromDestination(dest);
         }
         final String finalPays = pays;
 
         if (finalPays == null || finalPays.isEmpty()) {
-            lblInflationInfo.setText("Pays non identifié pour l'analyse d'inflation.");
+            lblInflationInfo.setText("Pays non identifiÃ© pour l'analyse d'inflation.");
             return;
         }
 
@@ -518,12 +520,12 @@ public class BudgetFrontController implements Initializable {
                     if (montantAjuste != montantInitial) {
                         double pct = ((montantInitial / montantAjuste) - 1) * 100;
                         lblInflationInfo.setText(String.format(
-                                "Le saviez-vous ? Ce voyage en %d te coûterait l'équivalent de %.2f %s en %d. " +
-                                        "Le coût de la vie a augmenté de %.1f%% en %d ans.",
+                                "Le saviez-vous ? Ce voyage en %d te coÃ»terait l'Ã©quivalent de %.2f %s en %d. " +
+                                        "Le coÃ»t de la vie a augmentÃ© de %.1f%% en %d ans.",
                                 finalAnneeBudget, montantAjuste, selectedBudget.getDeviseBudget(),
                                 anneeReference, pct, (finalAnneeBudget - anneeReference)));
                     } else {
-                        lblInflationInfo.setText("Données d'inflation non disponibles pour cette destination.");
+                        lblInflationInfo.setText("DonnÃ©es d'inflation non disponibles pour cette destination.");
                     }
                 }))
                 .exceptionally(ex -> {
@@ -533,7 +535,7 @@ public class BudgetFrontController implements Initializable {
     }
 
     private String getCountryFromDestination(String ville) {
-        // ... (identique à l'original)
+        // ... (identique Ã  l'original)
         if (ville == null) return null;
         return switch (ville.toLowerCase()) {
             case "paris","lyon","marseille","bordeaux","toulouse","nice" -> "France";
@@ -542,18 +544,18 @@ public class BudgetFrontController implements Initializable {
             case "rome","milan","venise" -> "Italie";
             case "berlin","munich" -> "Allemagne";
             case "londres","manchester" -> "Royaume-Uni";
-            case "new york","los angeles","san francisco" -> "États-Unis";
+            case "new york","los angeles","san francisco" -> "Ã‰tats-Unis";
             case "tokyo","kyoto","osaka" -> "Japon";
-            case "pékin","shanghai" -> "Chine";
+            case "pÃ©kin","shanghai" -> "Chine";
             case "istanbul" -> "Turquie";
-            case "dubaï" -> "Émirats arabes unis";
+            case "dubaÃ¯" -> "Ã‰mirats arabes unis";
             case "sydney","melbourne" -> "Australie";
-            case "rio de janeiro","são paulo" -> "Brésil";
-            case "toronto","montréal","vancouver" -> "Canada";
-            case "le caire" -> "Égypte";
+            case "rio de janeiro","sÃ£o paulo" -> "BrÃ©sil";
+            case "toronto","montrÃ©al","vancouver" -> "Canada";
+            case "le caire" -> "Ã‰gypte";
             case "casablanca" -> "Maroc";
             case "tunis" -> "Tunisie";
-            case "alger" -> "Algérie";
+            case "alger" -> "AlgÃ©rie";
             default -> null;
         };
     }
@@ -575,7 +577,7 @@ public class BudgetFrontController implements Initializable {
     private void selectDevise(ComboBox<String> combo, String code) {
         if (code == null || code.isBlank()) return;
         combo.getItems().stream()
-                .filter(item -> item.equals(code) || item.startsWith(code + " — "))
+                .filter(item -> item.equals(code) || item.startsWith(code + " â€” "))
                 .findFirst().ifPresent(combo::setValue);
     }
 
@@ -606,8 +608,8 @@ public class BudgetFrontController implements Initializable {
 
     private void setupActionsColumn() {
         colActions.setCellFactory(p -> new TableCell<>() {
-            private final Button btnEdit   = new Button("✏️");
-            private final Button btnDelete = new Button("🗑️");
+            private final Button btnEdit   = new Button("âœï¸");
+            private final Button btnDelete = new Button("ðŸ—‘ï¸");
             private final HBox pane = new HBox(5, btnEdit, btnDelete);
             {
                 btnEdit.setStyle("-fx-background-color:#f1f5f9;-fx-text-fill:#475569;-fx-background-radius:8;-fx-padding:5 10;-fx-cursor:hand;-fx-font-size:12;");
@@ -624,13 +626,13 @@ public class BudgetFrontController implements Initializable {
         SortedList<Depense> sorted = new SortedList<>(filteredDepenses);
         sorted.comparatorProperty().bind(tableDepenses.comparatorProperty());
         tableDepenses.setItems(sorted);
-        cmbFiltreCategorie.setValue("Toutes les catégories");
+        cmbFiltreCategorie.setValue("Toutes les catÃ©gories");
     }
 
     private void setupComboBoxes() {
-        cmbFiltreCategorie.setItems(FXCollections.observableArrayList("Toutes les catégories","Hébergement","Transport","Restauration","Activités","Shopping","Autre"));
-        cmbCategorieDepense.setItems(FXCollections.observableArrayList("Hébergement","Transport","Restauration","Activités","Shopping","Autre"));
-        cmbPaiementDepense.setItems(FXCollections.observableArrayList("Carte bancaire","Espèces","Virement","PayPal","Autre"));
+        cmbFiltreCategorie.setItems(FXCollections.observableArrayList("Toutes les catÃ©gories","HÃ©bergement","Transport","Restauration","ActivitÃ©s","Shopping","Autre"));
+        cmbCategorieDepense.setItems(FXCollections.observableArrayList("HÃ©bergement","Transport","Restauration","ActivitÃ©s","Shopping","Autre"));
+        cmbPaiementDepense.setItems(FXCollections.observableArrayList("Carte bancaire","EspÃ¨ces","Virement","PayPal","Autre"));
         cmbStatutBudget.setItems(FXCollections.observableArrayList("ACTIF","INACTIF","TERMINE","PLANIFIE","ENCOURS"));
     }
 
@@ -645,32 +647,37 @@ public class BudgetFrontController implements Initializable {
     private void setupNavigation() {
         if (btnDestinations != null) {
             btnDestinations.setOnMouseClicked(e -> navigateTo("Destinations", "/DestinationFront.fxml"));
-            setupNavButtonHover(btnDestinations, "🌍", "Destinations");
+            setupNavButtonHover(btnDestinations, "ðŸŒ", "Destinations");
         }
 
-        if (btnHebergement != null) {
-            btnHebergement.setOnMouseClicked(e -> navigateTo("Hebergement", "/HebergementFront.fxml"));
-            setupNavButtonHover(btnHebergement, "🌍", "Hebergement");
+        if (btnHebergements != null) {
+            btnHebergements.setOnMouseClicked(e -> navigateTo("Hebergement", "/HebergementFront.fxml"));
+            setupNavButtonHover(btnHebergements, "ðŸŒ", "Hebergement");
         }
 
         if (btnCategories != null) {
             btnCategories.setOnMouseClicked(e -> navigateTo("Categories", "/categoriesfront.fxml"));
-            setupNavButtonHover(btnCategories, "🌍", "Categories");
+            setupNavButtonHover(btnCategories, "ðŸŒ", "Categories");
         }
 
         if (btnActivites != null) {
-            btnActivites.setOnMouseClicked(e -> navigateTo("Activités", "/activitesfront.fxml"));
-            setupNavButtonHover(btnActivites, "🏄", "Activités");
+            btnActivites.setOnMouseClicked(e -> navigateTo("ActivitÃ©s", "/activitesfront.fxml"));
+            setupNavButtonHover(btnActivites, "ðŸ„", "ActivitÃ©s");
         }
 
         if (btnVoyages != null) {
             btnVoyages.setOnMouseClicked(e -> navigateTo("Voyages", "/PageVoyage.fxml"));
-            setupNavButtonHover(btnVoyages, "✈️", "Voyages");
+            setupNavButtonHover(btnVoyages, "âœˆï¸", "Voyages");
         }
 
         if (btnBudgets != null) {
             btnBudgets.setOnMouseClicked(e -> navigateTo("Budgets", "/BudgetDepenseFront.fxml"));
-            setupNavButtonHover(btnBudgets, "💰", "Budgets");
+            setupNavButtonHover(btnBudgets, "ðŸ’°", "Budgets");
+        }
+
+        if (btnEvenements != null) {
+            btnEvenements.setOnMouseClicked(e -> navigateTo("Ã‰vÃ©nements", "/Evenementsfront.fxml"));
+            setupNavButtonHover(btnEvenements, "ðŸŽ‰", "Ã‰vÃ©nements");
         }
 
         if (btnHome != null) {
@@ -682,7 +689,7 @@ public class BudgetFrontController implements Initializable {
         try {
             Parent root = FXMLLoader.load(getClass().getResource(fxmlPath));
             Stage stage = (Stage) btnDestinations.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - " + page);
             stage.setMaximized(true);
             stage.show();
@@ -726,7 +733,7 @@ public class BudgetFrontController implements Initializable {
 
     private void updateLastUpdateTime() {
         if (lblLastUpdate != null)
-            lblLastUpdate.setText("Dernière mise à jour: " +
+            lblLastUpdate.setText("DerniÃ¨re mise Ã  jour: " +
                     LocalDate.now().format(DateTimeFormatter.ofPattern("dd MMM yyyy")) + ", " +
                     java.time.LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm")));
     }
@@ -738,9 +745,9 @@ public class BudgetFrontController implements Initializable {
                 if (sel != null && !sel.isEmpty()) {
                     filterBudgetsByVoyage(sel);
                 } else {
-                    // Aucun voyage sélectionné → vider la liste des budgets
+                    // Aucun voyage sÃ©lectionnÃ© â†’ vider la liste des budgets
                     voyageBudgetsContainer.getChildren().clear();
-                    Label msg = new Label("Sélectionnez un voyage pour voir ses budgets");
+                    Label msg = new Label("SÃ©lectionnez un voyage pour voir ses budgets");
                     msg.setStyle("-fx-text-fill:#64748b;-fx-padding:20;");
                     voyageBudgetsContainer.getChildren().add(msg);
                     lblVoyageBudgetsCount.setText("0 budget");
@@ -763,7 +770,7 @@ public class BudgetFrontController implements Initializable {
                         }
                     } catch (SQLException e) { System.err.println("Erreur: " + e.getMessage()); }
                 } else {
-                    // Réinitialiser le label d'estimation
+                    // RÃ©initialiser le label d'estimation
                     if (lblEstimation != null) {
                         lblEstimation.setText("");
                         lblEstimation.setVisible(false);
@@ -787,7 +794,7 @@ public class BudgetFrontController implements Initializable {
                     lblEstimation.setManaged(true);
                     if (primaryStage != null)
                         ToastNotification.showInfo(primaryStage, "Estimation automatique",
-                                "Budget estimé : " + estimation + " " + devise);
+                                "Budget estimÃ© : " + estimation + " " + devise);
                 }))
                 .exceptionally(ex -> {
                     Platform.runLater(() -> showAlert("Erreur", "Estimation impossible: " + ex.getMessage()));
@@ -804,7 +811,7 @@ public class BudgetFrontController implements Initializable {
                 names.add(v.getIdVoyage() + " - " + v.getTitre() + " (" + v.getDatesFormatted() + ")");
             if (cmbVoyageSelector != null) {
                 cmbVoyageSelector.setItems(names);
-                cmbVoyageSelector.setPromptText("Sélectionner un voyage");
+                cmbVoyageSelector.setPromptText("SÃ©lectionner un voyage");
                 cmbVoyageSelector.setValue(null);
             }
             if (cmbVoyageBudget != null) {
@@ -812,7 +819,7 @@ public class BudgetFrontController implements Initializable {
                 budgetNames.add("Sans voyage");
                 budgetNames.addAll(names);
                 cmbVoyageBudget.setItems(budgetNames);
-                cmbVoyageBudget.setPromptText("Sélectionner un voyage");
+                cmbVoyageBudget.setPromptText("SÃ©lectionner un voyage");
                 cmbVoyageBudget.setValue("Sans voyage");
             }
         } catch (SQLException e) {
@@ -826,13 +833,13 @@ public class BudgetFrontController implements Initializable {
         try {
             List<Budget> budgets = budgetCRUD.afficher();
             budgetsList.setAll(budgets);
-            // N'afficher les budgets que si un voyage est sélectionné
+            // N'afficher les budgets que si un voyage est sÃ©lectionnÃ©
             if (cmbVoyageSelector != null && cmbVoyageSelector.getValue() != null) {
                 filterBudgetsByVoyage(cmbVoyageSelector.getValue());
             } else {
-                // Afficher un message invitant à sélectionner un voyage
+                // Afficher un message invitant Ã  sÃ©lectionner un voyage
                 voyageBudgetsContainer.getChildren().clear();
-                Label msg = new Label("Sélectionnez un voyage pour voir ses budgets");
+                Label msg = new Label("SÃ©lectionnez un voyage pour voir ses budgets");
                 msg.setStyle("-fx-text-fill:#64748b;-fx-padding:20;");
                 voyageBudgetsContainer.getChildren().add(msg);
                 lblVoyageBudgetsCount.setText("0 budget");
@@ -847,20 +854,20 @@ public class BudgetFrontController implements Initializable {
             depensesList.setAll(depenseCRUD.afficher());
             updateNbDepenses();
         } catch (Exception e) {
-            showAlert("Erreur", "Impossible de charger les dépenses: " + e.getMessage());
+            showAlert("Erreur", "Impossible de charger les dÃ©penses: " + e.getMessage());
         }
     }
 
     private void setupVocalAssistant() {
         vocalService.setOnTextRecognized(text -> {
-            if (lblVoiceText != null) lblVoiceText.setText("🗣 \"" + text + "\"");
+            if (lblVoiceText != null) lblVoiceText.setText("ðŸ—£ \"" + text + "\"");
             VoiceCommandProcessor.VoiceCommand cmd = cmdProcessor.process(text);
             executeVoiceCommand(cmd);
         });
         vocalService.setOnStatusUpdate(status -> {
             if (lblVoiceStatus != null) lblVoiceStatus.setText(status);
             if (btnVoice != null) {
-                boolean listening = status.contains("Écoute");
+                boolean listening = status.contains("Ã‰coute");
                 btnVoice.setStyle(listening
                         ? "-fx-background-color:#ef4444;-fx-text-fill:white;-fx-background-radius:50%;-fx-min-width:48;-fx-min-height:48;-fx-font-size:20;-fx-cursor:hand;"
                         : "-fx-background-color:#ff8c42;-fx-text-fill:white;-fx-background-radius:50%;-fx-min-width:48;-fx-min-height:48;-fx-font-size:20;-fx-cursor:hand;");
@@ -868,7 +875,7 @@ public class BudgetFrontController implements Initializable {
         });
         Thread t = new Thread(() -> {
             vocalService.initialize();
-            Platform.runLater(() -> { if (lblVoiceStatus != null) lblVoiceStatus.setText("✅ Assistant prêt"); });
+            Platform.runLater(() -> { if (lblVoiceStatus != null) lblVoiceStatus.setText("âœ… Assistant prÃªt"); });
         });
         t.setDaemon(true);
         t.start();
@@ -896,23 +903,23 @@ public class BudgetFrontController implements Initializable {
                 if (cmd.category != null) cmbCategorieDepense.setValue(cmd.category);
                 if (cmd.label != null) txtLibelleDepense.setText(cmd.label);
                 if (cmd.fromCurrency != null) selectDevise(cmbDeviseDepense, cmd.fromCurrency);
-                lblModalTitle.setText("Nouvelle Dépense 🎙️");
+                lblModalTitle.setText("Nouvelle DÃ©pense ðŸŽ™ï¸");
                 modalDepense.setVisible(true); modalDepense.setManaged(true);
             });
             case CHECK_BUDGET -> { final double r = budgetRestant; final String d = deviseBudget;
-                Platform.runLater(() -> { String msg = r >= 0 ? String.format("Il vous reste %.2f %s", r, d) : String.format("Budget dépassé de %.2f %s", Math.abs(r), d);
-                    if (primaryStage != null) ToastNotification.showInfo(primaryStage, "💰 Budget", msg); }); }
+                Platform.runLater(() -> { String msg = r >= 0 ? String.format("Il vous reste %.2f %s", r, d) : String.format("Budget dÃ©passÃ© de %.2f %s", Math.abs(r), d);
+                    if (primaryStage != null) ToastNotification.showInfo(primaryStage, "ðŸ’° Budget", msg); }); }
             case FILTER_EXPENSES -> Platform.runLater(() -> { if (cmd.category != null) { cmbFiltreCategorie.setValue(cmd.category); handleAppliquerFiltres(null); } });
             case CONVERT_CURRENCY -> { if (cmd.amount > 0 && cmd.fromCurrency != null && cmd.toCurrency != null) {
                 double amt = cmd.amount; String fc = cmd.fromCurrency; String tc = cmd.toCurrency;
                 Thread t = new Thread(() -> { double res = currencyConverter.convert(amt, fc, tc);
                     Platform.runLater(() -> { String msg = res > 0 ? String.format("%.2f %s = %.2f %s", amt, fc, res, tc) : "Conversion indisponible";
-                        if (primaryStage != null) ToastNotification.showInfo(primaryStage, "💱 Conversion", msg); }); });
+                        if (primaryStage != null) ToastNotification.showInfo(primaryStage, "ðŸ’± Conversion", msg); }); });
                 t.setDaemon(true); t.start(); } }
             case EXPORT_PDF -> Platform.runLater(() -> handleExportPDF(null));
             case EXPORT_EXCEL -> Platform.runLater(this::handleExportExcel);
             case RESET_FILTERS -> Platform.runLater(() -> handleReinitialiserFiltres(null));
-            default -> Platform.runLater(() -> { if (primaryStage != null) ToastNotification.showInfo(primaryStage, "🎙️ Commande inconnue", "Essayez: \"ajoute une dépense\", \"budget restant\", \"exporte en PDF\""); });
+            default -> Platform.runLater(() -> { if (primaryStage != null) ToastNotification.showInfo(primaryStage, "ðŸŽ™ï¸ Commande inconnue", "Essayez: \"ajoute une dÃ©pense\", \"budget restant\", \"exporte en PDF\""); });
         }
         final double fr = budgetRestant; final String fd = deviseBudget;
         Thread tts = new Thread(() -> ttsService.respondToCommand(cmd, fr, fd));
@@ -925,7 +932,7 @@ public class BudgetFrontController implements Initializable {
             depensesList.setAll(all.stream().filter(d -> d.getIdBudget() == budgetId).collect(Collectors.toList()));
             updateNbDepenses();
             updateKPI();
-        } catch (Exception e) { showAlert("Erreur", "Impossible de charger les dépenses: " + e.getMessage()); }
+        } catch (Exception e) { showAlert("Erreur", "Impossible de charger les dÃ©penses: " + e.getMessage()); }
     }
 
     private void filterBudgetsByVoyage(String selectedVoyage) {
@@ -968,12 +975,12 @@ public class BudgetFrontController implements Initializable {
         card.setAlignment(Pos.CENTER_LEFT);
         VBox iconBox = new VBox(); iconBox.setAlignment(Pos.CENTER);
         iconBox.setStyle("-fx-background-color:#fff7ed;-fx-background-radius:10;-fx-min-width:40;-fx-min-height:40;");
-        String icon = "💰";
+        String icon = "ðŸ’°";
         String lib = budget.getLibelleBudget().toLowerCase();
-        if (lib.contains("hebergement") || lib.contains("hôtel")) icon = "🏨";
-        else if (lib.contains("restauration")) icon = "🍽️";
-        else if (lib.contains("transport")) icon = "🚗";
-        else if (lib.contains("activité")) icon = "🎟️";
+        if (lib.contains("hebergement") || lib.contains("hÃ´tel")) icon = "ðŸ¨";
+        else if (lib.contains("restauration")) icon = "ðŸ½ï¸";
+        else if (lib.contains("transport")) icon = "ðŸš—";
+        else if (lib.contains("activitÃ©")) icon = "ðŸŽŸï¸";
         Label iconLabel = new Label(icon); iconLabel.setStyle("-fx-font-size:20;");
         iconBox.getChildren().add(iconLabel);
         Label nom = new Label(budget.getLibelleBudget()); nom.setStyle("-fx-font-weight:600;-fx-font-size:14;-fx-text-fill:#0f172a;");
@@ -987,15 +994,15 @@ public class BudgetFrontController implements Initializable {
         notifier.resetForNewPeriod();
 
         lblBudgetNom.setText(budget.getLibelleBudget());
-        lblBudgetStatut.setText("● " + budget.getStatutBudget());
+        lblBudgetStatut.setText("â— " + budget.getStatutBudget());
         lblBudgetDevise.setText(budget.getDeviseBudget());
         lblBudgetDescription.setText(budget.getDescriptionBudget() != null ? budget.getDescriptionBudget() : "Aucune description");
 
         if (budget.getIdVoyage() > 0) {
             VoyageHelper.VoyageInfo v = voyagesMap.get(budget.getIdVoyage());
             if (v != null) { lblBudgetDates.setText(v.getDatesFormatted()); lblBudgetDestination.setText(v.getNomDestination()); }
-            else { lblBudgetDates.setText("Dates non définies"); lblBudgetDestination.setText("Destination non définie"); }
-        } else { lblBudgetDates.setText("Dates non définies"); lblBudgetDestination.setText("Destination non définie"); }
+            else { lblBudgetDates.setText("Dates non dÃ©finies"); lblBudgetDestination.setText("Destination non dÃ©finie"); }
+        } else { lblBudgetDates.setText("Dates non dÃ©finies"); lblBudgetDestination.setText("Destination non dÃ©finie"); }
 
         String color = switch (budget.getStatutBudget()) {
             case "ACTIF" -> "#10b981"; case "TERMINE" -> "#ef4444";
@@ -1029,8 +1036,8 @@ public class BudgetFrontController implements Initializable {
         double pct = selectedBudget.getMontantTotal() > 0 ? (totalConverti / selectedBudget.getMontantTotal()) * 100 : 0;
         lblDepense.setText(String.format("%.2f", totalConverti) + " " + deviseBudget);
         lblRestant.setText(String.format("%.2f", restant) + " " + deviseBudget);
-        lblPourcentageDepense.setText(String.format("↗ %.1f%% du budget", pct));
-        lblPourcentageRestant.setText(String.format("✓ %.1f%% disponible", 100 - pct));
+        lblPourcentageDepense.setText(String.format("â†— %.1f%% du budget", pct));
+        lblPourcentageRestant.setText(String.format("âœ“ %.1f%% disponible", 100 - pct));
         lblInfoBudget.setText("Budget " + selectedBudget.getStatutBudget().toLowerCase());
 
         updateProgressBar(pct);
@@ -1055,9 +1062,9 @@ public class BudgetFrontController implements Initializable {
     private void updateRateCard(String deviseBudget, String autreDevise) {
         if (lblTauxChange == null) return;
         if (autreDevise == null || autreDevise.equalsIgnoreCase(deviseBudget)) {
-            lblTauxChange.setText("Toutes dépenses en " + deviseBudget);
-            if (lblTauxUpdate != null) lblTauxUpdate.setText("Aucune conversion nécessaire");
-            if (lblDevisesActives != null) lblDevisesActives.setText(deviseBudget + " → " + deviseBudget);
+            lblTauxChange.setText("Toutes dÃ©penses en " + deviseBudget);
+            if (lblTauxUpdate != null) lblTauxUpdate.setText("Aucune conversion nÃ©cessaire");
+            if (lblDevisesActives != null) lblDevisesActives.setText(deviseBudget + " â†’ " + deviseBudget);
             return;
         }
         String finalAutreDevise = autreDevise;
@@ -1065,16 +1072,16 @@ public class BudgetFrontController implements Initializable {
             try {
                 double rate = currencyConverter.getRate(finalAutreDevise, deviseBudget);
                 Platform.runLater(() -> {
-                    if (rate > 0) { lblTauxChange.setText(String.format("1 %s = %.4f %s", finalAutreDevise, rate, deviseBudget)); if (lblTauxUpdate != null) lblTauxUpdate.setText("Mis à jour ✓"); if (lblDevisesActives != null) lblDevisesActives.setText(finalAutreDevise + " → " + deviseBudget); }
+                    if (rate > 0) { lblTauxChange.setText(String.format("1 %s = %.4f %s", finalAutreDevise, rate, deviseBudget)); if (lblTauxUpdate != null) lblTauxUpdate.setText("Mis Ã  jour âœ“"); if (lblDevisesActives != null) lblDevisesActives.setText(finalAutreDevise + " â†’ " + deviseBudget); }
                     else { lblTauxChange.setText("Taux indisponible"); if (lblTauxUpdate != null) lblTauxUpdate.setText("Erreur de connexion"); }
                 });
-            } catch (Exception e) { Platform.runLater(() -> { lblTauxChange.setText("Taux indisponible"); if (lblTauxUpdate != null) lblTauxUpdate.setText("⚠ Erreur API"); }); }
+            } catch (Exception e) { Platform.runLater(() -> { lblTauxChange.setText("Taux indisponible"); if (lblTauxUpdate != null) lblTauxUpdate.setText("âš  Erreur API"); }); }
         });
         t.setDaemon(true); t.start();
     }
 
     private void updateNbDepenses() {
-        lblNbDepenses.setText(depensesList.size() + (depensesList.size() > 1 ? " dépenses" : " dépense"));
+        lblNbDepenses.setText(depensesList.size() + (depensesList.size() > 1 ? " dÃ©penses" : " dÃ©pense"));
     }
 
     @FXML public void handleToggleAlertHistory(ActionEvent event) {
@@ -1109,19 +1116,19 @@ public class BudgetFrontController implements Initializable {
     @FXML public void handleAppliquerFiltres(ActionEvent e) {
         filteredDepenses.setPredicate(d -> {
             String cat = cmbFiltreCategorie.getValue();
-            if (cat != null && !cat.equals("Toutes les catégories") && !d.getCategorieDepense().equals(cat)) return false;
+            if (cat != null && !cat.equals("Toutes les catÃ©gories") && !d.getCategorieDepense().equals(cat)) return false;
             if (dpDateDebut.getValue() != null && d.getDateCreation().before(Date.valueOf(dpDateDebut.getValue()))) return false;
             if (dpDateFin.getValue() != null && d.getDateCreation().after(Date.valueOf(dpDateFin.getValue()))) return false;
             return true;
         });
     }
 
-    @FXML public void handleReinitialiserFiltres(ActionEvent e) { cmbFiltreCategorie.setValue("Toutes les catégories"); dpDateDebut.setValue(null); dpDateFin.setValue(null); filteredDepenses.setPredicate(null); }
+    @FXML public void handleReinitialiserFiltres(ActionEvent e) { cmbFiltreCategorie.setValue("Toutes les catÃ©gories"); dpDateDebut.setValue(null); dpDateFin.setValue(null); filteredDepenses.setPredicate(null); }
     @FXML public void handleTriMontant(ActionEvent e) { if (btnTriMontant.isSelected()) { tableDepenses.getSortOrder().clear(); tableDepenses.getSortOrder().add(colMontant); colMontant.setSortType(TableColumn.SortType.DESCENDING); } }
     @FXML public void handleTriDate(ActionEvent e) { if (btnTriDate.isSelected()) { tableDepenses.getSortOrder().clear(); tableDepenses.getSortOrder().add(colDate); colDate.setSortType(TableColumn.SortType.DESCENDING); } }
     @FXML public void handleTriLibelle(ActionEvent e) { if (btnTriLibelle.isSelected()) { tableDepenses.getSortOrder().clear(); tableDepenses.getSortOrder().add(colLibelle); colLibelle.setSortType(TableColumn.SortType.ASCENDING); } }
 
-    @FXML public void handleAjouterDepense(ActionEvent e) { clearDepenseForm(); lblModalTitle.setText("Nouvelle Dépense"); modalDepense.setVisible(true); modalDepense.setManaged(true); }
+    @FXML public void handleAjouterDepense(ActionEvent e) { clearDepenseForm(); lblModalTitle.setText("Nouvelle DÃ©pense"); modalDepense.setVisible(true); modalDepense.setManaged(true); }
     @FXML public void handleCloseModalDepense(ActionEvent e) { modalDepense.setVisible(false); modalDepense.setManaged(false); clearDepenseForm(); }
 
     @FXML public void handleSaveDepense(ActionEvent event) {
@@ -1140,7 +1147,7 @@ public class BudgetFrontController implements Initializable {
             depenseCRUD.ajouter(d);
             loadDepensesForBudget(selectedBudget != null ? selectedBudget.getIdBudget() : 1);
             handleCloseModalDepense(null);
-            showInfo("Succès", "Dépense ajoutée avec succès!");
+            showInfo("SuccÃ¨s", "DÃ©pense ajoutÃ©e avec succÃ¨s!");
         } catch (Exception ex) { showAlert("Erreur", "Impossible d'ajouter: " + ex.getMessage()); }
     }
 
@@ -1152,7 +1159,7 @@ public class BudgetFrontController implements Initializable {
         cmbPaiementDepense.setValue(depense.getTypePaiement());
         if (depense.getDateCreation() != null) dateDepense.setValue(depense.getDateCreation().toLocalDate());
         txtNotesDepense.setText(depense.getDescriptionDepense());
-        lblModalTitle.setText("Modifier Dépense");
+        lblModalTitle.setText("Modifier DÃ©pense");
         modalDepense.setVisible(true); modalDepense.setManaged(true);
         btnSaveDepense.setOnAction(ev -> {
             try {
@@ -1162,18 +1169,18 @@ public class BudgetFrontController implements Initializable {
                 depense.setDescriptionDepense(txtNotesDepense.getText()); depense.validate();
                 depenseCRUD.modifier(depense);
                 loadDepensesForBudget(selectedBudget != null ? selectedBudget.getIdBudget() : 1);
-                handleCloseModalDepense(null); showInfo("Succès", "Dépense modifiée!");
+                handleCloseModalDepense(null); showInfo("SuccÃ¨s", "DÃ©pense modifiÃ©e!");
             } catch (Exception ex) { showAlert("Erreur", "Impossible de modifier: " + ex.getMessage()); }
         });
     }
 
     private void handleDeleteDepense(Depense depense) {
-        Alert a = new Alert(Alert.AlertType.CONFIRMATION,"Supprimer cette dépense ?", ButtonType.OK, ButtonType.CANCEL);
+        Alert a = new Alert(Alert.AlertType.CONFIRMATION,"Supprimer cette dÃ©pense ?", ButtonType.OK, ButtonType.CANCEL);
         a.setTitle("Confirmation"); a.setHeaderText(null);
-        a.showAndWait().ifPresent(r -> { if (r == ButtonType.OK) { try { depenseCRUD.supprimer(depense.getIdDepense()); loadDepensesForBudget(selectedBudget != null ? selectedBudget.getIdBudget() : 1); showInfo("Succès", "Dépense supprimée!"); } catch (Exception ex) { showAlert("Erreur", "Impossible de supprimer: " + ex.getMessage()); } } });
+        a.showAndWait().ifPresent(r -> { if (r == ButtonType.OK) { try { depenseCRUD.supprimer(depense.getIdDepense()); loadDepensesForBudget(selectedBudget != null ? selectedBudget.getIdBudget() : 1); showInfo("SuccÃ¨s", "DÃ©pense supprimÃ©e!"); } catch (Exception ex) { showAlert("Erreur", "Impossible de supprimer: " + ex.getMessage()); } } });
     }
 
-    @FXML public void handleNouveauBudget(ActionEvent e) { clearBudgetForm(); lblModalBudgetTitle.setText("Nouveau Budget"); lblModalBudgetSubtitle.setText("Créez un nouveau budget pour votre voyage"); modalBudget.setVisible(true); modalBudget.setManaged(true); }
+    @FXML public void handleNouveauBudget(ActionEvent e) { clearBudgetForm(); lblModalBudgetTitle.setText("Nouveau Budget"); lblModalBudgetSubtitle.setText("CrÃ©ez un nouveau budget pour votre voyage"); modalBudget.setVisible(true); modalBudget.setManaged(true); }
     @FXML public void handleCloseModalBudget(ActionEvent e) { modalBudget.setVisible(false); modalBudget.setManaged(false); clearBudgetForm(); currentSaisonIdeale = null; }
 
     @FXML public void handleSaveBudget(ActionEvent event) {
@@ -1185,12 +1192,12 @@ public class BudgetFrontController implements Initializable {
             b.setDescriptionBudget(txtDescriptionBudget.getText()); b.setId(1);
             String sv = cmbVoyageBudget.getValue();
             b.setIdVoyage((sv != null && !sv.equals("Sans voyage") && !sv.isEmpty()) ? extractVoyageId(sv) : 0);
-            b.validate(); budgetCRUD.ajouter(b); loadBudgets(); handleCloseModalBudget(null); showInfo("Succès", "Budget créé!");
-        } catch (Exception ex) { showAlert("Erreur", "Impossible de créer: " + ex.getMessage()); }
+            b.validate(); budgetCRUD.ajouter(b); loadBudgets(); handleCloseModalBudget(null); showInfo("SuccÃ¨s", "Budget crÃ©Ã©!");
+        } catch (Exception ex) { showAlert("Erreur", "Impossible de crÃ©er: " + ex.getMessage()); }
     }
 
     @FXML public void handleModifierBudget(ActionEvent event) {
-        if (selectedBudget == null) { showAlert("Attention", "Sélectionnez un budget"); return; }
+        if (selectedBudget == null) { showAlert("Attention", "SÃ©lectionnez un budget"); return; }
         txtNomBudget.setText(selectedBudget.getLibelleBudget()); txtMontantBudget.setText(String.valueOf(selectedBudget.getMontantTotal()));
         selectDevise(cmbDeviseBudget, selectedBudget.getDeviseBudget()); cmbStatutBudget.setValue(selectedBudget.getStatutBudget());
         txtDescriptionBudget.setText(selectedBudget.getDescriptionBudget());
@@ -1205,38 +1212,38 @@ public class BudgetFrontController implements Initializable {
                 String sv = cmbVoyageBudget.getValue();
                 selectedBudget.setIdVoyage((sv != null && !sv.equals("Sans voyage") && !sv.isEmpty()) ? extractVoyageId(sv) : 0);
                 selectedBudget.validate(); budgetCRUD.modifier(selectedBudget); loadBudgets(); selectBudget(selectedBudget);
-                handleCloseModalBudget(null); showInfo("Succès", "Budget modifié!");
+                handleCloseModalBudget(null); showInfo("SuccÃ¨s", "Budget modifiÃ©!");
             } catch (Exception ex) { showAlert("Erreur", "Impossible de modifier: " + ex.getMessage()); }
         });
     }
 
     @FXML public void handleSupprimerBudget(ActionEvent event) {
-        if (selectedBudget == null) { showAlert("Attention", "Sélectionnez un budget"); return; }
+        if (selectedBudget == null) { showAlert("Attention", "SÃ©lectionnez un budget"); return; }
         Alert a = new Alert(Alert.AlertType.CONFIRMATION,"Supprimer ce budget ?", ButtonType.OK, ButtonType.CANCEL);
         a.setTitle("Confirmation"); a.setHeaderText(null);
-        a.showAndWait().ifPresent(r -> { if (r == ButtonType.OK) { try { budgetCRUD.supprimer(selectedBudget.getIdBudget()); loadBudgets(); showInfo("Succès", "Budget supprimé!"); } catch (Exception ex) { showAlert("Erreur", "Impossible de supprimer: " + ex.getMessage()); } } });
+        a.showAndWait().ifPresent(r -> { if (r == ButtonType.OK) { try { budgetCRUD.supprimer(selectedBudget.getIdBudget()); loadBudgets(); showInfo("SuccÃ¨s", "Budget supprimÃ©!"); } catch (Exception ex) { showAlert("Erreur", "Impossible de supprimer: " + ex.getMessage()); } } });
     }
 
     @FXML private void handleExportExcel() {
         ObservableList<Depense> items = tableDepenses.getItems();
-        if (items.isEmpty()) { showAlert(Alert.AlertType.WARNING,"Export Excel","Aucune donnée."); return; }
+        if (items.isEmpty()) { showAlert(Alert.AlertType.WARNING,"Export Excel","Aucune donnÃ©e."); return; }
         FileChooser fc = new FileChooser(); fc.setTitle("Exporter en Excel");
         fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("Excel","*.xlsx"));
         fc.setInitialFileName("depenses_" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) + ".xlsx");
         File file = fc.showSaveDialog(tableDepenses.getScene().getWindow());
-        if (file != null) { try { exportToExcel(items, file); showInfo("Succès","Excel exporté."); if (java.awt.Desktop.isDesktopSupported()) java.awt.Desktop.getDesktop().open(file); } catch (IOException ex) { showAlert(Alert.AlertType.ERROR,"Erreur","Excel: " + ex.getMessage()); } }
+        if (file != null) { try { exportToExcel(items, file); showInfo("SuccÃ¨s","Excel exportÃ©."); if (java.awt.Desktop.isDesktopSupported()) java.awt.Desktop.getDesktop().open(file); } catch (IOException ex) { showAlert(Alert.AlertType.ERROR,"Erreur","Excel: " + ex.getMessage()); } }
     }
 
     private void exportToExcel(ObservableList<Depense> depenses, File file) throws IOException {
         try (Workbook wb = new XSSFWorkbook()) {
-            Sheet sheet = wb.createSheet("Dépenses");
+            Sheet sheet = wb.createSheet("DÃ©penses");
             CellStyle ts = wb.createCellStyle(); Font tf = wb.createFont(); tf.setBold(true); tf.setFontHeightInPoints((short)16); ts.setFont(tf); ts.setAlignment(HorizontalAlignment.CENTER);
             CellStyle hs = wb.createCellStyle(); Font hf = wb.createFont(); hf.setBold(true); hf.setColor(IndexedColors.WHITE.getIndex()); hs.setFont(hf); hs.setFillForegroundColor(IndexedColors.ORANGE.getIndex()); hs.setFillPattern(FillPatternType.SOLID_FOREGROUND); hs.setAlignment(HorizontalAlignment.CENTER);
             CellStyle ds = wb.createCellStyle(); ds.setBorderBottom(BorderStyle.THIN); ds.setBorderTop(BorderStyle.THIN); ds.setBorderLeft(BorderStyle.THIN); ds.setBorderRight(BorderStyle.THIN);
             Row tr = sheet.createRow(0); org.apache.poi.ss.usermodel.Cell tc = tr.createCell(0);
-            tc.setCellValue("RAPPORT DES DÉPENSES - " + LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))); tc.setCellStyle(ts);
+            tc.setCellValue("RAPPORT DES DÃ‰PENSES - " + LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))); tc.setCellStyle(ts);
             sheet.addMergedRegion(new CellRangeAddress(0,0,0,6));
-            String[] headers = {"Libellé","Catégorie","Montant","Devise","Date","Paiement","Description"};
+            String[] headers = {"LibellÃ©","CatÃ©gorie","Montant","Devise","Date","Paiement","Description"};
             Row hr = sheet.createRow(3);
             for (int i = 0; i < headers.length; i++) { org.apache.poi.ss.usermodel.Cell c = hr.createCell(i); c.setCellValue(headers[i]); c.setCellStyle(hs); }
             int rn = 4;
@@ -1258,12 +1265,12 @@ public class BudgetFrontController implements Initializable {
 
     @FXML public void handleExportPDF(ActionEvent event) {
         ObservableList<Depense> items = tableDepenses.getItems();
-        if (items.isEmpty()) { showAlert(Alert.AlertType.WARNING,"Export PDF","Aucune dépense."); return; }
+        if (items.isEmpty()) { showAlert(Alert.AlertType.WARNING,"Export PDF","Aucune dÃ©pense."); return; }
         FileChooser fc = new FileChooser(); fc.setTitle("Enregistrer PDF");
         fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("PDF","*.pdf"));
         fc.setInitialFileName("depenses_" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) + ".pdf");
         File file = fc.showSaveDialog(tableDepenses.getScene().getWindow());
-        if (file != null) { try { exportToPDF(items, file); if (java.awt.Desktop.isDesktopSupported()) java.awt.Desktop.getDesktop().open(file); showInfo("Succès","PDF exporté."); } catch (Exception ex) { showAlert(Alert.AlertType.ERROR,"Erreur","PDF: " + ex.getMessage()); } }
+        if (file != null) { try { exportToPDF(items, file); if (java.awt.Desktop.isDesktopSupported()) java.awt.Desktop.getDesktop().open(file); showInfo("SuccÃ¨s","PDF exportÃ©."); } catch (Exception ex) { showAlert(Alert.AlertType.ERROR,"Erreur","PDF: " + ex.getMessage()); } }
     }
 
     private void exportToPDF(ObservableList<Depense> depenses, File file) throws Exception {
@@ -1274,7 +1281,7 @@ public class BudgetFrontController implements Initializable {
         doc.add(new Paragraph().add(new Text("RAPPORT DES DEPENSES\n").setFont(bold).setFontSize(24).setFontColor(orange)).add(new Text("TravelMate PRO").setFont(normal).setFontSize(14)).setTextAlignment(TextAlignment.CENTER).setMarginBottom(20));
         float[] w = {2f,1.5f,1f,0.8f,1f,1.5f,2.5f};
         Table table = new Table(w); table.setWidth(UnitValue.createPercentValue(100));
-        for (String h : new String[]{"Libellé","Catégorie","Montant","Devise","Date","Paiement","Description"})
+        for (String h : new String[]{"LibellÃ©","CatÃ©gorie","Montant","Devise","Date","Paiement","Description"})
             table.addCell(new Cell().add(new Paragraph(h).setFont(bold).setFontSize(10).setFontColor(ColorConstants.WHITE)).setBackgroundColor(orange).setTextAlignment(TextAlignment.CENTER).setPadding(8));
         for (Depense d : depenses) {
             table.addCell(createPdfCell(d.getLibelleDepense(), normal, 9, TextAlignment.LEFT));
@@ -1293,8 +1300,8 @@ public class BudgetFrontController implements Initializable {
     }
 
     private boolean validateDepenseForm() {
-        if (txtLibelleDepense.getText().trim().isEmpty()) { showAlert("Validation","Le libellé est requis"); return false; }
-        if (cmbCategorieDepense.getValue() == null) { showAlert("Validation","La catégorie est requise"); return false; }
+        if (txtLibelleDepense.getText().trim().isEmpty()) { showAlert("Validation","Le libellÃ© est requis"); return false; }
+        if (cmbCategorieDepense.getValue() == null) { showAlert("Validation","La catÃ©gorie est requise"); return false; }
         if (txtMontantDepense.getText().trim().isEmpty()) { showAlert("Validation","Le montant est requis"); return false; }
         try { Double.parseDouble(txtMontantDepense.getText()); } catch (NumberFormatException e) { showAlert("Validation","Montant invalide"); return false; }
         if (cmbDeviseDepense.getValue() == null) { showAlert("Validation","La devise est requise"); return false; }
@@ -1337,4 +1344,19 @@ public class BudgetFrontController implements Initializable {
     private void showAlert(Alert.AlertType t, String title, String msg) { Alert a = new Alert(t); a.setTitle(title); a.setHeaderText(null); a.setContentText(msg); a.showAndWait(); }
     private void showAlert(String title, String msg) { showAlert(Alert.AlertType.ERROR, title, msg); }
     private void showInfo(String title, String msg) { showAlert(Alert.AlertType.INFORMATION, title, msg); }
+
+    @FXML
+    private Button btnTranslate;
+
+    @FXML
+    private void handleTranslate() {
+        Utils.TranslationManager.createTranslationButton(() ->
+            Utils.TranslationManager.translateInterface(
+                btnTranslate.getScene().getRoot(),
+                Utils.TranslationManager.getCurrentLanguage())
+        );
+        Utils.TranslationManager.translateInterface(
+            btnTranslate.getScene().getRoot(),
+            Utils.TranslationManager.getCurrentLanguage());
+    }
 }

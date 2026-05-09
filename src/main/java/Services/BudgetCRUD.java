@@ -118,7 +118,8 @@ public class BudgetCRUD {
         try (Statement st = conn.createStatement();
              ResultSet rs = st.executeQuery(sql)) {
             while (rs.next()) {
-                budgets.add(extractBudgetFromResultSet(rs));
+                Budget b = extractBudgetFromResultSet(rs);
+                if (b != null) budgets.add(b);
             }
         }
 
@@ -144,7 +145,10 @@ public class BudgetCRUD {
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, userId);
             try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) budgets.add(extractBudgetFromResultSet(rs));
+                while (rs.next()) {
+                    Budget b = extractBudgetFromResultSet(rs);
+                    if (b != null) budgets.add(b);
+                }
             }
         }
         return budgets;
@@ -158,7 +162,8 @@ public class BudgetCRUD {
             ps.setInt(1, idVoyage);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    budgets.add(extractBudgetFromResultSet(rs));
+                    Budget b = extractBudgetFromResultSet(rs);
+                    if (b != null) budgets.add(b);
                 }
             }
         }
@@ -222,16 +227,45 @@ public class BudgetCRUD {
 
     // ===== EXTRACTION UTILE =====
     private Budget extractBudgetFromResultSet(ResultSet rs) throws SQLException {
-        return new Budget(
-                rs.getInt("id_budget"),
-                rs.getString("libelle_budget"),
-                rs.getDouble("montant_total"),
-                rs.getString("devise_budget"),
-                rs.getString("statut_budget"),
-                rs.getString("description_budget"),
-                rs.getInt("id"),
-                rs.getInt("id_voyage")
-        );
+        Budget b = new Budget();
+        b.setIdBudget(rs.getInt("id_budget"));
+
+        // libelle — fallback si null/vide
+        String libelle = rs.getString("libelle_budget");
+        b.setLibelleBudget((libelle != null && !libelle.isEmpty()) ? libelle : "Budget sans nom");
+
+        // montant — fallback si <= 0
+        double montant = rs.getDouble("montant_total");
+        b.setMontantTotal(montant > 0 ? montant : 1.0);
+
+        // devise — fallback si null/longueur incorrecte
+        String devise = rs.getString("devise_budget");
+        if (devise == null || devise.trim().length() != 3) devise = "EUR";
+        b.setDeviseBudget(devise.trim().toUpperCase());
+
+        // statut — fallback si null/invalide
+        String statut = rs.getString("statut_budget");
+        if (statut == null || statut.isEmpty()) statut = "ACTIF";
+        statut = statut.trim().toUpperCase();
+        if (!statut.equals("ACTIF") && !statut.equals("INACTIF") &&
+                !statut.equals("TERMINE") && !statut.equals("PLANIFIE") && !statut.equals("ENCOURS")) {
+            statut = "ACTIF";
+        }
+        b.setStatutBudget(statut);
+
+        b.setDescriptionBudget(rs.getString("description_budget"));
+
+        // id utilisateur — fallback si <= 0
+        int userId = rs.getInt("id");
+        if (userId <= 0) userId = 0; // on bypass la validation via le champ direct
+        try { b.setId(userId); } catch (IllegalArgumentException ignored) {
+            // budget orphelin : on le charge quand même avec id=0 via réflexion n'est pas possible,
+            // donc on skip ce budget silencieusement
+            return null;
+        }
+
+        b.setIdVoyage(Math.max(0, rs.getInt("id_voyage")));
+        return b;
     }
     // Dans Services/BudgetCRUD.java, ajoutez/modifiez ces méthodes
 

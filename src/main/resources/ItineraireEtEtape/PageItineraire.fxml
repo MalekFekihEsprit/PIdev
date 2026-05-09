@@ -13,9 +13,8 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Circle?>
-<?import javafx.scene.shape.Rectangle?>
 
-<BorderPane fx:id="mainBorderPane" prefHeight="720" style="-fx-background-color: #f8fafc;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.ItineraireEtEtape.PageItineraire">
+<BorderPane fx:id="mainBorderPane" style="-fx-background-color: #f8fafc;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.ItineraireEtEtape.PageItineraire">
 
     <!-- ══════════════════════════════════════════════════════════ -->
     <!-- TOP NAVIGATION BAR                                        -->
@@ -25,7 +24,7 @@
             <!-- Main Navigation Bar -->
             <HBox alignment="CENTER_LEFT" spacing="15" style="-fx-background-color: #ffffff; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.04), 12, 0, 0, 3);">
                 <padding>
-                    <Insets bottom="12" left="24" right="24" top="12" />
+                    <Insets bottom="16" left="32" right="32" top="16" />
                 </padding>
 
                 <!-- Logo -->
@@ -121,7 +120,7 @@
                 <Circle fill="#10b981" radius="3.5" />
                 <Label style="-fx-text-fill: #10b981; -fx-font-size: 10; -fx-font-weight: 600;" text="Connecté" />
             </HBox>
-            <Rectangle fill="#e2e8f0" height="12" width="1" />
+            <Region maxWidth="Infinity" minHeight="12" prefHeight="12" style="-fx-background-color: #e2e8f0;" />
             <Label fx:id="lblItinerairesActifsFooter" style="-fx-text-fill: #64748b; -fx-font-size: 10;" text="0 itinéraires actifs" />
             <Region HBox.hgrow="ALWAYS" />
             <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 10;" text="© 2026 TravelMate" />
@@ -132,11 +131,11 @@
     <!-- MAIN CONTENT - PAGE ITINÉRAIRES                           -->
     <!-- ══════════════════════════════════════════════════════════ -->
     <center>
-        <ScrollPane fitToWidth="true" hbarPolicy="NEVER" style="-fx-background: #f8fafc; -fx-border-color: transparent; -fx-background-color: transparent;">
+        <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" hbarPolicy="NEVER" style="-fx-background: #f8fafc; -fx-border-color: transparent; -fx-background-color: transparent;">
             <content>
                 <VBox spacing="20" VBox.vgrow="ALWAYS">
                     <padding>
-                        <Insets bottom="30" left="24" right="24" top="24" />
+                        <Insets bottom="30" left="32" right="32" top="24" />
                     </padding>
 
                     <!-- HEADER SECTION AVEC BOUTONS GLOBAUX -->
@@ -276,7 +275,7 @@
                     </VBox>
 
                     <!-- BOTTOM DECORATION -->
-                    <Rectangle arcHeight="6" arcWidth="6" fill="linear-gradient(to right, #ff8c42, #ff6b4a, #6366f1)" height="4" style="-fx-arc-height: 6; -fx-arc-width: 6;" VBox.vgrow="NEVER" />
+                    <Region maxWidth="Infinity" minHeight="3" prefHeight="3" style="-fx-background-color: linear-gradient(to right, rgba(245,166,35,0.5), rgba(255,107,0,0.5), rgba(99,102,241,0.5));" />
                 </VBox>
             </content>
         </ScrollPane>

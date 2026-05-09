@@ -21,6 +21,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.scene.shape.Rectangle;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -142,12 +143,13 @@ public class BudgetBackController implements Initializable {
     @FXML private HBox btnDestinations;
     @FXML private HBox btnActivites;
     @FXML private HBox btnCategories;
-    @FXML private HBox btnHebergements;
+    @FXML private HBox btnHebergement;
     @FXML private HBox btnVoyages;
     @FXML private HBox btnBudgets;
-    @FXML private HBox btnUtilisateurs;
-    @FXML private HBox btnStatistiques;
+    @FXML private HBox btnUsers;
+    @FXML private HBox btnStats;
     @FXML private HBox btnItineraires;
+    @FXML private HBox btnEvenements;
 
     // ══════════════════════════════════════════════════
     //  Services & data
@@ -233,7 +235,7 @@ public class BudgetBackController implements Initializable {
         try {
             Parent root = FXMLLoader.load(getClass().getResource("/fxml/Profile.fxml"));
             Stage stage = (Stage) userProfileBox.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - Profil");
             stage.setMaximized(true);
             stage.show();
@@ -846,14 +848,15 @@ public class BudgetBackController implements Initializable {
     // ══════════════════════════════════════════════════
     private void setupNavigation() {
         navigateToDestinations(btnDestinations, "Destinations");
+        navigateToHebergements(btnHebergement, "Hébergements");
+        navigateToUtilisateurs(btnUsers, "Utilisateurs");
+        navigateToStatistiques(btnStats, "Statistiques");
+        navigateToItineraire(btnItineraires, "Itineraires");
+        navigateToCategories(btnCategories, "Categories");
         navigateToActivites(btnActivites, "Activités");
-        navigateToHebergements(btnHebergements, "Hébergements");
         navigateToVoyages(btnVoyages, "Voyages");
         navigateToBudgets(btnBudgets, "Budgets");
-        navigateToUtilisateurs(btnUtilisateurs, "Utilisateurs");
-        navigateToStatistiques(btnStatistiques, "Statistiques");
-        navigateToCategories(btnCategories, "Categories");
-        navigateToItineraire(btnItineraires, "Itineraires");
+        navigateToEvenements(btnEvenements, "Événements");
     }
 
     private void navigateToDestinations(HBox btn, String page) {
@@ -861,9 +864,10 @@ public class BudgetBackController implements Initializable {
             try {
                 Parent root = FXMLLoader.load(getClass().getResource("/DestinationBack.fxml"));
                 Stage stage = (Stage) btn.getScene().getWindow();
-                stage.setScene(new Scene(root));
+                stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
                 stage.setTitle("TravelMate - Destinations (Admin)");
                 stage.setMaximized(true);
+                stage.show();
             } catch (IOException ex) {
                 showAlert("Erreur", "Impossible de charger la page: " + ex.getMessage());
                 ex.printStackTrace();
@@ -876,9 +880,10 @@ public class BudgetBackController implements Initializable {
             try {
                 Parent root = FXMLLoader.load(getClass().getResource("/categoriesback.fxml"));
                 Stage stage = (Stage) btn.getScene().getWindow();
-                stage.setScene(new Scene(root));
+                stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
                 stage.setTitle("TravelMate - Categories (Admin)");
                 stage.setMaximized(true);
+                stage.show();
             } catch (IOException ex) {
                 showAlert("Erreur", "Impossible de charger la page: " + ex.getMessage());
                 ex.printStackTrace();
@@ -891,9 +896,10 @@ public class BudgetBackController implements Initializable {
             try {
                 Parent root = FXMLLoader.load(getClass().getResource("/activitesback.fxml"));
                 Stage stage = (Stage) btn.getScene().getWindow();
-                stage.setScene(new Scene(root));
+                stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
                 stage.setTitle("TravelMate - Activités (Admin)");
                 stage.setMaximized(true);
+                stage.show();
             } catch (IOException ex) {
                 showAlert("Erreur", "Impossible de charger la page: " + ex.getMessage());
                 ex.printStackTrace();
@@ -906,9 +912,10 @@ public class BudgetBackController implements Initializable {
             try {
                 Parent root = FXMLLoader.load(getClass().getResource("/HebergementBack.fxml"));
                 Stage stage = (Stage) btn.getScene().getWindow();
-                stage.setScene(new Scene(root));
+                stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
                 stage.setTitle("TravelMate - Hébergements (Admin)");
                 stage.setMaximized(true);
+                stage.show();
             } catch (IOException ex) {
                 showAlert("Erreur", "Impossible de charger la page: " + ex.getMessage());
                 ex.printStackTrace();
@@ -921,9 +928,10 @@ public class BudgetBackController implements Initializable {
             try {
                 Parent root = FXMLLoader.load(getClass().getResource("/PageVoyageBack.fxml"));
                 Stage stage = (Stage) btn.getScene().getWindow();
-                stage.setScene(new Scene(root));
+                stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
                 stage.setTitle("TravelMate - Voyages (Admin)");
                 stage.setMaximized(true);
+                stage.show();
             } catch (IOException ex) {
                 showAlert("Erreur", "Impossible de charger la page: " + ex.getMessage());
                 ex.printStackTrace();
@@ -936,9 +944,10 @@ public class BudgetBackController implements Initializable {
             try {
                 Parent root = FXMLLoader.load(getClass().getResource("/BudgetDepenseBack.fxml"));
                 Stage stage = (Stage) btn.getScene().getWindow();
-                stage.setScene(new Scene(root));
+                stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
                 stage.setTitle("TravelMate - Budgets (Admin)");
                 stage.setMaximized(true);
+                stage.show();
             } catch (IOException ex) {
                 showAlert("Erreur", "Impossible de charger la page: " + ex.getMessage());
                 ex.printStackTrace();
@@ -951,9 +960,10 @@ public class BudgetBackController implements Initializable {
             try {
                 Parent root = FXMLLoader.load(getClass().getResource("/fxml/admin_users.fxml"));
                 Stage stage = (Stage) btn.getScene().getWindow();
-                stage.setScene(new Scene(root));
+                stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
                 stage.setTitle("TravelMate - Utilisateurs (Admin)");
                 stage.setMaximized(true);
+                stage.show();
             } catch (IOException ex) {
                 showAlert("Erreur", "Impossible de charger la page: " + ex.getMessage());
                 ex.printStackTrace();
@@ -966,9 +976,10 @@ public class BudgetBackController implements Initializable {
             try {
                 Parent root = FXMLLoader.load(getClass().getResource("/fxml/admin_stats.fxml"));
                 Stage stage = (Stage) btn.getScene().getWindow();
-                stage.setScene(new Scene(root));
+                stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
                 stage.setTitle("TravelMate - Statistiques (Admin)");
                 stage.setMaximized(true);
+                stage.show();
             } catch (IOException ex) {
                 showAlert("Erreur", "Impossible de charger la page: " + ex.getMessage());
                 ex.printStackTrace();
@@ -979,11 +990,28 @@ public class BudgetBackController implements Initializable {
     private void navigateToItineraire(HBox btn, String page) {
         if (btn != null) btn.setOnMouseClicked(e -> {
             try {
-                Parent root = FXMLLoader.load(getClass().getResource("/ItineraireEtEtape/PageGestionItineraire.fxml"));
+                Parent root = FXMLLoader.load(getClass().getResource("/ItineraireEtEtape/PageGestionItineraires.fxml"));
                 Stage stage = (Stage) btn.getScene().getWindow();
-                stage.setScene(new Scene(root));
+                stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
                 stage.setTitle("TravelMate - Itineraires (Admin)");
                 stage.setMaximized(true);
+                stage.show();
+            } catch (IOException ex) {
+                showAlert("Erreur", "Impossible de charger la page: " + ex.getMessage());
+                ex.printStackTrace();
+            }
+        });
+    }
+
+    private void navigateToEvenements(HBox btn, String page) {
+        if (btn != null) btn.setOnMouseClicked(e -> {
+            try {
+                Parent root = FXMLLoader.load(getClass().getResource("/Evenementsback.fxml"));
+                Stage stage = (Stage) btn.getScene().getWindow();
+                stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
+                stage.setTitle("TravelMate - Événements (Admin)");
+                stage.setMaximized(true);
+                stage.show();
             } catch (IOException ex) {
                 showAlert("Erreur", "Impossible de charger la page: " + ex.getMessage());
                 ex.printStackTrace();

@@ -22,6 +22,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.Modality;
 
@@ -446,7 +447,7 @@ public class PageItineraire {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
             Parent root = loader.load();
             Stage stage = (Stage) btnDestinations.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - " + title);
             stage.setMaximized(true);
             stage.show();
@@ -1134,7 +1135,7 @@ public class PageItineraire {
             Parent root = loader.load();
 
             Stage stage = (Stage) itinerariesContainer.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - Voyages");
             stage.setMaximized(true);
             stage.show();

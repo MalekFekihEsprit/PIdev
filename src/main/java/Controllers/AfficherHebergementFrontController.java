@@ -71,7 +71,7 @@ public class AfficherHebergementFrontController implements Initializable {
         lblBreadcrumbHebergement.setText(hebergement.getNom_hebergement());
 
         // Price
-        lblPrix.setText(String.format("%.2f €", hebergement.getPrixNuit_hebergement()));
+        lblPrix.setText(String.format("%.2f €", hebergement.getPrix_nuit_hebergement()));
 
         // Address
         lblAdresse.setText(hebergement.getAdresse_hebergement());
@@ -103,7 +103,7 @@ public class AfficherHebergementFrontController implements Initializable {
         // Tags
         lblTagType.setText("🏨 " + hebergement.getType_hebergement());
         lblTagNote.setText(String.format("⭐ %.1f/5", hebergement.getNote_hebergement()));
-        lblTagPrix.setText(String.format("💰 %.2f€/nuit", hebergement.getPrixNuit_hebergement()));
+        lblTagPrix.setText(String.format("💰 %.2f€/nuit", hebergement.getPrix_nuit_hebergement()));
     }
 
     private String getIconForType(String type) {

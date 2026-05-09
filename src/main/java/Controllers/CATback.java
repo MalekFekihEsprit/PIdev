@@ -15,6 +15,7 @@ import javafx.geometry.Insets;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -69,6 +70,7 @@ public class CATback implements Initializable {
     @FXML private HBox btnStats;
     @FXML private HBox btnActivites;
     @FXML private HBox btnCategories;
+    @FXML private HBox btnEvenements;
     @FXML private HBox userProfileBox;
     @FXML private Label lblUserName;
     @FXML private Label lblUserRole;
@@ -248,20 +250,38 @@ public class CATback implements Initializable {
         // Budgets
         setupSidebarButtonHover(btnBudgets, "💰", "Budgets");
         if (btnBudgets != null) btnBudgets.setOnMouseClicked(event -> navigateTo("/BudgetDepenseBack.fxml", "Gestion des Budgets"));
+
+        // Événements
+        setupSidebarButtonHover(btnEvenements, "🎉", "Événements");
+        if (btnEvenements != null) btnEvenements.setOnMouseClicked(event -> navigateTo("/Evenementsback.fxml", "Gestion des Événements"));
     }
 
     private void navigateTo(String fxmlPath, String title) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
             Parent root = loader.load();
-            Stage stage = (Stage) btnCategories.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            Stage stage = getStage();
+            if (stage == null) return;
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - " + title);
             stage.setMaximized(true);
+            stage.show();
         } catch (IOException e) {
             showError("Erreur de navigation", "Impossible d'ouvrir: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    private Stage getStage() {
+        if (tableCategories != null && tableCategories.getScene() != null)
+            return (Stage) tableCategories.getScene().getWindow();
+        if (btnDestinations != null && btnDestinations.getScene() != null)
+            return (Stage) btnDestinations.getScene().getWindow();
+        if (btnActivites != null && btnActivites.getScene() != null)
+            return (Stage) btnActivites.getScene().getWindow();
+        if (btnVoyages != null && btnVoyages.getScene() != null)
+            return (Stage) btnVoyages.getScene().getWindow();
+        return null;
     }
 
     private void setupSidebarButtonHover(HBox button, String icon, String text) {
@@ -311,9 +331,10 @@ public class CATback implements Initializable {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/profile.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) userProfileBox.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - Mon Profil");
             stage.setMaximized(true);
+            stage.show();
         } catch (IOException e) {
             showError("Erreur de navigation", "Impossible d'ouvrir le profil: " + e.getMessage());
             e.printStackTrace();
@@ -843,10 +864,11 @@ public class CATback implements Initializable {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/categoriesfront.fxml"));
             Parent root = loader.load();
-            Scene scene = new Scene(root);
+            Scene scene = new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight());
             Stage stage = (Stage) btnFrontOffice.getScene().getWindow();
             stage.setScene(scene);
             stage.setTitle("TravelMate - Front Office Catégories");
+            stage.setMaximized(true);
             stage.show();
         } catch (IOException e) {
             showError("Erreur de navigation",

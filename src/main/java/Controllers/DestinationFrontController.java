@@ -19,6 +19,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 
@@ -36,12 +37,13 @@ public class DestinationFrontController implements Initializable {
 
     // Top Navigation
     @FXML private HBox btnDestinations;
-    @FXML private HBox btnHebergement;
+    @FXML private HBox btnHebergements;
     @FXML private HBox btnItineraires;
     @FXML private HBox btnActivites;
     @FXML private HBox btnVoyages;
     @FXML private HBox btnBudgets;
     @FXML private HBox btnCategories; // Added
+    @FXML private HBox btnEvenements;
     @FXML private HBox btnHome;
     @FXML private HBox userProfileBox;
     @FXML private HBox btnNotifications;
@@ -321,7 +323,7 @@ public class DestinationFrontController implements Initializable {
 
             Stage stage = new Stage();
             stage.setTitle("Suggérer des hôtels - " + selectedDestination.getNom_destination());
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setResizable(false);
             stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
             stage.showAndWait();
@@ -556,9 +558,10 @@ public class DestinationFrontController implements Initializable {
             Parent root = loader.load();
 
             Stage stage = (Stage) userProfileBox.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - Mon Profil");
             stage.setMaximized(true);
+            stage.show();
 
         } catch (IOException e) {
             showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir le profil: " + e.getMessage());
@@ -591,9 +594,9 @@ public class DestinationFrontController implements Initializable {
         }
 
         // Navigation buttons
-        setupNavButtonHover(btnHebergement, "🏨", "Hébergement");
-        if (btnHebergement != null) {
-            btnHebergement.setOnMouseClicked(event -> navigateTo("/HebergementFront.fxml", "Hébergements"));
+        setupNavButtonHover(btnHebergements, "🏨", "Hébergements");
+        if (btnHebergements != null) {
+            btnHebergements.setOnMouseClicked(event -> navigateTo("/HebergementFront.fxml", "Hébergements"));
         }
 
         setupNavButtonHover(btnCategories, "📑", "Catégories");
@@ -616,6 +619,11 @@ public class DestinationFrontController implements Initializable {
             btnBudgets.setOnMouseClicked(event -> navigateTo("/BudgetDepenseFront.fxml", "Budgets"));
         }
 
+        setupNavButtonHover(btnEvenements, "🎉", "Événements");
+        if (btnEvenements != null) {
+            btnEvenements.setOnMouseClicked(event -> navigateTo("/Evenementsfront.fxml", "Événements"));
+        }
+
         // Remove Itinéraires from navigation (keep it but disabled or hidden)
         if (btnItineraires != null) {
             btnItineraires.setVisible(false);
@@ -628,15 +636,29 @@ public class DestinationFrontController implements Initializable {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
             Parent root = loader.load();
 
-            Stage stage = (Stage) btnDestinations.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            Stage stage = getStage();
+            if (stage == null) return;
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - " + title);
             stage.setMaximized(true);
+            stage.show();
 
         } catch (IOException e) {
             showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir " + title + ": " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    private Stage getStage() {
+        if (tableDestinations != null && tableDestinations.getScene() != null)
+            return (Stage) tableDestinations.getScene().getWindow();
+        if (btnActivites != null && btnActivites.getScene() != null)
+            return (Stage) btnActivites.getScene().getWindow();
+        if (btnVoyages != null && btnVoyages.getScene() != null)
+            return (Stage) btnVoyages.getScene().getWindow();
+        if (btnBudgets != null && btnBudgets.getScene() != null)
+            return (Stage) btnBudgets.getScene().getWindow();
+        return null;
     }
 
     private void setupNavButtonHover(HBox button, String icon, String text) {
@@ -806,7 +828,7 @@ public class DestinationFrontController implements Initializable {
 
             Stage stage = new Stage();
             stage.setTitle("Ajouter une destination");
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setResizable(false);
             stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
             stage.showAndWait();
@@ -829,7 +851,7 @@ public class DestinationFrontController implements Initializable {
 
             Stage stage = new Stage();
             stage.setTitle("Modifier - " + destination.getNom_destination());
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setResizable(false);
             stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
             stage.showAndWait();
@@ -872,7 +894,7 @@ public class DestinationFrontController implements Initializable {
 
             Stage stage = new Stage();
             stage.setTitle("Détails - " + destination.getNom_destination());
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
             stage.showAndWait();
 
@@ -888,9 +910,10 @@ public class DestinationFrontController implements Initializable {
             Parent root = loader.load();
 
             Stage stage = (Stage) tableDestinations.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - Accueil");
             stage.setMaximized(true);
+            stage.show();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -911,5 +934,20 @@ public class DestinationFrontController implements Initializable {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    @FXML
+    private Button btnTranslate;
+
+    @FXML
+    private void handleTranslate() {
+        Utils.TranslationManager.createTranslationButton(() ->
+            Utils.TranslationManager.translateInterface(
+                btnTranslate.getScene().getRoot(),
+                Utils.TranslationManager.getCurrentLanguage())
+        );
+        Utils.TranslationManager.translateInterface(
+            btnTranslate.getScene().getRoot(),
+            Utils.TranslationManager.getCurrentLanguage());
     }
 }

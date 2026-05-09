@@ -12,7 +12,6 @@
 <BorderPane xmlns="http://javafx.com/javafx/17"
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="Controllers.ItineraireEtEtape.MainLayoutController"
-            prefHeight="720"
             style="-fx-background-color: #f8fafc;">
 
     <!-- NAVBAR -->
@@ -21,7 +20,7 @@
             <!-- Main Navigation Bar -->
             <HBox alignment="CENTER_LEFT" spacing="15" style="-fx-background-color: #ffffff; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.02), 10, 0, 0, 2);">
                 <padding>
-                    <Insets bottom="15" left="24" right="24" top="15" />
+                    <Insets bottom="15" left="32" right="32" top="15" />
                 </padding>
 
                 <!-- Logo Section -->

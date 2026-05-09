@@ -87,7 +87,7 @@ public class ModifierHebergementController implements Initializable {
         // Pre-fill form
         tfNom.setText(hebergement.getNom_hebergement());
         cbType.setValue(hebergement.getType_hebergement());
-        tfPrix.setText(String.valueOf(hebergement.getPrixNuit_hebergement()));
+        tfPrix.setText(String.valueOf(hebergement.getPrix_nuit_hebergement()));
         tfAdresse.setText(hebergement.getAdresse_hebergement());
         tfNote.setText(String.valueOf(hebergement.getNote_hebergement()));
         cbDestination.setValue(hebergement.getDestination());
@@ -238,7 +238,7 @@ public class ModifierHebergementController implements Initializable {
             // Update only the fields that should be modified
             hebergementToEdit.setNom_hebergement(tfNom.getText().trim());
             hebergementToEdit.setType_hebergement(cbType.getValue());
-            hebergementToEdit.setPrixNuit_hebergement(Double.parseDouble(tfPrix.getText().trim()));
+            hebergementToEdit.setPrix_nuit_hebergement(Double.parseDouble(tfPrix.getText().trim()));
             hebergementToEdit.setAdresse_hebergement(tfAdresse.getText().trim());
             hebergementToEdit.setNote_hebergement(Double.parseDouble(tfNote.getText().trim()));
             hebergementToEdit.setDestination(cbDestination.getValue());

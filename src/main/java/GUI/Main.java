@@ -22,6 +22,9 @@ public class Main extends Application {
         // Configurer la fenêtre principale
         primaryStage.setTitle("TravelMate - Connexion");
         primaryStage.setScene(scene);
+        primaryStage.setMinWidth(1024);
+        primaryStage.setMinHeight(768);
+        primaryStage.setMaximized(true);
         primaryStage.show();
     }
 

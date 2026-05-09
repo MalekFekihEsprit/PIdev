@@ -18,6 +18,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -335,9 +336,9 @@ public class HotelSuggestionController implements Initializable {
 
                     // Handle nullable price
                     if (hotel.getPrixEstime() != null) {
-                        hebergement.setPrixNuit_hebergement(hotel.getPrixEstime());
+                        hebergement.setPrix_nuit_hebergement(hotel.getPrixEstime());
                     } else {
-                        hebergement.setPrixNuit_hebergement(0.0); // Default value
+                        hebergement.setPrix_nuit_hebergement(0.0); // Default value
                     }
 
                     hebergement.setAdresse_hebergement(hotel.getAdresse());
@@ -415,9 +416,10 @@ public class HotelSuggestionController implements Initializable {
             controller.filterByDestination(destination);
 
             Stage stage = (Stage) btnCancel.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - Hébergements à " + destination.getNom_destination());
             stage.setMaximized(true);
+            stage.show();
 
         } catch (IOException e) {
             showAlert(Alert.AlertType.ERROR, "Erreur",

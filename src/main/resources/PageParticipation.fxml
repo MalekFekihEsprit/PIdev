@@ -15,9 +15,8 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Circle?>
-<?import javafx.scene.shape.Rectangle?>
 
-<BorderPane prefHeight="750" prefWidth="1100" style="-fx-background-color: #f8fafc;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.ParticipationController">
+<BorderPane maxHeight="Infinity" maxWidth="Infinity" style="-fx-background-color: #f8fafc;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.ParticipationController">
 
     <!-- ══════════════════════════════════════════════════════════ -->
     <!-- TOP NAVIGATION BAR                                        -->
@@ -27,7 +26,7 @@
             <!-- Main Navigation Bar -->
             <HBox alignment="CENTER_LEFT" spacing="15" style="-fx-background-color: #ffffff; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.04), 12, 0, 0, 3);">
                 <padding>
-                    <Insets bottom="12" left="24" right="24" top="12" />
+                    <Insets bottom="16" left="32" right="32" top="16" />
                 </padding>
 
                 <!-- Logo -->
@@ -105,6 +104,7 @@
                 <Label style="-fx-text-fill: #cbd5e1; -fx-font-size: 11;" text="›" />
                 <Label style="-fx-text-fill: #ff8c42; -fx-font-size: 11; -fx-font-weight: 700;" text="👥 Participants" />
                 <Region HBox.hgrow="ALWAYS" />
+                <Button fx:id="btnTranslate" onAction="#handleTranslate" style="-fx-background-color:#10b981;-fx-text-fill:white;-fx-background-radius:12;-fx-padding:4 12;-fx-font-size:11;-fx-cursor:hand;-fx-border-width:0;" text="🌐 Traduire" />
             </HBox>
         </VBox>
     </top>
@@ -118,7 +118,7 @@
                 <Circle fill="#10b981" radius="3.5" />
                 <Label style="-fx-text-fill: #10b981; -fx-font-size: 10; -fx-font-weight: 600;" text="Connecté" />
             </HBox>
-            <Rectangle fill="#e2e8f0" height="12" width="1" />
+            <Region maxWidth="Infinity" minHeight="12" prefHeight="12" style="-fx-background-color: #e2e8f0;" />
             <Label fx:id="lblTotalParticipantsFooter" style="-fx-text-fill: #64748b; -fx-font-size: 10;" text="0 participants" />
             <Region HBox.hgrow="ALWAYS" />
             <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 10;" text="© 2026 TravelMate" />
@@ -129,7 +129,7 @@
     <!-- MAIN CONTENT - PAGE PARTICIPANTS                          -->
     <!-- ══════════════════════════════════════════════════════════ -->
     <center>
-        <ScrollPane fitToWidth="true" style="-fx-background: #f8fafc; -fx-border-color: transparent; -fx-background-color: transparent;">
+        <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" style="-fx-background: #f8fafc; -fx-border-color: transparent; -fx-background-color: transparent;">
             <content>
                 <VBox maxWidth="1100" spacing="20">
                     <padding>
@@ -139,7 +139,7 @@
                     <!-- VOYAGE HEADER SECTION -->
                     <VBox spacing="0" style="-fx-background-color: white; -fx-background-radius: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.03), 12, 0, 0, 3); -fx-border-color: #f1f5f9; -fx-border-width: 1; -fx-border-radius: 20;">
                         <!-- Orange top accent -->
-                        <Rectangle fill="linear-gradient(to right, #ff8c42, #ff6b4a)" height="4" width="2000" arcHeight="4" arcWidth="4" />
+                        <Region maxWidth="Infinity" minHeight="3" prefHeight="3" style="-fx-background-color: linear-gradient(to right, rgba(245,166,35,0.5), rgba(255,107,0,0.5), rgba(99,102,241,0.5));" />
                         <HBox alignment="CENTER_LEFT" spacing="16" style="-fx-padding: 18 24;">
                             <VBox alignment="CENTER" style="-fx-background-color: linear-gradient(to bottom right, #fff7ed, #ffedd5); -fx-background-radius: 18; -fx-min-width: 72; -fx-min-height: 72; -fx-border-color: rgba(255,140,66,0.15); -fx-border-width: 1; -fx-border-radius: 18;">
                                 <Label style="-fx-font-size: 36;" text="👥" />
@@ -168,7 +168,7 @@
                     <VBox spacing="16" style="-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 24; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.03), 12, 0, 0, 3); -fx-border-color: #f1f5f9; -fx-border-width: 1; -fx-border-radius: 20;">
                         <HBox alignment="CENTER_LEFT" spacing="8">
                             <Label style="-fx-font-size: 16; -fx-font-weight: 700; -fx-text-fill: #0f172a;" text="➕ Ajouter un participant par email" />
-                            <Rectangle fill="#ff8c42" height="2" width="40" />
+                            <Region maxWidth="Infinity" minHeight="2" prefHeight="2" style="-fx-background-color: #ff8c42;" />
                         </HBox>
 
                         <GridPane hgap="16" vgap="14">
@@ -182,23 +182,21 @@
                             <VBox spacing="6" GridPane.columnIndex="0">
                                 <Label style="-fx-text-fill: #475569; -fx-font-size: 11; -fx-font-weight: 600;" text="📧 Email de l'utilisateur" />
                                 <TextField fx:id="tfEmail" promptText="exemple@email.com"
-                                           style="-fx-background-color: #f8fafc; -fx-background-radius: 12; -fx-padding: 10; -fx-font-size: 12; -fx-border-color: #e2e8f0; -fx-border-radius: 12; -fx-border-width: 1;"
-                                           prefHeight="38" />
+                                           style="-fx-background-color: #f8fafc; -fx-background-radius: 12; -fx-padding: 10; -fx-font-size: 12; -fx-border-color: #e2e8f0; -fx-border-radius: 12; -fx-border-width: 1;" />
                             </VBox>
 
                             <!-- Role -->
                             <VBox spacing="6" GridPane.columnIndex="1">
                                 <Label style="-fx-text-fill: #475569; -fx-font-size: 11; -fx-font-weight: 600;" text="🏷️ Rôle" />
                                 <ComboBox fx:id="cbRole" promptText="Sélectionner un rôle"
-                                          style="-fx-background-color: #f8fafc; -fx-background-radius: 12; -fx-border-color: #e2e8f0; -fx-border-radius: 12; -fx-padding: 4;"
-                                          prefHeight="38" />
+                                          style="-fx-background-color: #f8fafc; -fx-background-radius: 12; -fx-border-color: #e2e8f0; -fx-border-radius: 12; -fx-padding: 4;" />
                             </VBox>
 
                             <!-- Button -->
                             <VBox alignment="BOTTOM_CENTER" GridPane.columnIndex="2">
                                 <Button fx:id="btnAjouterParticipation" onAction="#ajouterParticipation"
                                         style="-fx-background-color: linear-gradient(to right, #ff8c42, #ff6b4a); -fx-text-fill: white; -fx-background-radius: 12; -fx-padding: 10 24; -fx-font-weight: 700; -fx-cursor: hand; -fx-font-size: 12;"
-                                        text="+ Ajouter" prefHeight="38" />
+                                        text="+ Ajouter" />
                             </VBox>
                         </GridPane>
                     </VBox>
@@ -217,14 +215,14 @@
                         </HBox>
 
                         <!-- Table -->
-                        <TableView fx:id="tableParticipations" prefHeight="300"
+                        <TableView fx:id="tableParticipations"
                                    style="-fx-background-color: white; -fx-background-radius: 14; -fx-border-color: #e2e8f0; -fx-border-radius: 14;">
                             <columns>
-                                <TableColumn fx:id="colEmail" prefWidth="250" text="Email" />
-                                <TableColumn fx:id="colNom" prefWidth="150" text="Nom" />
-                                <TableColumn fx:id="colPrenom" prefWidth="150" text="Prénom" />
-                                <TableColumn fx:id="colRole" prefWidth="150" text="Rôle" />
-                                <TableColumn fx:id="colActions" prefWidth="150" text="Actions" />
+                                <TableColumn fx:id="colEmail" text="Email" />
+                                <TableColumn fx:id="colNom" text="Nom" />
+                                <TableColumn fx:id="colPrenom" text="Prénom" />
+                                <TableColumn fx:id="colRole" text="Rôle" />
+                                <TableColumn fx:id="colActions" text="Actions" />
                             </columns>
                             <columnResizePolicy>
                                 <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
@@ -240,11 +238,8 @@
                     </VBox>
 
                     <!-- Bottom Decoration -->
-                    <Rectangle arcHeight="6" arcWidth="6" fill="linear-gradient(to right, #ff8c42, #ff6b4a, #6366f1)" height="3" width="1100">
-                        <VBox.margin>
-                            <Insets top="10" />
-                        </VBox.margin>
-                    </Rectangle>
+                    <Region maxWidth="Infinity" minHeight="3" prefHeight="3" style="-fx-background-color: linear-gradient(to right, rgba(245,166,35,0.5), rgba(255,107,0,0.5), rgba(99,102,241,0.5));" />
+                        
                 </VBox>
             </content>
         </ScrollPane>

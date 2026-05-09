@@ -6,6 +6,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -31,8 +32,9 @@ public class PageAccueilController {
             Parent root = loader.load();
 
             Stage stage = (Stage) btnFrontOffice.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - Front Office");
+            stage.setMaximized(true);
             stage.show();
 
         } catch (IOException e) {
@@ -47,8 +49,9 @@ public class PageAccueilController {
             Parent root = loader.load();
 
             Stage stage = (Stage) btnBackOffice.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - Back Office");
+            stage.setMaximized(true);
             stage.show();
 
         } catch (IOException e) {

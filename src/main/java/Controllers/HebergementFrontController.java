@@ -21,6 +21,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 
@@ -38,12 +39,13 @@ public class HebergementFrontController implements Initializable {
 
     // Top Navigation
     @FXML private HBox btnDestinations;
-    @FXML private HBox btnHebergement;
+    @FXML private HBox btnHebergements;
     @FXML private HBox btnItineraires;
     @FXML private HBox btnActivites;
     @FXML private HBox btnVoyages;
     @FXML private HBox btnBudgets;
-    @FXML private HBox btnCategories; // Added
+    @FXML private HBox btnCategories;
+    @FXML private HBox btnEvenements;
     @FXML private HBox btnHome;
     @FXML private HBox userProfileBox;
     @FXML private HBox btnNotifications;
@@ -124,7 +126,7 @@ public class HebergementFrontController implements Initializable {
     private void setupTableColumns() {
         colNom.setCellValueFactory(new PropertyValueFactory<>("nom_hebergement"));
         colType.setCellValueFactory(new PropertyValueFactory<>("type_hebergement"));
-        colPrix.setCellValueFactory(new PropertyValueFactory<>("prixNuit_hebergement"));
+        colPrix.setCellValueFactory(new PropertyValueFactory<>("prix_nuit_hebergement"));
         colAdresse.setCellValueFactory(new PropertyValueFactory<>("adresse_hebergement"));
         colNote.setCellValueFactory(new PropertyValueFactory<>("note_hebergement"));
         colAddedBy.setCellValueFactory(new PropertyValueFactory<>("added_by_name"));
@@ -239,7 +241,7 @@ public class HebergementFrontController implements Initializable {
                             btnConsulter.setOnMouseClicked(event -> handleConsulter(hebergement));
                             actionBox.getChildren().add(btnConsulter);
 
-                            if (hebergement.getAdded_by() == currentUser.getId()) {
+                            if (hebergement.getAdded_by() != null && hebergement.getAdded_by() == currentUser.getId()) {
                                 btnModifier.setOnMouseClicked(event -> handleModifier(hebergement));
                                 btnSupprimer.setOnMouseClicked(event -> handleDeleteSingle(hebergement));
                                 actionBox.getChildren().addAll(btnModifier, btnSupprimer);
@@ -469,9 +471,10 @@ public class HebergementFrontController implements Initializable {
             Parent root = loader.load();
 
             Stage stage = (Stage) userProfileBox.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - Mon Profil");
             stage.setMaximized(true);
+            stage.show();
 
         } catch (IOException e) {
             showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir le profil: " + e.getMessage());
@@ -529,6 +532,11 @@ public class HebergementFrontController implements Initializable {
             btnBudgets.setOnMouseClicked(event -> navigateTo("/BudgetDepenseFront.fxml", "Budgets"));
         }
 
+        setupNavButtonHover(btnEvenements, "🎉", "Événements");
+        if (btnEvenements != null) {
+            btnEvenements.setOnMouseClicked(event -> navigateTo("/Evenementsfront.fxml", "Événements"));
+        }
+
         // Remove Itinéraires from navigation
         if (btnItineraires != null) {
             btnItineraires.setVisible(false);
@@ -541,15 +549,29 @@ public class HebergementFrontController implements Initializable {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
             Parent root = loader.load();
 
-            Stage stage = (Stage) btnHebergement.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            Stage stage = getStage();
+            if (stage == null) return;
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - " + title);
             stage.setMaximized(true);
+            stage.show();
 
         } catch (IOException e) {
             showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir " + title + ": " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    private Stage getStage() {
+        if (tableHebergements != null && tableHebergements.getScene() != null)
+            return (Stage) tableHebergements.getScene().getWindow();
+        if (btnDestinations != null && btnDestinations.getScene() != null)
+            return (Stage) btnDestinations.getScene().getWindow();
+        if (btnActivites != null && btnActivites.getScene() != null)
+            return (Stage) btnActivites.getScene().getWindow();
+        if (btnVoyages != null && btnVoyages.getScene() != null)
+            return (Stage) btnVoyages.getScene().getWindow();
+        return null;
     }
 
     private void setupNavButtonHover(HBox button, String icon, String text) {
@@ -623,7 +645,7 @@ public class HebergementFrontController implements Initializable {
         lblTotalDestinationsLiees.setText("Dans " + destsCount + " destination" + (destsCount > 1 ? "s" : ""));
 
         double avgPrice = allHebergements.stream()
-                .mapToDouble(Hebergement::getPrixNuit_hebergement)
+                .mapToDouble(Hebergement::getPrix_nuit_hebergement)
                 .average()
                 .orElse(0.0);
         lblPrixMoyen.setText(String.format("%.2f €", avgPrice));
@@ -724,7 +746,7 @@ public class HebergementFrontController implements Initializable {
 
             Stage stage = new Stage();
             stage.setTitle("Ajouter un hébergement");
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setResizable(false);
             stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
             stage.showAndWait();
@@ -747,7 +769,7 @@ public class HebergementFrontController implements Initializable {
 
             Stage stage = new Stage();
             stage.setTitle("Modifier - " + hebergement.getNom_hebergement());
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setResizable(false);
             stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
             stage.showAndWait();
@@ -791,7 +813,7 @@ public class HebergementFrontController implements Initializable {
 
             Stage stage = new Stage();
             stage.setTitle("Détails - " + hebergement.getNom_hebergement());
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
             stage.initOwner(tableHebergements.getScene().getWindow());
             stage.setResizable(false);
@@ -809,9 +831,10 @@ public class HebergementFrontController implements Initializable {
             Parent root = loader.load();
 
             Stage stage = (Stage) tableHebergements.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - Accueil");
             stage.setMaximized(true);
+            stage.show();
 
         } catch (Exception e) {
             showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible de retourner à l'accueil: " + e.getMessage());
@@ -833,6 +856,21 @@ public class HebergementFrontController implements Initializable {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    @FXML
+    private Button btnTranslate;
+
+    @FXML
+    private void handleTranslate() {
+        Utils.TranslationManager.createTranslationButton(() ->
+            Utils.TranslationManager.translateInterface(
+                btnTranslate.getScene().getRoot(),
+                Utils.TranslationManager.getCurrentLanguage())
+        );
+        Utils.TranslationManager.translateInterface(
+            btnTranslate.getScene().getRoot(),
+            Utils.TranslationManager.getCurrentLanguage());
     }
 
     public void filterByDestination(Destination destination) {

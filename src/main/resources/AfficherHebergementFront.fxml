@@ -13,9 +13,8 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Circle?>
-<?import javafx.scene.shape.Rectangle?>
 
-<BorderPane prefHeight="750" prefWidth="1000" style="-fx-background-color: #f8fafc;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.AfficherHebergementFrontController">
+<BorderPane maxHeight="Infinity" maxWidth="Infinity" style="-fx-background-color: #f8fafc;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.AfficherHebergementFrontController">
 
     <!-- TOP NAV - STYLE CLAIR AVEC ORANGE -->
     <top>
@@ -23,7 +22,7 @@
             <!-- Header Bar -->
             <HBox alignment="CENTER_LEFT" spacing="20" style="-fx-background-color: #ffffff; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.02), 10, 0, 0, 2);">
                 <padding>
-                    <Insets bottom="20" left="32" right="32" top="20" />
+                    <Insets bottom="16" left="32" right="32" top="16" />
                 </padding>
 
                 <!-- Logo Section -->
@@ -54,11 +53,11 @@
 
     <!-- MAIN CONTENT -->
     <center>
-        <ScrollPane fitToHeight="true" fitToWidth="true" style="-fx-background: #f8fafc; -fx-border-color: transparent; -fx-background-color: transparent;">
+        <ScrollPane fitToHeight="false" fitToWidth="true" style="-fx-background: #f8fafc; -fx-border-color: transparent; -fx-background-color: transparent;">
             <content>
-                <VBox spacing="30" maxWidth="900">
+                <VBox spacing="30" maxWidth="Infinity" minWidth="0" prefWidth="0">
                     <padding>
-                        <Insets bottom="40" left="40" right="40" top="30" />
+                        <Insets bottom="40" left="48" right="48" top="30" />
                     </padding>
 
                     <!-- HEADER WITH HÉBERGEMENT NAME AND ICON -->
@@ -197,11 +196,8 @@
                     </HBox>
 
                     <!-- BOTTOM DECORATION -->
-                    <Rectangle arcHeight="8" arcWidth="8" fill="linear-gradient(to right, #10b981, #34d399, #3b82f6)" height="4" width="900">
-                        <VBox.margin>
-                            <Insets top="10" />
-                        </VBox.margin>
-                    </Rectangle>
+                    <Region maxWidth="Infinity" minHeight="3" prefHeight="3" style="-fx-background-color: linear-gradient(to right, rgba(245,166,35,0.5), rgba(255,107,0,0.5), rgba(99,102,241,0.5));" />
+                        
 
                 </VBox>
             </content>

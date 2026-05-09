@@ -14,6 +14,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import org.mindrot.jbcrypt.BCrypt;
 
@@ -44,22 +45,16 @@ public class ProfileController {
 
     // Navigation buttons (navbar)
     @FXML private HBox btnDestinations;
-    @FXML private HBox btnHebergement;
-    @FXML private HBox btnItineraires;
+    @FXML private HBox btnHebergements;
     @FXML private HBox btnActivites;
     @FXML private HBox btnVoyages;
     @FXML private HBox btnBudgets;
     @FXML private HBox btnCategories;
+    @FXML private HBox btnEvenements;
     @FXML private HBox userProfileBox;
     @FXML private Label lblUserName;
     @FXML private Label lblUserRole;
     @FXML private Label lblLastUpdate;
-
-    // Scroll navigation elements
-    @FXML private ScrollPane navScrollPane;
-    @FXML private HBox navLinksContainer;
-    @FXML private HBox leftArrow;
-    @FXML private HBox rightArrow;
 
     private final Map<String, Image> flagCache = new HashMap<>();
     private File selectedImageFile;
@@ -89,7 +84,6 @@ public class ProfileController {
         setupUserProfile();
         updateUserInfo();
         updateLastUpdateTime();
-        setupScrollArrows();
     }
 
     public void setUser(User user) {
@@ -156,107 +150,32 @@ public class ProfileController {
         }
     }
 
-    private void setupScrollArrows() {
-        if (navScrollPane != null && leftArrow != null && rightArrow != null) {
-            // Set click handlers programmatically
-            leftArrow.setOnMouseClicked(event -> scrollLeft());
-            rightArrow.setOnMouseClicked(event -> scrollRight());
-
-            // Masquer les flèches initialement
-            leftArrow.setVisible(false);
-            leftArrow.setManaged(false);
-            rightArrow.setVisible(false);
-            rightArrow.setManaged(false);
-
-            // Surveiller les changements de largeur
-            navScrollPane.widthProperty().addListener((obs, oldVal, newVal) -> {
-                updateArrowVisibility();
-            });
-
-            navLinksContainer.widthProperty().addListener((obs, oldVal, newVal) -> {
-                updateArrowVisibility();
-            });
-
-            // Surveiller le défilement
-            navScrollPane.hvalueProperty().addListener((obs, oldVal, newVal) -> {
-                updateArrowVisibility();
-            });
-
-            // Add hover effects for arrows
-            leftArrow.setOnMouseEntered(event ->
-                    leftArrow.setStyle("-fx-background-color: rgba(255,140,66,0.5); -fx-background-radius: 12; -fx-min-width: 24; -fx-min-height: 24; -fx-cursor: hand; -fx-padding: 0 0 0 2;"));
-            leftArrow.setOnMouseExited(event ->
-                    leftArrow.setStyle("-fx-background-color: rgba(255,255,255,0.3); -fx-background-radius: 12; -fx-min-width: 24; -fx-min-height: 24; -fx-cursor: hand; -fx-padding: 0 0 0 2;"));
-
-            rightArrow.setOnMouseEntered(event ->
-                    rightArrow.setStyle("-fx-background-color: rgba(255,140,66,0.5); -fx-background-radius: 12; -fx-min-width: 24; -fx-min-height: 24; -fx-cursor: hand; -fx-padding: 0 2 0 0;"));
-            rightArrow.setOnMouseExited(event ->
-                    rightArrow.setStyle("-fx-background-color: rgba(255,255,255,0.3); -fx-background-radius: 12; -fx-min-width: 24; -fx-min-height: 24; -fx-cursor: hand; -fx-padding: 0 2 0 0;"));
-        }
-    }
-
-    private void updateArrowVisibility() {
-        if (navScrollPane == null || navLinksContainer == null) return;
-
-        double contentWidth = navLinksContainer.getWidth();
-        double viewportWidth = navScrollPane.getViewportBounds().getWidth();
-        double hvalue = navScrollPane.getHvalue();
-
-        // Afficher flèche gauche si on n'est pas au début ET si le contenu dépasse
-        boolean showLeft = contentWidth > viewportWidth && hvalue > 0.01;
-        leftArrow.setVisible(showLeft);
-        leftArrow.setManaged(showLeft);
-
-        // Afficher flèche droite si on n'est pas à la fin ET si le contenu dépasse
-        boolean showRight = contentWidth > viewportWidth && hvalue < 0.99;
-        rightArrow.setVisible(showRight);
-        rightArrow.setManaged(showRight);
-    }
-
-    private void scrollLeft() {
-        if (navScrollPane != null) {
-            double newHvalue = navScrollPane.getHvalue() - 0.15;
-            navScrollPane.setHvalue(Math.max(0, newHvalue));
-        }
-    }
-
-    private void scrollRight() {
-        if (navScrollPane != null) {
-            double newHvalue = navScrollPane.getHvalue() + 0.15;
-            navScrollPane.setHvalue(Math.min(1, newHvalue));
-        }
-    }
-
     private void setupNavigationButtons() {
         if (btnDestinations != null) {
             btnDestinations.setOnMouseClicked(event -> navigateToDestinations());
             setupNavButtonHover(btnDestinations, "🌍", "Destinations");
         }
 
-        if (btnHebergement != null) {
-            btnHebergement.setOnMouseClicked(event -> navigateToHebergement());
-            setupNavButtonHover(btnHebergement, "🏨", "Hébergement");
+        if (btnHebergements != null) {
+            btnHebergements.setOnMouseClicked(event -> navigateToHebergement());
+            setupNavButtonHover(btnHebergements, "🏨", "Hébergements");
         }
 
-        if (btnItineraires != null) {
-            btnItineraires.setOnMouseClicked(event ->
-                    showInfoAlert("Itinéraires", "Cette fonctionnalité sera bientôt disponible"));
-            setupNavButtonHover(btnItineraires, "🗺️", "Itinéraires");
-        }
-
-        // Bouton Activités
         if (btnActivites != null) {
             btnActivites.setOnMouseClicked(event -> navigateToActivitesFront());
             setupNavButtonHover(btnActivites, "🏄", "Activités");
         }
 
-        // Bouton Catégories
         if (btnCategories != null) {
             btnCategories.setOnMouseClicked(event -> navigateToCategoriesFront());
             setupNavButtonHover(btnCategories, "📑", "Catégories");
         }
 
-        // BOUTON VOYAGES - CORRIGÉ
+        if (btnEvenements != null) {
+            btnEvenements.setOnMouseClicked(event -> navigateToEvenements());
+            setupNavButtonHover(btnEvenements, "🎉", "Événements");
+        }
+
         if (btnVoyages != null) {
             btnVoyages.setOnMouseClicked(event -> navigateToVoyages());
             setupNavButtonHover(btnVoyages, "✈️", "Voyages");
@@ -273,7 +192,7 @@ public class ProfileController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/BudgetDepenseFront.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) btnDestinations.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - Budgets");
             stage.setMaximized(true);
             stage.show();
@@ -325,9 +244,10 @@ public class ProfileController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/activitesfront.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) btnActivites.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - Activités");
             stage.setMaximized(true);
+            stage.show();
         } catch (IOException e) {
             showAlert(Alert.AlertType.ERROR, "Erreur",
                     "Impossible d'ouvrir les activités: " + e.getMessage());
@@ -341,9 +261,10 @@ public class ProfileController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/categoriesfront.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) btnCategories.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - Catégories");
             stage.setMaximized(true);
+            stage.show();
         } catch (IOException e) {
             showAlert(Alert.AlertType.ERROR, "Erreur",
                     "Impossible d'ouvrir les catégories: " + e.getMessage());
@@ -357,9 +278,10 @@ public class ProfileController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/DestinationFront.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) btnDestinations.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - Destinations");
             stage.setMaximized(true);
+            stage.show();
         } catch (IOException e) {
             showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir les destinations: " + e.getMessage());
             e.printStackTrace();
@@ -371,10 +293,11 @@ public class ProfileController {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/HebergementFront.fxml"));
             Parent root = loader.load();
-            Stage stage = (Stage) btnHebergement.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            Stage stage = (Stage) btnHebergements.getScene().getWindow();
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - Hébergements");
             stage.setMaximized(true);
+            stage.show();
         } catch (IOException e) {
             showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir les hébergements: " + e.getMessage());
             e.printStackTrace();
@@ -387,13 +310,30 @@ public class ProfileController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/PageVoyage.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) btnVoyages.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - Gestion des Voyages");
             stage.setMaximized(true);
             stage.show();
         } catch (IOException e) {
             showAlert(Alert.AlertType.ERROR, "Erreur",
                     "Impossible d'ouvrir la page des voyages: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    // Navigation vers Événements
+    private void navigateToEvenements() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Evenementsfront.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) btnEvenements.getScene().getWindow();
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
+            stage.setTitle("TravelMate - Événements");
+            stage.setMaximized(true);
+            stage.show();
+        } catch (IOException e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur",
+                    "Impossible d'ouvrir les événements: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -700,7 +640,7 @@ public class ProfileController {
         try {
             Parent root = FXMLLoader.load(getClass().getResource("/fxml/login.fxml"));
             Stage stage = (Stage) logoutLink.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
         } catch (IOException e) {
             e.printStackTrace();
         }

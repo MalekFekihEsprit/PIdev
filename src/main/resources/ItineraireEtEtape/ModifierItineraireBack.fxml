@@ -10,14 +10,13 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.shape.Rectangle?>
 
-<BorderPane prefHeight="720" style="-fx-background-color: #f8fafc;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.ItineraireEtEtape.ModifierItineraireBack">
+<BorderPane maxHeight="Infinity" maxWidth="Infinity" style="-fx-background-color: #f8fafc;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.ItineraireEtEtape.ModifierItineraireBack">
 
     <center>
         <VBox alignment="TOP_CENTER" spacing="20" style="-fx-background-color: #f8fafc;">
             <padding>
-                <Insets bottom="30" left="24" right="24" top="24" />
+                <Insets bottom="30" left="32" right="32" top="24" />
             </padding>
 
             <!-- HEADER SECTION -->
@@ -66,7 +65,7 @@
             </VBox>
 
             <!-- BOTTOM DECORATION -->
-            <Rectangle arcHeight="6" arcWidth="6" fill="linear-gradient(to right, #ff8c42, #ff6b4a, #6366f1)" height="3" />
+            <Region maxWidth="Infinity" minHeight="3" prefHeight="3" style="-fx-background-color: linear-gradient(to right, rgba(245,166,35,0.5), rgba(255,107,0,0.5), rgba(99,102,241,0.5));" />
         </VBox>
     </center>
 </BorderPane>

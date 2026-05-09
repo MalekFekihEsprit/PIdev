@@ -20,6 +20,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.HBox;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
 import javafx.application.Platform;
@@ -44,11 +45,12 @@ public class VoyageController {
 
     // Boutons de navigation
     @FXML private HBox btnDestinations;
-    @FXML private HBox btnHebergement;
+    @FXML private HBox btnHebergements;
     @FXML private HBox btnActivites;
     @FXML private HBox btnVoyages;      // Bouton actuel
     @FXML private HBox btnBudgets;
     @FXML private HBox btnCategories;
+    @FXML private HBox btnEvenements;
     @FXML private HBox userProfileBox;
     @FXML private Label lblUserName;
     @FXML private Label lblUserRole;
@@ -234,8 +236,8 @@ public class VoyageController {
         }
 
         // Bouton Hébergement (NOUVEAU)
-        if (btnHebergement != null) {
-            btnHebergement.setOnMouseClicked(event -> navigateToHebergement());
+        if (btnHebergements != null) {
+            btnHebergements.setOnMouseClicked(event -> navigateToHebergement());
         }
 
         // Bouton Activités
@@ -250,8 +252,14 @@ public class VoyageController {
 
         // Bouton Budgets
         if (btnBudgets != null) {
-            btnBudgets.setOnMouseClicked(event -> showNotImplementedAlert("Budgets"));
+            btnBudgets.setOnMouseClicked(event -> navigateToBudgets());
         }
+
+        // Bouton Événements
+        if (btnEvenements != null) {
+            btnEvenements.setOnMouseClicked(event -> navigateToEvenements());
+        }
+
         if (btnVoyages != null) {
             btnVoyages.setOnMouseClicked(event -> navigateToVoyages());
         }
@@ -305,7 +313,7 @@ public class VoyageController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/DestinationFront.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) btnDestinations.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - Destinations");
             stage.setMaximized(true);
             stage.show();
@@ -317,18 +325,8 @@ public class VoyageController {
 
 
     private void navigateToVoyages() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/BudgetDepenseFront.fxml"));
-            Parent root = loader.load();
-            Stage stage = (Stage) btnDestinations.getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.setTitle("TravelMate - Budgets");
-            stage.setMaximized(true);
-            stage.show();
-        } catch (IOException e) {
-            showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible de charger les Budgets: " + e.getMessage());
-            e.printStackTrace();
-        }
+        // Déjà sur la page Voyages — on rafraîchit simplement les données
+        chargerVoyages();
     }
 
 
@@ -339,8 +337,8 @@ public class VoyageController {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/HebergementFront.fxml"));
             Parent root = loader.load();
-            Stage stage = (Stage) btnHebergement.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            Stage stage = (Stage) btnHebergements.getScene().getWindow();
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - Hébergements");
             stage.setMaximized(true);
             stage.show();
@@ -361,7 +359,7 @@ public class VoyageController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/activitesfront.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) btnActivites.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - Activités");
             stage.setMaximized(true);
             stage.show();
@@ -382,7 +380,7 @@ public class VoyageController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/categoriesfront.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) btnCategories.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - Catégories");
             stage.setMaximized(true);
             stage.show();
@@ -400,12 +398,45 @@ public class VoyageController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/profile.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) userProfileBox.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - Mon Profil");
             stage.setMaximized(true);
             stage.show();
         } catch (IOException e) {
             showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir le profil: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Navigue vers la page des budgets
+     */
+    private void navigateToBudgets() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/BudgetDepenseFront.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) btnBudgets.getScene().getWindow();
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
+            stage.setTitle("TravelMate - Budgets");
+            stage.setMaximized(true);
+            stage.show();
+        } catch (IOException e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible de charger les budgets: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void navigateToEvenements() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Evenementsfront.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) btnEvenements.getScene().getWindow();
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
+            stage.setTitle("TravelMate - Événements");
+            stage.setMaximized(true);
+            stage.show();
+        } catch (IOException e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible de charger les événements: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -1072,12 +1103,28 @@ public class VoyageController {
             paiementController.initData(idVoyage);
 
             Stage stage = (Stage) voyagesContainer.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
+            stage.setMaximized(true);
             stage.show();
 
         } catch (IOException e) {
             e.printStackTrace();
             showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir la page de paiement: " + e.getMessage());
         }
+    }
+
+    @FXML
+    private Button btnTranslate;
+
+    @FXML
+    private void handleTranslate() {
+        Utils.TranslationManager.createTranslationButton(() ->
+            Utils.TranslationManager.translateInterface(
+                btnTranslate.getScene().getRoot(),
+                Utils.TranslationManager.getCurrentLanguage())
+        );
+        Utils.TranslationManager.translateInterface(
+            btnTranslate.getScene().getRoot(),
+            Utils.TranslationManager.getCurrentLanguage());
     }
 }

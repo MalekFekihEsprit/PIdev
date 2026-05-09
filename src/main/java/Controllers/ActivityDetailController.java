@@ -21,6 +21,7 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
@@ -38,6 +39,19 @@ public class ActivityDetailController implements Initializable {
     @FXML private HBox btnVersCategories;
     @FXML private HBox btnVersActivites;
     @FXML private Label lblNomBreadcrumb;
+
+    // Navbar
+    @FXML private HBox btnDestinations;
+    @FXML private HBox btnHebergements;
+    @FXML private HBox btnEvenements;
+    @FXML private HBox btnVoyages;
+    @FXML private HBox btnBudgets;
+    @FXML private HBox btnHome;
+    @FXML private HBox btnNotifications;
+    @FXML private HBox userProfileBox;
+    @FXML private Label lblUserName;
+    @FXML private Label lblUserRole;
+    @FXML private Label lblNotificationBadge;
 
     // Détails de l'activité
     @FXML private Label lblNom;
@@ -557,10 +571,11 @@ public class ActivityDetailController implements Initializable {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/activitesfront.fxml"));
             Parent root = loader.load();
-            Scene scene = new Scene(root);
+            Scene scene = new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight());
             Stage stage = (Stage) btnBack.getScene().getWindow();
             stage.setScene(scene);
             stage.setTitle("TravelMate - Activités");
+            stage.setMaximized(true);
             stage.show();
         } catch (Exception e) {
             e.printStackTrace();
@@ -573,10 +588,11 @@ public class ActivityDetailController implements Initializable {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/categoriesfront.fxml"));
             Parent root = loader.load();
-            Scene scene = new Scene(root);
+            Scene scene = new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight());
             Stage stage = (Stage) btnVersCategories.getScene().getWindow();
             stage.setScene(scene);
             stage.setTitle("TravelMate - Catégories");
+            stage.setMaximized(true);
             stage.show();
         } catch (Exception e) {
             e.printStackTrace();

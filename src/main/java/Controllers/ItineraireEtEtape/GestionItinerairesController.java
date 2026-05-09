@@ -1,10 +1,12 @@
 package Controllers.ItineraireEtEtape;
 
 import Entities.Itineraire;
+import Entities.User;
 import Entities.etape;
 import Services.etapeCRUD;
 import Services.itineraireCRUD;
 import Utils.MyBD;
+import Utils.UserSession;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -27,11 +29,37 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
 public class GestionItinerairesController {
 
+    // ===== Sidebar navigation =====
+    @FXML private HBox btnDestinations;
+    @FXML private HBox btnHebergement;
+    @FXML private HBox btnUsers;
+    @FXML private HBox btnStats;
+    @FXML private HBox btnItineraires;
+    @FXML private HBox btnCategories;
+    @FXML private HBox btnActivites;
+    @FXML private HBox btnEvenements;
+    @FXML private HBox btnVoyages;
+    @FXML private HBox btnBudgets;
+
+    // ===== User profile (top-right) =====
+    @FXML private HBox userProfileBox;
+    @FXML private Label lblUserName;
+    @FXML private Label lblUserRole;
+
+    // ===== Status bar =====
+    @FXML private Label lblLastUpdate;
+
+    // ===== Sidebar stats badge =====
+    @FXML private Label lblSidebarItinerairesCount;
+
+    // ===== Filtres / recherche =====
     @FXML private TextField searchField;
     @FXML private ComboBox<String> comboDestination;
     @FXML private DatePicker dateDebut;
@@ -41,7 +69,7 @@ public class GestionItinerairesController {
     @FXML private Button btnNouvelItineraire;
     @FXML private Button btnNouvelleEtape;
 
-    // Labels pour les statistiques
+    // ===== Labels statistiques =====
     @FXML private Label lblTotalItineraires;
     @FXML private Label lblTotalEtapes;
     @FXML private Label statsTotalItineraires;
@@ -51,42 +79,46 @@ public class GestionItinerairesController {
     @FXML private Label kpiEtapes;
     @FXML private Label kpiDestinations;
 
-    // Table Itinéraires
+    // ===== Table Itinéraires =====
     @FXML private TableView<Itineraire> tableItineraires;
     @FXML private TableColumn<Itineraire, Integer> colId;
-    @FXML private TableColumn<Itineraire, String> colNom;
-    @FXML private TableColumn<Itineraire, String> colDescription;
-    @FXML private TableColumn<Itineraire, String> colVoyage;
-    @FXML private TableColumn<Itineraire, String> colDestination;
+    @FXML private TableColumn<Itineraire, String>  colNom;
+    @FXML private TableColumn<Itineraire, String>  colDescription;
+    @FXML private TableColumn<Itineraire, String>  colVoyage;
+    @FXML private TableColumn<Itineraire, String>  colDestination;
     @FXML private TableColumn<Itineraire, Integer> colNbEtapes;
-    @FXML private TableColumn<Itineraire, Void> colActions;
+    @FXML private TableColumn<Itineraire, Void>    colActions;
 
-    // Table Étapes
+    // ===== Table Étapes =====
     @FXML private TableView<EtapeTableModel> tableEtapes;
     @FXML private TableColumn<EtapeTableModel, Integer> colEtapeId;
-    @FXML private TableColumn<EtapeTableModel, String> colEtapeHeure;
-    @FXML private TableColumn<EtapeTableModel, String> colEtapeDescription;
-    @FXML private TableColumn<EtapeTableModel, String> colEtapeActivite;
-    @FXML private TableColumn<EtapeTableModel, String> colEtapeItineraire;
-    @FXML private TableColumn<EtapeTableModel, String> colEtapeLieu;
-    @FXML private TableColumn<EtapeTableModel, Float> colEtapeDuree;
-    @FXML private TableColumn<EtapeTableModel, Void> colEtapeActions;
+    @FXML private TableColumn<EtapeTableModel, String>  colEtapeHeure;
+    @FXML private TableColumn<EtapeTableModel, String>  colEtapeDescription;
+    @FXML private TableColumn<EtapeTableModel, String>  colEtapeActivite;
+    @FXML private TableColumn<EtapeTableModel, String>  colEtapeItineraire;
+    @FXML private TableColumn<EtapeTableModel, String>  colEtapeLieu;
+    @FXML private TableColumn<EtapeTableModel, Float>   colEtapeDuree;
+    @FXML private TableColumn<EtapeTableModel, Void>    colEtapeActions;
 
-    private itineraireCRUD itineraireCRUD = new itineraireCRUD();
-    private etapeCRUD etapeCRUD = new etapeCRUD();
+    // ===== Services =====
+    private final itineraireCRUD itineraireCRUD = new itineraireCRUD();
+    private final etapeCRUD      etapeCRUD      = new etapeCRUD();
 
-    private ObservableList<Itineraire> itinerairesList = FXCollections.observableArrayList();
-    private ObservableList<EtapeTableModel> etapesList = FXCollections.observableArrayList();
-    private FilteredList<Itineraire> filteredItineraires;
+    // ===== Données =====
+    private final ObservableList<Itineraire>      itinerairesList = FXCollections.observableArrayList();
+    private final ObservableList<EtapeTableModel> etapesList      = FXCollections.observableArrayList();
+    private FilteredList<Itineraire>      filteredItineraires;
     private FilteredList<EtapeTableModel> filteredEtapes;
+
+    // ============================================================
+    //  INITIALISATION
+    // ============================================================
 
     @FXML
     public void initialize() {
         System.out.println("Initialisation du contrôleur de gestion");
 
-        // Vérification que tous les composants FXML sont injectés
         verifyFXMLComponents();
-
         setupTables();
         loadDestinations();
         loadItineraires();
@@ -94,49 +126,51 @@ public class GestionItinerairesController {
         setupSearchAndFilters();
         setupButtons();
         updateStats();
+        updateUserInfo();
+        updateLastUpdateTime();
     }
 
     private void verifyFXMLComponents() {
         System.out.println("Vérification des composants FXML:");
-        System.out.println("lblTotalItineraires: " + (lblTotalItineraires != null ? "OK" : "null"));
-        System.out.println("lblTotalEtapes: " + (lblTotalEtapes != null ? "OK" : "null"));
-        System.out.println("statsTotalItineraires: " + (statsTotalItineraires != null ? "OK" : "null"));
-        System.out.println("statsTotalEtapes: " + (statsTotalEtapes != null ? "OK" : "null"));
+        System.out.println("userProfileBox        : " + (userProfileBox        != null ? "OK" : "null"));
+        System.out.println("lblUserName           : " + (lblUserName           != null ? "OK" : "null"));
+        System.out.println("lblUserRole           : " + (lblUserRole           != null ? "OK" : "null"));
+        System.out.println("lblLastUpdate         : " + (lblLastUpdate         != null ? "OK" : "null"));
+        System.out.println("statsTotalItineraires : " + (statsTotalItineraires != null ? "OK" : "null"));
+        System.out.println("statsTotalEtapes      : " + (statsTotalEtapes      != null ? "OK" : "null"));
         System.out.println("statsTotalDestinations: " + (statsTotalDestinations != null ? "OK" : "null"));
-        System.out.println("kpiItineraires: " + (kpiItineraires != null ? "OK" : "null"));
-        System.out.println("kpiEtapes: " + (kpiEtapes != null ? "OK" : "null"));
-        System.out.println("kpiDestinations: " + (kpiDestinations != null ? "OK" : "null"));
-        System.out.println("btnNouvelItineraire: " + (btnNouvelItineraire != null ? "OK" : "null"));
-        System.out.println("btnNouvelleEtape: " + (btnNouvelleEtape != null ? "OK" : "null"));
-        System.out.println("btnFiltrer: " + (btnFiltrer != null ? "OK" : "null"));
-        System.out.println("btnReinitialiser: " + (btnReinitialiser != null ? "OK" : "null"));
+        System.out.println("kpiItineraires        : " + (kpiItineraires        != null ? "OK" : "null"));
+        System.out.println("kpiEtapes             : " + (kpiEtapes             != null ? "OK" : "null"));
+        System.out.println("kpiDestinations       : " + (kpiDestinations       != null ? "OK" : "null"));
+        System.out.println("btnNouvelItineraire   : " + (btnNouvelItineraire   != null ? "OK" : "null"));
+        System.out.println("btnNouvelleEtape      : " + (btnNouvelleEtape      != null ? "OK" : "null"));
+        System.out.println("btnFiltrer            : " + (btnFiltrer            != null ? "OK" : "null"));
+        System.out.println("btnReinitialiser      : " + (btnReinitialiser      != null ? "OK" : "null"));
     }
+
+    // ============================================================
+    //  TABLES
+    // ============================================================
 
     private void setupTables() {
         try {
-            // Configuration table itinéraires
-            if (colId != null) colId.setCellValueFactory(new PropertyValueFactory<>("id_itineraire"));
-            if (colNom != null) colNom.setCellValueFactory(new PropertyValueFactory<>("nom_itineraire"));
+            // --- Table itinéraires ---
+            if (colId != null)          colId.setCellValueFactory(new PropertyValueFactory<>("id_itineraire"));
+            if (colNom != null)         colNom.setCellValueFactory(new PropertyValueFactory<>("nom_itineraire"));
             if (colDescription != null) colDescription.setCellValueFactory(new PropertyValueFactory<>("description_itineraire"));
 
             if (colVoyage != null) {
-                colVoyage.setCellValueFactory(cellData -> {
-                    String voyage = getVoyageNameById(cellData.getValue().getId_voyage());
-                    return new SimpleStringProperty(voyage);
-                });
+                colVoyage.setCellValueFactory(cell ->
+                        new SimpleStringProperty(getVoyageNameById(cell.getValue().getId_voyage())));
             }
-
             if (colDestination != null) {
-                colDestination.setCellValueFactory(cellData -> {
-                    String destination = getDestinationByVoyageId(cellData.getValue().getId_voyage());
-                    return new SimpleStringProperty(destination);
-                });
+                colDestination.setCellValueFactory(cell ->
+                        new SimpleStringProperty(getDestinationByVoyageId(cell.getValue().getId_voyage())));
             }
-
             if (colNbEtapes != null) {
-                colNbEtapes.setCellValueFactory(cellData -> {
+                colNbEtapes.setCellValueFactory(cell -> {
                     try {
-                        int count = etapeCRUD.getEtapesByItineraire(cellData.getValue().getId_itineraire()).size();
+                        int count = etapeCRUD.getEtapesByItineraire(cell.getValue().getId_itineraire()).size();
                         return new SimpleIntegerProperty(count).asObject();
                     } catch (SQLException e) {
                         e.printStackTrace();
@@ -144,19 +178,18 @@ public class GestionItinerairesController {
                     }
                 });
             }
-
             if (colActions != null) colActions.setCellFactory(createItineraryActionButtons());
 
-            // Configuration table étapes
-            if (colEtapeId != null) colEtapeId.setCellValueFactory(cellData -> new SimpleIntegerProperty(cellData.getValue().getId()).asObject());
-            if (colEtapeHeure != null) colEtapeHeure.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getHeure()));
-            if (colEtapeDescription != null) colEtapeDescription.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getDescription()));
-            if (colEtapeActivite != null) colEtapeActivite.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getActivite()));
-            if (colEtapeItineraire != null) colEtapeItineraire.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getItineraire()));
-            if (colEtapeLieu != null) colEtapeLieu.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getLieu()));
-            if (colEtapeDuree != null) colEtapeDuree.setCellValueFactory(cellData -> new javafx.beans.property.SimpleFloatProperty(cellData.getValue().getDuree()).asObject());
+            // --- Table étapes ---
+            if (colEtapeId != null)          colEtapeId.setCellValueFactory(cell -> new SimpleIntegerProperty(cell.getValue().getId()).asObject());
+            if (colEtapeHeure != null)        colEtapeHeure.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getHeure()));
+            if (colEtapeDescription != null)  colEtapeDescription.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getDescription()));
+            if (colEtapeActivite != null)     colEtapeActivite.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getActivite()));
+            if (colEtapeItineraire != null)   colEtapeItineraire.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getItineraire()));
+            if (colEtapeLieu != null)         colEtapeLieu.setCellValueFactory(cell -> new SimpleStringProperty(cell.getValue().getLieu()));
+            if (colEtapeDuree != null)        colEtapeDuree.setCellValueFactory(cell -> new javafx.beans.property.SimpleFloatProperty(cell.getValue().getDuree()).asObject());
+            if (colEtapeActions != null)      colEtapeActions.setCellFactory(createEtapeActionButtons());
 
-            if (colEtapeActions != null) colEtapeActions.setCellFactory(createEtapeActionButtons());
         } catch (Exception e) {
             System.err.println("Erreur dans setupTables: " + e.getMessage());
             e.printStackTrace();
@@ -164,319 +197,233 @@ public class GestionItinerairesController {
     }
 
     private Callback<TableColumn<Itineraire, Void>, TableCell<Itineraire, Void>> createItineraryActionButtons() {
-        return new Callback<>() {
+        return param -> new TableCell<>() {
+            private final Button btnEdit   = new Button("✏️");
+            private final Button btnDelete = new Button("🗑️");
+            private final HBox   pane      = new HBox(5, btnEdit, btnDelete);
+
+            {
+                btnEdit.setStyle("-fx-background-color: #ff8c42; -fx-text-fill: white; -fx-background-radius: 5; -fx-cursor: hand;");
+                btnDelete.setStyle("-fx-background-color: #ef4444; -fx-text-fill: white; -fx-background-radius: 5; -fx-cursor: hand;");
+                btnEdit.setTooltip(new Tooltip("Modifier"));
+                btnDelete.setTooltip(new Tooltip("Supprimer"));
+
+                btnEdit.setOnAction(e -> modifierItineraire(getTableView().getItems().get(getIndex())));
+                btnDelete.setOnAction(e -> supprimerItineraire(getTableView().getItems().get(getIndex())));
+            }
+
             @Override
-            public TableCell<Itineraire, Void> call(final TableColumn<Itineraire, Void> param) {
-                return new TableCell<>() {
-                    private final Button btnEdit = new Button("✏️");
-                    private final Button btnDelete = new Button("🗑️");
-                    private final HBox pane = new HBox(5, btnEdit, btnDelete);
-
-                    {
-                        btnEdit.setStyle("-fx-background-color: #ff8c42; -fx-text-fill: white; -fx-background-radius: 5; -fx-cursor: hand;");
-                        btnDelete.setStyle("-fx-background-color: #ef4444; -fx-text-fill: white; -fx-background-radius: 5; -fx-cursor: hand;");
-
-                        btnEdit.setTooltip(new Tooltip("Modifier"));
-                        btnDelete.setTooltip(new Tooltip("Supprimer"));
-
-                        btnEdit.setOnAction(event -> {
-                            Itineraire itineraire = getTableView().getItems().get(getIndex());
-                            modifierItineraire(itineraire);
-                        });
-
-                        btnDelete.setOnAction(event -> {
-                            Itineraire itineraire = getTableView().getItems().get(getIndex());
-                            supprimerItineraire(itineraire);
-                        });
-                    }
-
-                    @Override
-                    protected void updateItem(Void item, boolean empty) {
-                        super.updateItem(item, empty);
-                        if (empty) {
-                            setGraphic(null);
-                        } else {
-                            setGraphic(pane);
-                        }
-                    }
-                };
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                setGraphic(empty ? null : pane);
             }
         };
     }
-    // ============== MÉTHODES DE NAVIGATION ==============
 
+    private Callback<TableColumn<EtapeTableModel, Void>, TableCell<EtapeTableModel, Void>> createEtapeActionButtons() {
+        return param -> new TableCell<>() {
+            private final Button btnEdit   = new Button("✏️");
+            private final Button btnDelete = new Button("🗑️");
+            private final HBox   pane      = new HBox(5, btnEdit, btnDelete);
+
+            {
+                btnEdit.setStyle("-fx-background-color: #ff8c42; -fx-text-fill: white; -fx-background-radius: 5; -fx-cursor: hand;");
+                btnDelete.setStyle("-fx-background-color: #ef4444; -fx-text-fill: white; -fx-background-radius: 5; -fx-cursor: hand;");
+                btnEdit.setTooltip(new Tooltip("Modifier"));
+                btnDelete.setTooltip(new Tooltip("Supprimer"));
+
+                btnEdit.setOnAction(e -> modifierEtape(getTableView().getItems().get(getIndex())));
+                btnDelete.setOnAction(e -> supprimerEtape(getTableView().getItems().get(getIndex())));
+            }
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                setGraphic(empty ? null : pane);
+            }
+        };
+    }
+
+    // ============================================================
+    //  NAVIGATION — méthodes appelées depuis le FXML
+    // ============================================================
+
+    /** FIX : méthode manquante → "Cannot resolve symbol 'handleEvenementsClick'" */
     @FXML
-    private void handleDashboardClick() {
-        // Naviguer vers le dashboard (à implémenter selon votre structure)
-        showInfoAlert("Dashboard", "Fonctionnalité à venir");
+    private void handleEvenementsClick() {
+        navigateTo("/EVENTback.fxml", "Événements");
     }
 
     @FXML
     private void handleDestinationsClick() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/DestinationBack.fxml"));
-            Parent root = loader.load();
-            Stage stage = (Stage) tableItineraires.getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.setTitle("TravelMate - Gestion des Destinations");
-            stage.setMaximized(true);
-        } catch (IOException e) {
-            showAlert("Erreur", "Impossible d'ouvrir les destinations: " + e.getMessage());
-            e.printStackTrace();
-        }
+        navigateTo("/DestinationBack.fxml", "Destinations");
     }
 
     @FXML
     private void handleHebergementClick() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/HebergementBack.fxml"));
-            Parent root = loader.load();
-            Stage stage = (Stage) tableItineraires.getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.setTitle("TravelMate - Gestion des Hébergements");
-            stage.setMaximized(true);
-        } catch (IOException e) {
-            showAlert("Erreur", "Impossible d'ouvrir les hébergements: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
-    @FXML
-    private void handleActivitesClick() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/activitesback.fxml"));
-            Parent root = loader.load();
-            Stage stage = (Stage) tableItineraires.getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.setTitle("TravelMate - Gestion des Activités");
-            stage.setMaximized(true);
-        } catch (IOException e) {
-            showAlert("Erreur", "Impossible d'ouvrir les activités: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
-    @FXML
-    private void handleCategoriesClick() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/categoriesback.fxml"));
-            Parent root = loader.load();
-            Stage stage = (Stage) tableItineraires.getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.setTitle("TravelMate - Gestion des Catégories");
-            stage.setMaximized(true);
-        } catch (IOException e) {
-            showAlert("Erreur", "Impossible d'ouvrir les catégories: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
-    @FXML
-    private void handleVoyagesClick() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/PageVoyageBack.fxml"));
-            Parent root = loader.load();
-            Stage stage = (Stage) tableItineraires.getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.setTitle("TravelMate - Gestion des Voyages");
-            stage.setMaximized(true);
-        } catch (IOException e) {
-            showAlert("Erreur", "Impossible d'ouvrir les voyages: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
-    @FXML
-    private void handleBudgetsClick() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/BudgetDepenseBack.fxml"));
-            Parent root = loader.load();
-            Stage stage = (Stage) tableItineraires.getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.setTitle("TravelMate - Gestion des Budgets");
-            stage.setMaximized(true);
-        } catch (IOException e) {
-            showAlert("Erreur", "Impossible d'ouvrir la gestion des budgets: " + e.getMessage());
-            e.printStackTrace();
-        }
+        navigateTo("/HebergementBack.fxml", "Hébergements");
     }
 
     @FXML
     private void handleUsersClick() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/admin_users.fxml"));
-            Parent root = loader.load();
-            Stage stage = (Stage) tableItineraires.getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.setTitle("TravelMate - Gestion des Utilisateurs");
-            stage.setMaximized(true);
-        } catch (IOException e) {
-            showAlert("Erreur", "Impossible d'ouvrir la gestion des utilisateurs: " + e.getMessage());
-            e.printStackTrace();
-        }
+        navigateTo("/fxml/admin_users.fxml", "Utilisateurs");
     }
 
     @FXML
     private void handleStatsClick() {
+        navigateTo("/fxml/admin_stats.fxml", "Statistiques");
+    }
+
+    @FXML
+    private void handleCategoriesClick() {
+        navigateTo("/categoriesback.fxml", "Catégories");
+    }
+
+    @FXML
+    private void handleActivitesClick() {
+        navigateTo("/activitesback.fxml", "Activités");
+    }
+
+    @FXML
+    private void handleVoyagesClick() {
+        navigateTo("/PageVoyageBack.fxml", "Voyages");
+    }
+
+    @FXML
+    private void handleBudgetsClick() {
+        navigateTo("/BudgetDepenseBack.fxml", "Budgets");
+    }
+
+    @FXML
+    private void handleDashboardClick() {
+        showInfoAlert("Dashboard", "Fonctionnalité à venir");
+    }
+
+    @FXML
+    private void handleRetourVersItineraire() {
+        navigateTo("/ItineraireEtEtape/PageItineraire.fxml", "Itinéraires");
+    }
+
+    /** Méthode de navigation centralisée — réutilisée par tous les handlers */
+    private void navigateTo(String fxmlPath, String title) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/admin_stats.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
             Parent root = loader.load();
-            Stage stage = (Stage) tableItineraires.getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.setTitle("TravelMate - Statistiques");
+            Stage stage = getStage();
+            if (stage == null) return;
+            stage.setScene(new Scene(root,
+                    javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(),
+                    javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
+            stage.setTitle("TravelMate - " + title);
             stage.setMaximized(true);
+            stage.show();
         } catch (IOException e) {
-            showAlert("Erreur", "Impossible d'ouvrir les statistiques: " + e.getMessage());
+            showAlert("Erreur de navigation", "Impossible d'ouvrir : " + e.getMessage());
             e.printStackTrace();
         }
     }
-    public void refreshAfterModification() {
-        loadItineraires();
-        loadEtapes();
-        updateStats();
-        System.out.println("✅ Données rafraîchies après modification");
+
+    /** Récupère le Stage courant depuis n'importe quel nœud disponible */
+    private Stage getStage() {
+        if (tableItineraires != null && tableItineraires.getScene() != null)
+            return (Stage) tableItineraires.getScene().getWindow();
+        if (statsTotalItineraires != null && statsTotalItineraires.getScene() != null)
+            return (Stage) statsTotalItineraires.getScene().getWindow();
+        if (userProfileBox != null && userProfileBox.getScene() != null)
+            return (Stage) userProfileBox.getScene().getWindow();
+        return null;
     }
 
-    private void showInfoAlert(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
-    }
-
-    private Callback<TableColumn<EtapeTableModel, Void>, TableCell<EtapeTableModel, Void>> createEtapeActionButtons() {
-        return new Callback<>() {
-            @Override
-            public TableCell<EtapeTableModel, Void> call(final TableColumn<EtapeTableModel, Void> param) {
-                return new TableCell<>() {
-                    private final Button btnEdit = new Button("✏️");
-                    private final Button btnDelete = new Button("🗑️");
-                    private final HBox pane = new HBox(5, btnEdit, btnDelete);
-
-                    {
-                        btnEdit.setStyle("-fx-background-color: #ff8c42; -fx-text-fill: white; -fx-background-radius: 5; -fx-cursor: hand;");
-                        btnDelete.setStyle("-fx-background-color: #ef4444; -fx-text-fill: white; -fx-background-radius: 5; -fx-cursor: hand;");
-
-                        btnEdit.setTooltip(new Tooltip("Modifier"));
-                        btnDelete.setTooltip(new Tooltip("Supprimer"));
-
-                        btnEdit.setOnAction(event -> {
-                            EtapeTableModel etape = getTableView().getItems().get(getIndex());
-                            modifierEtape(etape);
-                        });
-
-                        btnDelete.setOnAction(event -> {
-                            EtapeTableModel etape = getTableView().getItems().get(getIndex());
-                            supprimerEtape(etape);
-                        });
-                    }
-
-                    @Override
-                    protected void updateItem(Void item, boolean empty) {
-                        super.updateItem(item, empty);
-                        if (empty) {
-                            setGraphic(null);
-                        } else {
-                            setGraphic(pane);
-                        }
-                    }
-                };
-            }
-        };
-    }
+    // ============================================================
+    //  BOUTONS PRINCIPAUX
+    // ============================================================
 
     private void setupButtons() {
         try {
-            if (btnNouvelItineraire != null) {
-                btnNouvelItineraire.setOnAction(e -> ouvrirFormulaireItineraire(null));
-            }
-            if (btnNouvelleEtape != null) {
-                btnNouvelleEtape.setOnAction(e -> ouvrirFormulaireEtape(null));
-            }
-            if (btnFiltrer != null) {
-                btnFiltrer.setOnAction(e -> filtrer());
-            }
-            if (btnReinitialiser != null) {
-                btnReinitialiser.setOnAction(e -> reinitialiserFiltres());
-            }
+            if (btnNouvelItineraire != null) btnNouvelItineraire.setOnAction(e -> ouvrirFormulaireItineraire(null));
+            if (btnNouvelleEtape    != null) btnNouvelleEtape.setOnAction(e -> ouvrirFormulaireEtape(null));
+            if (btnFiltrer          != null) btnFiltrer.setOnAction(e -> filtrer());
+            if (btnReinitialiser    != null) btnReinitialiser.setOnAction(e -> reinitialiserFiltres());
         } catch (Exception e) {
             System.err.println("Erreur dans setupButtons: " + e.getMessage());
         }
     }
 
-    private void setupSearchAndFilters() {
-        if (itinerairesList == null || etapesList == null) return;
+    // ============================================================
+    //  RECHERCHE & FILTRES
+    // ============================================================
 
+    private void setupSearchAndFilters() {
         filteredItineraires = new FilteredList<>(itinerairesList, p -> true);
-        filteredEtapes = new FilteredList<>(etapesList, p -> true);
+        filteredEtapes      = new FilteredList<>(etapesList, p -> true);
 
         if (tableItineraires != null) {
-            SortedList<Itineraire> sortedItineraires = new SortedList<>(filteredItineraires);
-            sortedItineraires.comparatorProperty().bind(tableItineraires.comparatorProperty());
-            tableItineraires.setItems(sortedItineraires);
+            SortedList<Itineraire> sorted = new SortedList<>(filteredItineraires);
+            sorted.comparatorProperty().bind(tableItineraires.comparatorProperty());
+            tableItineraires.setItems(sorted);
         }
-
         if (tableEtapes != null) {
-            SortedList<EtapeTableModel> sortedEtapes = new SortedList<>(filteredEtapes);
-            sortedEtapes.comparatorProperty().bind(tableEtapes.comparatorProperty());
-            tableEtapes.setItems(sortedEtapes);
+            SortedList<EtapeTableModel> sorted = new SortedList<>(filteredEtapes);
+            sorted.comparatorProperty().bind(tableEtapes.comparatorProperty());
+            tableEtapes.setItems(sorted);
         }
 
         if (searchField != null) {
-            searchField.textProperty().addListener((observable, oldValue, newValue) -> {
-                if (filteredItineraires != null) {
-                    filteredItineraires.setPredicate(itineraire -> {
-                        if (newValue == null || newValue.isEmpty()) return true;
-                        String lowerCaseFilter = newValue.toLowerCase();
-                        return itineraire.getNom_itineraire().toLowerCase().contains(lowerCaseFilter) ||
-                                (itineraire.getDescription_itineraire() != null &&
-                                        itineraire.getDescription_itineraire().toLowerCase().contains(lowerCaseFilter));
-                    });
-                }
-
-                if (filteredEtapes != null) {
-                    filteredEtapes.setPredicate(etape -> {
-                        if (newValue == null || newValue.isEmpty()) return true;
-                        String lowerCaseFilter = newValue.toLowerCase();
-                        return etape.getDescription().toLowerCase().contains(lowerCaseFilter) ||
-                                etape.getActivite().toLowerCase().contains(lowerCaseFilter);
-                    });
-                }
+            searchField.textProperty().addListener((obs, oldVal, newVal) -> {
+                filteredItineraires.setPredicate(it -> {
+                    if (newVal == null || newVal.isEmpty()) return true;
+                    String lc = newVal.toLowerCase();
+                    return it.getNom_itineraire().toLowerCase().contains(lc)
+                            || (it.getDescription_itineraire() != null
+                            && it.getDescription_itineraire().toLowerCase().contains(lc));
+                });
+                filteredEtapes.setPredicate(et -> {
+                    if (newVal == null || newVal.isEmpty()) return true;
+                    String lc = newVal.toLowerCase();
+                    return et.getDescription().toLowerCase().contains(lc)
+                            || et.getActivite().toLowerCase().contains(lc);
+                });
             });
         }
     }
 
+    private void filtrer() {
+        if (comboDestination == null || filteredItineraires == null) return;
+        String destination = comboDestination.getValue();
+        filteredItineraires.setPredicate(it -> {
+            if (destination != null && !destination.equals("Toutes les destinations")) {
+                return destination.equals(getDestinationByVoyageId(it.getId_voyage()));
+            }
+            return true;
+        });
+    }
+
+    private void reinitialiserFiltres() {
+        if (comboDestination    != null) comboDestination.getSelectionModel().selectFirst();
+        if (dateDebut           != null) dateDebut.setValue(null);
+        if (dateFin             != null) dateFin.setValue(null);
+        if (searchField         != null) searchField.clear();
+        if (filteredItineraires != null) filteredItineraires.setPredicate(p -> true);
+        if (filteredEtapes      != null) filteredEtapes.setPredicate(p -> true);
+    }
+
+    // ============================================================
+    //  CHARGEMENT DES DONNÉES
+    // ============================================================
+
     private void loadDestinations() {
         if (comboDestination == null) return;
-
         comboDestination.getItems().clear();
         comboDestination.getItems().add("Toutes les destinations");
-
-        Connection conn = null;
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-
-        try {
-            conn = MyBD.getInstance().getConn();
-            stmt = conn.prepareStatement("SELECT DISTINCT nom_destination FROM destination");
-            rs = stmt.executeQuery();
-
+        try (Connection conn = MyBD.getInstance().getConn();
+             PreparedStatement stmt = conn.prepareStatement("SELECT DISTINCT nom_destination FROM destination");
+             ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
                 comboDestination.getItems().add(rs.getString("nom_destination"));
             }
-
             comboDestination.getSelectionModel().selectFirst();
-
         } catch (SQLException e) {
             e.printStackTrace();
-        } finally {
-            try {
-                if (rs != null) rs.close();
-                if (stmt != null) stmt.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
         }
     }
 
@@ -487,7 +434,7 @@ public class GestionItinerairesController {
             updateStats();
         } catch (SQLException e) {
             e.printStackTrace();
-            showAlert("Erreur", "Impossible de charger les itinéraires: " + e.getMessage());
+            showAlert("Erreur", "Impossible de charger les itinéraires : " + e.getMessage());
         }
     }
 
@@ -495,143 +442,118 @@ public class GestionItinerairesController {
         try {
             etapesList.clear();
             List<etape> etapes = etapeCRUD.afficher();
-            for (etape e : etapes) {
-                etapesList.add(new EtapeTableModel(e));
-            }
+            for (etape e : etapes) etapesList.add(new EtapeTableModel(e));
             updateStats();
         } catch (SQLException e) {
             e.printStackTrace();
-            showAlert("Erreur", "Impossible de charger les étapes: " + e.getMessage());
+            showAlert("Erreur", "Impossible de charger les étapes : " + e.getMessage());
         }
     }
 
+    // ============================================================
+    //  STATISTIQUES
+    // ============================================================
+
     private void updateStats() {
         try {
-            int totalItineraires = itinerairesList != null ? itinerairesList.size() : 0;
-            int totalEtapes = etapesList != null ? etapesList.size() : 0;
-            int totalDestinations = countDestinations();
+            int totalIt   = itinerairesList.size();
+            int totalEt   = etapesList.size();
+            int totalDest = countDestinations();
 
-            if (lblTotalItineraires != null) {
-                lblTotalItineraires.setText("Total itinéraires: " + totalItineraires);
-            }
-            if (lblTotalEtapes != null) {
-                lblTotalEtapes.setText("Total étapes: " + totalEtapes);
-            }
-            if (statsTotalItineraires != null) {
-                statsTotalItineraires.setText(String.valueOf(totalItineraires));
-            }
-            if (statsTotalEtapes != null) {
-                statsTotalEtapes.setText(String.valueOf(totalEtapes));
-            }
-            if (statsTotalDestinations != null) {
-                statsTotalDestinations.setText(String.valueOf(totalDestinations));
-            }
-            if (kpiItineraires != null) {
-                kpiItineraires.setText(String.valueOf(totalItineraires));
-            }
-            if (kpiEtapes != null) {
-                kpiEtapes.setText(String.valueOf(totalEtapes));
-            }
-            if (kpiDestinations != null) {
-                kpiDestinations.setText(String.valueOf(totalDestinations));
-            }
+            setLabel(lblTotalItineraires,   "Total itinéraires : " + totalIt);
+            setLabel(lblTotalEtapes,        "Total étapes : " + totalEt);
+            setLabel(statsTotalItineraires, String.valueOf(totalIt));
+            setLabel(statsTotalEtapes,      String.valueOf(totalEt));
+            setLabel(statsTotalDestinations,String.valueOf(totalDest));
+            setLabel(kpiItineraires,        String.valueOf(totalIt));
+            setLabel(kpiEtapes,             String.valueOf(totalEt));
+            setLabel(kpiDestinations,       String.valueOf(totalDest));
+            setLabel(lblSidebarItinerairesCount, String.valueOf(totalIt));
         } catch (Exception e) {
             System.err.println("Erreur dans updateStats: " + e.getMessage());
         }
     }
 
     private int countDestinations() {
-        Connection conn = null;
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-
-        try {
-            conn = MyBD.getInstance().getConn();
-            stmt = conn.prepareStatement("SELECT COUNT(*) as count FROM destination");
-            rs = stmt.executeQuery();
-            if (rs.next()) {
-                return rs.getInt("count");
-            }
+        try (Connection conn = MyBD.getInstance().getConn();
+             PreparedStatement stmt = conn.prepareStatement("SELECT COUNT(*) AS count FROM destination");
+             ResultSet rs = stmt.executeQuery()) {
+            if (rs.next()) return rs.getInt("count");
         } catch (SQLException e) {
             e.printStackTrace();
-        } finally {
-            try {
-                if (rs != null) rs.close();
-                if (stmt != null) stmt.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
         }
         return 0;
     }
 
-    private void filtrer() {
-        if (comboDestination == null || filteredItineraires == null) return;
+    // ============================================================
+    //  INFORMATIONS UTILISATEUR (FIX fx:id userProfileBox, lblUserName, lblUserRole)
+    // ============================================================
 
-        String destination = comboDestination.getValue();
-
-        filteredItineraires.setPredicate(itineraire -> {
-            if (destination != null && !destination.equals("Toutes les destinations")) {
-                String itineraireDestination = getDestinationByVoyageId(itineraire.getId_voyage());
-                if (!destination.equals(itineraireDestination)) return false;
+    private void updateUserInfo() {
+        try {
+            User currentUser = UserSession.getInstance().getCurrentUser();
+            if (currentUser != null) {
+                setLabel(lblUserName, currentUser.getPrenom() + " " + currentUser.getNom());
+                setLabel(lblUserRole, currentUser.getRole());
+            } else {
+                setLabel(lblUserName, "Utilisateur");
+                setLabel(lblUserRole, "Administrateur");
             }
-            return true;
-        });
+        } catch (Exception e) {
+            setLabel(lblUserName, "Utilisateur");
+            setLabel(lblUserRole, "Administrateur");
+        }
     }
 
-    private void reinitialiserFiltres() {
-        if (comboDestination != null) comboDestination.getSelectionModel().selectFirst();
-        if (dateDebut != null) dateDebut.setValue(null);
-        if (dateFin != null) dateFin.setValue(null);
-        if (searchField != null) searchField.clear();
-        if (filteredItineraires != null) filteredItineraires.setPredicate(p -> true);
-        if (filteredEtapes != null) filteredEtapes.setPredicate(p -> true);
+    private void updateLastUpdateTime() {
+        setLabel(lblLastUpdate, "Dernière mise à jour : " +
+                LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm")));
     }
+
+    // ============================================================
+    //  FORMULAIRES (CRUD)
+    // ============================================================
 
     private void ouvrirFormulaireItineraire(Itineraire itineraire) {
         try {
-            String fxmlPath = itineraire == null ?
-                    "/ItineraireEtEtape/AjoutItineraireBack.fxml" :
-                    "/ItineraireEtEtape/ModifierItineraireBack.fxml";
+            String fxmlPath = itineraire == null
+                    ? "/ItineraireEtEtape/AjoutItineraireBack.fxml"
+                    : "/ItineraireEtEtape/ModifierItineraireBack.fxml";
 
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
             Parent root = loader.load();
 
             if (itineraire == null) {
-                // Ajout
-                AjoutItineraireBack controller = loader.getController();
-                controller.setParentController(this);
+                AjoutItineraireBack ctrl = loader.getController();
+                ctrl.setParentController(this);
             } else {
-                // Modification
-                ModifierItineraireBack controller = loader.getController();
-                controller.setItineraire(itineraire);
-                controller.setParentController(this);
+                ModifierItineraireBack ctrl = loader.getController();
+                ctrl.setItineraire(itineraire);
+                ctrl.setParentController(this);
             }
 
             Stage stage = new Stage();
             stage.setTitle(itineraire == null ? "Ajouter un itinéraire" : "Modifier l'itinéraire");
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root,
+                    javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(),
+                    javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.showAndWait();
 
-            // Le rafraîchissement se fait via le callback dans les contrôleurs
-
         } catch (IOException e) {
             e.printStackTrace();
-            showAlert("Erreur", "Impossible d'ouvrir le formulaire: " + e.getMessage());
+            showAlert("Erreur", "Impossible d'ouvrir le formulaire : " + e.getMessage());
         }
     }
 
     private void ouvrirFormulaireEtape(EtapeTableModel etapeModel) {
         try {
-            // Utiliser le nouveau formulaire backend
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/ItineraireEtEtape/PageAjoutEtapeBack.fxml"));
             DialogPane dialogPane = loader.load();
 
-            PageAjoutEtapeBack controller = loader.getController();
-            controller.setDialogPane(dialogPane);
-
-            controller.setOnEtapeAjoutee(() -> {
+            PageAjoutEtapeBack ctrl = loader.getController();
+            ctrl.setDialogPane(dialogPane);
+            ctrl.setOnEtapeAjoutee(() -> {
                 loadEtapes();
                 loadItineraires();
             });
@@ -643,21 +565,19 @@ public class GestionItinerairesController {
 
         } catch (IOException e) {
             e.printStackTrace();
-            showAlert("Erreur", "Impossible d'ouvrir le formulaire: " + e.getMessage());
+            showAlert("Erreur", "Impossible d'ouvrir le formulaire : " + e.getMessage());
         }
     }
 
-    private void modifierItineraire(Itineraire itineraire) {
-        ouvrirFormulaireItineraire(itineraire);
-    }
+    private void modifierItineraire(Itineraire it)      { ouvrirFormulaireItineraire(it); }
+    private void modifierEtape(EtapeTableModel et)      { ouvrirFormulaireEtape(et); }
 
     private void supprimerItineraire(Itineraire itineraire) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Confirmation");
-        alert.setHeaderText("Supprimer l'itinéraire");
-        alert.setContentText("Êtes-vous sûr de vouloir supprimer l'itinéraire \"" + itineraire.getNom_itineraire() + "\" ?");
-
-        Optional<ButtonType> result = alert.showAndWait();
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Confirmation");
+        confirm.setHeaderText("Supprimer l'itinéraire");
+        confirm.setContentText("Êtes-vous sûr de vouloir supprimer \"" + itineraire.getNom_itineraire() + "\" ?");
+        Optional<ButtonType> result = confirm.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
             try {
                 itineraireCRUD.supprimer(itineraire.getId_itineraire());
@@ -666,22 +586,17 @@ public class GestionItinerairesController {
                 showAlert("Succès", "Itinéraire supprimé avec succès !");
             } catch (SQLException e) {
                 e.printStackTrace();
-                showAlert("Erreur", "Impossible de supprimer l'itinéraire: " + e.getMessage());
+                showAlert("Erreur", "Impossible de supprimer l'itinéraire : " + e.getMessage());
             }
         }
     }
 
-    private void modifierEtape(EtapeTableModel etape) {
-        ouvrirFormulaireEtape(etape);
-    }
-
     private void supprimerEtape(EtapeTableModel etapeModel) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Confirmation");
-        alert.setHeaderText("Supprimer l'étape");
-        alert.setContentText("Êtes-vous sûr de vouloir supprimer cette étape ?");
-
-        Optional<ButtonType> result = alert.showAndWait();
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Confirmation");
+        confirm.setHeaderText("Supprimer l'étape");
+        confirm.setContentText("Êtes-vous sûr de vouloir supprimer cette étape ?");
+        Optional<ButtonType> result = confirm.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
             try {
                 etapeCRUD.supprimer(etapeModel.getId());
@@ -689,117 +604,109 @@ public class GestionItinerairesController {
                 showAlert("Succès", "Étape supprimée avec succès !");
             } catch (SQLException e) {
                 e.printStackTrace();
-                showAlert("Erreur", "Impossible de supprimer l'étape: " + e.getMessage());
+                showAlert("Erreur", "Impossible de supprimer l'étape : " + e.getMessage());
             }
         }
     }
 
-    @FXML
-    private void handleRetourVersItineraire() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ItineraireEtEtape/PageItineraire.fxml"));
-            Parent root = loader.load();
+    // ============================================================
+    //  CALLBACK PUBLIC (appelé depuis AjoutItineraireBack, etc.)
+    // ============================================================
 
-            Stage stage = (Stage) statsTotalItineraires.getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.setTitle("TravelMate - Itinéraires");
-            stage.show();
-        } catch (IOException e) {
-            e.printStackTrace();
-            showAlert("Erreur", "Impossible de revenir à la page précédente");
-        }
+    public void refreshAfterModification() {
+        loadItineraires();
+        loadEtapes();
+        updateStats();
+        System.out.println("✅ Données rafraîchies après modification");
     }
 
-    private String getVoyageNameById(int idVoyage) {
-        Connection conn = null;
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
+    // ============================================================
+    //  HELPERS SQL
+    // ============================================================
 
-        try {
-            conn = MyBD.getInstance().getConn();
-            stmt = conn.prepareStatement("SELECT titre_voyage FROM voyage WHERE id_voyage = ?");
+    private String getVoyageNameById(int idVoyage) {
+        try (Connection conn = MyBD.getInstance().getConn();
+             PreparedStatement stmt = conn.prepareStatement(
+                     "SELECT titre_voyage FROM voyage WHERE id_voyage = ?")) {
             stmt.setInt(1, idVoyage);
-            rs = stmt.executeQuery();
-            if (rs.next()) {
-                return rs.getString("titre_voyage");
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) return rs.getString("titre_voyage");
             }
         } catch (SQLException e) {
             e.printStackTrace();
-        } finally {
-            try {
-                if (rs != null) rs.close();
-                if (stmt != null) stmt.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
         }
         return "Voyage " + idVoyage;
     }
 
     private String getDestinationByVoyageId(int idVoyage) {
-        Connection conn = null;
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-
-        try {
-            conn = MyBD.getInstance().getConn();
-            stmt = conn.prepareStatement(
-                    "SELECT d.nom_destination FROM voyage v " +
-                            "LEFT JOIN destination d ON v.id_destination = d.id_destination " +
-                            "WHERE v.id_voyage = ?"
-            );
+        try (Connection conn = MyBD.getInstance().getConn();
+             PreparedStatement stmt = conn.prepareStatement(
+                     "SELECT d.nom_destination FROM voyage v " +
+                             "LEFT JOIN destination d ON v.id_destination = d.id_destination " +
+                             "WHERE v.id_voyage = ?")) {
             stmt.setInt(1, idVoyage);
-            rs = stmt.executeQuery();
-            if (rs.next()) {
-                return rs.getString("nom_destination") != null ? rs.getString("nom_destination") : "Non définie";
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    String nom = rs.getString("nom_destination");
+                    return nom != null ? nom : "Non définie";
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
-        } finally {
-            try {
-                if (rs != null) rs.close();
-                if (stmt != null) stmt.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
         }
         return "Non définie";
+    }
+
+    // ============================================================
+    //  UTILITAIRES UI
+    // ============================================================
+
+    private void setLabel(Label lbl, String text) {
+        if (lbl != null) lbl.setText(text);
     }
 
     private void showAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);
+        alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
     }
 
-    // Classe modèle pour les étapes dans la table
+    private void showInfoAlert(String title, String message) {
+        showAlert(title, message);
+    }
+
+    // ============================================================
+    //  INNER CLASS — modèle de ligne pour la table des étapes
+    // ============================================================
+
     public static class EtapeTableModel {
-        private final int id;
+        private final int    id;
         private final String heure;
         private final String description;
         private final String activite;
         private final String itineraire;
         private final String lieu;
-        private final float duree;
+        private final float  duree;
 
         public EtapeTableModel(etape e) {
-            this.id = e.getId_etape();
-            this.heure = e.getHeure() != null ? e.getHeure().toString().substring(0, 5) : "--:--";
+            this.id          = e.getId_etape();
+            this.heure       = e.getHeure() != null ? e.getHeure().toString().substring(0, 5) : "--:--";
             this.description = e.getDescription_etape() != null ? e.getDescription_etape() : "";
-            this.activite = e.getNomActivite() != null ? e.getNomActivite() : "Activité inconnue";
-            this.itineraire = e.getNomItineraire() != null ? e.getNomItineraire() : "Itinéraire inconnu";
-            this.lieu = e.getLieuActivite() != null ? e.getLieuActivite() : "Lieu non défini";
-            Float dureeObj = e.getDureeActivite();
-            this.duree = dureeObj != null ? dureeObj : 0;
+            this.activite    = e.getNomActivite()   != null ? e.getNomActivite()   : "Activité inconnue";
+            this.itineraire  = e.getNomItineraire() != null ? e.getNomItineraire() : "Itinéraire inconnu";
+            this.lieu        = e.getLieuActivite()  != null ? e.getLieuActivite()  : "Lieu non défini";
+            Float d = e.getDureeActivite();
+            this.duree = d != null ? d : 0f;
         }
 
-        public int getId() { return id; }
-        public String getHeure() { return heure; }
+        public int    getId()          { return id; }
+        public String getHeure()       { return heure; }
         public String getDescription() { return description; }
-        public String getActivite() { return activite; }
-        public String getItineraire() { return itineraire; }
-        public String getLieu() { return lieu; }
-        public float getDuree() { return duree; }
+        public String getActivite()    { return activite; }
+        public String getItineraire()  { return itineraire; }
+        public String getLieu()        { return lieu; }
+        public float  getDuree()       { return duree; }
     }
 }

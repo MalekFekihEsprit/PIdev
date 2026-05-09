@@ -18,6 +18,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 
@@ -194,7 +195,7 @@ public class ParticipationController implements Initializable {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/DestinationFront.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) btnDestinations.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - Destinations");
             stage.setMaximized(true);
             stage.show();
@@ -212,7 +213,7 @@ public class ParticipationController implements Initializable {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/HebergementFront.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) btnHebergement.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - Hébergements");
             stage.setMaximized(true);
             stage.show();
@@ -230,7 +231,7 @@ public class ParticipationController implements Initializable {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/activitesfront.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) btnActivites.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - Activités");
             stage.setMaximized(true);
             stage.show();
@@ -248,7 +249,7 @@ public class ParticipationController implements Initializable {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/categoriesfront.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) btnCategories.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - Catégories");
             stage.setMaximized(true);
             stage.show();
@@ -266,7 +267,7 @@ public class ParticipationController implements Initializable {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/PageVoyage.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) btnVoyages.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - Gestion des Voyages");
             stage.setMaximized(true);
             stage.show();
@@ -284,7 +285,7 @@ public class ParticipationController implements Initializable {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/profile.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) userProfileBox.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - Mon Profil");
             stage.setMaximized(true);
             stage.show();
@@ -577,7 +578,8 @@ public class ParticipationController implements Initializable {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/PageVoyage.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) lblTitreVoyage.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
+            stage.setMaximized(true);
             stage.show();
         } catch (IOException e) {
             e.printStackTrace();
@@ -591,5 +593,20 @@ public class ParticipationController implements Initializable {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    @FXML
+    private Button btnTranslate;
+
+    @FXML
+    private void handleTranslate() {
+        Utils.TranslationManager.createTranslationButton(() ->
+            Utils.TranslationManager.translateInterface(
+                btnTranslate.getScene().getRoot(),
+                Utils.TranslationManager.getCurrentLanguage())
+        );
+        Utils.TranslationManager.translateInterface(
+            btnTranslate.getScene().getRoot(),
+            Utils.TranslationManager.getCurrentLanguage());
     }
 }

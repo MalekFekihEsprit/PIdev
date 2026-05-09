@@ -28,6 +28,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 import java.io.File;
@@ -50,7 +51,6 @@ public class ACTfront implements Initializable {
     @FXML private Button btnModifier;
     @FXML private Button btnSupprimer;
     @FXML private Button btnFavoris;
-    @FXML private HBox btnVersCategories;
     @FXML private ComboBox<String> filterTypeCombo;
     @FXML private ComboBox<String> filterSaisonCombo;
     @FXML private ComboBox<String> filterDifficulteCombo;
@@ -80,6 +80,7 @@ public class ACTfront implements Initializable {
     @FXML private HBox btnNotifications;
     @FXML private HBox btnCategories; // This is the Categories button in navbar
     @FXML private HBox btnActivites; // This is the active Activities button
+    @FXML private HBox btnEvenements;
     @FXML private HBox userProfileBox;
     @FXML private Label lblUserName;
     @FXML private Label lblUserRole;
@@ -193,10 +194,10 @@ public class ACTfront implements Initializable {
             setupNavButtonHover(btnHebergements, "🏨", "Hébergements");
         }
 
-        // Catégories button (btnVersCategories in navbar)
-        if (btnVersCategories != null) {
-            btnVersCategories.setOnMouseClicked(event -> navigateTo("/categoriesfront.fxml", "Catégories"));
-            setupNavButtonHover(btnVersCategories, "📑", "Catégories");
+        // Catégories button
+        if (btnCategories != null) {
+            btnCategories.setOnMouseClicked(event -> navigateTo("/categoriesfront.fxml", "Catégories"));
+            setupNavButtonHover(btnCategories, "📑", "Catégories");
         }
 
         // Activités button - ACTIVE (maintain active style)
@@ -215,6 +216,12 @@ public class ACTfront implements Initializable {
         if (btnBudgets != null) {
             btnBudgets.setOnMouseClicked(event -> navigateTo("/BudgetDepenseFront.fxml", "Budgets"));
             setupNavButtonHover(btnBudgets, "💰", "Budgets");
+        }
+
+        // Événements button
+        if (btnEvenements != null) {
+            btnEvenements.setOnMouseClicked(event -> navigateTo("/Evenementsfront.fxml", "Événements"));
+            setupNavButtonHover(btnEvenements, "🎉", "Événements");
         }
 
         // Notifications
@@ -254,7 +261,7 @@ public class ACTfront implements Initializable {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
             Parent root = loader.load();
-            Scene scene = new Scene(root);
+            Scene scene = new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight());
             Stage stage = (Stage) btnDestinations.getScene().getWindow();
             stage.setScene(scene);
             stage.setTitle("TravelMate - " + title);
@@ -270,7 +277,7 @@ public class ACTfront implements Initializable {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/HomePage.fxml"));
             Parent root = loader.load();
-            Scene scene = new Scene(root);
+            Scene scene = new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight());
             Stage stage = (Stage) btnHome.getScene().getWindow();
             stage.setScene(scene);
             stage.setTitle("TravelMate - Accueil");
@@ -343,9 +350,10 @@ public class ACTfront implements Initializable {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/profile.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) userProfileBox.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - Mon Profil");
             stage.setMaximized(true);
+            stage.show();
         } catch (IOException e) {
             showError("Erreur", "Impossible d'ouvrir le profil: " + e.getMessage());
         }
@@ -717,11 +725,12 @@ public class ACTfront implements Initializable {
             Parent root = loader.load();
             ActivityDetailController controller = loader.getController();
             controller.setActivite(activite);
-            Scene scene = new Scene(root);
+            Scene scene = new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight());
             Stage stage = (Stage) activitesGrid.getScene().getWindow();
             DeepLinkHandler.getInstance().setPrimaryStage(stage);
             stage.setScene(scene);
             stage.setTitle("TravelMate - Détail de l'activité");
+            stage.setMaximized(true);
             stage.show();
         } catch (IOException e) {
             showError("Erreur de navigation", "Impossible d'ouvrir les détails de l'activité: " + e.getMessage());
@@ -750,7 +759,12 @@ public class ACTfront implements Initializable {
 
         if (activite.getNom() != null) {
             String[] exts = {".jpg", ".jpeg", ".png", ".webp"};
-            String baseName = activite.getNom().toLowerCase().replaceAll("\\s+", "_").replaceAll("[^a-z0-9_]", "");
+            // APRÈS — conserve les accents en les convertissant (é→e, â→a, etc.)
+            String baseName = java.text.Normalizer
+                    .normalize(activite.getNom().toLowerCase(), java.text.Normalizer.Form.NFD)
+                    .replaceAll("\\p{InCombiningDiacriticalMarks}+", "") // retire les accents
+                    .replaceAll("\\s+", "_")
+                    .replaceAll("[^a-z0-9_]", "");
             for (String ext : exts) {
                 URL url = getClass().getResource("/images/" + baseName + ext);
                 if (url != null) {
@@ -859,10 +873,11 @@ public class ACTfront implements Initializable {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/activitesback.fxml"));
             Parent root = loader.load();
-            Scene scene = new Scene(root);
+            Scene scene = new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight());
             Stage stage = (Stage) btnBackOffice.getScene().getWindow();
             stage.setScene(scene);
             stage.setTitle("TravelMate - Back Office Activités");
+            stage.setMaximized(true);
             stage.show();
         } catch (IOException e) {
             showError("Erreur de navigation", "Impossible de charger le back office: " + e.getMessage());

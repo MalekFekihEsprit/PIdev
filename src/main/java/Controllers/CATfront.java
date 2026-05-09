@@ -20,6 +20,7 @@ import javafx.scene.control.*;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -62,6 +63,7 @@ public class CATfront implements Initializable {
     @FXML private HBox btnBudgets;
     @FXML private HBox btnCategories; // This is the active Categories button
     @FXML private HBox btnActivites; // Activities button in navbar
+    @FXML private HBox btnEvenements;
     @FXML private HBox userProfileBox;
     @FXML private HBox btnNotifications;
     @FXML private Label lblUserName;
@@ -173,6 +175,12 @@ public class CATfront implements Initializable {
             setupNavButtonHover(btnBudgets, "💰", "Budgets");
         }
 
+        // Événements button
+        if (btnEvenements != null) {
+            btnEvenements.setOnMouseClicked(event -> navigateTo("/Evenementsfront.fxml", "Événements"));
+            setupNavButtonHover(btnEvenements, "🎉", "Événements");
+        }
+
         // Notifications
         if (btnNotifications != null) {
             btnNotifications.setOnMouseClicked(event -> showNotificationsDialog());
@@ -210,8 +218,9 @@ public class CATfront implements Initializable {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
             Parent root = loader.load();
-            Scene scene = new Scene(root);
-            Stage stage = (Stage) btnCategories.getScene().getWindow();
+            Scene scene = new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight());
+            Stage stage = getStage();
+            if (stage == null) return;
             stage.setScene(scene);
             stage.setTitle("TravelMate - " + title);
             stage.setMaximized(true);
@@ -222,11 +231,23 @@ public class CATfront implements Initializable {
         }
     }
 
+    private Stage getStage() {
+        if (categoriesGrid != null && categoriesGrid.getScene() != null)
+            return (Stage) categoriesGrid.getScene().getWindow();
+        if (btnDestinations != null && btnDestinations.getScene() != null)
+            return (Stage) btnDestinations.getScene().getWindow();
+        if (btnActivites != null && btnActivites.getScene() != null)
+            return (Stage) btnActivites.getScene().getWindow();
+        if (btnVoyages != null && btnVoyages.getScene() != null)
+            return (Stage) btnVoyages.getScene().getWindow();
+        return null;
+    }
+
     private void navigateToHome() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/HomePage.fxml"));
             Parent root = loader.load();
-            Scene scene = new Scene(root);
+            Scene scene = new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight());
             Stage stage = (Stage) btnHome.getScene().getWindow();
             stage.setScene(scene);
             stage.setTitle("TravelMate - Accueil");
@@ -299,9 +320,10 @@ public class CATfront implements Initializable {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/profile.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) userProfileBox.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - Mon Profil");
             stage.setMaximized(true);
+            stage.show();
         } catch (IOException e) {
             showError("Erreur", "Impossible d'ouvrir le profil: " + e.getMessage());
             e.printStackTrace();
@@ -670,10 +692,11 @@ public class CATfront implements Initializable {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/categoriesback.fxml"));
             Parent root = loader.load();
-            Scene scene = new Scene(root);
+            Scene scene = new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight());
             Stage stage = (Stage) btnToggleOffice.getScene().getWindow();
             stage.setScene(scene);
             stage.setTitle("TravelMate - Back Office Catégories");
+            stage.setMaximized(true);
             stage.show();
         } catch (IOException e) {
             showError("Erreur de navigation", "Impossible de charger le back office: " + e.getMessage());

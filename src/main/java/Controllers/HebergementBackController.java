@@ -20,6 +20,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 
@@ -76,6 +77,8 @@ public class HebergementBackController implements Initializable {
     @FXML private HBox btnBudgets;
     @FXML private HBox btnUsers;
     @FXML private HBox btnStats;
+    @FXML private HBox btnCategories;
+    @FXML private HBox btnEvenements;
     @FXML private HBox userProfileBox;
 
     // Pagination
@@ -115,7 +118,7 @@ public class HebergementBackController implements Initializable {
         colId.setCellValueFactory(new PropertyValueFactory<>("id_hebergement"));
         colNom.setCellValueFactory(new PropertyValueFactory<>("nom_hebergement"));
         colType.setCellValueFactory(new PropertyValueFactory<>("type_hebergement"));
-        colPrix.setCellValueFactory(new PropertyValueFactory<>("prixNuit_hebergement"));
+        colPrix.setCellValueFactory(new PropertyValueFactory<>("prix_nuit_hebergement"));
         colAdresse.setCellValueFactory(new PropertyValueFactory<>("adresse_hebergement"));
         colNote.setCellValueFactory(new PropertyValueFactory<>("note_hebergement"));
 
@@ -286,6 +289,12 @@ public class HebergementBackController implements Initializable {
 
         setupSidebarButtonHover(btnBudgets, "💰", "Budgets");
         if (btnBudgets != null) btnBudgets.setOnMouseClicked(event -> navigateToBudgets());
+
+        setupSidebarButtonHover(btnEvenements, "🎉", "Événements");
+        if (btnEvenements != null) btnEvenements.setOnMouseClicked(event -> navigateToEvenements());
+
+        setupSidebarButtonHover(btnCategories, "📑", "Catégories");
+        if (btnCategories != null) btnCategories.setOnMouseClicked(event -> navigateToCategories());
     }
 
     private void navigateToBudgets() {
@@ -293,9 +302,10 @@ public class HebergementBackController implements Initializable {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/BudgetDepenseBack.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) btnDestinations.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - Gestion des budgets");
             stage.setMaximized(true);
+            stage.show();
         } catch (IOException e) {
             showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir la gestion des hébergements: " + e.getMessage());
             e.printStackTrace();
@@ -307,9 +317,10 @@ public class HebergementBackController implements Initializable {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/PageVoyageBack.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) btnDestinations.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - Gestion des Voyages");
             stage.setMaximized(true);
+            stage.show();
         } catch (IOException e) {
             showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir la gestion des hébergements: " + e.getMessage());
             e.printStackTrace();
@@ -321,11 +332,42 @@ public class HebergementBackController implements Initializable {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/activitesback.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) btnDestinations.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - Gestion des activites");
             stage.setMaximized(true);
+            stage.show();
         } catch (IOException e) {
             showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir la gestion: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void navigateToEvenements() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Evenementsback.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) btnDestinations.getScene().getWindow();
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
+            stage.setTitle("TravelMate - Gestion des Événements");
+            stage.setMaximized(true);
+            stage.show();
+        } catch (IOException e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir la gestion des événements: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void navigateToCategories() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/categoriesback.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) btnDestinations.getScene().getWindow();
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
+            stage.setTitle("TravelMate - Gestion des Catégories");
+            stage.setMaximized(true);
+            stage.show();
+        } catch (IOException e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir la gestion des catégories: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -367,9 +409,10 @@ public class HebergementBackController implements Initializable {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/DestinationBack.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) btnDestinations.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - Gestion des Destinations");
             stage.setMaximized(true);
+            stage.show();
         } catch (IOException e) {
             showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir les destinations: " + e.getMessage());
             e.printStackTrace();
@@ -381,9 +424,10 @@ public class HebergementBackController implements Initializable {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/admin_users.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) btnUsers.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - Gestion des Utilisateurs");
             stage.setMaximized(true);
+            stage.show();
         } catch (IOException e) {
             showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir la gestion des utilisateurs: " + e.getMessage());
             e.printStackTrace();
@@ -395,9 +439,10 @@ public class HebergementBackController implements Initializable {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/admin_stats.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) btnStats.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - Statistiques");
             stage.setMaximized(true);
+            stage.show();
         } catch (IOException e) {
             showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir les statistiques: " + e.getMessage());
             e.printStackTrace();
@@ -409,9 +454,10 @@ public class HebergementBackController implements Initializable {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/ItineraireEtEtape/PageGestionItineraires.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) btnItineraires.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - Gestion des Itinéraires");
             stage.setMaximized(true);
+            stage.show();
         } catch (IOException e) {
             showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir la gestion des itinéraires: " + e.getMessage());
             e.printStackTrace();
@@ -423,9 +469,10 @@ public class HebergementBackController implements Initializable {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/profile.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) userProfileBox.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - Mon Profil");
             stage.setMaximized(true);
+            stage.show();
         } catch (IOException e) {
             showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir le profil: " + e.getMessage());
             e.printStackTrace();
@@ -441,7 +488,7 @@ public class HebergementBackController implements Initializable {
 
             Stage stage = new Stage();
             stage.setTitle("Ajouter un hébergement");
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setResizable(false);
             stage.showAndWait();
         } catch (IOException e) {
@@ -460,7 +507,7 @@ public class HebergementBackController implements Initializable {
 
             Stage stage = new Stage();
             stage.setTitle("Modifier - " + hebergement.getNom_hebergement());
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setResizable(false);
             stage.showAndWait();
         } catch (IOException e) {
@@ -497,7 +544,7 @@ public class HebergementBackController implements Initializable {
 
             Stage stage = new Stage();
             stage.setTitle("Raison de suppression");
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setResizable(false);
             stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
             stage.showAndWait();
@@ -520,7 +567,7 @@ public class HebergementBackController implements Initializable {
                 hebergement.getNom_hebergement(),
                 hebergement.getType_hebergement(),
                 hebergement.getAdresse_hebergement(),
-                hebergement.getPrixNuit_hebergement(),
+                hebergement.getPrix_nuit_hebergement(),
                 hebergement.getNote_hebergement(),
                 hebergement.getDestination() != null ?
                         hebergement.getDestination().getNom_destination() + ", " + hebergement.getDestination().getPays_destination() :
@@ -635,7 +682,7 @@ public class HebergementBackController implements Initializable {
             for (Hebergement h : selectedItems) {
                 namesList.append("• ").append(h.getNom_hebergement())
                         .append(" (").append(h.getType_hebergement()).append(")")
-                        .append(" - ").append(String.format("%.2f €", h.getPrixNuit_hebergement())).append("\n");
+                        .append(" - ").append(String.format("%.2f €", h.getPrix_nuit_hebergement())).append("\n");
             }
 
             Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
@@ -721,7 +768,7 @@ public class HebergementBackController implements Initializable {
 
             Stage stage = new Stage();
             stage.setTitle("Détails - " + hebergement.getNom_hebergement());
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setResizable(false);
             stage.show();
         } catch (IOException e) {
@@ -764,7 +811,7 @@ public class HebergementBackController implements Initializable {
         lblDestinationsCount.setText(String.valueOf(destsCount));
 
         double avgPrice = allHebergements.stream()
-                .mapToDouble(Hebergement::getPrixNuit_hebergement).average().orElse(0.0);
+                .mapToDouble(Hebergement::getPrix_nuit_hebergement).average().orElse(0.0);
         String avgPriceStr = String.format("%.2f €", avgPrice);
         lblPrixMoyenKPI.setText(avgPriceStr);
         lblPrixMoyen.setText(avgPriceStr);

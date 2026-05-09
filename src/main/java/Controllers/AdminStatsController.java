@@ -15,6 +15,7 @@ import javafx.scene.chart.XYChart;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -31,7 +32,7 @@ public class AdminStatsController {
     @FXML private BarChart<String, Number> inscriptionsBarChart;
     @FXML private Label totalUsersStat, totalAdminsStat, totalUsersOnlyStat;
     @FXML private Label lblLastUpdate;
-    @FXML private HBox btnDestinations, btnHebergement, btnUsers, btnItineraires, btnActivites, btnVoyages, btnBudgets,btnCategories;
+    @FXML private HBox btnDestinations, btnHebergement, btnUsers, btnStats, btnItineraires, btnActivites, btnVoyages, btnBudgets, btnCategories, btnEvenements;
     @FXML private HBox userProfileBox;
     @FXML private Label lblUserName, lblUserRole;
 
@@ -128,6 +129,9 @@ public class AdminStatsController {
 
         setupSidebarButtonHover(btnBudgets, "💰", "Budgets");
         if (btnBudgets != null) btnBudgets.setOnMouseClicked(event -> navigateTo("/BudgetDepenseBack.fxml", "Gestion des Budgets"));
+
+        setupSidebarButtonHover(btnEvenements, "🎉", "Événements");
+        if (btnEvenements != null) btnEvenements.setOnMouseClicked(event -> navigateTo("/Evenementsback.fxml", "Gestion des Événements"));
     }
 
     private void navigateTo(String fxmlPath, String title) {
@@ -135,9 +139,10 @@ public class AdminStatsController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
             Parent root = loader.load();
             Stage stage = (Stage) btnDestinations.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - " + title);
             stage.setMaximized(true);
+            stage.show();
         } catch (IOException e) {
 
             e.printStackTrace();
@@ -191,9 +196,10 @@ public class AdminStatsController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/DestinationBack.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) btnDestinations.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - Gestion des Destinations");
             stage.setMaximized(true);
+            stage.show();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -204,9 +210,10 @@ public class AdminStatsController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/HebergementBack.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) btnHebergement.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - Gestion des Hébergements");
             stage.setMaximized(true);
+            stage.show();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -217,9 +224,10 @@ public class AdminStatsController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/admin_users.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) btnUsers.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - Gestion des Utilisateurs");
             stage.setMaximized(true);
+            stage.show();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -230,9 +238,10 @@ public class AdminStatsController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/profile.fxml"));
             Parent root = loader.load();
             Stage stage = (Stage) userProfileBox.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - Mon Profil");
             stage.setMaximized(true);
+            stage.show();
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -18,6 +18,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 import java.io.File;
@@ -226,7 +227,8 @@ public class CarteVoyageController {
             itineraireController.initData(voyage, nomDestination);
 
             Stage stage = (Stage) titreVoyage.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
+            stage.setMaximized(true);
             stage.show();
 
         } catch (IOException e) {
@@ -292,7 +294,8 @@ public class CarteVoyageController {
             paiementController.initData(voyage.getId_voyage());
 
             Stage stage = (Stage) btnPaiement.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
+            stage.setMaximized(true);
             stage.show();
 
         } catch (IOException e) {
@@ -322,7 +325,8 @@ public class CarteVoyageController {
             );
 
             Stage stage = (Stage) btnParticipants.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
+            stage.setMaximized(true);
             stage.show();
 
         } catch (IOException e) {

@@ -5,31 +5,14 @@ import java.sql.*;
 public class MyBD {
 
     private Connection conn;
-    private final String URL = "jdbc:mysql://localhost:3306/travelmate?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true";
-    private final String USER = "root";
-    private final String PASS = "";
     private static MyBD instance;
-    /*
-            le singleton empêche l'instanciation directe de la classe en rendant le constructeur privé.
-            On fournit une méthode statique getInstance() qui crée une nouvelle instance seulement si elle n'existe pas déjà.
-            Les etapes pour implementer le singleton sont:
-            1- rendre le constructeur privé
-            2- créer une variable statique pour stocker l'instance unique de la classe
-            3- fournir une méthode statique qui retourne l'instance unique, en la créant si nécessaire
-        */
+
+    private static final String URL  = "jdbc:mysql://localhost:3306/travelmate?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true";
+    private static final String USER = "root";
+    private static final String PASS = "";
+
     private MyBD() {
-        try {
-            // Charger le driver MySQL
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            conn = DriverManager.getConnection(URL, USER, PASS);
-            System.out.println("✓ Connected to database successfully.");
-        } catch (ClassNotFoundException e) {
-            System.err.println("✗ MySQL Driver not found: " + e.getMessage());
-            e.printStackTrace();
-        } catch (SQLException e) {
-            System.err.println("✗ Database connection failed: " + e.getMessage());
-            e.printStackTrace();
-        }
+        connect();
     }
 
     public static MyBD getInstance() {
@@ -39,23 +22,41 @@ public class MyBD {
         return instance;
     }
 
+    /**
+     * Retourne TOUJOURS une connexion valide et ouverte.
+     * Si la connexion est fermée ou nulle, elle est recréée automatiquement.
+     *
+     * IMPORTANT : ne jamais appeler conn.close() ni utiliser getConn()
+     * dans un try-with-resources — cela fermerait la connexion singleton.
+     * Fermez uniquement les PreparedStatement et ResultSet, pas la Connection.
+     */
     public Connection getConn() {
         try {
-            if (conn == null || conn.isClosed()) {
-                System.out.println("Connexion fermée, tentative de reconnexion...");
-                Class.forName("com.mysql.cj.jdbc.Driver");
-                conn = DriverManager.getConnection(URL, USER, PASS);
-                System.out.println("✓ Reconnected successfully.");
+            if (conn == null || conn.isClosed() || !conn.isValid(2)) {
+                System.out.println("⚠ Connexion invalide, reconnexion en cours...");
+                connect();
             }
-        } catch (ClassNotFoundException e) {
-            System.err.println("✗ MySQL Driver not found during reconnect: " + e.getMessage());
         } catch (SQLException e) {
-            System.err.println("✗ Reconnection failed: " + e.getMessage());
-            conn = null;
+            System.err.println("✗ Erreur lors du test de connexion : " + e.getMessage());
+            connect();
         }
         return conn;
     }
 
+    private void connect() {
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            conn = DriverManager.getConnection(URL, USER, PASS);
+            System.out.println("✓ Connexion à la base de données établie.");
+        } catch (ClassNotFoundException e) {
+            System.err.println("✗ Driver MySQL introuvable : " + e.getMessage());
+        } catch (SQLException e) {
+            System.err.println("✗ Connexion échouée : " + e.getMessage());
+            conn = null;
+        }
+    }
+
+    // Gardé pour compatibilité ascendante si utilisé ailleurs
     public void setConn(Connection conn) {
         this.conn = conn;
     }

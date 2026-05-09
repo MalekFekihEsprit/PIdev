@@ -24,6 +24,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 
@@ -48,6 +49,7 @@ public class PaiementController implements Initializable {
     @FXML private HBox btnActivites;
     @FXML private HBox btnVoyages;
     @FXML private HBox btnBudgets;
+    @FXML private HBox btnEvenements;
     @FXML private HBox btnHome;
     @FXML private HBox userProfileBox;
     @FXML private HBox btnNotifications;
@@ -307,6 +309,11 @@ public class PaiementController implements Initializable {
             btnBudgets.setOnMouseClicked(event -> navigateTo("/BudgetDepenseFront.fxml", "Budgets"));
         }
 
+        setupNavButtonHover(btnEvenements, "🎉", "Événements");
+        if (btnEvenements != null) {
+            btnEvenements.setOnMouseClicked(event -> navigateTo("/Evenementsfront.fxml", "Événements"));
+        }
+
         // Refresh button
         if (btnRefresh != null) {
             btnRefresh.setOnMouseClicked(event -> refreshData());
@@ -366,9 +373,10 @@ public class PaiementController implements Initializable {
             Parent root = loader.load();
 
             Stage stage = (Stage) btnRetour.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - " + title);
             stage.setMaximized(true);
+            stage.show();
 
         } catch (IOException e) {
             showAlert(Alert.AlertType.ERROR, "Erreur",
@@ -383,9 +391,10 @@ public class PaiementController implements Initializable {
             Parent root = loader.load();
 
             Stage stage = (Stage) btnRetour.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - Accueil");
             stage.setMaximized(true);
+            stage.show();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -398,9 +407,10 @@ public class PaiementController implements Initializable {
             Parent root = loader.load();
 
             Stage stage = (Stage) userProfileBox.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - Mon Profil");
             stage.setMaximized(true);
+            stage.show();
 
         } catch (IOException e) {
             showAlert(Alert.AlertType.ERROR, "Erreur",

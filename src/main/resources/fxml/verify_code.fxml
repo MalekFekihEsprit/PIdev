@@ -10,7 +10,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Circle?>
 
-<AnchorPane prefHeight="900" prefWidth="1400" style="-fx-background-color: #f8fafc;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.VerifyCodeController">
+<AnchorPane style="-fx-background-color: #f8fafc;" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.VerifyCodeController">
 
     <VBox alignment="CENTER" spacing="24" style="-fx-background-color: white; -fx-background-radius: 32; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 20, 0, 0, 8); -fx-max-width: 480; -fx-padding: 40;" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.topAnchor="0">
         <!-- Logo -->
@@ -29,7 +29,7 @@
             <TextField fx:id="codeField" promptText="1234" style="-fx-background-color: #f1f5f9; -fx-background-radius: 16; -fx-padding: 14 18; -fx-font-size: 14; -fx-border-color: transparent; -fx-border-width: 2;" />
         </VBox>
 
-        <Button fx:id="verifyButton" mnemonicParsing="false" onAction="#handleVerify" prefHeight="48" style="-fx-background-color: #ff8c42; -fx-background-radius: 24; -fx-text-fill: white; -fx-font-size: 16; -fx-font-weight: 600; -fx-cursor: hand;" text="Vérifier" />
+        <Button fx:id="verifyButton" mnemonicParsing="false" onAction="#handleVerify" style="-fx-background-color: #ff8c42; -fx-background-radius: 24; -fx-text-fill: white; -fx-font-size: 16; -fx-font-weight: 600; -fx-cursor: hand;" text="Vérifier" />
 
         <Hyperlink fx:id="resendLink" onAction="#handleResend" style="-fx-text-fill: #ff8c42; -fx-font-weight: 600; -fx-font-size: 14; -fx-border-color: transparent;" text="Renvoyer le code" />
 
