@@ -68,10 +68,33 @@ public class ModifierDestinationController implements Initializable {
     private long lastApiCall = 0;
     private static final long MIN_TIME_BETWEEN_CALLS = 1000;
 
-    Dotenv dotenv = Dotenv.load();
-    String citiesApiKey = dotenv.get("CITIES_API_KEY");
-    String openRouterKey = dotenv.get("OPENROUTER_API_KEY");
-    String youtubeApiKey = dotenv.get("YOUTUBE_API_KEY");
+    private final String citiesApiKey;
+    private final String openRouterKey;
+    private final String youtubeApiKey;
+
+    public ModifierDestinationController() {
+        Dotenv dotenv;
+        try {
+            dotenv = Dotenv.configure().ignoreIfMalformed().ignoreIfMissing().load();
+        } catch (Exception e) {
+            dotenv = null;
+        }
+
+        citiesApiKey = getEnvValue(dotenv, "CITIES_API_KEY");
+        openRouterKey = getEnvValue(dotenv, "OPENROUTER_API_KEY");
+        youtubeApiKey = getEnvValue(dotenv, "YOUTUBE_API_KEY");
+    }
+
+    private String getEnvValue(Dotenv dotenv, String key) {
+        String value = null;
+        if (dotenv != null) {
+            value = dotenv.get(key);
+        }
+        if (value == null || value.trim().isEmpty()) {
+            value = System.getenv(key);
+        }
+        return (value == null || value.trim().isEmpty()) ? null : value.trim();
+    }
 
     private final String[] climats = {"Méditerranéen", "Tropical", "Continental", "Désertique", "Montagnard", "Océanique", "Polaire"};
     private final String[] saisons = {"Printemps", "Été", "Automne", "Hiver", "Toute l'année"};
@@ -79,7 +102,7 @@ public class ModifierDestinationController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         destinationCRUD = new DestinationCRUD();
-        cityService = new CityService(citiesApiKey);
+        cityService = (citiesApiKey != null) ? new CityService(citiesApiKey) : null;
         countryCodeService = new CountryCodeService();
         fallbackService = new LocalCityFallbackService();
         seasonService = new SeasonService();
@@ -199,6 +222,7 @@ public class ModifierDestinationController implements Initializable {
 
     public void setDestination(Destination destination) {
         this.destinationToEdit = destination;
+        System.out.println("DEBUG: setDestination() called with ID: " + destination.getId_destination());
 
         // Display destination name in header
         lblDestinationName.setText(destination.getNom_destination() + ", " + destination.getPays_destination());
@@ -219,12 +243,24 @@ public class ModifierDestinationController implements Initializable {
                     destination.getLatitude_destination(),
                     destination.getLongitude_destination()
             );
+            System.out.println("DEBUG: City coordinates loaded: " + validatedCityCoordinates.getLatitude() + ", " + validatedCityCoordinates.getLongitude());
             if (btnDetectSeason != null) btnDetectSeason.setDisable(false);
             if (btnFetchVideo != null) btnFetchVideo.setDisable(false);
         }
 
+        // Set existing region and country info from the destination
+        if (destination.getRegion_destination() != null && !destination.getRegion_destination().isEmpty()) {
+            detectedRegion = destination.getRegion_destination();
+            System.out.println("DEBUG: Existing region loaded: " + detectedRegion);
+        }
+
         // Fetch country code for validation
         fetchCountryCode(destination.getPays_destination());
+        
+        // Also fetch country info to populate region if not already set
+        if (detectedRegion == null || detectedRegion.isEmpty()) {
+            fetchCountryInfo(destination.getPays_destination());
+        }
 
         // Set last modified time
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
@@ -491,11 +527,13 @@ public class ModifierDestinationController implements Initializable {
             protected List<CityService.CitySuggestion> call() throws Exception {
                 List<CityService.CitySuggestion> allSuggestions = new ArrayList<>();
 
-                try {
-                    allSuggestions.addAll(cityService.suggestCitiesIncludeDeleted(
-                            currentCountryCode, cityPrefix, 10));
-                } catch (Exception e) {
-                    System.err.println("API search failed: " + e.getMessage());
+                if (cityService != null) {
+                    try {
+                        allSuggestions.addAll(cityService.suggestCitiesIncludeDeleted(
+                                currentCountryCode, cityPrefix, 10));
+                    } catch (Exception e) {
+                        System.err.println("API search failed: " + e.getMessage());
+                    }
                 }
 
                 if (allSuggestions.isEmpty()) {
@@ -693,13 +731,27 @@ public class ModifierDestinationController implements Initializable {
                 scoreValid;
 
         btnUpdate.setDisable(!isValid);
+        
+        // Debug log
+        System.out.println("DEBUG validateForm: nom=" + nom + ", pays=" + pays + 
+                ", currentCountryCode=" + currentCountryCode + 
+                ", climat=" + cbClimat.getValue() + 
+                ", saison=" + cbSaison.getValue() + 
+                ", isDuplicate=" + isDuplicate + 
+                ", isValid=" + isValid);
     }
 
     private void handleUpdate() {
-        if (!validateAllFields()) return;
+        System.out.println("DEBUG: handleUpdate() started");
+        
+        if (!validateAllFields()) {
+            System.out.println("DEBUG: Field validation failed");
+            return;
+        }
 
         String nom = tfNom.getText().trim();
         String pays = tfPays.getText().trim();
+        System.out.println("DEBUG: Updating destination - Nom: " + nom + ", Pays: " + pays);
 
         // Check for duplicates (excluding current destination)
         if (existingDestinations != null) {
@@ -752,22 +804,35 @@ public class ModifierDestinationController implements Initializable {
         destinationToEdit.setVideo_url(videoUrl);
 
         try {
+            System.out.println("DEBUG: Attempting to update destination in database");
             destinationCRUD.modifier(destinationToEdit);
+            System.out.println("DEBUG: Database update successful");
 
             String videoMsg = (videoUrl != null && !videoUrl.isEmpty()) ? "\n✓ Vidéo mise à jour" : "";
             String regionMsg = (detectedRegion != null && !detectedRegion.isEmpty()) ? "\n✓ Région: " + detectedRegion : "";
 
             showSuccessAlert("Destination modifiée avec succès!\n" + nom + ", " + pays + regionMsg + videoMsg);
+            System.out.println("DEBUG: Success alert shown");
 
-            if (parentController != null) parentController.refreshAfterModification();
+            if (parentController != null) {
+                System.out.println("DEBUG: Refreshing parent controller");
+                parentController.refreshAfterModification();
+            }
             closeWindow();
+            System.out.println("DEBUG: Window closed successfully");
 
         } catch (SQLException e) {
+            System.err.println("DEBUG: SQLException caught - " + e.getMessage());
+            e.printStackTrace();
             if (e.getMessage().contains("Duplicate") || e.getMessage().contains("duplicate")) {
                 showWarning("Cette destination existe déjà dans la base de données!");
             } else {
                 showErrorAlert("Erreur lors de la modification", e.getMessage());
             }
+        } catch (Exception e) {
+            System.err.println("DEBUG: Unexpected exception caught - " + e.getClass().getName() + ": " + e.getMessage());
+            e.printStackTrace();
+            showErrorAlert("Erreur inattendue", "Une erreur inattendue s'est produite: " + e.getMessage());
         }
     }
 

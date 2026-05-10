@@ -52,7 +52,7 @@ public class DestinationCRUD implements InterfaceCRUDDestination<Destination> {
                 "description_destination = ?, climat_destination = ?, saison_destination = ?, " +
                 "latitude_destination = ?, longitude_destination = ?, score_destination = ?, " +
                 "currency_destination = ?, flag_destination = ?, languages_destination = ?, " +
-                "video_url = ?, added_by = ? " +
+                "video_url = ? " +
                 "WHERE id_destination = ?";
 
         try (PreparedStatement pst = conn.prepareStatement(req)) {
@@ -69,8 +69,7 @@ public class DestinationCRUD implements InterfaceCRUDDestination<Destination> {
             pst.setString(11, object.getFlag_destination());
             pst.setString(12, object.getLanguages_destination());
             pst.setString(13, object.getVideo_url());
-            pst.setInt(14, object.getAdded_by());
-            pst.setInt(15, object.getId_destination());
+            pst.setInt(14, object.getId_destination());
 
             pst.executeUpdate();
             System.out.println("Destination modifiée avec succès!!");

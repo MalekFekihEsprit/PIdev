@@ -15,13 +15,11 @@ import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
-import javafx.util.Callback;
 
 import java.io.IOException;
 import java.net.URL;
@@ -66,17 +64,10 @@ public class DestinationFrontController implements Initializable {
     @FXML private Label lblSaisonsCount;
     @FXML private ProgressBar progressSaisons;
 
-    // Table Section
+    // Destinations Section
     @FXML private Label lblDestinationCount;
-    @FXML private TableView<Destination> tableDestinations;
-    @FXML private TableColumn<Destination, String> colNom;
-    @FXML private TableColumn<Destination, String> colPays;
-    @FXML private TableColumn<Destination, String> colRegion;
-    @FXML private TableColumn<Destination, String> colDescription;
-    @FXML private TableColumn<Destination, String> colClimat;
-    @FXML private TableColumn<Destination, String> colSaison;
-    @FXML private TableColumn<Destination, String> colAddedBy;
-    @FXML private TableColumn<Destination, Void> colActions;
+    @FXML private VBox containerDestinations;
+    @FXML private Label lblNoDestinations;
 
     // Buttons
     @FXML private Button btnAjouter;
@@ -99,6 +90,7 @@ public class DestinationFrontController implements Initializable {
     private List<Destination> allDestinations = new ArrayList<>();
     private User currentUser;
     private List<DeleteNotification> unreadNotifications = new ArrayList<>();
+    private Destination selectedDestination;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -112,144 +104,44 @@ public class DestinationFrontController implements Initializable {
             return;
         }
 
-        // Initialize table columns
-        setupTableColumns();
-
-        // Set table height
-        setupTableHeight();
-
-        // Load data from database
-        loadDestinations();
-
-        // Setup button actions
+        loadDestinationsCards();
         setupButtonActions();
-
-        // Update last update time
-        updateLastUpdateTime();
-
-        // Setup navigation buttons
-        setupNavigationButtons();
-
-        // Setup user profile click
         setupUserProfile();
         updateUserInfo();
 
-        // Setup notifications
+        updateLastUpdateTime();
+        setupNavigationButtons();
         setupNotifications();
         loadUnreadNotifications();
     }
 
-    private void setupTableColumns() {
-        colNom.setCellValueFactory(new PropertyValueFactory<>("nom_destination"));
-        colPays.setCellValueFactory(new PropertyValueFactory<>("pays_destination"));
-        colRegion.setCellValueFactory(new PropertyValueFactory<>("region_destination"));
-        colDescription.setCellValueFactory(new PropertyValueFactory<>("description_destination"));
-        colClimat.setCellValueFactory(new PropertyValueFactory<>("climat_destination"));
-        colSaison.setCellValueFactory(new PropertyValueFactory<>("saison_destination"));
-        colAddedBy.setCellValueFactory(new PropertyValueFactory<>("added_by_name"));
-
-        // Format null values
-        colRegion.setCellFactory(col -> new TableCell<Destination, String>() {
-            @Override
-            protected void updateItem(String item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty) {
-                    setText(null);
-                } else if (item == null || item.trim().isEmpty()) {
-                    setText("-");
-                } else {
-                    setText(item);
-                }
-            }
-        });
-
-        colAddedBy.setCellFactory(col -> new TableCell<Destination, String>() {
-            @Override
-            protected void updateItem(String item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty) {
-                    setText(null);
-                } else if (item == null || item.trim().isEmpty()) {
-                    setText("-");
-                } else {
-                    setText(item);
-                }
-            }
-        });
-
-        // Setup actions column
-        setupActionsColumn();
+    private void setupButtonActions() {
+        if (btnAjouter != null) btnAjouter.setOnAction(event -> handleAjouter());
+        if (btnSuggestHotels != null) btnSuggestHotels.setOnAction(event -> handleSuggestHotels());
+        if (btnShowMap != null) btnShowMap.setOnAction(event -> handleShowMap());
+        if (btnRefresh != null) btnRefresh.setOnMouseClicked(event -> refreshData());
+        if (btnSearch != null) btnSearch.setOnMouseClicked(event -> handleSearch());
+        if (btnFilter != null) btnFilter.setOnMouseClicked(event -> handleFilter());
     }
 
-    private void setupTableHeight() {
-        tableDestinations.setFixedCellSize(35);
-        tableDestinations.setPrefHeight(380);
-        tableDestinations.setMaxHeight(380);
-        tableDestinations.setMinHeight(380);
+    private void setupUserProfile() {
+        if (userProfileBox == null) return;
+
+        userProfileBox.setOnMouseClicked(event -> navigateToProfile());
+        userProfileBox.setOnMouseEntered(event ->
+                userProfileBox.setStyle("-fx-background-color: #e2e8f0; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand;"));
+        userProfileBox.setOnMouseExited(event ->
+                userProfileBox.setStyle("-fx-background-color: #f1f5f9; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand;"));
     }
 
-    private void setupActionsColumn() {
-        colActions.setCellFactory(new Callback<>() {
-            @Override
-            public TableCell<Destination, Void> call(final TableColumn<Destination, Void> param) {
-                return new TableCell<>() {
-                    private final HBox actionBox = new HBox(8);
-                    private final HBox btnConsulter = new HBox();
-                    private final HBox btnModifier = new HBox();
-                    private final HBox btnSupprimer = new HBox();
-
-                    {
-                        actionBox.setAlignment(javafx.geometry.Pos.CENTER);
-
-                        btnConsulter.setAlignment(javafx.geometry.Pos.CENTER);
-                        btnConsulter.setStyle("-fx-background-color: #3b82f6; -fx-background-radius: 8; -fx-min-width: 32; -fx-min-height: 32; -fx-cursor: hand;");
-                        Label consulterIcon = new Label("👁️");
-                        consulterIcon.setStyle("-fx-font-size: 16; -fx-text-fill: white;");
-                        btnConsulter.getChildren().add(consulterIcon);
-                        Tooltip.install(btnConsulter, new Tooltip("Consulter"));
-
-                        btnModifier.setAlignment(javafx.geometry.Pos.CENTER);
-                        btnModifier.setStyle("-fx-background-color: #f59e0b; -fx-background-radius: 8; -fx-min-width: 32; -fx-min-height: 32; -fx-cursor: hand;");
-                        Label modifierIcon = new Label("✏️");
-                        modifierIcon.setStyle("-fx-font-size: 16; -fx-text-fill: white;");
-                        btnModifier.getChildren().add(modifierIcon);
-                        Tooltip.install(btnModifier, new Tooltip("Modifier"));
-
-                        btnSupprimer.setAlignment(javafx.geometry.Pos.CENTER);
-                        btnSupprimer.setStyle("-fx-background-color: #ef4444; -fx-background-radius: 8; -fx-min-width: 32; -fx-min-height: 32; -fx-cursor: hand;");
-                        Label supprimerIcon = new Label("🗑️");
-                        supprimerIcon.setStyle("-fx-font-size: 16; -fx-text-fill: white;");
-                        btnSupprimer.getChildren().add(supprimerIcon);
-                        Tooltip.install(btnSupprimer, new Tooltip("Supprimer"));
-
-                        actionBox.setPadding(new Insets(4, 0, 4, 0));
-                    }
-
-                    @Override
-                    protected void updateItem(Void item, boolean empty) {
-                        super.updateItem(item, empty);
-                        if (empty) {
-                            setGraphic(null);
-                        } else {
-                            Destination destination = getTableView().getItems().get(getIndex());
-
-                            actionBox.getChildren().clear();
-
-                            btnConsulter.setOnMouseClicked(event -> handleConsulter(destination));
-                            actionBox.getChildren().add(btnConsulter);
-
-                            if (destination.getAdded_by() == currentUser.getId()) {
-                                btnModifier.setOnMouseClicked(event -> handleModifier(destination));
-                                btnSupprimer.setOnMouseClicked(event -> handleDeleteSingle(destination));
-                                actionBox.getChildren().addAll(btnModifier, btnSupprimer);
-                            }
-
-                            setGraphic(actionBox);
-                        }
-                    }
-                };
-            }
-        });
+    private void updateUserInfo() {
+        if (currentUser != null) {
+            lblUserName.setText(currentUser.getPrenom() + " " + currentUser.getNom());
+            lblUserRole.setText(currentUser.getRole());
+        } else {
+            lblUserName.setText("Utilisateur");
+            lblUserRole.setText("Non connecté");
+        }
     }
 
     private void handleShowMap() {
@@ -283,10 +175,9 @@ public class DestinationFrontController implements Initializable {
     }
 
     private void handleSuggestHotels() {
-        Destination selectedDestination = tableDestinations.getSelectionModel().getSelectedItem();
         if (selectedDestination == null) {
             showAlert(Alert.AlertType.WARNING, "Attention",
-                    "Veuillez sélectionner une destination dans le tableau pour suggérer des hôtels.");
+                    "Veuillez sélectionner une destination (cliquer sur une card) pour suggérer des hôtels.");
             return;
         }
 
@@ -507,48 +398,177 @@ public class DestinationFrontController implements Initializable {
         }
     }
 
-    private void updateUserInfo() {
-        if (currentUser != null) {
-            lblUserName.setText(currentUser.getPrenom() + " " + currentUser.getNom());
-            lblUserRole.setText(currentUser.getRole());
+    private void loadDestinationsCards() {
+        List<Destination> destinations;
+        try {
+            destinations = destinationCRUD.afficher();
+        } catch (SQLException e) {
+            lblNoDestinations.setText("Erreur de chargement des destinations");
+            lblNoDestinations.setVisible(true);
+            return;
+        }
+
+        allDestinations = destinations == null ? new ArrayList<>() : new ArrayList<>(destinations);
+        destinationList.setAll(allDestinations);
+        renderDestinationCards(allDestinations, true);
+        updateStats();
+    }
+
+    private VBox createDestinationCard(Destination d) {
+        VBox card = new VBox(8);
+        card.setPadding(new Insets(16));
+        card.setPrefWidth(390);
+        card.setMinWidth(320);
+        card.setMaxWidth(Double.MAX_VALUE);
+        applyCardStyle(card, false);
+        card.setUserData(d);
+
+        Label nom = new Label(d.getNom_destination());
+        nom.setStyle("-fx-font-size: 20; -fx-font-weight: bold; -fx-text-fill: #0f172a;");
+        Label pays = new Label("Pays : " + d.getPays_destination());
+        pays.setStyle("-fx-text-fill: #475569; -fx-font-size: 14;");
+        Label region = new Label("Région : " + (d.getRegion_destination() == null || d.getRegion_destination().isEmpty() ? "-" : d.getRegion_destination()));
+        region.setStyle("-fx-text-fill: #64748b; -fx-font-size: 13;");
+        Label description = new Label("Description : " + d.getDescription_destination());
+        description.setStyle("-fx-text-fill: #334155; -fx-font-size: 13;");
+        description.setWrapText(true);
+        Label climat = new Label("Climat : " + d.getClimat_destination());
+        climat.setStyle("-fx-text-fill: #10b981; -fx-font-size: 13;");
+        Label saison = new Label("Saison idéale : " + d.getSaison_destination());
+        saison.setStyle("-fx-text-fill: #ff8c42; -fx-font-size: 13;");
+        Label addedBy = new Label("Ajouté par : " + (d.getAdded_by_name() == null ? "-" : d.getAdded_by_name()));
+        addedBy.setStyle("-fx-text-fill: #64748b; -fx-font-size: 12;");
+
+        HBox actions = new HBox(8);
+        actions.setPadding(new Insets(8, 0, 0, 0));
+        Button btnView = new Button("👁 Voir");
+        btnView.setStyle("-fx-background-color: #3b82f6; -fx-text-fill: white; -fx-background-radius: 8; -fx-font-size: 13; -fx-cursor: hand;");
+        btnView.setOnAction(e -> handleConsulter(d));
+        actions.getChildren().add(btnView);
+
+        if (currentUser != null && d.getAdded_by() == currentUser.getId()) {
+            Button btnEdit = new Button("✏");
+            btnEdit.setStyle("-fx-background-color: #f59e0b; -fx-text-fill: white; -fx-background-radius: 8; -fx-font-size: 13; -fx-cursor: hand;");
+            btnEdit.setOnAction(e -> handleModifier(d));
+
+            Button btnDelete = new Button("🗑");
+            btnDelete.setStyle("-fx-background-color: #ef4444; -fx-text-fill: white; -fx-background-radius: 8; -fx-font-size: 13; -fx-cursor: hand;");
+            btnDelete.setOnAction(e -> handleDeleteSingle(d));
+
+            actions.getChildren().addAll(btnEdit, btnDelete);
+        }
+
+        card.setOnMouseClicked(event -> {
+            selectedDestination = d;
+            highlightSelectedCard(card);
+        });
+
+        card.getChildren().addAll(nom, pays, region, description, climat, saison, addedBy, actions);
+        return card;
+    }
+
+    private void renderDestinationCards(List<Destination> destinations, boolean updateCountText) {
+        containerDestinations.getChildren().clear();
+
+        if (destinations == null || destinations.isEmpty()) {
+            lblNoDestinations.setText("Aucune destination à afficher");
+            lblNoDestinations.setVisible(true);
+            if (updateCountText) {
+                lblDestinationCount.setText("0 destinations");
+            }
+            selectedDestination = null;
+            return;
+        }
+
+        lblNoDestinations.setVisible(false);
+        for (int i = 0; i < destinations.size(); i += 3) {
+            HBox row = new HBox(18);
+
+            for (int j = i; j < Math.min(i + 3, destinations.size()); j++) {
+                VBox card = createDestinationCard(destinations.get(j));
+                HBox.setHgrow(card, javafx.scene.layout.Priority.ALWAYS);
+                row.getChildren().add(card);
+            }
+
+            // Keep visual balance for the last incomplete row.
+            int missingSlots = 3 - row.getChildren().size();
+            for (int k = 0; k < missingSlots; k++) {
+                Region spacer = new Region();
+                spacer.setMinWidth(0);
+                HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
+                row.getChildren().add(spacer);
+            }
+
+            containerDestinations.getChildren().add(row);
+        }
+
+        if (updateCountText) {
+            int total = destinations.size();
+            lblDestinationCount.setText(total + " destination" + (total > 1 ? "s" : ""));
+        }
+
+        if (selectedDestination == null || !destinations.contains(selectedDestination)) {
+            selectedDestination = destinations.get(0);
+        }
+        reapplySelectionHighlight();
+    }
+
+    private void highlightSelectedCard(VBox selectedCard) {
+        for (javafx.scene.Node rowNode : containerDestinations.getChildren()) {
+            if (!(rowNode instanceof HBox row)) {
+                continue;
+            }
+
+            for (javafx.scene.Node cardNode : row.getChildren()) {
+                if (cardNode instanceof VBox cardBox) {
+                    applyCardStyle(cardBox, cardBox == selectedCard);
+                }
+            }
+        }
+    }
+
+    private void reapplySelectionHighlight() {
+        for (javafx.scene.Node rowNode : containerDestinations.getChildren()) {
+            if (!(rowNode instanceof HBox row)) {
+                continue;
+            }
+
+            for (javafx.scene.Node cardNode : row.getChildren()) {
+                if (cardNode instanceof VBox cardBox) {
+                    boolean isSelected = selectedDestination != null && selectedDestination.equals(cardBox.getUserData());
+                    applyCardStyle(cardBox, isSelected);
+                }
+            }
+        }
+    }
+
+    private void applyCardStyle(VBox card, boolean selected) {
+        if (selected) {
+            card.setStyle("-fx-background-color: white; -fx-background-radius: 16; -fx-effect: dropshadow(three-pass-box, rgba(59,130,246,0.2), 12, 0, 0, 4); -fx-border-color: #3b82f6; -fx-border-width: 2; -fx-border-radius: 16;");
         } else {
-            lblUserName.setText("Utilisateur");
-            lblUserRole.setText("Non connecté");
+            card.setStyle("-fx-background-color: white; -fx-background-radius: 16; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.04), 8, 0, 0, 2); -fx-border-color: #e2e8f0; -fx-border-width: 1; -fx-border-radius: 16;");
         }
     }
 
-    private void setupButtonActions() {
-        if (btnAjouter != null) {
-            btnAjouter.setOnAction(event -> handleAjouter());
-        }
-        if (btnSuggestHotels != null) {
-            btnSuggestHotels.setOnAction(event -> handleSuggestHotels());
-        }
-        if (btnShowMap != null) {
-            btnShowMap.setOnAction(event -> handleShowMap());
-        }
-        if (btnRefresh != null) {
-            btnRefresh.setOnMouseClicked(event -> refreshData());
-        }
-        if (btnSearch != null) {
-            btnSearch.setOnMouseClicked(event -> handleSearch());
-        }
-        if (btnFilter != null) {
-            btnFilter.setOnMouseClicked(event -> handleFilter());
-        }
-    }
+    private void handleConsulter(Destination destination) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/AfficherDestinationFront.fxml"));
+            Parent root = loader.load();
 
-    private void setupUserProfile() {
-        if (userProfileBox != null) {
-            userProfileBox.setOnMouseClicked(event -> navigateToProfile());
+            AfficherDestinationfrontController controller = loader.getController();
+            controller.setDestination(destination);
 
-            userProfileBox.setOnMouseEntered(event -> {
-                userProfileBox.setStyle("-fx-background-color: #e2e8f0; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand;");
-            });
+            Stage stage = new Stage();
+            stage.setTitle("Détails - " + destination.getNom_destination());
+            stage.setScene(new Scene(root,
+                    Screen.getPrimary().getVisualBounds().getWidth(),
+                    Screen.getPrimary().getVisualBounds().getHeight()));
+            stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+            stage.showAndWait();
 
-            userProfileBox.setOnMouseExited(event -> {
-                userProfileBox.setStyle("-fx-background-color: #f1f5f9; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand;");
-            });
+        } catch (IOException e) {
+            showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir les détails: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -649,15 +669,16 @@ public class DestinationFrontController implements Initializable {
         }
     }
 
+
     private Stage getStage() {
-        if (tableDestinations != null && tableDestinations.getScene() != null)
-            return (Stage) tableDestinations.getScene().getWindow();
         if (btnActivites != null && btnActivites.getScene() != null)
             return (Stage) btnActivites.getScene().getWindow();
         if (btnVoyages != null && btnVoyages.getScene() != null)
             return (Stage) btnVoyages.getScene().getWindow();
         if (btnBudgets != null && btnBudgets.getScene() != null)
             return (Stage) btnBudgets.getScene().getWindow();
+        if (containerDestinations != null && containerDestinations.getScene() != null)
+            return (Stage) containerDestinations.getScene().getWindow();
         return null;
     }
 
@@ -693,21 +714,6 @@ public class DestinationFrontController implements Initializable {
         });
     }
 
-    private void loadDestinations() {
-        try {
-            allDestinations = destinationCRUD.afficher();
-            destinationList.setAll(allDestinations);
-            tableDestinations.setItems(destinationList);
-
-            updateStats();
-
-            System.out.println("Loaded " + allDestinations.size() + " destinations");
-
-        } catch (SQLException e) {
-            showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible de charger les destinations: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
 
     private void updateStats() {
         int total = allDestinations.size();
@@ -747,7 +753,7 @@ public class DestinationFrontController implements Initializable {
     }
 
     void refreshData() {
-        loadDestinations();
+        loadDestinationsCards();
         loadUnreadNotifications();
         updateLastUpdateTime();
         showAlert(Alert.AlertType.INFORMATION, "Succès", "Données rafraîchies avec succès!");
@@ -757,6 +763,7 @@ public class DestinationFrontController implements Initializable {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm");
         lblLastUpdate.setText("Dernière mise à jour: " + LocalDateTime.now().format(formatter));
     }
+
 
     private void handleSearch() {
         TextInputDialog dialog = new TextInputDialog();
@@ -774,15 +781,17 @@ public class DestinationFrontController implements Initializable {
                         .collect(Collectors.toList());
 
                 if (searchResults.isEmpty()) {
-                    showAlert(Alert.AlertType.INFORMATION, "Résultat", "Aucune destination trouvée");
+                    lblNoDestinations.setText("Aucune destination trouvée");
+                    renderDestinationCards(Collections.emptyList(), false);
+                    lblDestinationCount.setText("0 résultat");
                 } else {
-                    destinationList.setAll(searchResults);
-                    tableDestinations.setItems(destinationList);
+                    renderDestinationCards(searchResults, false);
                     lblDestinationCount.setText(searchResults.size() + " résultat(s)");
                 }
             }
         });
     }
+
 
     private void handleFilter() {
         List<String> climates = allDestinations.stream()
@@ -800,8 +809,7 @@ public class DestinationFrontController implements Initializable {
         Optional<String> result = dialog.showAndWait();
         result.ifPresent(climate -> {
             if ("Tous".equals(climate)) {
-                destinationList.setAll(allDestinations);
-                tableDestinations.setItems(destinationList);
+                renderDestinationCards(allDestinations, false);
                 lblDestinationCount.setText(allDestinations.size() + " destination(s)");
             } else {
                 List<Destination> filteredResults = allDestinations.stream()
@@ -809,10 +817,11 @@ public class DestinationFrontController implements Initializable {
                         .collect(Collectors.toList());
 
                 if (filteredResults.isEmpty()) {
-                    showAlert(Alert.AlertType.INFORMATION, "Résultat", "Aucune destination trouvée pour ce climat");
+                    lblNoDestinations.setText("Aucune destination trouvée pour ce climat");
+                    renderDestinationCards(Collections.emptyList(), false);
+                    lblDestinationCount.setText("0 résultat");
                 } else {
-                    destinationList.setAll(filteredResults);
-                    tableDestinations.setItems(destinationList);
+                    renderDestinationCards(filteredResults, false);
                     lblDestinationCount.setText(filteredResults.size() + " résultat(s)");
                 }
             }
@@ -863,6 +872,7 @@ public class DestinationFrontController implements Initializable {
         }
     }
 
+
     private void handleDeleteSingle(Destination destination) {
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
         confirm.setTitle("Confirmation");
@@ -874,8 +884,7 @@ public class DestinationFrontController implements Initializable {
             try {
                 destinationCRUD.supprimer(destination);
                 allDestinations.remove(destination);
-                destinationList.setAll(allDestinations);
-                tableDestinations.setItems(destinationList);
+                loadDestinationsCards();
                 updateStats();
                 showAlert(Alert.AlertType.INFORMATION, "Succès", "Destination supprimée avec succès!");
             } catch (SQLException e) {
@@ -884,32 +893,14 @@ public class DestinationFrontController implements Initializable {
         }
     }
 
-    private void handleConsulter(Destination destination) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/AfficherDestinationFront.fxml"));
-            Parent root = loader.load();
-
-            AfficherDestinationfrontController controller = loader.getController();
-            controller.setDestination(destination);
-
-            Stage stage = new Stage();
-            stage.setTitle("Détails - " + destination.getNom_destination());
-            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
-            stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
-            stage.showAndWait();
-
-        } catch (IOException e) {
-            showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir les détails: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
 
     private void navigateToHome() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/HomePage.fxml"));
             Parent root = loader.load();
 
-            Stage stage = (Stage) tableDestinations.getScene().getWindow();
+            Stage stage = getStage();
+            if (stage == null) return;
             stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - Accueil");
             stage.setMaximized(true);
@@ -922,14 +913,6 @@ public class DestinationFrontController implements Initializable {
 
     private void showAlert(Alert.AlertType type, String title, String message) {
         Alert alert = new Alert(type);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
-    }
-
-    private void showInfoAlert(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);
         alert.setHeaderText(null);
         alert.setContentText(message);

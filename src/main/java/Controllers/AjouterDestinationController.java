@@ -63,10 +63,33 @@ public class AjouterDestinationController implements Initializable {
     private long lastApiCall = 0;
     private static final long MIN_TIME_BETWEEN_CALLS = 1000;
 
-    Dotenv dotenv = Dotenv.load();
-    String citiesApiKey = dotenv.get("CITIES_API_KEY");
-    String openRouterKey = dotenv.get("OPENROUTER_API_KEY");
-    String youtubeApiKey = dotenv.get("YOUTUBE_API_KEY");
+    private final String citiesApiKey;
+    private final String openRouterKey;
+    private final String youtubeApiKey;
+
+    public AjouterDestinationController() {
+        Dotenv dotenv;
+        try {
+            dotenv = Dotenv.configure().ignoreIfMalformed().ignoreIfMissing().load();
+        } catch (Exception e) {
+            dotenv = null;
+        }
+
+        citiesApiKey = getEnvValue(dotenv, "CITIES_API_KEY");
+        openRouterKey = getEnvValue(dotenv, "OPENROUTER_API_KEY");
+        youtubeApiKey = getEnvValue(dotenv, "YOUTUBE_API_KEY");
+    }
+
+    private String getEnvValue(Dotenv dotenv, String key) {
+        String value = null;
+        if (dotenv != null) {
+            value = dotenv.get(key);
+        }
+        if (value == null || value.trim().isEmpty()) {
+            value = System.getenv(key);
+        }
+        return (value == null || value.trim().isEmpty()) ? null : value.trim();
+    }
 
     private final String[] climats = {"Méditerranéen", "Tropical", "Continental", "Désertique", "Montagnard", "Océanique", "Polaire"};
     private final String[] saisons = {"Printemps", "Été", "Automne", "Hiver", "Toute l'année"};
@@ -74,7 +97,7 @@ public class AjouterDestinationController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         destinationCRUD = new DestinationCRUD();
-        cityService = new CityService(citiesApiKey);
+        cityService = (citiesApiKey != null) ? new CityService(citiesApiKey) : null;
         countryCodeService = new CountryCodeService();
         fallbackService = new LocalCityFallbackService();
         seasonService = new SeasonService();
@@ -390,11 +413,13 @@ public class AjouterDestinationController implements Initializable {
             protected List<CityService.CitySuggestion> call() throws Exception {
                 List<CityService.CitySuggestion> allSuggestions = new ArrayList<>();
 
-                try {
-                    allSuggestions.addAll(cityService.suggestCitiesIncludeDeleted(
-                            currentCountryCode, cityPrefix, 10));
-                } catch (Exception e) {
-                    System.err.println("API search failed: " + e.getMessage());
+                if (cityService != null) {
+                    try {
+                        allSuggestions.addAll(cityService.suggestCitiesIncludeDeleted(
+                                currentCountryCode, cityPrefix, 10));
+                    } catch (Exception e) {
+                        System.err.println("API search failed: " + e.getMessage());
+                    }
                 }
 
                 if (allSuggestions.isEmpty()) {
