@@ -2,6 +2,7 @@ package Services;
 
 import Entities.User;
 import Utils.MyBD;
+import Utils.PasswordUtils;
 import org.json.JSONObject;
 import org.mindrot.jbcrypt.BCrypt;
 
@@ -28,7 +29,19 @@ public class UserCRUD implements InterfaceCRUD<User> {
     }
 
     private boolean verifyPassword(String plainPassword, String hashedPassword) {
-        return BCrypt.checkpw(plainPassword, hashedPassword);
+        if (plainPassword == null || hashedPassword == null || hashedPassword.isBlank()) {
+            return false;
+        }
+
+        String compatibleHash = hashedPassword;
+
+        // Symfony bcrypt often stores hashes with $2y$.
+        // jBCrypt supports $2a$, so we normalize only for verification.
+        if (compatibleHash.startsWith("$2y$")) {
+            compatibleHash = "$2a$" + compatibleHash.substring(4);
+        }
+
+        return PasswordUtils.verifyPassword(plainPassword, compatibleHash);
     }
 
     @Override
@@ -160,7 +173,7 @@ public class UserCRUD implements InterfaceCRUD<User> {
         ResultSet rs = pst.executeQuery();
         if (rs.next()) {
             String hashed = rs.getString("mot_de_passe");
-            return BCrypt.checkpw(plainPassword, hashed);
+            return PasswordUtils.verifyPassword(plainPassword, hashed);
         }
         return false;
     }
@@ -178,7 +191,7 @@ public class UserCRUD implements InterfaceCRUD<User> {
 
                 String hashedPassword = rs.getString("mot_de_passe");
 
-                if (BCrypt.checkpw(plainPassword, hashedPassword)) {
+                if (PasswordUtils.verifyPassword(plainPassword, hashedPassword)) {
                     return mapResultSetToUser(rs);
                 }
             }

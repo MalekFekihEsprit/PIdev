@@ -17,6 +17,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import org.mindrot.jbcrypt.BCrypt;
+import Utils.PasswordUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -576,7 +577,7 @@ public class ProfileController {
                     showAlert(Alert.AlertType.ERROR, "Validation", "Les mots de passe ne correspondent pas.");
                     return;
                 }
-                String hashed = BCrypt.hashpw(newPassword, BCrypt.gensalt());
+                String hashed = PasswordUtils.hashPassword(newPassword);
                 currentUser.setMotDePasse(hashed);
             }
 

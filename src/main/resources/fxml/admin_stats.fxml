@@ -5,6 +5,7 @@
 <?import javafx.scene.chart.CategoryAxis?>
 <?import javafx.scene.chart.NumberAxis?>
 <?import javafx.scene.chart.PieChart?>
+<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.layout.BorderPane?>
@@ -19,7 +20,7 @@
 
 <BorderPane maxHeight="Infinity" maxWidth="Infinity" style="-fx-background-color: #0a0e27;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controllers.AdminStatsController">
 
-    <!-- TOP NAV - DARK MODE WITH ORANGE ACCENT -->
+    <!-- TOP NAV -->
     <top>
         <VBox>
             <HBox alignment="CENTER_LEFT" spacing="12" style="-fx-background-color: #111633; -fx-border-color: #1e2749; -fx-border-width: 0 0 1 0;">
@@ -33,28 +34,26 @@
 
                 <Region HBox.hgrow="ALWAYS" />
 
-                <!-- Notifications with badge -->
+                <!-- Notifications (placeholder) -->
                 <HBox alignment="CENTER" style="-fx-background-color: #1e2749; -fx-background-radius: 50%; -fx-min-width: 40; -fx-min-height: 40; -fx-cursor: hand;">
                     <SVGPath content="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z" fill="#94a3b8" scaleX="0.85" scaleY="0.85" />
                     <Circle fill="#ff8c42" radius="6" translateX="10" translateY="-10" />
                 </HBox>
 
-                <!-- User Profile - CLICKABLE with dynamic labels -->
+                <!-- User Profile -->
                 <HBox fx:id="userProfileBox" alignment="CENTER" minWidth="140" spacing="10" style="-fx-background-color: #1e2749; -fx-background-radius: 25; -fx-padding: 6 12 6 6; -fx-cursor: hand;">
                     <Circle fill="linear-gradient(from 0% 0% to 100% 100%, #ff8c42, #ff6b4a)" radius="16" />
                     <VBox spacing="0">
                         <Label fx:id="lblUserName" style="-fx-text-fill: #ffffff; -fx-font-weight: 600; -fx-font-size: 13;" text="Chargement..." />
                         <Label fx:id="lblUserRole" style="-fx-text-fill: #64748b; -fx-font-size: 10;" text="..." />
                     </VBox>
-                    <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 12; -fx-font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji';" text="▼" />
+                    <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 12;" text="▼" />
                 </HBox>
             </HBox>
         </VBox>
     </top>
 
-    <!-- SIDEBAR DASHBOARD - DARK MODE WITH ORANGE -->
-    <!-- SIDEBAR DASHBOARD - DARK MODE WITH ORANGE -->
-    <!-- SIDEBAR DASHBOARD - SVGPath icons, zero font dependency -->
+    <!-- SIDEBAR -->
     <left>
         <ScrollPane fitToHeight="true" fitToWidth="true" style="-fx-background: #111633; -fx-background-color: #111633; -fx-border-color: #1e2749; -fx-border-width: 0 1 0 0;">
             <VBox prefWidth="220" spacing="8" style="-fx-background-color: #111633;">
@@ -83,7 +82,7 @@
                         <Label style="-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;" text="Utilisateurs" />
                     </HBox>
 
-                    <!-- Statistiques - Active -->
+                    <!-- Statistiques (active) -->
                     <HBox fx:id="btnStats" alignment="CENTER_LEFT" spacing="12" style="-fx-background-color: linear-gradient(to right, #ff8c42, #ff6b4a); -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;">
                         <SVGPath content="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z" fill="white" scaleX="0.75" scaleY="0.75" />
                         <Region HBox.hgrow="ALWAYS" />
@@ -125,10 +124,9 @@
                         <SVGPath content="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm4.24 16L12 15.45 7.77 18l1.12-4.81-3.73-3.23 4.92-.42L12 5l1.92 4.53 4.92.42-3.73 3.23L16.23 18z" fill="#94a3b8" scaleX="0.75" scaleY="0.75" />
                         <Label style="-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;" text="Événements" />
                     </HBox>
-
                 </VBox>
 
-                <!-- DIVIDER -->
+                <!-- Divider and quick stats -->
                 <Region maxWidth="Infinity" minHeight="3" prefHeight="3" style="-fx-background-color: linear-gradient(to right, rgba(245,166,35,0.5), rgba(255,107,0,0.5), rgba(99,102,241,0.5));" />
 
                 <VBox spacing="12" style="-fx-background-color: #0a0e27; -fx-background-radius: 16; -fx-padding: 16; -fx-border-color: #1e2749; -fx-border-width: 1; -fx-border-radius: 16;">
@@ -153,19 +151,19 @@
         <HBox alignment="CENTER_LEFT" spacing="12" style="-fx-background-color: #111633; -fx-border-color: #1e2749; -fx-border-width: 1 0 0 0; -fx-padding: 10 28;">
             <Label style="-fx-text-fill: #ff8c42; -fx-font-size: 11; -fx-font-weight: 500" text="● Connecté" />
             <Region HBox.hgrow="ALWAYS" />
-            <Label fx:id="lblLastUpdate" style="-fx-text-fill: #64748b; -fx-font-size: 11" text="Dernière mise à jour: 12 Fév 2026, 15:30" />
+            <Label fx:id="lblLastUpdate" style="-fx-text-fill: #64748b; -fx-font-size: 11" text="Dernière mise à jour: ..." />
             <Label style="-fx-text-fill: #64748b; -fx-font-size: 11" text="©️ 2026 TravelMate" />
         </HBox>
     </bottom>
 
-    <!-- CENTER CONTENT -->
+    <!-- CENTER CONTENT with all charts and KPI -->
     <center>
         <ScrollPane fitToWidth="true" style="-fx-background: #0a0e27; -fx-border-color: transparent; -fx-background-color: transparent;">
             <content>
                 <VBox spacing="28">
                     <padding><Insets bottom="60" left="36" right="36" top="36" /></padding>
 
-                    <!-- HEADER SECTION -->
+                    <!-- HEADER -->
                     <VBox spacing="8">
                         <Label style="-fx-font-family: 'Clash Display'; -fx-font-size: 32; -fx-font-weight: bold; -fx-text-fill: #ffffff;" text="Statistiques des utilisateurs" />
                         <HBox spacing="8">
@@ -174,13 +172,12 @@
                         </HBox>
                     </VBox>
 
-                    <!-- KPI CARDS -->
-                    <HBox minHeight="100" spacing="16">
-                        <!-- Total Users Card -->
+                    <!-- KPI CARDS (Total, Admins, Users, Répartition) -->
+                    <HBox spacing="16">
                         <VBox spacing="16" style="-fx-background-color: linear-gradient(to bottom right, #1e2749, #111633); -fx-background-radius: 20; -fx-padding: 24; -fx-border-color: #ff8c42; -fx-border-width: 2; -fx-border-radius: 20;" HBox.hgrow="ALWAYS">
                             <HBox alignment="CENTER_LEFT" spacing="12">
                                 <VBox alignment="CENTER" style="-fx-background-color: rgba(255,140,66,0.15); -fx-background-radius: 14; -fx-min-width: 48; -fx-min-height: 48;">
-                                    <Label style="-fx-font-size: 24; -fx-font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji';" text="👥" />
+                                    <Label style="-fx-font-size: 24;" text="👥" />
                                 </VBox>
                                 <VBox spacing="4">
                                     <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 12; -fx-font-weight: 500;" text="TOTAL UTILISATEURS" />
@@ -189,68 +186,118 @@
                             </HBox>
                         </VBox>
 
-                        <!-- Admins Card -->
                         <VBox spacing="16" style="-fx-background-color: linear-gradient(to bottom right, #1e2749, #111633); -fx-background-radius: 20; -fx-padding: 24; -fx-border-color: #f87171; -fx-border-width: 1; -fx-border-radius: 20;" HBox.hgrow="ALWAYS">
                             <HBox alignment="CENTER_LEFT" spacing="12">
                                 <VBox alignment="CENTER" style="-fx-background-color: rgba(248,113,113,0.15); -fx-background-radius: 14; -fx-min-width: 48; -fx-min-height: 48;">
-                                    <Label style="-fx-font-size: 24; -fx-font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji';" text="👤" />
+                                    <Label style="-fx-font-size: 24;" text="👤" />
                                 </VBox>
                                 <VBox spacing="4">
                                     <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 12; -fx-font-weight: 500;" text="ADMINISTRATEURS" />
                                     <Label fx:id="adminsCard" style="-fx-font-family: 'Clash Display'; -fx-font-size: 28; -fx-font-weight: bold; -fx-text-fill: #f87171;" text="0" />
                                 </VBox>
                             </HBox>
-                            <Label style="-fx-background-color: rgba(248,113,113,0.15); -fx-text-fill: #f87171; -fx-background-radius: 20; -fx-padding: 6 14; -fx-font-weight: 600; -fx-font-size: 11" text="👥 Accès complet" />
                         </VBox>
 
-                        <!-- Users Card -->
                         <VBox spacing="16" style="-fx-background-color: linear-gradient(to bottom right, #1e2749, #111633); -fx-background-radius: 20; -fx-padding: 24; -fx-border-color: #34d399; -fx-border-width: 1; -fx-border-radius: 20;" HBox.hgrow="ALWAYS">
                             <HBox alignment="CENTER_LEFT" spacing="12">
                                 <VBox alignment="CENTER" style="-fx-background-color: rgba(52,211,153,0.15); -fx-background-radius: 14; -fx-min-width: 48; -fx-min-height: 48;">
-                                    <Label style="-fx-font-size: 24; -fx-font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji';" text="👤" />
+                                    <Label style="-fx-font-size: 24;" text="👤" />
                                 </VBox>
                                 <VBox spacing="4">
                                     <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 12; -fx-font-weight: 500;" text="UTILISATEURS" />
                                     <Label fx:id="usersCard" style="-fx-font-family: 'Clash Display'; -fx-font-size: 28; -fx-font-weight: bold; -fx-text-fill: #34d399;" text="0" />
                                 </VBox>
                             </HBox>
-                            <Label style="-fx-background-color: rgba(52,211,153,0.15); -fx-text-fill: #34d399; -fx-background-radius: 20; -fx-padding: 6 14; -fx-font-weight: 600; -fx-font-size: 11" text="✓ Utilisateurs standards" />
                         </VBox>
 
-                        <!-- Répartition Card -->
                         <VBox spacing="16" style="-fx-background-color: linear-gradient(to bottom right, #1e2749, #111633); -fx-background-radius: 20; -fx-padding: 24; -fx-border-color: #ff8c42; -fx-border-width: 1; -fx-border-radius: 20;" HBox.hgrow="ALWAYS">
                             <HBox alignment="CENTER_LEFT" spacing="12">
                                 <VBox alignment="CENTER" style="-fx-background-color: rgba(255,140,66,0.15); -fx-background-radius: 14; -fx-min-width: 48; -fx-min-height: 48;">
-                                    <Label style="-fx-font-size: 24; -fx-font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji';" text="📊" />
+                                    <Label style="-fx-font-size: 24;" text="📊" />
                                 </VBox>
                                 <VBox spacing="4">
                                     <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 12; -fx-font-weight: 500" text="RÉPARTITION" />
-                                    <Label style="-fx-font-size: 28; -fx-font-weight: bold; -fx-text-fill: #ff8c42; -fx-font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji';" text="⚖️" />
+                                    <Label style="-fx-font-size: 28; -fx-font-weight: bold; -fx-text-fill: #ff8c42;" text="⚖️" />
                                 </VBox>
                             </HBox>
                         </VBox>
                     </HBox>
 
-                    <!-- CHARTS SECTION -->
+                    <!-- FIRST ROW OF CHARTS (Roles & Verification) -->
                     <GridPane hgap="20" vgap="20">
                         <columnConstraints>
                             <ColumnConstraints percentWidth="50" />
                             <ColumnConstraints percentWidth="50" />
                         </columnConstraints>
-                        <rowConstraints>
-                            <RowConstraints />
-                        </rowConstraints>
+                        <rowConstraints><RowConstraints /></rowConstraints>
 
-                        <!-- Pie Chart - Répartition par rôle -->
                         <VBox spacing="16" style="-fx-background-color: #1e2749; -fx-background-radius: 24; -fx-padding: 28; -fx-border-color: #ff8c42; -fx-border-width: 1; -fx-border-radius: 24;" GridPane.columnIndex="0" GridPane.rowIndex="0">
-                            <Label style="-fx-font-size: 18; -fx-font-weight: 600; -fx-text-fill: white" text="Répartition par rôle" />
-                            <PieChart fx:id="rolePieChart" style="-fx-background-color: transparent; -fx-text-fill: white;"  prefHeight="220" prefWidth="260"/>
+                            <Label style="-fx-font-size: 18; -fx-font-weight: 600; -fx-text-fill: white" text="Répartition des rôles" />
+                            <PieChart fx:id="rolePieChart" style="-fx-background-color: transparent;" prefHeight="220" prefWidth="260"/>
                         </VBox>
 
-                        <!-- Bar Chart - Inscriptions par jour -->
                         <VBox spacing="16" style="-fx-background-color: #1e2749; -fx-background-radius: 24; -fx-padding: 28; -fx-border-color: #ff8c42; -fx-border-width: 1; -fx-border-radius: 24;" GridPane.columnIndex="1" GridPane.rowIndex="0">
-                            <Label style="-fx-font-size: 18; -fx-font-weight: 600; -fx-text-fill: white;" text="Inscriptions par jour" />
-                            <BarChart fx:id="inscriptionsBarChart" style="-fx-background-color: transparent;">
+                            <Label style="-fx-font-size: 18; -fx-font-weight: 600; -fx-text-fill: white" text="Vérification des comptes" />
+                            <PieChart fx:id="verificationPieChart" style="-fx-background-color: transparent;" prefHeight="220" prefWidth="260"/>
+                        </VBox>
+                    </GridPane>
+
+                    <!-- 7-DAY REGISTRATIONS WITH NAVIGATION BUTTONS -->
+                    <VBox spacing="16" style="-fx-background-color: #1e2749; -fx-background-radius: 24; -fx-padding: 28; -fx-border-color: #ff8c42; -fx-border-width: 1; -fx-border-radius: 24;">
+                        <HBox alignment="CENTER_LEFT" spacing="20">
+                            <Label style="-fx-font-size: 18; -fx-font-weight: 600; -fx-text-fill: white" text="Inscriptions sur 7 jours" />
+                            <Region HBox.hgrow="ALWAYS" />
+                            <Button text="← 7 jours avant" style="-fx-background-color: #2d3748; -fx-text-fill: white; -fx-background-radius: 20; -fx-padding: 6 12;" onAction="#goPrevWeek" />
+                            <Button text="7 jours après →" style="-fx-background-color: #2d3748; -fx-text-fill: white; -fx-background-radius: 20; -fx-padding: 6 12;" onAction="#goNextWeek" />
+                        </HBox>
+                        <BarChart fx:id="inscriptionsBarChart" style="-fx-background-color: transparent;" prefHeight="300" prefWidth="800">
+                            <xAxis><CategoryAxis side="BOTTOM" style="-fx-text-fill: white;" /></xAxis>
+                            <yAxis><NumberAxis side="LEFT" style="-fx-text-fill: white;" /></yAxis>
+                        </BarChart>
+                    </VBox>
+
+                    <!-- AGE STATS (KPI) -->
+                    <GridPane hgap="20" vgap="20">
+                        <columnConstraints>
+                            <ColumnConstraints percentWidth="33.33" />
+                            <ColumnConstraints percentWidth="33.33" />
+                            <ColumnConstraints percentWidth="33.33" />
+                        </columnConstraints>
+                        <rowConstraints><RowConstraints /></rowConstraints>
+
+                        <VBox spacing="12" style="-fx-background-color: #111633; -fx-background-radius: 20; -fx-padding: 20; -fx-alignment: center;" GridPane.columnIndex="0">
+                            <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 14;" text="Âge moyen" />
+                            <Label fx:id="averageAgeLabel" style="-fx-text-fill: #ff8c42; -fx-font-size: 28; -fx-font-weight: bold;" text="0" />
+                        </VBox>
+                        <VBox spacing="12" style="-fx-background-color: #111633; -fx-background-radius: 20; -fx-padding: 20; -fx-alignment: center;" GridPane.columnIndex="1">
+                            <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 14;" text="Plus jeune" />
+                            <Label fx:id="youngestAgeLabel" style="-fx-text-fill: #34d399; -fx-font-size: 28; -fx-font-weight: bold;" text="0" />
+                        </VBox>
+                        <VBox spacing="12" style="-fx-background-color: #111633; -fx-background-radius: 20; -fx-padding: 20; -fx-alignment: center;" GridPane.columnIndex="2">
+                            <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 14;" text="Plus âgé" />
+                            <Label fx:id="oldestAgeLabel" style="-fx-text-fill: #f87171; -fx-font-size: 28; -fx-font-weight: bold;" text="0" />
+                        </VBox>
+                    </GridPane>
+
+                    <!-- AGE DISTRIBUTION & BIRTH YEARS CHARTS -->
+                    <GridPane hgap="20" vgap="20">
+                        <columnConstraints>
+                            <ColumnConstraints percentWidth="50" />
+                            <ColumnConstraints percentWidth="50" />
+                        </columnConstraints>
+                        <rowConstraints><RowConstraints /></rowConstraints>
+
+                        <VBox spacing="16" style="-fx-background-color: #1e2749; -fx-background-radius: 24; -fx-padding: 28; -fx-border-color: #ff8c42; -fx-border-width: 1; -fx-border-radius: 24;" GridPane.columnIndex="0">
+                            <Label style="-fx-font-size: 18; -fx-font-weight: 600; -fx-text-fill: white" text="Répartition par tranche d'âge" />
+                            <BarChart fx:id="ageDistributionBarChart" style="-fx-background-color: transparent;" prefHeight="300" prefWidth="400">
+                                <xAxis><CategoryAxis side="BOTTOM" style="-fx-text-fill: white;" /></xAxis>
+                                <yAxis><NumberAxis side="LEFT" style="-fx-text-fill: white;" /></yAxis>
+                            </BarChart>
+                        </VBox>
+
+                        <VBox spacing="16" style="-fx-background-color: #1e2749; -fx-background-radius: 24; -fx-padding: 28; -fx-border-color: #ff8c42; -fx-border-width: 1; -fx-border-radius: 24;" GridPane.columnIndex="1">
+                            <Label style="-fx-font-size: 18; -fx-font-weight: 600; -fx-text-fill: white" text="Distribution par année de naissance" />
+                            <BarChart fx:id="birthYearsBarChart" style="-fx-background-color: transparent;" prefHeight="300" prefWidth="400">
                                 <xAxis><CategoryAxis side="BOTTOM" style="-fx-text-fill: white;" /></xAxis>
                                 <yAxis><NumberAxis side="LEFT" style="-fx-text-fill: white;" /></yAxis>
                             </BarChart>
