@@ -834,7 +834,7 @@ public class EVENTback implements Initializable {
             button.setStyle("-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;");
             button.lookupAll(".label").forEach(node -> {
                 if (node instanceof Label lbl && !lbl.getText().equals(icon) && !lbl.getText().matches("\\d+"))
-                    lbl.setStyle("-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;");
+                    lbl.setStyle("-fx-text-fill: #0f172a; -fx-font-weight: 500; -fx-font-size: 14;");
             });
         });
     }

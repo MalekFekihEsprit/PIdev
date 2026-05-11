@@ -15,7 +15,6 @@ import javafx.geometry.Insets;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -309,7 +308,7 @@ public class CATback implements Initializable {
                     if (lbl.getText().equals(icon)) {
                         lbl.setStyle("-fx-font-size: 16;");
                     } else if (!lbl.getText().matches("\\d+")) {
-                        lbl.setStyle("-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;");
+                        lbl.setStyle("-fx-text-fill: #0f172a; -fx-font-weight: 500; -fx-font-size: 14;");
                     }
                 }
             });

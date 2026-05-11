@@ -11,7 +11,7 @@
     -fx-font-weight: 700;
 }
 .chart-pie-label-line {
-    -fx-stroke: #94a3b8;
+    -fx-stroke: #0f172a;
     -fx-stroke-width: 1.2;
 }
 .chart-legend {
@@ -48,7 +48,7 @@
     -fx-size: 40;
 }
 .table-view .column-header .label {
-    -fx-text-fill: #94a3b8;
+    -fx-text-fill: #0f172a;
     -fx-font-weight: 700;
     -fx-font-size: 12px;
     -fx-padding: 0 8;
@@ -101,7 +101,7 @@
 /* ──────── TOGGLE BUTTON ──────── */
 .toggle-button {
     -fx-background-color: #e2e8f0;
-    -fx-text-fill: #94a3b8;
+    -fx-text-fill: #0f172a;
     -fx-background-radius: 8;
     -fx-cursor: hand;
 }

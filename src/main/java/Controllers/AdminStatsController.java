@@ -301,7 +301,7 @@ public class AdminStatsController {
                     if (icon.equals(label.getText())) {
                         label.setStyle("-fx-font-size: 16;");
                     } else {
-                        label.setStyle("-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;");
+                        label.setStyle("-fx-text-fill: #0f172a; -fx-font-weight: 500; -fx-font-size: 14;");
                     }
                 }
             });

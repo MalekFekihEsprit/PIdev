@@ -23,7 +23,7 @@
             <HBox spacing="12">
                 <HBox alignment="CENTER_LEFT" spacing="4">
                     <Label style="-fx-font-size: 10;" text="📍" />
-                    <Label fx:id="destLabel" style="-fx-text-fill: #64748b; -fx-font-size: 11;" />
+                    <Label fx:id="destLabel" style="-fx-text-fill: #0f172a; -fx-font-size: 11;" />
                 </HBox>
             </HBox>
         </VBox>
@@ -64,7 +64,7 @@
         <!-- Conteneur principal pour les jours -->
         <VBox fx:id="joursContainer" spacing="10">
             <!-- Message si pas de jours -->
-            <Label fx:id="pasJoursLabel" style="-fx-text-fill: #94a3b8; -fx-font-size: 10; -fx-font-style: italic;" text="Dates non définies" />
+            <Label fx:id="pasJoursLabel" style="-fx-text-fill: #0f172a; -fx-font-size: 10; -fx-font-style: italic;" text="Dates non définies" />
         </VBox>
     </VBox>
 </VBox>

@@ -27,7 +27,7 @@
 }
 
 .scroll-bar .thumb:hover {
-    -fx-background-color: #94a3b8;
+    -fx-background-color: #0f172a;
 }
 
 .scroll-bar .increment-button,
@@ -62,7 +62,7 @@
 .date-picker {
     -fx-background-color: #ffffff;
     -fx-text-fill: #0f172a;
-    -fx-prompt-text-fill: #94a3b8;
+    -fx-prompt-text-fill: #0f172a;
     -fx-border-color: #e2e8f0;
     -fx-border-radius: 10;
     -fx-background-radius: 10;
@@ -82,7 +82,7 @@
 
 .label-secondary,
 .text-muted {
-    -fx-text-fill: #64748b;
+    -fx-text-fill: #0f172a;
 }
 
 .text-orange {
@@ -98,7 +98,7 @@
 }
 
 .text-dim {
-    -fx-text-fill: #94a3b8;
+    -fx-text-fill: #0f172a;
 }
 
 .card-shadow {

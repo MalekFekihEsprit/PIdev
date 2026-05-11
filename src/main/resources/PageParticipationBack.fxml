@@ -45,20 +45,20 @@
                     <Circle fill="linear-gradient(from 0% 0% to 100% 100%, #ff8c42, #ff6b4a)" radius="16" />
                     <VBox spacing="0">
                         <Label style="-fx-text-fill: #0f172a; -fx-font-weight: 600; -fx-font-size: 13;" text="Admin" />
-                        <Label style="-fx-text-fill: #64748b; -fx-font-size: 10;" text="Administrateur" />
+                        <Label style="-fx-text-fill: #0f172a; -fx-font-size: 10;" text="Administrateur" />
                     </VBox>
-                    <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 12;" text="▼" />
+                    <Label style="-fx-text-fill: #0f172a; -fx-font-size: 12;" text="▼" />
                 </HBox>
             </HBox>
 
             <!-- Secondary Navigation - Quick Filters -->
             <HBox alignment="CENTER_LEFT" spacing="16" style="-fx-background-color: #f8fafc; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0; -fx-padding: 8 32;">
                 <HBox alignment="CENTER" spacing="8">
-                    <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 12; -fx-font-weight: 500;" text="FILTRES RAPIDES :" />
-                    <Label style="-fx-background-color: #e2e8f0; -fx-text-fill: #94a3b8; -fx-background-radius: 16; -fx-padding: 4 12; -fx-font-size: 11; -fx-cursor: hand;" text="Tous" />
+                    <Label style="-fx-text-fill: #0f172a; -fx-font-size: 12; -fx-font-weight: 500;" text="FILTRES RAPIDES :" />
+                    <Label style="-fx-background-color: #e2e8f0; -fx-text-fill: #0f172a; -fx-background-radius: 16; -fx-padding: 4 12; -fx-font-size: 11; -fx-cursor: hand;" text="Tous" />
                     <Label style="-fx-background-color: rgba(255,140,66,0.15); -fx-text-fill: #ff8c42; -fx-background-radius: 16; -fx-padding: 4 12; -fx-font-size: 11; -fx-cursor: hand;" text="VIP" />
-                    <Label style="-fx-background-color: #e2e8f0; -fx-text-fill: #94a3b8; -fx-background-radius: 16; -fx-padding: 4 12; -fx-font-size: 11; -fx-cursor: hand;" text="Organisateur" />
-                    <Label style="-fx-background-color: #e2e8f0; -fx-text-fill: #94a3b8; -fx-background-radius: 16; -fx-padding: 4 12; -fx-font-size: 11; -fx-cursor: hand;" text="Participant" />
+                    <Label style="-fx-background-color: #e2e8f0; -fx-text-fill: #0f172a; -fx-background-radius: 16; -fx-padding: 4 12; -fx-font-size: 11; -fx-cursor: hand;" text="Organisateur" />
+                    <Label style="-fx-background-color: #e2e8f0; -fx-text-fill: #0f172a; -fx-background-radius: 16; -fx-padding: 4 12; -fx-font-size: 11; -fx-cursor: hand;" text="Participant" />
                 </HBox>
                 <Region HBox.hgrow="ALWAYS" />
             </HBox>
@@ -71,7 +71,7 @@
             <VBox prefWidth="220" spacing="8" style="-fx-background-color: #ffffff;">
                 <padding><Insets bottom="24" left="20" right="20" top="24" /></padding>
 
-                <Label style="-fx-font-family: 'Clash Display'; -fx-font-size: 13; -fx-font-weight: 700; -fx-text-fill: #64748b; -fx-letter-spacing: 1.5;" text="DASHBOARD" />
+                <Label style="-fx-font-family: 'Clash Display'; -fx-font-size: 13; -fx-font-weight: 700; -fx-text-fill: #0f172a; -fx-letter-spacing: 1.5;" text="DASHBOARD" />
 
                 <VBox spacing="4">
                     <padding><Insets top="16" /></padding>
@@ -79,61 +79,61 @@
                     <!-- Destinations -->
                     <HBox fx:id="btnDestinations" alignment="CENTER_LEFT" spacing="12" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;">
                         <Label style="-fx-font-size: 16;" text="🌍" />
-                        <Label style="-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;" text="Destinations" />
+                        <Label style="-fx-text-fill: #0f172a; -fx-font-weight: 500; -fx-font-size: 14;" text="Destinations" />
                     </HBox>
 
                     <!-- Hébergement -->
                     <HBox fx:id="btnHebergement" alignment="CENTER_LEFT" spacing="12" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;">
                         <Label style="-fx-font-size: 16;" text="🏨" />
-                        <Label style="-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;" text="Hébergement" />
+                        <Label style="-fx-text-fill: #0f172a; -fx-font-weight: 500; -fx-font-size: 14;" text="Hébergement" />
                     </HBox>
 
                     <!-- Utilisateurs -->
                     <HBox fx:id="btnUsers" alignment="CENTER_LEFT" spacing="12" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;">
                         <Label style="-fx-font-size: 16;" text="👥" />
-                        <Label style="-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;" text="Utilisateurs" />
+                        <Label style="-fx-text-fill: #0f172a; -fx-font-weight: 500; -fx-font-size: 14;" text="Utilisateurs" />
                     </HBox>
 
                     <!-- Statistiques -->
                     <HBox fx:id="btnStats" alignment="CENTER_LEFT" spacing="12" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;">
                         <Label style="-fx-font-size: 16;" text="📊" />
-                        <Label style="-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;" text="Statistiques" />
+                        <Label style="-fx-text-fill: #0f172a; -fx-font-weight: 500; -fx-font-size: 14;" text="Statistiques" />
                     </HBox>
 
                     <!-- Itinéraires -->
                     <HBox fx:id="btnItineraires" alignment="CENTER_LEFT" spacing="12" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;">
                         <Label style="-fx-font-size: 16;" text="🗺️" />
-                        <Label style="-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;" text="Itinéraires" />
+                        <Label style="-fx-text-fill: #0f172a; -fx-font-weight: 500; -fx-font-size: 14;" text="Itinéraires" />
                     </HBox>
 
                     <!-- Catégories -->
                     <HBox fx:id="btnCategories" alignment="CENTER_LEFT" spacing="12" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;">
                         <Label style="-fx-font-size: 16;" text="📑" />
-                        <Label style="-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;" text="Catégories" />
+                        <Label style="-fx-text-fill: #0f172a; -fx-font-weight: 500; -fx-font-size: 14;" text="Catégories" />
                     </HBox>
 
                     <!-- Activités -->
                     <HBox fx:id="btnActivites" alignment="CENTER_LEFT" spacing="12" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;">
                         <Label style="-fx-font-size: 16;" text="🏄" />
-                        <Label style="-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;" text="Activités" />
+                        <Label style="-fx-text-fill: #0f172a; -fx-font-weight: 500; -fx-font-size: 14;" text="Activités" />
                     </HBox>
 
                     <!-- Voyages -->
                     <HBox fx:id="btnVoyages" alignment="CENTER_LEFT" spacing="12" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;" onMouseClicked="#retourVoyages">
                         <Label style="-fx-font-size: 16;" text="✈️" />
-                        <Label style="-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;" text="Voyages" />
+                        <Label style="-fx-text-fill: #0f172a; -fx-font-weight: 500; -fx-font-size: 14;" text="Voyages" />
                     </HBox>
 
                     <!-- Budgets -->
                     <HBox fx:id="btnBudgets" alignment="CENTER_LEFT" spacing="12" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;">
                         <Label style="-fx-font-size: 16;" text="💰" />
-                        <Label style="-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;" text="Budgets" />
+                        <Label style="-fx-text-fill: #0f172a; -fx-font-weight: 500; -fx-font-size: 14;" text="Budgets" />
                     </HBox>
 
                     <!-- Événements -->
                     <HBox fx:id="btnEvenements" alignment="CENTER_LEFT" spacing="12" style="-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;">
                         <Label style="-fx-font-size: 16;" text="🎉" />
-                        <Label style="-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;" text="Événements" />
+                        <Label style="-fx-text-fill: #0f172a; -fx-font-weight: 500; -fx-font-size: 14;" text="Événements" />
                     </HBox>
 
                     <!-- Participants - Active -->
@@ -150,15 +150,15 @@
 
                 <!-- STATS RAPIDES -->
                 <VBox spacing="12" style="-fx-background-color: #f8fafc; -fx-background-radius: 16; -fx-padding: 16; -fx-border-color: #e2e8f0; -fx-border-width: 1; -fx-border-radius: 16;">
-                    <Label style="-fx-font-weight: 600; -fx-text-fill: #64748b; -fx-font-size: 11; -fx-letter-spacing: 1;" text="STATISTIQUES GLOBALES" />
+                    <Label style="-fx-font-weight: 600; -fx-text-fill: #0f172a; -fx-font-size: 11; -fx-letter-spacing: 1;" text="STATISTIQUES GLOBALES" />
                     <GridPane hgap="10" vgap="10">
-                        <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 12;" text="Total participants:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                        <Label style="-fx-text-fill: #0f172a; -fx-font-size: 12;" text="Total participants:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
                         <Label fx:id="statsTotalParticipants" style="-fx-font-weight: bold; -fx-text-fill: #ff8c42; -fx-font-size: 12;" text="0" GridPane.columnIndex="1" GridPane.rowIndex="0" />
-                        <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 12;" text="VIP:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                        <Label style="-fx-text-fill: #0f172a; -fx-font-size: 12;" text="VIP:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
                         <Label fx:id="statsVIPCount" style="-fx-font-weight: bold; -fx-text-fill: #f87171; -fx-font-size: 12;" text="0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                        <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 12;" text="Organisateurs:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                        <Label style="-fx-text-fill: #0f172a; -fx-font-size: 12;" text="Organisateurs:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
                         <Label fx:id="statsOrganisateursCount" style="-fx-font-weight: bold; -fx-text-fill: #34d399; -fx-font-size: 12;" text="0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                        <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 12;" text="Participants:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                        <Label style="-fx-text-fill: #0f172a; -fx-font-size: 12;" text="Participants:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
                         <Label fx:id="statsParticipantsCount" style="-fx-font-weight: bold; -fx-text-fill: #60a5fa; -fx-font-size: 12;" text="0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
                         <columnConstraints>
                             <ColumnConstraints />
@@ -176,8 +176,8 @@
         <HBox alignment="CENTER_LEFT" spacing="12" style="-fx-background-color: #ffffff; -fx-border-color: #e2e8f0; -fx-border-width: 1 0 0 0; -fx-padding: 10 28;">
             <Label style="-fx-text-fill: #ff8c42; -fx-font-size: 11; -fx-font-weight: 500;" text="● Connecté" />
             <Region HBox.hgrow="ALWAYS" />
-            <Label fx:id="lblLastUpdate" style="-fx-text-fill: #64748b; -fx-font-size: 11;" text="Dernière mise à jour: 12 Fév 2026, 15:30" />
-            <Label style="-fx-text-fill: #64748b; -fx-font-size: 11;" text="©️ 2026 TravelMate" />
+            <Label fx:id="lblLastUpdate" style="-fx-text-fill: #0f172a; -fx-font-size: 11;" text="Dernière mise à jour: 12 Fév 2026, 15:30" />
+            <Label style="-fx-text-fill: #0f172a; -fx-font-size: 11;" text="©️ 2026 TravelMate" />
         </HBox>
     </bottom>
 
@@ -191,7 +191,7 @@
                     <VBox spacing="8">
                         <Label style="-fx-font-family: 'Clash Display'; -fx-font-size: 32; -fx-font-weight: bold; -fx-text-fill: #0f172a;" text="Gestion des Participants" />
                         <HBox spacing="8">
-                            <Label style="-fx-text-fill: #64748b; -fx-font-size: 14;" text="Administration des inscriptions aux voyages" />
+                            <Label style="-fx-text-fill: #0f172a; -fx-font-size: 14;" text="Administration des inscriptions aux voyages" />
                             <Label style="-fx-background-color: rgba(255,140,66,0.15); -fx-text-fill: #ff8c42; -fx-background-radius: 16; -fx-padding: 2 12; -fx-font-size: 12; -fx-font-weight: 600;" text="● Mode administration" />
                         </HBox>
                     </VBox>
@@ -207,12 +207,12 @@
                                 <Label fx:id="lblTitreVoyage" style="-fx-font-family: 'Clash Display'; -fx-font-size: 18; -fx-font-weight: bold; -fx-text-fill: #ff8c42;" />
                                 <HBox spacing="20">
                                     <HBox spacing="8" alignment="CENTER_LEFT">
-                                        <Label text="📍" style="-fx-font-size: 12; -fx-text-fill: #94a3b8;" />
-                                        <Label fx:id="lblDestinationVoyage" style="-fx-text-fill: #94a3b8; -fx-font-size: 12;" />
+                                        <Label text="📍" style="-fx-font-size: 12; -fx-text-fill: #0f172a;" />
+                                        <Label fx:id="lblDestinationVoyage" style="-fx-text-fill: #0f172a; -fx-font-size: 12;" />
                                     </HBox>
                                     <HBox spacing="8" alignment="CENTER_LEFT">
-                                        <Label text="📅" style="-fx-font-size: 12; -fx-text-fill: #94a3b8;" />
-                                        <Label fx:id="lblDatesVoyage" style="-fx-text-fill: #94a3b8; -fx-font-size: 12;" />
+                                        <Label text="📅" style="-fx-font-size: 12; -fx-text-fill: #0f172a;" />
+                                        <Label fx:id="lblDatesVoyage" style="-fx-text-fill: #0f172a; -fx-font-size: 12;" />
                                     </HBox>
                                 </HBox>
                             </VBox>
@@ -230,7 +230,7 @@
                                     <Label style="-fx-font-size: 24;" text="👑" />
                                 </VBox>
                                 <VBox spacing="4">
-                                    <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 12; -fx-font-weight: 500;" text="VIP" />
+                                    <Label style="-fx-text-fill: #0f172a; -fx-font-size: 12; -fx-font-weight: 500;" text="VIP" />
                                     <Label fx:id="lblCountVIP" style="-fx-font-family: 'Clash Display'; -fx-font-size: 28; -fx-font-weight: bold; -fx-text-fill: #0f172a;" text="0" />
                                     <Label fx:id="lblPourcentVIP" style="-fx-text-fill: #ff8c42; -fx-font-size: 11;" text="(0%)" />
                                 </VBox>
@@ -244,7 +244,7 @@
                                     <Label style="-fx-font-size: 24;" text="🎯" />
                                 </VBox>
                                 <VBox spacing="4">
-                                    <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 12; -fx-font-weight: 500;" text="ORGANISATEURS" />
+                                    <Label style="-fx-text-fill: #0f172a; -fx-font-size: 12; -fx-font-weight: 500;" text="ORGANISATEURS" />
                                     <Label fx:id="lblCountOrganisateur" style="-fx-font-family: 'Clash Display'; -fx-font-size: 28; -fx-font-weight: bold; -fx-text-fill: #10b981;" text="0" />
                                     <Label fx:id="lblPourcentOrganisateur" style="-fx-text-fill: #10b981; -fx-font-size: 11;" text="(0%)" />
                                 </VBox>
@@ -258,7 +258,7 @@
                                     <Label style="-fx-font-size: 24;" text="👥" />
                                 </VBox>
                                 <VBox spacing="4">
-                                    <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 12; -fx-font-weight: 500;" text="PARTICIPANTS" />
+                                    <Label style="-fx-text-fill: #0f172a; -fx-font-size: 12; -fx-font-weight: 500;" text="PARTICIPANTS" />
                                     <Label fx:id="lblCountParticipant" style="-fx-font-family: 'Clash Display'; -fx-font-size: 28; -fx-font-weight: bold; -fx-text-fill: #3b82f6;" text="0" />
                                     <Label fx:id="lblPourcentParticipant" style="-fx-text-fill: #3b82f6; -fx-font-size: 11;" text="(0%)" />
                                 </VBox>
@@ -272,7 +272,7 @@
                                     <Label style="-fx-font-size: 24;" text="🧭" />
                                 </VBox>
                                 <VBox spacing="4">
-                                    <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 12; -fx-font-weight: 500;" text="GUIDES" />
+                                    <Label style="-fx-text-fill: #0f172a; -fx-font-size: 12; -fx-font-weight: 500;" text="GUIDES" />
                                     <Label fx:id="lblCountGuide" style="-fx-font-family: 'Clash Display'; -fx-font-size: 28; -fx-font-weight: bold; -fx-text-fill: #ec4899;" text="0" />
                                     <Label fx:id="lblPourcentGuide" style="-fx-text-fill: #ec4899; -fx-font-size: 11;" text="(0%)" />
                                 </VBox>
@@ -286,7 +286,7 @@
                                     <Label style="-fx-font-size: 24;" text="🚌" />
                                 </VBox>
                                 <VBox spacing="4">
-                                    <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 12; -fx-font-weight: 500;" text="CHAUFFEURS" />
+                                    <Label style="-fx-text-fill: #0f172a; -fx-font-size: 12; -fx-font-weight: 500;" text="CHAUFFEURS" />
                                     <Label fx:id="lblCountChauffeur" style="-fx-font-family: 'Clash Display'; -fx-font-size: 28; -fx-font-weight: bold; -fx-text-fill: #a855f7;" text="0" />
                                     <Label fx:id="lblPourcentChauffeur" style="-fx-text-fill: #a855f7; -fx-font-size: 11;" text="(0%)" />
                                 </VBox>
@@ -301,7 +301,7 @@
                                 <Label style="-fx-font-size: 24;" text="📊" />
                             </VBox>
                             <VBox alignment="CENTER" spacing="4">
-                                <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 12; -fx-font-weight: 500;" text="TOTAL PARTICIPANTS" />
+                                <Label style="-fx-text-fill: #0f172a; -fx-font-size: 12; -fx-font-weight: 500;" text="TOTAL PARTICIPANTS" />
                                 <Label fx:id="lblTotalParticipants" style="-fx-font-family: 'Clash Display'; -fx-font-size: 32; -fx-font-weight: bold; -fx-text-fill: #0f172a;" text="0" />
                             </VBox>
                         </HBox>
@@ -319,12 +319,12 @@
                             </columnConstraints>
 
                             <VBox spacing="8" GridPane.columnIndex="0">
-                                <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 12;" text="Email" />
+                                <Label style="-fx-text-fill: #0f172a; -fx-font-size: 12;" text="Email" />
                                 <TextField fx:id="tfEmail" promptText="email@exemple.com" style="-fx-background-color: #f8fafc; -fx-text-fill: #0f172a; -fx-background-radius: 8; -fx-padding: 10;" />
                             </VBox>
 
                             <VBox spacing="8" GridPane.columnIndex="1">
-                                <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 12;" text="Rôle" />
+                                <Label style="-fx-text-fill: #0f172a; -fx-font-size: 12;" text="Rôle" />
                                 <ComboBox fx:id="cbRole" promptText="Sélectionner un rôle" style="-fx-background-color: #f8fafc; -fx-text-fill: #0f172a; -fx-background-radius: 8;" />
                             </VBox>
 
@@ -347,21 +347,21 @@
                             </columnConstraints>
 
                             <!-- Recherche par ID participation -->
-                            <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 12;" text="ID Participation:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                            <Label style="-fx-text-fill: #0f172a; -fx-font-size: 12;" text="ID Participation:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
                             <TextField fx:id="tfSearchIdParticipation" promptText="ID exact" style="-fx-background-color: #f8fafc; -fx-text-fill: #0f172a; -fx-background-radius: 8; -fx-padding: 10;" GridPane.columnIndex="1" GridPane.rowIndex="0" />
 
                             <!-- Recherche par rôle -->
-                            <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 12;" text="Rôle:" GridPane.columnIndex="2" GridPane.rowIndex="0" />
+                            <Label style="-fx-text-fill: #0f172a; -fx-font-size: 12;" text="Rôle:" GridPane.columnIndex="2" GridPane.rowIndex="0" />
                             <ComboBox fx:id="cbSearchRole" style="-fx-background-color: #f8fafc; -fx-text-fill: #0f172a; -fx-background-radius: 8;" GridPane.columnIndex="3" GridPane.rowIndex="0" />
 
                             <!-- Recherche par email -->
-                            <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 12;" text="Email:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                            <Label style="-fx-text-fill: #0f172a; -fx-font-size: 12;" text="Email:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
                             <TextField fx:id="tfSearchEmail" promptText="Rechercher par email..." style="-fx-background-color: #f8fafc; -fx-text-fill: #0f172a; -fx-background-radius: 8; -fx-padding: 10;" GridPane.columnIndex="1" GridPane.rowIndex="1" />
 
                             <!-- Boutons de recherche -->
                             <HBox spacing="8" alignment="CENTER_LEFT" GridPane.columnIndex="2" GridPane.columnSpan="2" GridPane.rowIndex="1">
                                 <Button fx:id="btnSearchParticipation" style="-fx-background-color: #ff8c42; -fx-text-fill: #0f172a; -fx-font-weight: 600; -fx-font-size: 13; -fx-padding: 10 16; -fx-background-radius: 8; -fx-cursor: hand;" text="🔍 Rechercher" />
-                                <Button fx:id="btnResetParticipation" style="-fx-background-color: #64748b; -fx-text-fill: #0f172a; -fx-font-weight: 600; -fx-font-size: 13; -fx-padding: 10 16; -fx-background-radius: 8; -fx-cursor: hand;" text="🔄 Réinitialiser" />
+                                <Button fx:id="btnResetParticipation" style="-fx-background-color: #0f172a; -fx-text-fill: #0f172a; -fx-font-weight: 600; -fx-font-size: 13; -fx-padding: 10 16; -fx-background-radius: 8; -fx-cursor: hand;" text="🔄 Réinitialiser" />
                             </HBox>
                         </GridPane>
                     </VBox>
@@ -387,7 +387,7 @@
                             <placeholder>
                                 <VBox alignment="CENTER" spacing="12">
                                     <Label style="-fx-font-size: 32;" text="👥" />
-                                    <Label style="-fx-text-fill: #64748b; -fx-font-size: 14;" text="Aucun participant pour ce voyage" />
+                                    <Label style="-fx-text-fill: #0f172a; -fx-font-size: 14;" text="Aucun participant pour ce voyage" />
                                 </VBox>
                             </placeholder>
                         </TableView>

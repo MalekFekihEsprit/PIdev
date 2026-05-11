@@ -253,7 +253,7 @@ public class AdminUsersController {
                     Label lbl = (Label) label;
                     if (lbl.getText().equals(icon)) {
                         lbl.setStyle("-fx-font-size: 16;");
-                    } else {
+                        label.setStyle("-fx-text-fill: #0f172a; -fx-font-weight: 500; -fx-font-size: 14;");
                         lbl.setStyle("-fx-text-fill: #ff8c42; -fx-font-weight: 600; -fx-font-size: 14;");
                     }
                 }
@@ -268,7 +268,7 @@ public class AdminUsersController {
                     if (lbl.getText().equals(icon)) {
                         lbl.setStyle("-fx-font-size: 16;");
                     } else {
-                        lbl.setStyle("-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;");
+                        lbl.setStyle("-fx-text-fill: #0f172a; -fx-font-weight: 500; -fx-font-size: 14;");
                     }
                 }
             });

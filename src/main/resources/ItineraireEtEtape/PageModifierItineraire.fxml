@@ -85,9 +85,9 @@
                     <Circle fill="linear-gradient(from 0% 0% to 100% 100%, #ff8c42, #ff6b4a)" radius="15" />
                     <VBox spacing="0">
                         <Label fx:id="lblUserName" style="-fx-text-fill: #0f172a; -fx-font-weight: 600; -fx-font-size: 11;" text="Chargement..." />
-                        <Label fx:id="lblUserRole" style="-fx-text-fill: #94a3b8; -fx-font-size: 9;" text="Utilisateur" />
+                        <Label fx:id="lblUserRole" style="-fx-text-fill: #0f172a; -fx-font-size: 9;" text="Utilisateur" />
                     </VBox>
-                    <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 8;" text="▼" />
+                    <Label style="-fx-text-fill: #0f172a; -fx-font-size: 8;" text="▼" />
                 </HBox>
             </HBox>
 
@@ -102,7 +102,7 @@
                     </tooltip>
                 </Button>
 
-                <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 11;" text="🏠 Accueil" />
+                <Label style="-fx-text-fill: #0f172a; -fx-font-size: 11;" text="🏠 Accueil" />
                 <Label style="-fx-text-fill: #cbd5e1; -fx-font-size: 11;" text="›" />
                 <Label style="-fx-text-fill: #ff8c42; -fx-font-size: 11; -fx-font-weight: 700;" text="✈️ Voyages" />
                 <Label style="-fx-text-fill: #cbd5e1; -fx-font-size: 11;" text="›" />
@@ -132,7 +132,7 @@
 
                 <VBox spacing="6">
                     <Label style="-fx-font-family: 'Clash Display'; -fx-font-size: 28; -fx-font-weight: bold; -fx-text-fill: #0f172a;" text="Modifier itinéraire" />
-                    <Label style="-fx-text-fill: #64748b; -fx-font-size: 12;" text="Modifiez les informations de l'itinéraire" />
+                    <Label style="-fx-text-fill: #0f172a; -fx-font-size: 12;" text="Modifiez les informations de l'itinéraire" />
                 </VBox>
             </HBox>
 
@@ -156,7 +156,7 @@
                 <VBox spacing="8">
                     <Label style="-fx-font-weight: 600; -fx-text-fill: #0f172a; -fx-font-size: 13;" text="Voyage associé *" />
                     <ComboBox fx:id="voyageCombo" promptText="Sélectionner un voyage" style="-fx-background-color: #f8fafc; -fx-border-color: #e2e8f0; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 4;" HBox.hgrow="ALWAYS" />
-                    <Label style="-fx-text-fill: #64748b; -fx-font-size: 10;" text="Choisissez le voyage auquel cet itinéraire appartient" />
+                    <Label style="-fx-text-fill: #0f172a; -fx-font-size: 10;" text="Choisissez le voyage auquel cet itinéraire appartient" />
                 </VBox>
 
                 <!-- Message d'erreur -->

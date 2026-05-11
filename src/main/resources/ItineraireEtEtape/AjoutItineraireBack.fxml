@@ -27,7 +27,7 @@
 
                 <VBox spacing="6">
                     <Label style="-fx-font-family: 'Clash Display'; -fx-font-size: 28; -fx-font-weight: bold; -fx-text-fill: #0f172a;" text="Nouvel itinéraire" />
-                    <Label style="-fx-text-fill: #64748b; -fx-font-size: 12;" text="Créez un nouvel itinéraire de voyage" />
+                    <Label style="-fx-text-fill: #0f172a; -fx-font-size: 12;" text="Créez un nouvel itinéraire de voyage" />
                 </VBox>
             </HBox>
 
@@ -51,7 +51,7 @@
                 <VBox spacing="8">
                     <Label style="-fx-font-weight: 600; -fx-text-fill: #0f172a; -fx-font-size: 13;" text="Voyage associé *" />
                     <ComboBox fx:id="voyageCombo" promptText="Sélectionner un voyage" style="-fx-background-color: #f8fafc; -fx-border-color: #e2e8f0; -fx-border-radius: 10; -fx-background-radius: 10; -fx-padding: 4;" HBox.hgrow="ALWAYS" />
-                    <Label style="-fx-text-fill: #64748b; -fx-font-size: 10;" text="Choisissez le voyage auquel cet itinéraire appartient" />
+                    <Label style="-fx-text-fill: #0f172a; -fx-font-size: 10;" text="Choisissez le voyage auquel cet itinéraire appartient" />
                 </VBox>
 
                 <!-- Message d'erreur -->

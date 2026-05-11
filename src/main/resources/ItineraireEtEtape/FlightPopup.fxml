@@ -33,7 +33,7 @@
                     <!-- Info destination -->
                     <VBox spacing="5" style="-fx-background-color: #fff7ed; -fx-background-radius: 10; -fx-padding: 15;">
                         <Label fx:id="destinationLabel" style="-fx-font-weight: 600; -fx-text-fill: #ff8c42; -fx-font-size: 16;" text="Destination: Zaghouan" />
-                        <Label fx:id="dateLabel" style="-fx-text-fill: #64748b; -fx-font-size: 13;" text="Date: 27/02/2026" />
+                        <Label fx:id="dateLabel" style="-fx-text-fill: #0f172a; -fx-font-size: 13;" text="Date: 27/02/2026" />
                     </VBox>
 
                     <!-- Loading indicator -->
@@ -43,7 +43,7 @@
                     <Label fx:id="errorLabel" style="-fx-background-color: #fee2e2; -fx-text-fill: #ef4444; -fx-padding: 12; -fx-background-radius: 8;" wrapText="true" visible="false" managed="false" />
 
                     <!-- No flights message -->
-                    <Label fx:id="noFlightsLabel" style="-fx-text-fill: #64748b; -fx-font-size: 15; -fx-padding: 30;" text="Aucun vol trouvé pour cette destination" visible="false" managed="false" />
+                    <Label fx:id="noFlightsLabel" style="-fx-text-fill: #0f172a; -fx-font-size: 15; -fx-padding: 30;" text="Aucun vol trouvé pour cette destination" visible="false" managed="false" />
 
                     <!-- Flights container -->
                     <VBox fx:id="flightsContainer" spacing="12" />

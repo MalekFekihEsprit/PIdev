@@ -21,7 +21,6 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.scene.shape.Rectangle;
-import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -202,6 +201,8 @@ public class BudgetBackController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         setupUserProfile();
+        configureComboBoxAppearance(cmbVoyageSelector);
+        configureComboBoxAppearance(cmbFiltreCategorie);
         loadVoyages();
         setupTables();
         setupFiltersAndSorts();
@@ -225,9 +226,9 @@ public class BudgetBackController implements Initializable {
         if (userProfileBox != null) {
             userProfileBox.setOnMouseClicked(event -> navigateToProfile());
             userProfileBox.setOnMouseEntered(event ->
-                    userProfileBox.setStyle("-fx-background-color: #1e2749; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand;"));
+                userProfileBox.setStyle("-fx-background-color: #dbe2ea; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand;"));
             userProfileBox.setOnMouseExited(event ->
-                    userProfileBox.setStyle("-fx-background-color: #1e2749; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand;"));
+                userProfileBox.setStyle("-fx-background-color: #e2e8f0; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand;"));
         }
     }
 
@@ -311,6 +312,30 @@ public class BudgetBackController implements Initializable {
             e.printStackTrace();
             showAlert("Erreur", "Impossible de charger les voyages");
         }
+    }
+
+    private void configureComboBoxAppearance(ComboBox<String> comboBox) {
+        if (comboBox == null) {
+            return;
+        }
+
+        comboBox.setButtonCell(new ListCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? comboBox.getPromptText() : item);
+                setStyle("-fx-text-fill: #0f172a; -fx-background-color: transparent;");
+            }
+        });
+
+        comboBox.setCellFactory(listView -> new ListCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? null : item);
+                setStyle("-fx-text-fill: #0f172a; -fx-background-color: transparent;");
+            }
+        });
     }
 
     // ══════════════════════════════════════════════════
@@ -633,6 +658,18 @@ public class BudgetBackController implements Initializable {
     private void setupTables() {
         // — Budgets —
         colIdBudget.setCellValueFactory(new PropertyValueFactory<>("idBudget"));
+        colIdBudget.setCellFactory(col -> new TableCell<Budget, Integer>() {
+            @Override protected void updateItem(Integer item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setStyle("");
+                    return;
+                }
+                setText(String.valueOf(item));
+                setStyle("-fx-text-fill: #0f172a;");
+            }
+        });
         colLibelleBudget.setCellValueFactory(new PropertyValueFactory<>("libelleBudget"));
         colMontantTotal.setCellValueFactory(new PropertyValueFactory<>("montantTotal"));
         colDeviseBudget.setCellValueFactory(new PropertyValueFactory<>("deviseBudget"));
@@ -661,8 +698,13 @@ public class BudgetBackController implements Initializable {
         colMontantTotal.setCellFactory(col -> new TableCell<Budget, Double>() {
             @Override protected void updateItem(Double item, boolean empty) {
                 super.updateItem(item, empty);
-                setText(empty || item == null ? null
-                        : df.format(item) + " " + getTableView().getItems().get(getIndex()).getDeviseBudget());
+                if (empty || item == null) {
+                    setText(null);
+                    setStyle("");
+                    return;
+                }
+                setText(df.format(item) + " " + getTableView().getItems().get(getIndex()).getDeviseBudget());
+                setStyle("-fx-text-fill: #0f172a;");
             }
         });
 
@@ -699,20 +741,43 @@ public class BudgetBackController implements Initializable {
         colDepenseMontant.setCellFactory(col -> new TableCell<Depense, Double>() {
             @Override protected void updateItem(Double item, boolean empty) {
                 super.updateItem(item, empty);
-                setText(empty || item == null ? null
-                        : df.format(item) + " " + getTableView().getItems().get(getIndex()).getDeviseDepense());
+                if (empty || item == null) {
+                    setText(null);
+                    setStyle("");
+                    return;
+                }
+                setText(df.format(item) + " " + getTableView().getItems().get(getIndex()).getDeviseDepense());
+                setStyle("-fx-text-fill: #0f172a;");
             }
         });
 
         colDepenseDate.setCellFactory(col -> new TableCell<Depense, Date>() {
             @Override protected void updateItem(Date item, boolean empty) {
                 super.updateItem(item, empty);
-                setText(empty || item == null ? null : item.toLocalDate().format(dateFmt));
+                if (empty || item == null) {
+                    setText(null);
+                    setStyle("");
+                    return;
+                }
+                setText(item.toLocalDate().format(dateFmt));
+                setStyle("-fx-text-fill: #0f172a;");
             }
         });
 
         // — Analyse table —
         colAnalyseNom.setCellValueFactory(new PropertyValueFactory<>("nom"));
+        colAnalyseNom.setCellFactory(col -> new TableCell<BudgetStat, String>() {
+            @Override protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setStyle("");
+                    return;
+                }
+                setText(item);
+                setStyle("-fx-text-fill: #0f172a;");
+            }
+        });
         colAnalyseAlloue.setCellValueFactory(new PropertyValueFactory<>("alloue"));
         colAnalyseDepense.setCellValueFactory(new PropertyValueFactory<>("depense"));
         colAnalyseSolde.setCellValueFactory(new PropertyValueFactory<>("solde"));
@@ -722,7 +787,13 @@ public class BudgetBackController implements Initializable {
         colAnalyseAlloue.setCellFactory(col -> new TableCell<BudgetStat, Double>() {
             @Override protected void updateItem(Double item, boolean empty) {
                 super.updateItem(item, empty);
-                setText(empty || item == null ? null : df.format(item) + " €");
+                if (empty || item == null) {
+                    setText(null);
+                    setStyle("");
+                    return;
+                }
+                setText(df.format(item) + " €");
+                setStyle("-fx-text-fill: #0f172a;");
             }
         });
         colAnalyseDepense.setCellFactory(col -> new TableCell<BudgetStat, Double>() {
@@ -757,7 +828,88 @@ public class BudgetBackController implements Initializable {
                 if (empty || item == null) { setText(null); setStyle(""); return; }
                 setText(item);
                 setStyle("ACTIF".equals(item) ? "-fx-text-fill:#34d399;-fx-font-weight:700;"
-                        : "-fx-text-fill:#94a3b8;");
+                        : "-fx-text-fill:#0f172a;");
+            }
+        });
+
+        colLibelleBudget.setCellFactory(col -> new TableCell<Budget, String>() {
+            @Override protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) { setText(null); setStyle(""); return; }
+                setText(item);
+                setStyle("-fx-text-fill: #0f172a;");
+            }
+        });
+
+        colDeviseBudget.setCellFactory(col -> new TableCell<Budget, String>() {
+            @Override protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) { setText(null); setStyle(""); return; }
+                setText(item);
+                setStyle("-fx-text-fill: #0f172a;");
+            }
+        });
+
+        colVoyageAssocie.setCellFactory(col -> new TableCell<Budget, String>() {
+            @Override protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) { setText(null); setStyle(""); return; }
+                setText(item);
+                setStyle("-fx-text-fill: #0f172a;");
+            }
+        });
+
+        colDestination.setCellFactory(col -> new TableCell<Budget, String>() {
+            @Override protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) { setText(null); setStyle(""); return; }
+                setText(item);
+                setStyle("-fx-text-fill: #0f172a;");
+            }
+        });
+
+        colDepenseLibelle.setCellFactory(col -> new TableCell<Depense, String>() {
+            @Override protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) { setText(null); setStyle(""); return; }
+                setText(item);
+                setStyle("-fx-text-fill: #0f172a;");
+            }
+        });
+
+        colDepenseCategorie.setCellFactory(col -> new TableCell<Depense, String>() {
+            @Override protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) { setText(null); setStyle(""); return; }
+                setText(item);
+                setStyle("-fx-text-fill: #0f172a;");
+            }
+        });
+
+        colDepenseDevise.setCellFactory(col -> new TableCell<Depense, String>() {
+            @Override protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) { setText(null); setStyle(""); return; }
+                setText(item);
+                setStyle("-fx-text-fill: #0f172a;");
+            }
+        });
+
+        colDepensePaiement.setCellFactory(col -> new TableCell<Depense, String>() {
+            @Override protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) { setText(null); setStyle(""); return; }
+                setText(item);
+                setStyle("-fx-text-fill: #0f172a;");
+            }
+        });
+
+        colDepenseDescription.setCellFactory(col -> new TableCell<Depense, String>() {
+            @Override protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) { setText(null); setStyle(""); return; }
+                setText(item);
+                setStyle("-fx-text-fill: #0f172a;");
             }
         });
     }
@@ -826,19 +978,19 @@ public class BudgetBackController implements Initializable {
 
     @FXML private void handleTriMontant() {
         if (btnTriMontant.isSelected()) {
-            tableDepenses.getSortOrder().setAll(colDepenseMontant);
+            tableDepenses.getSortOrder().setAll(Collections.singletonList(colDepenseMontant));
             colDepenseMontant.setSortType(TableColumn.SortType.DESCENDING);
         }
     }
     @FXML private void handleTriDate() {
         if (btnTriDate.isSelected()) {
-            tableDepenses.getSortOrder().setAll(colDepenseDate);
+            tableDepenses.getSortOrder().setAll(Collections.singletonList(colDepenseDate));
             colDepenseDate.setSortType(TableColumn.SortType.DESCENDING);
         }
     }
     @FXML private void handleTriLibelle() {
         if (btnTriLibelle.isSelected()) {
-            tableDepenses.getSortOrder().setAll(colDepenseLibelle);
+            tableDepenses.getSortOrder().setAll(Collections.singletonList(colDepenseLibelle));
             colDepenseLibelle.setSortType(TableColumn.SortType.ASCENDING);
         }
     }
