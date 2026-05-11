@@ -13,6 +13,7 @@ public class Hebergement {
     private Destination destination;
     private Integer added_by;              // Integer (nullable) — ON DELETE SET NULL
     private String added_by_name;          // affichage uniquement, non persisté
+    private String image_name;
 
     // ── Constructeurs ──────────────────────────────────────────────
 
@@ -94,6 +95,9 @@ public class Hebergement {
 
     public String getAdded_by_name() { return added_by_name; }
     public void setAdded_by_name(String added_by_name) { this.added_by_name = added_by_name; }
+
+    public String getImage_name() { return image_name; }
+    public void setImage_name(String image_name) { this.image_name = image_name; }
 
     // ── Helpers ────────────────────────────────────────────────────
 

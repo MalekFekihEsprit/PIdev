@@ -18,6 +18,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
@@ -109,59 +110,174 @@ public class HebergementFrontController implements Initializable {
     }
 
     private VBox createHebergementCard(Hebergement hebergement) {
-        VBox card = new VBox(10);
-        card.setPadding(new Insets(16));
-        card.setPrefWidth(360);
-        card.setMinWidth(300);
-        card.setMaxWidth(Double.MAX_VALUE);
+        VBox card = new VBox(0);
+        card.setMinWidth(0);
+        card.setMaxWidth(420);
         card.setStyle("-fx-background-color: white; -fx-background-radius: 20; -fx-border-color: #e2e8f0; -fx-border-width: 1; -fx-border-radius: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.04), 14, 0, 0, 3);");
 
+        // ── TOP HALF: image banner via CSS (never inflates card width) ──────
+        javafx.scene.layout.Region imageBanner = new javafx.scene.layout.Region();
+        imageBanner.setMinHeight(180);
+        imageBanner.setPrefHeight(180);
+        imageBanner.setMaxHeight(180);
+        imageBanner.setPrefWidth(0);
+        imageBanner.setMaxWidth(Double.MAX_VALUE);
+
+        String imageName = hebergement.getImage_name();
+        if (imageName != null && !imageName.isBlank()) {
+            String imageUrl;
+            if (imageName.startsWith("http://") || imageName.startsWith("https://")) {
+                imageUrl = imageName;
+            } else {
+                java.net.URL res = getClass().getResource("/images/" + imageName);
+                imageUrl = (res != null) ? res.toExternalForm() : "file:" + imageName;
+            }
+            imageBanner.setStyle(
+                "-fx-background-image: url('" + imageUrl + "');" +
+                "-fx-background-size: cover;" +
+                "-fx-background-position: center center;" +
+                "-fx-background-repeat: no-repeat;" +
+                "-fx-background-radius: 20 20 0 0;"
+            );
+        } else {
+            // Gradient placeholder
+            String gradientColor = typeToGradient(hebergement.getType_hebergement());
+            imageBanner.setStyle(
+                "-fx-background-color: " + gradientColor + ";" +
+                "-fx-background-radius: 20 20 0 0;"
+            );
+        }
+
+        // Overlay: placeholder emoji + type badge
+        StackPane imageOverlay = new StackPane();
+        imageOverlay.setMinHeight(180);
+        imageOverlay.setPrefHeight(180);
+        imageOverlay.setMaxHeight(180);
+        imageOverlay.setPrefWidth(0);
+        imageOverlay.setMaxWidth(Double.MAX_VALUE);
+        imageOverlay.setStyle("-fx-background-color: transparent;");
+
+        if (imageName == null || imageName.isBlank()) {
+            Label placeholder = new Label(typeToEmoji(hebergement.getType_hebergement()));
+            placeholder.setStyle("-fx-font-size: 56; -fx-text-fill: white;");
+            imageOverlay.getChildren().add(placeholder);
+        }
+
+        // Type badge bottom-left
+        String typeText = (hebergement.getType_hebergement() == null || hebergement.getType_hebergement().isBlank())
+                ? "Hébergement" : hebergement.getType_hebergement();
+        Label typeBadge = new Label(typeText);
+        typeBadge.setStyle("-fx-background-color: rgba(0,0,0,0.55); -fx-text-fill: white; " +
+                           "-fx-background-radius: 20; -fx-padding: 3 10; -fx-font-size: 11; -fx-font-weight: 700;");
+        StackPane.setAlignment(typeBadge, javafx.geometry.Pos.BOTTOM_LEFT);
+        StackPane.setMargin(typeBadge, new Insets(0, 0, 10, 10));
+        imageOverlay.getChildren().add(typeBadge);
+
+        StackPane bannerStack = new StackPane(imageBanner, imageOverlay);
+        bannerStack.setMinHeight(180);
+        bannerStack.setPrefHeight(180);
+        bannerStack.setMaxHeight(180);
+        bannerStack.setPrefWidth(0);
+        bannerStack.setMaxWidth(Double.MAX_VALUE);
+
+        // ── BOTTOM HALF: card content ────────────────────────────────────────
+        VBox content = new VBox(6);
+        content.setPadding(new Insets(14, 16, 14, 16));
+        content.setMaxWidth(Double.MAX_VALUE);
+
         Label name = new Label(hebergement.getNom_hebergement());
-        name.setStyle("-fx-font-size: 20; -fx-font-weight: bold; -fx-text-fill: #0f172a;");
+        name.setStyle("-fx-font-size: 17; -fx-font-weight: bold; -fx-text-fill: #0f172a;");
+        name.setWrapText(true);
 
-        Label type = new Label((hebergement.getType_hebergement() == null || hebergement.getType_hebergement().isBlank()) ? "Type inconnu" : hebergement.getType_hebergement());
-        type.setStyle("-fx-background-color: #e6f7e6; -fx-text-fill: #10b981; -fx-background-radius: 16; -fx-padding: 4 10; -fx-font-size: 11; -fx-font-weight: 700;");
-
-        Label destination = new Label("Destination : " + formatDestination(hebergement.getDestination()));
-        destination.setStyle("-fx-text-fill: #475569; -fx-font-size: 13;");
+        Label destination = new Label("📍 " + formatDestination(hebergement.getDestination()));
+        destination.setStyle("-fx-text-fill: #64748b; -fx-font-size: 12;");
         destination.setWrapText(true);
 
-        Label adresse = new Label("Adresse : " + safeText(hebergement.getAdresse_hebergement()));
-        adresse.setStyle("-fx-text-fill: #334155; -fx-font-size: 13;");
+        // Star rating row
+        double noteVal = hebergement.getNote_hebergement() != null ? hebergement.getNote_hebergement() : 0.0;
+        HBox starsRow = new HBox(3);
+        starsRow.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        int fullStars = (int) Math.floor(noteVal);
+        boolean halfStar = (noteVal - fullStars) >= 0.5;
+        for (int s = 1; s <= 5; s++) {
+            Label star = new Label();
+            if (s <= fullStars) {
+                star.setText("★"); star.setStyle("-fx-text-fill: #f59e0b; -fx-font-size: 15;");
+            } else if (s == fullStars + 1 && halfStar) {
+                star.setText("½"); star.setStyle("-fx-text-fill: #f59e0b; -fx-font-size: 13;");
+            } else {
+                star.setText("☆"); star.setStyle("-fx-text-fill: #cbd5e1; -fx-font-size: 15;");
+            }
+            starsRow.getChildren().add(star);
+        }
+        Label noteLabel = new Label(String.format("  %.1f", noteVal));
+        noteLabel.setStyle("-fx-text-fill: #64748b; -fx-font-size: 12;");
+        starsRow.getChildren().add(noteLabel);
+
+        // Price + address row
+        HBox priceRow = new HBox(8);
+        priceRow.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        Label price = new Label(formatPrice(hebergement.getPrix_nuit_hebergement()) + " / nuit");
+        price.setStyle("-fx-text-fill: #10b981; -fx-font-size: 13; -fx-font-weight: 700;");
+        priceRow.getChildren().add(price);
+
+        Label adresse = new Label("🏠 " + safeText(hebergement.getAdresse_hebergement()));
+        adresse.setStyle("-fx-text-fill: #475569; -fx-font-size: 12;");
         adresse.setWrapText(true);
 
-        Label price = new Label("Prix / nuit : " + formatPrice(hebergement.getPrix_nuit_hebergement()));
-        price.setStyle("-fx-text-fill: #ef4444; -fx-font-size: 13; -fx-font-weight: 600;");
-
-        Label note = new Label("Note : " + formatNote(hebergement.getNote_hebergement()));
-        note.setStyle("-fx-text-fill: #f59e0b; -fx-font-size: 13; -fx-font-weight: 600;");
-
         Label addedBy = new Label("Ajouté par : " + safeText(hebergement.getAdded_by_name()));
-        addedBy.setStyle("-fx-text-fill: #64748b; -fx-font-size: 12;");
-        addedBy.setWrapText(true);
+        addedBy.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 11;");
 
         HBox actions = new HBox(8);
         actions.setPadding(new Insets(6, 0, 0, 0));
 
         Button btnView = new Button("👁 Voir");
-        btnView.setStyle("-fx-background-color: #3b82f6; -fx-text-fill: white; -fx-background-radius: 8; -fx-font-size: 13; -fx-cursor: hand;");
+        btnView.setStyle("-fx-background-color: #3b82f6; -fx-text-fill: white; -fx-background-radius: 8; -fx-font-size: 12; -fx-cursor: hand; -fx-padding: 6 14;");
         btnView.setOnAction(e -> handleConsulter(hebergement));
         actions.getChildren().add(btnView);
 
-        if (hebergement.getAdded_by() != null && currentUser != null && hebergement.getAdded_by().intValue() == currentUser.getId()) {
-            Button btnEdit = new Button("✏ Modifier");
-            btnEdit.setStyle("-fx-background-color: #f59e0b; -fx-text-fill: white; -fx-background-radius: 8; -fx-font-size: 13; -fx-cursor: hand;");
+        if (hebergement.getAdded_by() != null && currentUser != null
+                && hebergement.getAdded_by().intValue() == currentUser.getId()) {
+            Button btnEdit = new Button("✏");
+            btnEdit.setStyle("-fx-background-color: #f59e0b; -fx-text-fill: white; -fx-background-radius: 8; -fx-font-size: 12; -fx-cursor: hand; -fx-padding: 6 14;");
             btnEdit.setOnAction(e -> handleModifier(hebergement));
 
-            Button btnDelete = new Button("🗑 Supprimer");
-            btnDelete.setStyle("-fx-background-color: #ef4444; -fx-text-fill: white; -fx-background-radius: 8; -fx-font-size: 13; -fx-cursor: hand;");
+            Button btnDelete = new Button("🗑");
+            btnDelete.setStyle("-fx-background-color: #ef4444; -fx-text-fill: white; -fx-background-radius: 8; -fx-font-size: 12; -fx-cursor: hand; -fx-padding: 6 14;");
             btnDelete.setOnAction(e -> handleDeleteSingle(hebergement));
 
             actions.getChildren().addAll(btnEdit, btnDelete);
         }
 
-        card.getChildren().addAll(name, type, destination, adresse, price, note, addedBy, actions);
+        content.getChildren().addAll(name, destination, starsRow, priceRow, adresse, addedBy, actions);
+        card.getChildren().addAll(bannerStack, content);
         return card;
+    }
+
+    /** Returns a gradient CSS color string based on accommodation type. */
+    private String typeToGradient(String type) {
+        if (type == null) return "linear-gradient(from 0% 0% to 100% 100%, #e2e8f0, #cbd5e1)";
+        return switch (type.toLowerCase()) {
+            case "hôtel", "hotel"   -> "linear-gradient(from 0% 0% to 100% 100%, #1e40af, #3b82f6)";
+            case "villa"            -> "linear-gradient(from 0% 0% to 100% 100%, #065f46, #10b981)";
+            case "appartement"      -> "linear-gradient(from 0% 0% to 100% 100%, #7c3aed, #a78bfa)";
+            case "auberge"          -> "linear-gradient(from 0% 0% to 100% 100%, #92400e, #f59e0b)";
+            case "resort"           -> "linear-gradient(from 0% 0% to 100% 100%, #be185d, #f472b6)";
+            default                 -> "linear-gradient(from 0% 0% to 100% 100%, #374151, #6b7280)";
+        };
+    }
+
+    /** Returns an emoji for the accommodation type placeholder. */
+    private String typeToEmoji(String type) {
+        if (type == null) return "🏠";
+        return switch (type.toLowerCase()) {
+            case "hôtel", "hotel"   -> "🏨";
+            case "villa"            -> "🏡";
+            case "appartement"      -> "🏢";
+            case "auberge"          -> "🏚️";
+            case "resort"           -> "🌴";
+            default                 -> "🏠";
+        };
     }
 
     private void setupNotifications() {
@@ -823,6 +939,8 @@ public class HebergementFrontController implements Initializable {
 
         for (int i = 0; i < hebergements.size(); i += 3) {
             HBox row = new HBox(18);
+            row.setMaxWidth(Double.MAX_VALUE);
+            row.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
 
             for (int j = i; j < Math.min(i + 3, hebergements.size()); j++) {
                 VBox card = createHebergementCard(hebergements.get(j));

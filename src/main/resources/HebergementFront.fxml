@@ -122,7 +122,7 @@
     <center>
         <ScrollPane fitToHeight="true" fitToWidth="true" style="-fx-background: #f8fafc; -fx-border-color: transparent; -fx-background-color: transparent;">
             <content>
-                <VBox maxWidth="1400" spacing="32">
+                <VBox alignment="CENTER" maxWidth="1400" spacing="32">
                     <padding>
                         <Insets bottom="60" left="40" right="40" top="40" />
                     </padding>

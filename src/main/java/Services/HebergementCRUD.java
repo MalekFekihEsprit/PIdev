@@ -25,6 +25,7 @@ public class HebergementCRUD implements InterfaceCRUDDestination<Hebergement> {
                     "       h.longitude_hebergement, " +
                     "       h.destination_hebergement, " +
                     "       h.added_by, " +
+                    "       h.image_name, " +
                     "       u.nom, u.prenom " +
                     "FROM hebergement h " +
                     "LEFT JOIN user u ON h.added_by = u.id";
@@ -223,6 +224,8 @@ public class HebergementCRUD implements InterfaceCRUDDestination<Hebergement> {
             h.setAdded_by_name(prenom + " " + nom);
         else
             h.setAdded_by_name("Utilisateur inconnu");
+
+        h.setImage_name(rs.getString("image_name"));
 
         return h;
     }
