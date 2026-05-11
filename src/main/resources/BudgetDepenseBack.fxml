@@ -23,7 +23,7 @@
 <?import javafx.scene.shape.SVGPath?>
 
 <BorderPane maxHeight="Infinity" maxWidth="Infinity"
-            style="-fx-background-color: #0a0e27;"
+            style="-fx-background-color: #f8fafc;"
             stylesheets="Styles/budget-dark.css"
             xmlns="http://javafx.com/javafx/21"
             xmlns:fx="http://javafx.com/fxml/1"
@@ -33,22 +33,22 @@
     <top>
         <VBox>
             <HBox alignment="CENTER_LEFT" spacing="20"
-                  style="-fx-background-color: #111633; -fx-border-color: #1e2749; -fx-border-width: 0 0 1 0;">
+                style="-fx-background-color: #ffffff; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0;">
                 <padding><Insets bottom="16" left="32" right="32" top="16"/></padding>
                 <!-- Logo -->
                 <HBox alignment="CENTER" spacing="10">
                     <Circle fill="linear-gradient(from 0% 0% to 100% 100%, #ff8c42, #ff6b4a)" radius="16"/>
-                    <Label style="-fx-font-size: 24; -fx-font-weight: bold; -fx-text-fill: #ffffff;" text="TravelMate"/>
-                    <Label style="-fx-background-color: #ff8c42; -fx-text-fill: white; -fx-background-radius: 12; -fx-padding: 3 10; -fx-font-size: 10; -fx-font-weight: bold;" text="ADMIN"/>
+                    <Label style="-fx-font-size: 24; -fx-font-weight: bold; -fx-text-fill: #0f172a;" text="TravelMate"/>
+                    <Label style="-fx-background-color: #ff8c42; -fx-text-fill: #0f172a; -fx-background-radius: 12; -fx-padding: 3 10; -fx-font-size: 10; -fx-font-weight: bold;" text="ADMIN"/>
                 </HBox>
                 <Region HBox.hgrow="ALWAYS"/>
 
                 <!-- User Profile - Clickable -->
                 <HBox fx:id="userProfileBox" alignment="CENTER" spacing="10"
-                      style="-fx-background-color: #1e2749; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand;">
+                      style="-fx-background-color: #e2e8f0; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand;">
                     <Circle fill="linear-gradient(from 0% 0% to 100% 100%, #ff8c42, #ff6b4a)" radius="16"/>
                     <VBox spacing="0">
-                        <Label fx:id="lblUserName" style="-fx-text-fill: #ffffff; -fx-font-weight: 600; -fx-font-size: 13;" text="Administrateur"/>
+                        <Label fx:id="lblUserName" style="-fx-text-fill: #0f172a; -fx-font-weight: 600; -fx-font-size: 13;" text="Administrateur"/>
                         <Label fx:id="lblUserRole" style="-fx-text-fill: #64748b; -fx-font-size: 10;" text="Super Admin"/>
                     </VBox>
                     <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 12; -fx-font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji';" text="▼"/>
@@ -56,9 +56,9 @@
             </HBox>
             <!-- Breadcrumb -->
             <HBox alignment="CENTER_LEFT" spacing="16"
-                  style="-fx-background-color: #0a0e27; -fx-border-color: #1e2749; -fx-border-width: 0 0 1 0; -fx-padding: 8 32;">
+                  style="-fx-background-color: #f8fafc; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0; -fx-padding: 8 32;">
                 <Label style="-fx-text-fill: #ff8c42; -fx-font-size: 12; -fx-font-weight: 600" text="💰 Gestion des Budgets"/>
-                <Label style="-fx-text-fill: #1e2749; -fx-font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji';" text="›"/>
+                <Label style="-fx-text-fill: #e2e8f0; -fx-font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji';" text="›"/>
                 <Label style="-fx-text-fill: #64748b; -fx-font-size: 12" text="Analyse Financière"/>
                 <Region HBox.hgrow="ALWAYS"/>
                 <Label fx:id="lblUpdateTime" style="-fx-text-fill: #64748b; -fx-font-size: 11;"/>
@@ -70,8 +70,8 @@
     <!-- SIDEBAR DASHBOARD - DARK MODE WITH ORANGE -->
     <!-- SIDEBAR DASHBOARD - SVGPath icons, zero font dependency -->
     <left>
-        <ScrollPane fitToHeight="true" fitToWidth="true" style="-fx-background: #111633; -fx-background-color: #111633; -fx-border-color: #1e2749; -fx-border-width: 0 1 0 0;">
-            <VBox prefWidth="220" spacing="8" style="-fx-background-color: #111633;">
+        <ScrollPane fitToHeight="true" fitToWidth="true" style="-fx-background: #ffffff; -fx-background-color: #ffffff; -fx-border-color: #e2e8f0; -fx-border-width: 0 1 0 0;">
+            <VBox prefWidth="220" spacing="8" style="-fx-background-color: #ffffff;">
                 <padding><Insets bottom="24" left="20" right="20" top="24" /></padding>
 
                 <Label style="-fx-font-family: 'Clash Display'; -fx-font-size: 13; -fx-font-weight: 700; -fx-text-fill: #64748b; -fx-letter-spacing: 1.5;" text="DASHBOARD" />
@@ -131,8 +131,8 @@
                     <HBox fx:id="btnBudgets" alignment="CENTER_LEFT" spacing="12" style="-fx-background-color: linear-gradient(to right, #ff8c42, #ff6b4a); -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;">
                         <SVGPath content="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z" fill="white" scaleX="0.75" scaleY="0.75" />
                         <Region HBox.hgrow="ALWAYS" />
-                        <Label fx:id="lblSidebarBudgetCount" style="-fx-background-color: rgba(255,255,255,0.2); -fx-background-radius: 10; -fx-padding: 2 8; -fx-text-fill: white; -fx-font-size: 11; -fx-font-weight: bold;" text="0" />
-                        <Label style="-fx-text-fill: white; -fx-font-weight: 600; -fx-font-size: 14;" text="Budgets" />
+                        <Label fx:id="lblSidebarBudgetCount" style="-fx-background-color: rgba(255,255,255,0.2); -fx-background-radius: 10; -fx-padding: 2 8; -fx-text-fill: #0f172a; -fx-font-size: 11; -fx-font-weight: bold;" text="0" />
+                        <Label style="-fx-text-fill: #0f172a; -fx-font-weight: 600; -fx-font-size: 14;" text="Budgets" />
                     </HBox>
 
                     <!-- Événements -->
@@ -146,7 +146,7 @@
                 <!-- DIVIDER -->
                 <Region maxWidth="Infinity" minHeight="3" prefHeight="3" style="-fx-background-color: linear-gradient(to right, rgba(245,166,35,0.5), rgba(255,107,0,0.5), rgba(99,102,241,0.5));" />
 
-                <VBox spacing="12" style="-fx-background-color: #0a0e27; -fx-background-radius: 16; -fx-padding: 16; -fx-border-color: #1e2749; -fx-border-width: 1; -fx-border-radius: 16;">
+                <VBox spacing="12" style="-fx-background-color: #f8fafc; -fx-background-radius: 16; -fx-padding: 16; -fx-border-color: #e2e8f0; -fx-border-width: 1; -fx-border-radius: 16;">
                     <Label style="-fx-font-weight: 600; -fx-text-fill: #64748b; -fx-font-size: 11; -fx-letter-spacing: 1;" text="STATISTIQUES BUDGETS" />
                     <GridPane hgap="10" vgap="10">
                         <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 12;" text="Total budgets :" GridPane.columnIndex="0" GridPane.rowIndex="0" />
@@ -166,7 +166,7 @@
     <!-- ═══════════ STATUS BAR ═══════════ -->
     <bottom>
         <HBox alignment="CENTER_LEFT" spacing="20"
-              style="-fx-background-color: #111633; -fx-border-color: #1e2749; -fx-border-width: 1 0 0 0; -fx-padding: 10 28;">
+              style="-fx-background-color: #ffffff; -fx-border-color: #e2e8f0; -fx-border-width: 1 0 0 0; -fx-padding: 10 28;">
             <Label style="-fx-text-fill: #ff8c42; -fx-font-size: 11; -fx-font-weight: 600" text="● Connecté"/>
             <Region HBox.hgrow="ALWAYS"/>
             <Label fx:id="lblLastUpdate" style="-fx-text-fill: #64748b; -fx-font-size: 11; -fx-font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji';" text="—"/>
@@ -177,7 +177,7 @@
     <!-- ═══════════ MAIN CONTENT ═══════════ -->
     <center>
         <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS"
-                    style="-fx-background: #0a0e27; -fx-border-color: transparent; -fx-background-color: transparent;">
+                    style="-fx-background: #f8fafc; -fx-border-color: transparent; -fx-background-color: transparent;">
             <content>
                 <VBox spacing="24">
                     <padding><Insets bottom="60" left="32" right="32" top="32"/></padding>
@@ -185,34 +185,34 @@
                     <!-- ── PAGE HEADER ── -->
                     <HBox alignment="CENTER_LEFT" spacing="20">
                         <VBox spacing="4">
-                            <Label style="-fx-font-size: 28; -fx-font-weight: bold; -fx-text-fill: #ffffff;"
+                            <Label style="-fx-font-size: 28; -fx-font-weight: bold; -fx-text-fill: #0f172a;"
                                    text="Gestion des Budgets"/>
                             <Label style="-fx-text-fill: #64748b; -fx-font-size: 13;"
                                    text="Supervision complète des budgets et dépenses de voyage"/>
                         </VBox>
                         <Region HBox.hgrow="ALWAYS"/>
                         <ComboBox fx:id="cmbVoyageSelector"
-                                  style="-fx-background-color: #1e2749; -fx-text-fill: #ffffff; -fx-border-color: #ff8c42; -fx-border-radius: 10; -fx-background-radius: 10;"/>
+                                  style="-fx-background-color: #e2e8f0; -fx-text-fill: #0f172a; -fx-border-color: #ff8c42; -fx-border-radius: 10; -fx-background-radius: 10;"/>
                     </HBox>
 
                     <!-- ── KPI CARDS ── -->
                     <HBox minHeight="100" spacing="16">
                         <!-- Total budgets -->
                         <VBox spacing="10" HBox.hgrow="ALWAYS"
-                              style="-fx-background-color: linear-gradient(to bottom right,#1e2749,#111633); -fx-background-radius: 18; -fx-padding: 22; -fx-border-color: #ff8c42; -fx-border-width: 2; -fx-border-radius: 18;">
+                              style="-fx-background-color: linear-gradient(to bottom right,#ffffff,#f8fafc); -fx-background-radius: 18; -fx-padding: 22; -fx-border-color: #ff8c42; -fx-border-width: 2; -fx-border-radius: 18;">
                             <HBox alignment="CENTER_LEFT" spacing="12">
                                 <VBox alignment="CENTER" style="-fx-background-color: rgba(255,140,66,0.15); -fx-background-radius: 12; -fx-min-width: 46; -fx-min-height: 46;">
                                     <Label style="-fx-font-size: 22; -fx-font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji';" text="💰"/>
                                 </VBox>
                                 <VBox spacing="3">
                                     <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 11; -fx-font-weight: 600;" text="TOTAL BUDGETS"/>
-                                    <Label fx:id="lblTotalBudgetsKpi" style="-fx-font-size: 22; -fx-font-weight: bold; -fx-text-fill: #ffffff;" text="0"/>
+                                    <Label fx:id="lblTotalBudgetsKpi" style="-fx-font-size: 22; -fx-font-weight: bold; -fx-text-fill: #0f172a;" text="0"/>
                                 </VBox>
                             </HBox>
                         </VBox>
                         <!-- Actifs -->
                         <VBox spacing="10" HBox.hgrow="ALWAYS"
-                              style="-fx-background-color: linear-gradient(to bottom right,#1e2749,#111633); -fx-background-radius: 18; -fx-padding: 22; -fx-border-color: #34d399; -fx-border-width: 1; -fx-border-radius: 18;">
+                              style="-fx-background-color: linear-gradient(to bottom right,#ffffff,#f8fafc); -fx-background-radius: 18; -fx-padding: 22; -fx-border-color: #34d399; -fx-border-width: 1; -fx-border-radius: 18;">
                             <HBox alignment="CENTER_LEFT" spacing="12">
                                 <VBox alignment="CENTER" style="-fx-background-color: rgba(52,211,153,0.15); -fx-background-radius: 12; -fx-min-width: 46; -fx-min-height: 46;">
                                     <Label style="-fx-font-size: 22; -fx-font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji';" text="✅"/>
@@ -226,7 +226,7 @@
                         </VBox>
                         <!-- Montant global -->
                         <VBox spacing="10" HBox.hgrow="ALWAYS"
-                              style="-fx-background-color: linear-gradient(to bottom right,#1e2749,#111633); -fx-background-radius: 18; -fx-padding: 22; -fx-border-color: #f87171; -fx-border-width: 1; -fx-border-radius: 18;">
+                              style="-fx-background-color: linear-gradient(to bottom right,#ffffff,#f8fafc); -fx-background-radius: 18; -fx-padding: 22; -fx-border-color: #f87171; -fx-border-width: 1; -fx-border-radius: 18;">
                             <HBox alignment="CENTER_LEFT" spacing="12">
                                 <VBox alignment="CENTER" style="-fx-background-color: rgba(248,113,113,0.15); -fx-background-radius: 12; -fx-min-width: 46; -fx-min-height: 46;">
                                     <Label style="-fx-font-size: 22; -fx-font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji';" text="📊"/>
@@ -243,14 +243,14 @@
                     <!-- ── BUDGETS TABLE ── -->
                     <VBox spacing="14">
                         <HBox alignment="CENTER_LEFT" spacing="12">
-                            <Label style="-fx-font-size: 20; -fx-font-weight: 700; -fx-text-fill: #ffffff;" text="Liste des Budgets"/>
+                            <Label style="-fx-font-size: 20; -fx-font-weight: 700; -fx-text-fill: #0f172a;" text="Liste des Budgets"/>
                             <Label fx:id="lblBudgetCount"
                                    style="-fx-background-color: rgba(255,140,66,0.15); -fx-text-fill: #ff8c42; -fx-background-radius: 20; -fx-padding: 4 14; -fx-font-weight: 600; -fx-font-size: 11;"
                                    text="0 budgets"/>
                             <Region HBox.hgrow="ALWAYS"/>
                         </HBox>
                         <TableView fx:id="tableBudgets"
-                                   style="-fx-background-color: #1e2749; -fx-background-radius: 16; -fx-border-color: #ff8c42; -fx-border-width: 1; -fx-border-radius: 16;"
+                                   style="-fx-background-color: #e2e8f0; -fx-background-radius: 16; -fx-border-color: #ff8c42; -fx-border-width: 1; -fx-border-radius: 16;"
                                    VBox.vgrow="ALWAYS">
                             <columns>
                                 <TableColumn fx:id="colIdBudget"  text="ID"/>
@@ -275,7 +275,7 @@
                          ANALYSE FINANCIÈRE COMPLÈTE
                          ════════════════════════════════════════════ -->
                     <VBox spacing="20"
-                          style="-fx-background-color: linear-gradient(to bottom right,#1e2749,#111633); -fx-background-radius: 20; -fx-padding: 28; -fx-border-color: #ff8c42; -fx-border-width: 1; -fx-border-radius: 20;">
+                          style="-fx-background-color: linear-gradient(to bottom right,#ffffff,#f8fafc); -fx-background-radius: 20; -fx-padding: 28; -fx-border-color: #ff8c42; -fx-border-width: 1; -fx-border-radius: 20;">
 
                         <!-- Titre -->
                         <HBox alignment="CENTER_LEFT" spacing="14">
@@ -284,7 +284,7 @@
                                 <Label style="-fx-font-size: 24; -fx-font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji';" text="📈"/>
                             </VBox>
                             <VBox spacing="3">
-                                <Label style="-fx-font-size: 20; -fx-font-weight: 700; -fx-text-fill: #ffffff;"
+                                <Label style="-fx-font-size: 20; -fx-font-weight: 700; -fx-text-fill: #0f172a;"
                                        text="Analyse Financière Globale"/>
                                 <Label style="-fx-text-fill: #64748b; -fx-font-size: 12;"
                                        text="Vue consolidée de tous les budgets et dépenses"/>
@@ -299,7 +299,7 @@
                         <HBox spacing="14">
                             <!-- Total dépensé -->
                             <VBox spacing="8" HBox.hgrow="ALWAYS"
-                                  style="-fx-background-color: #0a0e27; -fx-background-radius: 14; -fx-padding: 18; -fx-border-color: #f87171; -fx-border-width: 0 0 0 3; -fx-border-radius: 14;">
+                                  style="-fx-background-color: #f8fafc; -fx-background-radius: 14; -fx-padding: 18; -fx-border-color: #f87171; -fx-border-width: 0 0 0 3; -fx-border-radius: 14;">
                                 <HBox alignment="CENTER_LEFT" spacing="8">
                                     <Label style="-fx-font-size: 18; -fx-font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji';" text="💸"/>
                                     <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 11; -fx-font-weight: 700" text="TOTAL DÉPENSÉ"/>
@@ -311,7 +311,7 @@
                             </VBox>
                             <!-- Budget alloué -->
                             <VBox spacing="8" HBox.hgrow="ALWAYS"
-                                  style="-fx-background-color: #0a0e27; -fx-background-radius: 14; -fx-padding: 18; -fx-border-color: #ff8c42; -fx-border-width: 0 0 0 3; -fx-border-radius: 14;">
+                                  style="-fx-background-color: #f8fafc; -fx-background-radius: 14; -fx-padding: 18; -fx-border-color: #ff8c42; -fx-border-width: 0 0 0 3; -fx-border-radius: 14;">
                                 <HBox alignment="CENTER_LEFT" spacing="8">
                                     <Label style="-fx-font-size: 18; -fx-font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji';" text="💰"/>
                                     <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 11; -fx-font-weight: 700" text="BUDGET ALLOUÉ"/>
@@ -323,7 +323,7 @@
                             </VBox>
                             <!-- Solde restant -->
                             <VBox spacing="8" HBox.hgrow="ALWAYS"
-                                  style="-fx-background-color: #0a0e27; -fx-background-radius: 14; -fx-padding: 18; -fx-border-color: #34d399; -fx-border-width: 0 0 0 3; -fx-border-radius: 14;">
+                                  style="-fx-background-color: #f8fafc; -fx-background-radius: 14; -fx-padding: 18; -fx-border-color: #34d399; -fx-border-width: 0 0 0 3; -fx-border-radius: 14;">
                                 <HBox alignment="CENTER_LEFT" spacing="8">
                                     <Label style="-fx-font-size: 18; -fx-font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji';" text="✅"/>
                                     <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 11; -fx-font-weight: 700;" text="SOLDE RESTANT"/>
@@ -335,7 +335,7 @@
                             </VBox>
                             <!-- Moyenne / budget -->
                             <VBox spacing="8" HBox.hgrow="ALWAYS"
-                                  style="-fx-background-color: #0a0e27; -fx-background-radius: 14; -fx-padding: 18; -fx-border-color: #818cf8; -fx-border-width: 0 0 0 3; -fx-border-radius: 14;">
+                                  style="-fx-background-color: #f8fafc; -fx-background-radius: 14; -fx-padding: 18; -fx-border-color: #818cf8; -fx-border-width: 0 0 0 3; -fx-border-radius: 14;">
                                 <HBox alignment="CENTER_LEFT" spacing="8">
                                     <Label style="-fx-font-size: 18; -fx-font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji';" text="📐"/>
                                     <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 11; -fx-font-weight: 700" text="DÉPENSE MOYENNE"/>
@@ -353,7 +353,7 @@
 
                             <!-- Dépense moyenne par jour (calculée sur la durée du voyage) -->
                             <VBox spacing="8" HBox.hgrow="ALWAYS"
-                                  style="-fx-background-color: #0a0e27; -fx-background-radius: 14; -fx-padding: 18; -fx-border-color: #38bdf8; -fx-border-width: 0 0 0 3; -fx-border-radius: 14;">
+                                  style="-fx-background-color: #f8fafc; -fx-background-radius: 14; -fx-padding: 18; -fx-border-color: #38bdf8; -fx-border-width: 0 0 0 3; -fx-border-radius: 14;">
                                 <HBox alignment="CENTER_LEFT" spacing="8">
                                     <Label style="-fx-font-size: 18; -fx-font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji';" text="📅"/>
                                     <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 11; -fx-font-weight: 700" text="DÉPENSE MOYENNE / JOUR"/>
@@ -366,7 +366,7 @@
 
                             <!-- Jour le plus dépensier -->
                             <VBox spacing="8" HBox.hgrow="ALWAYS"
-                                  style="-fx-background-color: #0a0e27; -fx-background-radius: 14; -fx-padding: 18; -fx-border-color: #f59e0b; -fx-border-width: 0 0 0 3; -fx-border-radius: 14;">
+                                  style="-fx-background-color: #f8fafc; -fx-background-radius: 14; -fx-padding: 18; -fx-border-color: #f59e0b; -fx-border-width: 0 0 0 3; -fx-border-radius: 14;">
                                 <HBox alignment="CENTER_LEFT" spacing="8">
                                     <Label style="-fx-font-size: 18; -fx-font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji';" text="🔥"/>
                                     <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 11; -fx-font-weight: 700" text="JOUR LE PLUS DÉPENSIER"/>
@@ -379,7 +379,7 @@
 
                             <!-- Projection dépassement -->
                             <VBox spacing="8" HBox.hgrow="ALWAYS"
-                                  style="-fx-background-color: #0a0e27; -fx-background-radius: 14; -fx-padding: 18; -fx-border-color: #f87171; -fx-border-width: 0 0 0 3; -fx-border-radius: 14;">
+                                  style="-fx-background-color: #f8fafc; -fx-background-radius: 14; -fx-padding: 18; -fx-border-color: #f87171; -fx-border-width: 0 0 0 3; -fx-border-radius: 14;">
                                 <HBox alignment="CENTER_LEFT" spacing="8">
                                     <Label style="-fx-font-size: 18; -fx-font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji';" text="🚨"/>
                                     <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 11; -fx-font-weight: 700;" text="PROJECTION"/>
@@ -392,7 +392,7 @@
 
                             <!-- Taux d'utilisation global avec barre colorée -->
                             <VBox spacing="10" HBox.hgrow="ALWAYS"
-                                  style="-fx-background-color: #0a0e27; -fx-background-radius: 14; -fx-padding: 18; -fx-border-color: #a78bfa; -fx-border-width: 0 0 0 3; -fx-border-radius: 14;">
+                                  style="-fx-background-color: #f8fafc; -fx-background-radius: 14; -fx-padding: 18; -fx-border-color: #a78bfa; -fx-border-width: 0 0 0 3; -fx-border-radius: 14;">
                                 <HBox alignment="CENTER_LEFT" spacing="8">
                                     <Label style="-fx-font-size: 18; -fx-font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji';" text="📊"/>
                                     <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 11; -fx-font-weight: 700;" text="TAUX D'UTILISATION"/>
@@ -404,7 +404,7 @@
                                            style="-fx-background-radius: 20; -fx-padding: 3 10; -fx-font-size: 11; -fx-font-weight: 700;" text="—"/>
                                 </HBox>
                                 <StackPane
-                                        style="-fx-background-color: #1e2749; -fx-background-radius: 6;">
+                                        style="-fx-background-color: #e2e8f0; -fx-background-radius: 6;">
                                     <Rectangle fx:id="rectTauxBar" arcHeight="6" arcWidth="6" height="10" width="0"
                                                style="-fx-fill: #a78bfa;">
                                         <StackPane.alignment>CENTER_LEFT</StackPane.alignment>
@@ -418,14 +418,14 @@
 
                         <!-- Résumé tabulaire par budget -->
                         <VBox spacing="10"
-                              style="-fx-background-color: #0a0e27; -fx-background-radius: 14; -fx-padding: 18;">
+                              style="-fx-background-color: #f8fafc; -fx-background-radius: 14; -fx-padding: 18;">
                             <HBox alignment="CENTER_LEFT" spacing="10">
                                 <Label style="-fx-font-size: 15; -fx-font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji';" text="📋"/>
-                                <Label style="-fx-text-fill: #ffffff; -fx-font-size: 14; -fx-font-weight: 700" text="Résumé par budget — taux de consommation"/>
+                                <Label style="-fx-text-fill: #0f172a; -fx-font-size: 14; -fx-font-weight: 700" text="Résumé par budget — taux de consommation"/>
                                 <Region HBox.hgrow="ALWAYS"/>
                             </HBox>
                             <TableView fx:id="tableAnalyse"
-                                       style="-fx-background-color: transparent; -fx-border-color: #1e2749;">
+                                       style="-fx-background-color: transparent; -fx-border-color: #e2e8f0;">
                                 <columns>
                                     <TableColumn fx:id="colAnalyseNom" text="Budget"/>
                                     <TableColumn fx:id="colAnalyseAlloue" text="Alloué"/>
@@ -445,8 +445,8 @@
 
                     <!-- ── PIE CHART ── -->
                     <VBox spacing="14"
-                          style="-fx-background-color: linear-gradient(to bottom right,#1e2749,#111633); -fx-background-radius: 18; -fx-padding: 24; -fx-border-color: #1e2749; -fx-border-width: 1; -fx-border-radius: 18;">
-                        <Label style="-fx-font-size: 17; -fx-font-weight: 700; -fx-text-fill: #ffffff;"
+                          style="-fx-background-color: linear-gradient(to bottom right,#ffffff,#f8fafc); -fx-background-radius: 18; -fx-padding: 24; -fx-border-color: #e2e8f0; -fx-border-width: 1; -fx-border-radius: 18;">
+                        <Label style="-fx-font-size: 17; -fx-font-weight: 700; -fx-text-fill: #0f172a;"
                                text="📊 Répartition des dépenses par catégorie"/>
                         <PieChart fx:id="pieChartDepenses"
                                   style="-fx-background-color: transparent;" prefHeight="220" prefWidth="260"/>
@@ -454,11 +454,11 @@
 
                     <!-- ── DÉPENSES TABLE ── -->
                     <VBox spacing="16"
-                          style="-fx-background-color: linear-gradient(to bottom right,#1e2749,#111633); -fx-background-radius: 18; -fx-padding: 24; -fx-border-color: #1e2749; -fx-border-width: 1; -fx-border-radius: 18;">
+                          style="-fx-background-color: linear-gradient(to bottom right,#ffffff,#f8fafc); -fx-background-radius: 18; -fx-padding: 24; -fx-border-color: #e2e8f0; -fx-border-width: 1; -fx-border-radius: 18;">
 
                         <!-- Header -->
                         <HBox alignment="CENTER_LEFT" spacing="12">
-                            <Label style="-fx-font-size: 18; -fx-font-weight: 700; -fx-text-fill: #ffffff;"
+                            <Label style="-fx-font-size: 18; -fx-font-weight: 700; -fx-text-fill: #0f172a;"
                                    text="Dépenses du budget sélectionné"/>
                             <Label fx:id="lblNbDepenses"
                                    style="-fx-background-color: rgba(255,140,66,0.15); -fx-text-fill: #ff8c42; -fx-background-radius: 20; -fx-padding: 4 12; -fx-font-weight: 600; -fx-font-size: 11;"
@@ -475,10 +475,10 @@
                             <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 12;" text="Au :"/>
                             <DatePicker fx:id="dpDateFin"/>
                             <Button fx:id="btnAppliquerFiltres" onAction="#handleAppliquerFiltres"
-                                    style="-fx-background-color: #ff8c42; -fx-text-fill: white; -fx-font-weight: 600; -fx-font-size: 12; -fx-padding: 7 14; -fx-background-radius: 8; -fx-cursor: hand;"
+                                    style="-fx-background-color: #ff8c42; -fx-text-fill: #0f172a; -fx-font-weight: 600; -fx-font-size: 12; -fx-padding: 7 14; -fx-background-radius: 8; -fx-cursor: hand;"
                                     text="🔍 Appliquer"/>
                             <Button fx:id="btnReinitialiserFiltres" onAction="#handleReinitialiserFiltres"
-                                    style="-fx-background-color: #1e2749; -fx-text-fill: #94a3b8; -fx-font-weight: 600; -fx-font-size: 12; -fx-padding: 7 14; -fx-background-radius: 8; -fx-cursor: hand;"
+                                    style="-fx-background-color: #e2e8f0; -fx-text-fill: #94a3b8; -fx-font-weight: 600; -fx-font-size: 12; -fx-padding: 7 14; -fx-background-radius: 8; -fx-cursor: hand;"
                                     text="↺ Réinitialiser"/>
                             <Region HBox.hgrow="ALWAYS"/>
                             <Label style="-fx-text-fill: #64748b; -fx-font-size: 12;" text="Trier :"/>
@@ -489,7 +489,7 @@
 
                         <!-- Table -->
                         <TableView fx:id="tableDepenses"
-                                   style="-fx-background-color: #0a0e27; -fx-background-radius: 10; -fx-border-color: #1e2749;"
+                                   style="-fx-background-color: #f8fafc; -fx-background-radius: 10; -fx-border-color: #e2e8f0;"
                                    VBox.vgrow="ALWAYS">
                             <columns>
                                 <TableColumn fx:id="colDepenseLibelle" text="Libellé"/>
