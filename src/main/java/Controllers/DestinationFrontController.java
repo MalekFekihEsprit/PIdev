@@ -6,6 +6,8 @@ import Entities.User;
 import Services.DestinationCRUD;
 import Services.DeleteNotificationCRUD;
 import Services.FavoriteDestinationCRUD;
+import Services.VoyageNotificationCRUD;
+import Entities.VoyageNotification;
 import Utils.UserSession;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -89,10 +91,12 @@ public class DestinationFrontController implements Initializable {
     private DestinationCRUD destinationCRUD;
     private DeleteNotificationCRUD notificationCRUD;
     private FavoriteDestinationCRUD favoriteCRUD;
+    private VoyageNotificationCRUD voyageNotifCRUD;
     private ObservableList<Destination> destinationList = FXCollections.observableArrayList();
     private List<Destination> allDestinations = new ArrayList<>();
     private User currentUser;
     private List<DeleteNotification> unreadNotifications = new ArrayList<>();
+    private List<VoyageNotification> unreadVoyageNotifications = new ArrayList<>();
     private Destination selectedDestination;
     private final java.util.Set<Integer> favoriteDestinationIds = new java.util.HashSet<>();
 
@@ -101,6 +105,7 @@ public class DestinationFrontController implements Initializable {
         destinationCRUD = new DestinationCRUD();
         notificationCRUD = new DeleteNotificationCRUD();
         favoriteCRUD = new FavoriteDestinationCRUD();
+        voyageNotifCRUD = new VoyageNotificationCRUD();
 
         // Get current user
         currentUser = UserSession.getInstance().getCurrentUser();
@@ -252,15 +257,20 @@ public class DestinationFrontController implements Initializable {
     private void loadUnreadNotifications() {
         try {
             unreadNotifications = notificationCRUD.getUnreadNotificationsForUser(currentUser.getId());
-            updateNotificationBadge();
         } catch (SQLException e) {
-            System.err.println("Error loading notifications: " + e.getMessage());
+            System.err.println("Error loading delete notifications: " + e.getMessage());
         }
+        try {
+            unreadVoyageNotifications = voyageNotifCRUD.getUndismissedForUser(currentUser.getId());
+        } catch (SQLException e) {
+            System.err.println("Error loading voyage notifications: " + e.getMessage());
+        }
+        updateNotificationBadge();
     }
 
     private void updateNotificationBadge() {
         if (lblNotificationBadge != null) {
-            int count = unreadNotifications.size();
+            int count = unreadNotifications.size() + unreadVoyageNotifications.size();
             if (count > 0) {
                 lblNotificationBadge.setText(String.valueOf(count));
                 lblNotificationBadge.setVisible(true);
@@ -274,129 +284,112 @@ public class DestinationFrontController implements Initializable {
         try {
             loadUnreadNotifications();
 
+            int totalCount = unreadNotifications.size() + unreadVoyageNotifications.size();
+
             Dialog<Void> dialog = new Dialog<>();
             dialog.setTitle("Notifications");
-            dialog.setHeaderText("Suppressions de vos contenus");
 
             DialogPane dialogPane = dialog.getDialogPane();
             dialogPane.setStyle("-fx-background-color: #ffffff; -fx-border-color: #e2e8f0; -fx-border-width: 1; -fx-border-radius: 8;");
-            dialogPane.setPrefWidth(600);
-            dialogPane.setPrefHeight(500);
+            dialogPane.setPrefWidth(660);
+            dialogPane.setPrefHeight(560);
 
-            VBox content = new VBox(15);
-            content.setPadding(new Insets(20));
+            VBox root = new VBox(0);
+            root.setPadding(new Insets(20));
 
-            if (unreadNotifications.isEmpty()) {
-                VBox emptyBox = new VBox(10);
-                emptyBox.setAlignment(javafx.geometry.Pos.CENTER);
-                emptyBox.setPrefHeight(300);
+            // ── Header ────────────────────────────────────────────────────────
+            HBox headerRow = new HBox(10);
+            headerRow.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+            headerRow.setPadding(new Insets(0, 0, 14, 0));
 
-                Label emptyIcon = new Label("🔔");
-                emptyIcon.setStyle("-fx-font-size: 48;");
+            Label titleLbl = new Label("🔔  Notifications");
+            titleLbl.setStyle("-fx-font-size: 18; -fx-font-weight: 700; -fx-text-fill: #0f172a;");
 
-                Label noNotifLabel = new Label("Aucune nouvelle notification");
-                noNotifLabel.setStyle("-fx-text-fill: #64748b; -fx-font-size: 14;");
+            // dialogBadge is updated in-place whenever a card is dismissed
+            Label dialogBadge = new Label(totalCount + " non lue(s)");
+            dialogBadge.setStyle("-fx-background-color: #ef4444; -fx-text-fill: white; -fx-background-radius: 20; -fx-padding: 3 10; -fx-font-size: 11; -fx-font-weight: 600;");
+            dialogBadge.setVisible(totalCount > 0);
+            dialogBadge.setManaged(totalCount > 0);
 
-                emptyBox.getChildren().addAll(emptyIcon, noNotifLabel);
-                content.getChildren().add(emptyBox);
-            } else {
-                HBox headerBox = new HBox(10);
-                headerBox.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+            Region hSpacer = new Region();
+            HBox.setHgrow(hSpacer, javafx.scene.layout.Priority.ALWAYS);
 
-                Label countLabel = new Label(unreadNotifications.size() + " notification(s) non lue(s)");
-                countLabel.setStyle("-fx-font-weight: 600; -fx-text-fill: #0f172a; -fx-font-size: 14;");
+            Button markAllBtn = new Button("✓ Tout marquer comme lu");
+            markAllBtn.setStyle("-fx-background-color: #10b981; -fx-text-fill: white; -fx-font-weight: 600; -fx-font-size: 11; -fx-padding: 6 14; -fx-background-radius: 8; -fx-cursor: hand;");
 
-                Region spacer = new Region();
-                HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
+            headerRow.getChildren().addAll(titleLbl, dialogBadge, hSpacer, markAllBtn);
 
-                Button markAllRead = new Button("Tout marquer comme lu");
-                markAllRead.setStyle("-fx-background-color: #10b981; -fx-text-fill: white; -fx-font-weight: 600; -fx-font-size: 12; -fx-padding: 8 16; -fx-background-radius: 8; -fx-cursor: hand;");
-                markAllRead.setOnAction(e -> {
-                    try {
-                        notificationCRUD.markAllAsReadForUser(currentUser.getId());
-                        loadUnreadNotifications();
-                        showNotificationsDialog();
-                    } catch (SQLException ex) {
-                        showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible de marquer les notifications comme lues");
-                    }
-                });
+            // ── Tab bar ───────────────────────────────────────────────────────
+            javafx.scene.control.ToggleGroup tabGroup = new javafx.scene.control.ToggleGroup();
 
-                headerBox.getChildren().addAll(countLabel, spacer, markAllRead);
-                content.getChildren().add(headerBox);
+            javafx.scene.control.ToggleButton tabDelete = new javafx.scene.control.ToggleButton(
+                "🗑️  Suppressions  (" + unreadNotifications.size() + ")");
+            tabDelete.setToggleGroup(tabGroup);
+            tabDelete.setSelected(true);
+            tabDelete.setStyle(tabActiveStyle());
 
-                ListView<DeleteNotification> listView = new ListView<>();
-                listView.setPrefHeight(350);
-                listView.setCellFactory(param -> new ListCell<DeleteNotification>() {
-                    @Override
-                    protected void updateItem(DeleteNotification notification, boolean empty) {
-                        super.updateItem(notification, empty);
-                        if (empty || notification == null) {
-                            setText(null);
-                            setGraphic(null);
-                        } else {
-                            VBox cellContent = new VBox(8);
-                            cellContent.setPadding(new Insets(12));
-                            cellContent.setStyle("-fx-background-color: #f8fafc; -fx-background-radius: 8; -fx-border-color: #e2e8f0; -fx-border-width: 1; -fx-border-radius: 8;");
+            javafx.scene.control.ToggleButton tabVoyage = new javafx.scene.control.ToggleButton(
+                "❤️✈️  Voyages favoris  (" + unreadVoyageNotifications.size() + ")");
+            tabVoyage.setToggleGroup(tabGroup);
+            tabVoyage.setStyle(tabInactiveStyle());
 
-                            HBox header = new HBox(10);
-                            header.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+            HBox tabBar = new HBox(0, tabDelete, tabVoyage);
+            tabBar.setPadding(new Insets(0, 0, 12, 0));
 
-                            Label iconLabel = new Label("🗑️");
-                            iconLabel.setStyle("-fx-font-size: 20;");
+            tabDelete.selectedProperty().addListener((obs, o, n) -> tabDelete.setStyle(n ? tabActiveStyle() : tabInactiveStyle()));
+            tabVoyage.selectedProperty().addListener((obs, o, n) -> tabVoyage.setStyle(n ? tabActiveStyle() : tabInactiveStyle()));
 
-                            Label titleLabel = new Label(notification.getItem_type() + " supprimé");
-                            titleLabel.setStyle("-fx-font-weight: 700; -fx-text-fill: #ef4444; -fx-font-size: 14;");
+            // ── Content panels ────────────────────────────────────────────────
+            // Pass live UI refs so in-place updates can refresh counts & badge
+            VBox deleteList = new VBox(10);
+            VBox voyageList = new VBox(10);
 
-                            Region spacer1 = new Region();
-                            HBox.setHgrow(spacer1, javafx.scene.layout.Priority.ALWAYS);
+            ScrollPane deletePane = buildDeletePane(deleteList, dialogBadge, tabDelete);
+            ScrollPane voyagePane = buildVoyagePane(voyageList, dialogBadge, tabVoyage);
+            voyagePane.setVisible(false);
+            voyagePane.setManaged(false);
 
-                            Label dateLabel = new Label(notification.getDeleted_at().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
-                            dateLabel.setStyle("-fx-text-fill: #64748b; -fx-font-size: 11;");
+            tabDelete.selectedProperty().addListener((obs, o, selected) -> {
+                deletePane.setVisible(selected);
+                deletePane.setManaged(selected);
+            });
+            tabVoyage.selectedProperty().addListener((obs, o, selected) -> {
+                voyagePane.setVisible(selected);
+                voyagePane.setManaged(selected);
+            });
 
-                            header.getChildren().addAll(iconLabel, titleLabel, spacer1, dateLabel);
+            // markAll: persist to DB, clear both lists in-place, update all counters
+            markAllBtn.setOnAction(e -> {
+                try {
+                    notificationCRUD.markAllAsReadForUser(currentUser.getId());
+                    voyageNotifCRUD.dismissAll(currentUser.getId());
+                } catch (SQLException ex) {
+                    System.err.println("markAll error: " + ex.getMessage());
+                }
+                unreadNotifications.clear();
+                unreadVoyageNotifications.clear();
 
-                            Label itemLabel = new Label("📌 " + notification.getItem_name());
-                            itemLabel.setStyle("-fx-text-fill: #0f172a; -fx-font-size: 13; -fx-font-weight: 500;");
+                deleteList.getChildren().clear();
+                deleteList.getChildren().add(emptyState("🗑️", "Aucune notification de suppression"));
 
-                            Label adminLabel = new Label("Supprimé par: " + notification.getAdmin_name());
-                            adminLabel.setStyle("-fx-text-fill: #ef4444; -fx-font-size: 12;");
+                voyageList.getChildren().clear();
+                voyageList.getChildren().add(emptyState("❤️✈️", "Aucun voyage vers vos destinations favorites"));
 
-                            Label reasonLabel = new Label("Raison: " + notification.getFullReason());
-                            reasonLabel.setStyle("-fx-text-fill: #475569; -fx-font-size: 12;");
-                            reasonLabel.setWrapText(true);
+                tabDelete.setText("🗑️  Suppressions  (0)");
+                tabVoyage.setText("❤️✈️  Voyages favoris  (0)");
 
-                            Button markReadBtn = new Button("✓ Marquer comme lu");
-                            markReadBtn.setStyle("-fx-background-color: #3b82f6; -fx-text-fill: white; -fx-font-size: 11; -fx-padding: 6 12; -fx-background-radius: 6; -fx-cursor: hand;");
-                            markReadBtn.setOnAction(e -> {
-                                try {
-                                    notificationCRUD.markAsRead(notification.getId_notification());
-                                    loadUnreadNotifications();
-                                    showNotificationsDialog();
-                                } catch (SQLException ex) {
-                                    showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible de marquer la notification comme lue");
-                                }
-                            });
+                dialogBadge.setVisible(false);
+                dialogBadge.setManaged(false);
 
-                            HBox buttonBox = new HBox();
-                            buttonBox.setAlignment(javafx.geometry.Pos.CENTER_RIGHT);
-                            buttonBox.getChildren().add(markReadBtn);
+                updateNotificationBadge(); // refresh the bell in the nav bar
+            });
 
-                            cellContent.getChildren().addAll(header, itemLabel, adminLabel, reasonLabel, buttonBox);
-                            setGraphic(cellContent);
-                        }
-                    }
-                });
+            root.getChildren().addAll(headerRow, tabBar, deletePane, voyagePane);
 
-                ObservableList<DeleteNotification> items = FXCollections.observableArrayList(unreadNotifications);
-                listView.setItems(items);
-                content.getChildren().add(listView);
-            }
-
-            dialogPane.setContent(content);
+            dialogPane.setContent(root);
             dialogPane.getButtonTypes().add(ButtonType.CLOSE);
-
-            Button closeButton = (Button) dialogPane.lookupButton(ButtonType.CLOSE);
-            closeButton.setStyle("-fx-background-color: #64748b; -fx-text-fill: white; -fx-font-weight: 600; -fx-padding: 8 16; -fx-background-radius: 8; -fx-cursor: hand;");
+            Button closeBtn = (Button) dialogPane.lookupButton(ButtonType.CLOSE);
+            closeBtn.setStyle("-fx-background-color: #64748b; -fx-text-fill: white; -fx-font-weight: 600; -fx-padding: 8 16; -fx-background-radius: 8; -fx-cursor: hand;");
 
             dialog.showAndWait();
 
@@ -404,6 +397,206 @@ public class DestinationFrontController implements Initializable {
             showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir les notifications: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    private String tabActiveStyle() {
+        return "-fx-background-color: #ff8c42; -fx-text-fill: white; -fx-font-weight: 600; -fx-font-size: 12; " +
+               "-fx-padding: 8 20; -fx-background-radius: 10 10 0 0; -fx-cursor: hand; -fx-border-width: 0;";
+    }
+
+    private String tabInactiveStyle() {
+        return "-fx-background-color: #f1f5f9; -fx-text-fill: #475569; -fx-font-weight: 500; -fx-font-size: 12; " +
+               "-fx-padding: 8 20; -fx-background-radius: 10 10 0 0; -fx-cursor: hand; -fx-border-width: 0;";
+    }
+
+    /** Builds the delete-notifications scroll pane. */
+    private ScrollPane buildDeletePane(VBox list, Label dialogBadge, javafx.scene.control.ToggleButton tabBtn) {
+        ScrollPane sp = new ScrollPane();
+        sp.setFitToWidth(true);
+        sp.setPrefHeight(400);
+        sp.setStyle("-fx-background: transparent; -fx-background-color: transparent; -fx-border-color: #e2e8f0; -fx-border-radius: 0 8 8 8;");
+
+        list.setPadding(new Insets(12));
+
+        if (unreadNotifications.isEmpty()) {
+            list.getChildren().add(emptyState("🗑️", "Aucune notification de suppression"));
+        } else {
+            for (DeleteNotification n : unreadNotifications) {
+                list.getChildren().add(buildDeleteCard(n, list, dialogBadge, tabBtn));
+            }
+        }
+        sp.setContent(list);
+        return sp;
+    }
+
+    /** Builds the voyage-notifications scroll pane. */
+    private ScrollPane buildVoyagePane(VBox list, Label dialogBadge, javafx.scene.control.ToggleButton tabBtn) {
+        ScrollPane sp = new ScrollPane();
+        sp.setFitToWidth(true);
+        sp.setPrefHeight(400);
+        sp.setStyle("-fx-background: transparent; -fx-background-color: transparent; -fx-border-color: #e2e8f0; -fx-border-radius: 0 8 8 8;");
+
+        list.setPadding(new Insets(12));
+
+        if (unreadVoyageNotifications.isEmpty()) {
+            list.getChildren().add(emptyState("❤️✈️", "Aucun voyage vers vos destinations favorites"));
+        } else {
+            for (VoyageNotification n : unreadVoyageNotifications) {
+                list.getChildren().add(buildVoyageCard(n, list, dialogBadge, tabBtn));
+            }
+        }
+        sp.setContent(list);
+        return sp;
+    }
+
+    private VBox buildDeleteCard(DeleteNotification n, VBox listContainer, Label dialogBadge, javafx.scene.control.ToggleButton tabBtn) {
+        VBox card = new VBox(6);
+        card.setPadding(new Insets(12));
+        card.setStyle("-fx-background-color: #fff5f5; -fx-background-radius: 10; -fx-border-color: #fecaca; -fx-border-width: 1; -fx-border-radius: 10;");
+
+        HBox topRow = new HBox(8);
+        topRow.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+
+        Label icon = new Label("🗑️");
+        icon.setStyle("-fx-font-size: 18;");
+
+        Label type = new Label(n.getItem_type() + " supprimé");
+        type.setStyle("-fx-font-weight: 700; -fx-text-fill: #ef4444; -fx-font-size: 13;");
+
+        Region sp = new Region();
+        HBox.setHgrow(sp, javafx.scene.layout.Priority.ALWAYS);
+
+        Label date = new Label(n.getDeleted_at().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
+        date.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 11;");
+
+        topRow.getChildren().addAll(icon, type, sp, date);
+
+        Label item = new Label("📌 " + n.getItem_name());
+        item.setStyle("-fx-text-fill: #0f172a; -fx-font-size: 13; -fx-font-weight: 500;");
+
+        Label admin = new Label("Supprimé par : " + n.getAdmin_name());
+        admin.setStyle("-fx-text-fill: #ef4444; -fx-font-size: 12;");
+
+        Label reason = new Label("Raison : " + n.getFullReason());
+        reason.setStyle("-fx-text-fill: #475569; -fx-font-size: 12;");
+        reason.setWrapText(true);
+
+        Button markRead = new Button("✓ Marquer comme lu");
+        markRead.setStyle("-fx-background-color: #3b82f6; -fx-text-fill: white; -fx-font-size: 11; -fx-padding: 5 12; -fx-background-radius: 6; -fx-cursor: hand;");
+        markRead.setOnAction(e -> {
+            try { notificationCRUD.markAsRead(n.getId_notification()); } catch (SQLException ex) { System.err.println(ex.getMessage()); }
+            listContainer.getChildren().remove(card);
+            unreadNotifications.remove(n);
+            // Update tab count label
+            tabBtn.setText("🗑️  Suppressions  (" + unreadNotifications.size() + ")");
+            // Update dialog badge
+            int remaining = unreadNotifications.size() + unreadVoyageNotifications.size();
+            dialogBadge.setText(remaining + " non lue(s)");
+            dialogBadge.setVisible(remaining > 0);
+            dialogBadge.setManaged(remaining > 0);
+            updateNotificationBadge();
+            if (listContainer.getChildren().isEmpty()) {
+                listContainer.getChildren().add(emptyState("🗑️", "Aucune notification de suppression"));
+            }
+        });
+
+        HBox btnRow = new HBox();
+        btnRow.setAlignment(javafx.geometry.Pos.CENTER_RIGHT);
+        btnRow.getChildren().add(markRead);
+
+        card.getChildren().addAll(topRow, item, admin, reason, btnRow);
+        return card;
+    }
+
+    private VBox buildVoyageCard(VoyageNotification n, VBox listContainer, Label dialogBadge, javafx.scene.control.ToggleButton tabBtn) {
+        VBox card = new VBox(6);
+        card.setPadding(new Insets(12));
+        card.setStyle("-fx-background-color: #f0f9ff; -fx-background-radius: 10; -fx-border-color: #bae6fd; -fx-border-width: 1; -fx-border-radius: 10;");
+
+        HBox topRow = new HBox(8);
+        topRow.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+
+        Label icon = new Label("✈️");
+        icon.setStyle("-fx-font-size: 18;");
+
+        Label title = new Label("Voyage vers votre destination favorite !");
+        title.setStyle("-fx-font-weight: 700; -fx-text-fill: #0369a1; -fx-font-size: 13;");
+
+        Region sp = new Region();
+        HBox.setHgrow(sp, javafx.scene.layout.Priority.ALWAYS);
+
+        String dateStr = n.getCreated_at() != null
+            ? n.getCreated_at().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))
+            : "";
+        Label date = new Label(dateStr);
+        date.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 11;");
+
+        topRow.getChildren().addAll(icon, title, sp, date);
+
+        Label voyageName = new Label("🗺️  " + (n.getTitre_voyage() != null ? n.getTitre_voyage() : "Voyage #" + n.getId_voyage()));
+        voyageName.setStyle("-fx-text-fill: #0f172a; -fx-font-size: 13; -fx-font-weight: 600;");
+
+        Label dest = new Label("📍  Destination : " + (n.getNom_destination() != null ? n.getNom_destination() : "—"));
+        dest.setStyle("-fx-text-fill: #475569; -fx-font-size: 12;");
+
+        Label favHint = new Label("❤️  Vous avez ajouté cette destination à vos favoris");
+        favHint.setStyle("-fx-text-fill: #db2777; -fx-font-size: 11; -fx-font-style: italic;");
+
+        String datesStr = "";
+        if (n.getDate_debut() != null && n.getDate_fin() != null) {
+            datesStr = "📅  " + n.getDate_debut() + "  →  " + n.getDate_fin();
+        }
+        Label dates = new Label(datesStr);
+        dates.setStyle("-fx-text-fill: #475569; -fx-font-size: 12;");
+
+        String statut = n.getStatut_voyage() != null ? n.getStatut_voyage() : "";
+        String badgeColor = statut.equalsIgnoreCase("en cours") ? "#10b981"
+                          : statut.equalsIgnoreCase("terminé")  ? "#64748b"
+                          : "#f59e0b";
+        Label statutBadge = new Label(statut);
+        statutBadge.setStyle("-fx-background-color: " + badgeColor + "; -fx-text-fill: white; " +
+                             "-fx-background-radius: 20; -fx-padding: 2 10; -fx-font-size: 11; -fx-font-weight: 600;");
+
+        Button dismiss = new Button("✕ Ignorer");
+        dismiss.setStyle("-fx-background-color: #e2e8f0; -fx-text-fill: #475569; -fx-font-size: 11; -fx-padding: 5 12; -fx-background-radius: 6; -fx-cursor: hand;");
+        dismiss.setOnAction(e -> {
+            try { voyageNotifCRUD.dismiss(n.getId_notification()); } catch (SQLException ex) { System.err.println(ex.getMessage()); }
+            listContainer.getChildren().remove(card);
+            unreadVoyageNotifications.remove(n);
+            // Update tab count label
+            tabBtn.setText("❤️✈️  Voyages favoris  (" + unreadVoyageNotifications.size() + ")");
+            // Update dialog badge
+            int remaining = unreadNotifications.size() + unreadVoyageNotifications.size();
+            dialogBadge.setText(remaining + " non lue(s)");
+            dialogBadge.setVisible(remaining > 0);
+            dialogBadge.setManaged(remaining > 0);
+            updateNotificationBadge();
+            if (listContainer.getChildren().isEmpty()) {
+                listContainer.getChildren().add(emptyState("❤️✈️", "Aucun voyage vers vos destinations favorites"));
+            }
+        });
+
+        HBox bottomRow = new HBox(8);
+        bottomRow.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        bottomRow.getChildren().add(statutBadge);
+        Region sp2 = new Region();
+        HBox.setHgrow(sp2, javafx.scene.layout.Priority.ALWAYS);
+        bottomRow.getChildren().addAll(sp2, dismiss);
+
+        card.getChildren().addAll(topRow, voyageName, dest, favHint, dates, bottomRow);
+        return card;
+    }
+
+    private VBox emptyState(String emoji, String message) {
+        VBox box = new VBox(8);
+        box.setAlignment(javafx.geometry.Pos.CENTER);
+        box.setPadding(new Insets(40, 0, 40, 0));
+        Label e = new Label(emoji);
+        e.setStyle("-fx-font-size: 40;");
+        Label m = new Label(message);
+        m.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 13;");
+        box.getChildren().addAll(e, m);
+        return box;
     }
 
     private void loadFavoriteIds() {
