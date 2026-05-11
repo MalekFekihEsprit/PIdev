@@ -2,6 +2,9 @@ package Controllers;
 
 import Entities.Destination;
 import Services.HebergementCRUD;
+import Services.NoteDestinationCRUD;
+import Utils.UserSession;
+import Entities.User;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -19,6 +22,7 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.net.URL;
+import java.sql.SQLException;
 import java.util.ResourceBundle;
 
 public class AfficherDestinationfrontController implements Initializable {
@@ -57,13 +61,27 @@ public class AfficherDestinationfrontController implements Initializable {
     @FXML private Label lblNoVideo;
     @FXML private VBox videoContainer;
 
+    // Rating elements
+    @FXML private HBox starsContainer;
+    @FXML private Label lblRatingPrompt;
+    @FXML private Label lblRatingConfirm;
+    @FXML private Label lblRatingAvg;
+
     private Destination destination;
     private HebergementCRUD hebergementCRUD;
+    private NoteDestinationCRUD noteCRUD;
     private WebEngine webEngine;
+    private User currentUser;
+    private int currentUserRating = 0; // 0 = not rated yet
+
+    // The 5 star labels built programmatically
+    private final Label[] starLabels = new Label[5];
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         hebergementCRUD = new HebergementCRUD();
+        noteCRUD = new NoteDestinationCRUD();
+        currentUser = UserSession.getInstance().getCurrentUser();
 
         // Setup close buttons
         btnClose.setOnMouseClicked(event -> closeWindow());
@@ -79,52 +97,148 @@ public class AfficherDestinationfrontController implements Initializable {
             webEngine = videoWebView.getEngine();
             webEngine.setJavaScriptEnabled(true);
             webEngine.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36");
-
-            // Add error handling
             webEngine.getLoadWorker().exceptionProperty().addListener((obs, oldErr, newErr) -> {
-                if (newErr != null) {
-                    System.err.println("WebView error: " + newErr.getMessage());
-                }
+                if (newErr != null) System.err.println("WebView error: " + newErr.getMessage());
             });
         }
 
-        // Make TextArea read-only and ensure wrapping
+        // Make TextArea read-only
         if (taDescription != null) {
             taDescription.setEditable(false);
             taDescription.setWrapText(true);
             taDescription.setStyle("-fx-font-size: 14;");
         }
+
+        // Build the 5 interactive star labels
+        buildStarRating();
     }
+
+    // ── Rating ────────────────────────────────────────────────────────────────
+
+    private void buildStarRating() {
+        if (starsContainer == null) return;
+        starsContainer.getChildren().clear();
+
+        for (int i = 0; i < 5; i++) {
+            final int starValue = i + 1; // 1-based
+            Label star = new Label("☆");
+            star.setStyle("-fx-font-size: 36; -fx-cursor: hand; -fx-text-fill: #cbd5e1;");
+
+            // Hover: highlight up to this star
+            star.setOnMouseEntered(e -> paintStars(starValue, true));
+            star.setOnMouseExited(e -> paintStars(currentUserRating, false));
+
+            // Click: save rating
+            star.setOnMouseClicked(e -> submitRating(starValue));
+
+            starLabels[i] = star;
+            starsContainer.getChildren().add(star);
+        }
+    }
+
+    /** Colours stars 1..value in gold, the rest grey. hover=true uses a lighter gold. */
+    private void paintStars(int value, boolean hover) {
+        String filledColor = hover ? "#fbbf24" : "#f59e0b";
+        for (int i = 0; i < 5; i++) {
+            if (starLabels[i] == null) continue;
+            if (i < value) {
+                starLabels[i].setText("★");
+                starLabels[i].setStyle("-fx-font-size: 36; -fx-cursor: hand; -fx-text-fill: " + filledColor + ";");
+            } else {
+                starLabels[i].setText("☆");
+                starLabels[i].setStyle("-fx-font-size: 36; -fx-cursor: hand; -fx-text-fill: #cbd5e1;");
+            }
+        }
+    }
+
+    private void submitRating(int stars) {
+        if (currentUser == null || destination == null) return;
+        try {
+            noteCRUD.saveRating(currentUser.getId(), destination.getId_destination(), stars);
+            noteCRUD.refreshDestinationScore(destination.getId_destination());
+            currentUserRating = stars;
+            paintStars(stars, false);
+
+            // Update confirmation label
+            if (lblRatingConfirm != null) {
+                lblRatingConfirm.setText("✓ Vous avez noté cette destination " + stars + "/5");
+                lblRatingConfirm.setVisible(true);
+                lblRatingConfirm.setManaged(true);
+            }
+            if (lblRatingPrompt != null) {
+                lblRatingPrompt.setText("Modifiez votre note en cliquant sur une autre étoile");
+            }
+
+            // Refresh the displayed average score
+            loadAverageScore();
+
+        } catch (SQLException e) {
+            System.err.println("Could not save rating: " + e.getMessage());
+        }
+    }
+
+    private void loadUserRatingAndAverage() {
+        if (currentUser == null || destination == null) return;
+        try {
+            currentUserRating = noteCRUD.getUserRating(currentUser.getId(), destination.getId_destination());
+            paintStars(currentUserRating, false);
+
+            if (currentUserRating > 0 && lblRatingPrompt != null) {
+                lblRatingPrompt.setText("Modifiez votre note en cliquant sur une autre étoile");
+                if (lblRatingConfirm != null) {
+                    lblRatingConfirm.setText("✓ Vous avez noté cette destination " + currentUserRating + "/5");
+                    lblRatingConfirm.setVisible(true);
+                    lblRatingConfirm.setManaged(true);
+                }
+            }
+
+            loadAverageScore();
+
+        } catch (SQLException e) {
+            System.err.println("Could not load user rating: " + e.getMessage());
+        }
+    }
+
+    private void loadAverageScore() throws SQLException {
+        // Re-read the updated score from the destination table
+        Services.DestinationCRUD destCRUD = new Services.DestinationCRUD();
+        Destination updated = destCRUD.getDestinationById(destination.getId_destination());
+        if (updated != null && lblRatingAvg != null) {
+            double avg = updated.getScore_destination();
+            lblRatingAvg.setText(String.format("Moyenne : %.1f / 5", avg));
+            // Also refresh the score labels in the header
+            String scoreText = String.format("%.1f/5", avg);
+            if (lblDestinationScore != null) lblDestinationScore.setText(scoreText);
+            if (lblScoreValue != null) lblScoreValue.setText(scoreText);
+            if (lblTagScore != null) lblTagScore.setText("⭐ " + scoreText);
+            if (scoreProgress != null) scoreProgress.setProgress(Math.min(avg / 5.0, 1.0));
+        }
+    }
+
+    // ── Destination data ──────────────────────────────────────────────────────
 
     public void setDestination(Destination destination) {
         this.destination = destination;
         populateFields();
         loadFlagImage();
         loadVideo();
+        loadUserRatingAndAverage();
     }
 
     private void populateFields() {
         if (destination == null) return;
 
-        // Set icon based on country or name
-        String icon = getIconForDestination(destination);
-        lblDestinationIcon.setText(icon);
-
-        // Basic info
+        lblDestinationIcon.setText(getIconForDestination(destination));
         lblDestinationName.setText(destination.getNom_destination());
         lblDestinationCountry.setText(destination.getPays_destination());
         lblDestinationId.setText("ID: " + destination.getId_destination());
         lblBreadcrumbDestination.setText(destination.getNom_destination());
 
-        // Region
         String region = destination.getRegion_destination() != null ? destination.getRegion_destination() : "Non spécifiée";
-        if (lblRegion != null) {
-            lblRegion.setText(region);
-        }
+        if (lblRegion != null) lblRegion.setText(region);
 
-        // Climate and season
         String climate = destination.getClimat_destination() != null ? destination.getClimat_destination() : "Non spécifié";
-        String season = destination.getSaison_destination() != null ? destination.getSaison_destination() : "Non spécifié";
+        String season  = destination.getSaison_destination()  != null ? destination.getSaison_destination()  : "Non spécifié";
 
         lblClimate.setText(climate);
         lblSeason.setText(season);
@@ -133,39 +247,22 @@ public class AfficherDestinationfrontController implements Initializable {
         lblStatCountry.setText(destination.getPays_destination());
         lblStatId.setText("#" + destination.getId_destination());
 
-        // Currency and Languages
-        String currency = destination.getCurrency_destination() != null ? destination.getCurrency_destination() : "Non disponible";
-        String languages = destination.getLanguages_destination() != null ? destination.getLanguages_destination() : "Non disponible";
+        if (lblCurrency  != null) lblCurrency.setText(destination.getCurrency_destination()  != null ? destination.getCurrency_destination()  : "Non disponible");
+        if (lblLanguages != null) lblLanguages.setText(destination.getLanguages_destination() != null ? destination.getLanguages_destination() : "Non disponible");
 
-        if (lblCurrency != null) lblCurrency.setText(currency);
-        if (lblLanguages != null) lblLanguages.setText(languages);
+        taDescription.setText(destination.getDescription_destination() != null ? destination.getDescription_destination() : "Aucune description disponible.");
 
-        // Description
-        String desc = destination.getDescription_destination() != null ?
-                destination.getDescription_destination() : "Aucune description disponible.";
-        taDescription.setText(desc);
-
-        // Coordinates
         double lat = destination.getLatitude_destination();
         double lon = destination.getLongitude_destination();
+        lblLatitude.setText(String.format("%.4f° %s", Math.abs(lat), lat >= 0 ? "N" : "S"));
+        lblLongitude.setText(String.format("%.4f° %s", Math.abs(lon), lon >= 0 ? "E" : "W"));
 
-        String latStr = String.format("%.4f° %s", Math.abs(lat), lat >= 0 ? "N" : "S");
-        String lonStr = String.format("%.4f° %s", Math.abs(lon), lon >= 0 ? "E" : "W");
-
-        lblLatitude.setText(latStr);
-        lblLongitude.setText(lonStr);
-
-        // Score
         double score = destination.getScore_destination();
         String scoreText = String.format("%.1f/5", score);
         lblDestinationScore.setText(scoreText);
         lblScoreValue.setText(scoreText);
+        scoreProgress.setProgress(Math.min(score / 5.0, 1.0));
 
-        // Progress bar
-        double progress = Math.min(score / 5.0, 1.0);
-        scoreProgress.setProgress(progress);
-
-        // Tags
         lblTagCountry.setText("🇫🇷 " + destination.getPays_destination());
         lblTagClimate.setText("🌡️ " + climate);
         lblTagSeason.setText("🗓️ " + season);
@@ -174,15 +271,12 @@ public class AfficherDestinationfrontController implements Initializable {
 
     private void loadFlagImage() {
         if (flagImageView == null) return;
-
         String flagUrl = destination.getFlag_destination();
         if (flagUrl != null && !flagUrl.isEmpty()) {
             try {
-                Image flagImage = new Image(flagUrl, 45, 30, true, true);
-                flagImageView.setImage(flagImage);
+                flagImageView.setImage(new Image(flagUrl, 45, 30, true, true));
                 flagImageView.setVisible(true);
             } catch (Exception e) {
-                System.err.println("Erreur chargement drapeau: " + e.getMessage());
                 flagImageView.setVisible(false);
             }
         } else {
@@ -192,171 +286,87 @@ public class AfficherDestinationfrontController implements Initializable {
 
     private void loadVideo() {
         if (videoWebView == null || videoContainer == null || lblNoVideo == null) return;
-
         String videoUrl = destination.getVideo_url();
-
         if (videoUrl != null && !videoUrl.isEmpty()) {
-            System.out.println("📹 Loading video from URL: " + videoUrl);
-
             String videoId = extractVideoId(videoUrl);
-
             if (videoId != null) {
-                System.out.println("✅ Extracted video ID: " + videoId);
-
-                // HTML that makes video fill the entire container
                 String embedHtml = String.format(
-                        "<!DOCTYPE html>" +
-                                "<html>" +
-                                "<head>" +
-                                "<style>" +
-                                "html, body { margin: 0; padding: 0; width: 100%%; height: 100%%; overflow: hidden; background: #f8fafc; }" +
-                                ".video-container { position: relative; width: 100%%; height: 100%%; }" +
-                                "iframe { position: absolute; top: 0; left: 0; width: 100%%; height: 100%%; border: 0; border-radius: 12px; }" +
-                                "</style>" +
-                                "</head>" +
-                                "<body>" +
-                                "<div class='video-container'>" +
-                                "<iframe src='https://www.youtube.com/embed/%s?autoplay=0&rel=0&showinfo=0&modestbranding=1&playsinline=1&controls=1' " +
-                                "allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture' " +
-                                "allowfullscreen>" +
-                                "</iframe>" +
-                                "</div>" +
-                                "</body></html>",
-                        videoId
-                );
+                    "<!DOCTYPE html><html><head><style>" +
+                    "html,body{margin:0;padding:0;width:100%%;height:100%%;overflow:hidden;background:#f8fafc;}" +
+                    ".vc{position:relative;width:100%%;height:100%%;}" +
+                    "iframe{position:absolute;top:0;left:0;width:100%%;height:100%%;border:0;border-radius:12px;}" +
+                    "</style></head><body><div class='vc'>" +
+                    "<iframe src='https://www.youtube.com/embed/%s?autoplay=0&rel=0&modestbranding=1&controls=1' allowfullscreen></iframe>" +
+                    "</div></body></html>", videoId);
 
-                // Ensure WebView fills its container
                 videoWebView.setPrefHeight(400);
                 videoWebView.setMinHeight(400);
-                videoWebView.setMaxHeight(Double.MAX_VALUE);
-
-                // Make sure the container expands properly
                 videoContainer.setPrefHeight(450);
                 videoContainer.setMinHeight(450);
-                videoContainer.setMaxHeight(Double.MAX_VALUE);
-                videoContainer.setStyle("-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.02), 10, 0, 0, 2);");
-
-                // Load the HTML
+                videoContainer.setStyle("-fx-background-color: white; -fx-background-radius: 20; -fx-padding: 20;");
                 webEngine.loadContent(embedHtml, "text/html");
-
-                // Make container visible
                 videoContainer.setVisible(true);
                 videoContainer.setManaged(true);
                 lblNoVideo.setVisible(false);
                 lblNoVideo.setManaged(false);
-
-                // Force layout pass
-                javafx.application.Platform.runLater(() -> {
-                    videoWebView.requestLayout();
-                    videoContainer.requestLayout();
-                });
-
-                System.out.println("✅ Video should now fill the container");
-
+                javafx.application.Platform.runLater(() -> { videoWebView.requestLayout(); videoContainer.requestLayout(); });
             } else {
-                System.err.println("❌ Could not extract video ID from: " + videoUrl);
                 showNoVideo();
             }
         } else {
-            System.out.println("ℹ️ No video URL provided");
             showNoVideo();
         }
     }
 
     private void showNoVideo() {
-        if (videoContainer != null && lblNoVideo != null) {
-            videoContainer.setVisible(false);
-            videoContainer.setManaged(false);
-            lblNoVideo.setVisible(true);
-            lblNoVideo.setManaged(true);
-        }
+        if (videoContainer != null) { videoContainer.setVisible(false); videoContainer.setManaged(false); }
+        if (lblNoVideo != null)     { lblNoVideo.setVisible(true);      lblNoVideo.setManaged(true); }
     }
 
-    private String extractVideoId(String videoUrl) {
-        if (videoUrl == null || videoUrl.isEmpty()) return null;
-
-        String videoId = null;
-
+    private String extractVideoId(String url) {
+        if (url == null || url.isEmpty()) return null;
         try {
-            // Format: https://www.youtube.com/watch?v=VIDEO_ID
-            if (videoUrl.contains("youtube.com/watch")) {
-                String[] parts = videoUrl.split("[?&]v=");
-                if (parts.length > 1) {
-                    videoId = parts[1].split("&")[0];
-                }
-            }
-            // Format: https://youtu.be/VIDEO_ID
-            else if (videoUrl.contains("youtu.be/")) {
-                String[] parts = videoUrl.split("youtu.be/");
-                if (parts.length > 1) {
-                    videoId = parts[1].split("\\?")[0];
-                }
-            }
-            // Format: https://www.youtube.com/embed/VIDEO_ID
-            else if (videoUrl.contains("youtube.com/embed/")) {
-                String[] parts = videoUrl.split("embed/");
-                if (parts.length > 1) {
-                    videoId = parts[1].split("\\?")[0];
-                }
-            }
-            // Format: Just the video ID
-            else if (videoUrl.matches("^[a-zA-Z0-9_-]{11}$")) {
-                videoId = videoUrl;
-            }
-
-            // Validate
-            if (videoId != null && videoId.length() == 11) {
-                return videoId;
-            }
-        } catch (Exception e) {
-            System.err.println("Error extracting video ID: " + e.getMessage());
-        }
-
-        return null;
+            String id = null;
+            if (url.contains("youtube.com/watch"))        id = url.split("[?&]v=")[1].split("&")[0];
+            else if (url.contains("youtu.be/"))           id = url.split("youtu.be/")[1].split("\\?")[0];
+            else if (url.contains("youtube.com/embed/"))  id = url.split("embed/")[1].split("\\?")[0];
+            else if (url.matches("^[a-zA-Z0-9_-]{11}$")) id = url;
+            return (id != null && id.length() == 11) ? id : null;
+        } catch (Exception e) { return null; }
     }
 
-    private String getIconForDestination(Destination destination) {
-        String country = destination.getPays_destination().toLowerCase();
-        String name = destination.getNom_destination().toLowerCase();
-
-        if (country.contains("france") || name.contains("paris")) return "🗼";
-        if (country.contains("italie") || country.contains("italy") || name.contains("rome") || name.contains("venise")) return "🏛️";
-        if (country.contains("tunisie") || country.contains("tunisia") || name.contains("djerba")) return "🏖️";
-        if (country.contains("suisse") || country.contains("switzerland") || name.contains("chamonix") || name.contains("zermatt")) return "🏔️";
-        if (country.contains("indonésie") || country.contains("indonesia") || name.contains("bali")) return "🏝️";
-        if (country.contains("grèce") || country.contains("greece") || name.contains("athènes")) return "🏛️";
-        if (country.contains("espagne") || country.contains("spain") || name.contains("barcelone") || name.contains("madrid")) return "💃";
-        if (country.contains("japon") || country.contains("japan") || name.contains("tokyo") || name.contains("kyoto")) return "🗾";
-        if (country.contains("egypte") || country.contains("egypt") || name.contains("le caire")) return "🐫";
-        if (country.contains("maroc") || country.contains("morocco") || name.contains("marrakech")) return "🕌";
-        if (country.contains("royaume-uni") || country.contains("londres") || name.contains("london")) return "🇬🇧";
-        if (country.contains("états-unis") || country.contains("new york") || name.contains("nyc")) return "🗽";
-
+    private String getIconForDestination(Destination d) {
+        String c = d.getPays_destination().toLowerCase();
+        String n = d.getNom_destination().toLowerCase();
+        if (c.contains("france")      || n.contains("paris"))      return "🗼";
+        if (c.contains("italie")      || n.contains("rome"))       return "🏛️";
+        if (c.contains("tunisie")     || n.contains("djerba"))     return "🏖️";
+        if (c.contains("suisse")      || n.contains("chamonix"))   return "🏔️";
+        if (c.contains("indonésie")   || n.contains("bali"))       return "🏝️";
+        if (c.contains("grèce")       || n.contains("athènes"))    return "🏛️";
+        if (c.contains("espagne")     || n.contains("barcelone"))  return "💃";
+        if (c.contains("japon")       || n.contains("tokyo"))      return "🗾";
+        if (c.contains("egypte")      || n.contains("le caire"))   return "🐫";
+        if (c.contains("maroc")       || n.contains("marrakech"))  return "🕌";
+        if (c.contains("royaume-uni") || n.contains("london"))     return "🇬🇧";
+        if (c.contains("états-unis")  || n.contains("new york"))   return "🗽";
         return "🌍";
     }
 
     private void handleVoirHebergements() {
-        if (destination == null) {
-            showAlert(Alert.AlertType.WARNING, "Attention", "Aucune destination sélectionnée");
-            return;
-        }
-
+        if (destination == null) { showAlert(Alert.AlertType.WARNING, "Attention", "Aucune destination sélectionnée"); return; }
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/HebergementFront.fxml"));
             Parent root = loader.load();
-
             HebergementFrontController controller = loader.getController();
             controller.filterByDestination(destination);
-
             Stage stage = (Stage) btnVoirHebergements.getScene().getWindow();
-            stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
+            stage.setScene(new Scene(root, Screen.getPrimary().getVisualBounds().getWidth(), Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - Hébergements à " + destination.getNom_destination());
             stage.setMaximized(true);
             stage.show();
-
         } catch (IOException e) {
             showAlert(Alert.AlertType.ERROR, "Erreur", "Impossible d'ouvrir les hébergements: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 
@@ -373,3 +383,4 @@ public class AfficherDestinationfrontController implements Initializable {
         stage.close();
     }
 }
+
