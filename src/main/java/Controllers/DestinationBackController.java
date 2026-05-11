@@ -914,7 +914,9 @@ public class DestinationBackController implements Initializable {
 
         lblDestinationsTotal.setText(String.valueOf(total));
         lblTotalDestinations.setText(String.valueOf(total));
-        lblSidebarDestinationCount.setText(String.valueOf(total));
+        if (lblSidebarDestinationCount != null) {
+            lblSidebarDestinationCount.setText(String.valueOf(total));
+        }
         lblDestinationCount.setText(total + " destination" + (total > 1 ? "s" : ""));
 
         long paysCount = allDestinations.stream()

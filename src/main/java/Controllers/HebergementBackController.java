@@ -112,7 +112,6 @@ public class HebergementBackController implements Initializable {
         updateLastUpdateTime();
         updateUserInfo();
     }
-
     private void setupTableColumns() {
         colId.setCellValueFactory(new PropertyValueFactory<>("id_hebergement"));
         colNom.setCellValueFactory(new PropertyValueFactory<>("nom_hebergement"));
@@ -795,7 +794,9 @@ public class HebergementBackController implements Initializable {
 
         lblHebergementsTotal.setText(String.valueOf(total));
         lblTotalHebergements.setText(String.valueOf(total));
-        lblSidebarHebergementCount.setText(String.valueOf(total));
+        if (lblSidebarHebergementCount != null) {
+            lblSidebarHebergementCount.setText(String.valueOf(total));
+        }
         lblHebergementCount.setText(total + " hébergement" + (total > 1 ? "s" : ""));
 
         long typesCount = allHebergements.stream()

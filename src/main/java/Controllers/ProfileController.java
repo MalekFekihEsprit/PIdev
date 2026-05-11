@@ -13,10 +13,8 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.stage.FileChooser;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
-import org.mindrot.jbcrypt.BCrypt;
 import Utils.PasswordUtils;
 
 import java.io.File;
@@ -142,12 +140,34 @@ public class ProfileController {
     private void setupUserProfile() {
         if (userProfileBox != null) {
             userProfileBox.setOnMouseClicked(event -> {
-                // Already on profile page, could refresh or do nothing
+                if (currentUser != null && "ADMIN".equalsIgnoreCase(currentUser.getRole())) {
+                    openBackOffice();
+                }
             });
             userProfileBox.setOnMouseEntered(event ->
                     userProfileBox.setStyle("-fx-background-color: #e2e8f0; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand;"));
             userProfileBox.setOnMouseExited(event ->
                     userProfileBox.setStyle("-fx-background-color: #f1f5f9; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand;"));
+        }
+    }
+
+    private void openBackOffice() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/DestinationBack.fxml"));
+            Parent root = loader.load();
+
+            Stage stage = (Stage) userProfileBox.getScene().getWindow();
+            stage.setScene(new Scene(root, Screen.getPrimary().getVisualBounds().getWidth(), Screen.getPrimary().getVisualBounds().getHeight()));
+            stage.setTitle("TravelMate - Back Office");
+            stage.setMaximized(true);
+            stage.show();
+        } catch (IOException e) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Erreur");
+            alert.setHeaderText(null);
+            alert.setContentText("Impossible d'ouvrir le back office: " + e.getMessage());
+            alert.showAndWait();
+            e.printStackTrace();
         }
     }
 

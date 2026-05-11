@@ -85,8 +85,6 @@
                     <!-- Hébergement - Active -->
                     <HBox fx:id="btnHebergement" alignment="CENTER_LEFT" spacing="12" style="-fx-background-color: linear-gradient(to right, #ff8c42, #ff6b4a); -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;">
                         <SVGPath content="M7 13c1.66 0 3-1.34 3-3S8.66 7 7 7s-3 1.34-3 3 1.34 3 3 3zm12-6h-8v7H3V5H1v15h2v-3h18v3h2v-9c0-2.21-1.79-4-4-4z" fill="white" scaleX="0.75" scaleY="0.75" />
-                        <Region HBox.hgrow="ALWAYS" />
-                        <Label fx:id="lblSidebarHebergementCount" style="-fx-background-color: rgba(255,255,255,0.2); -fx-background-radius: 10; -fx-padding: 2 8; -fx-text-fill: #0f172a; -fx-font-size: 11; -fx-font-weight: bold;" text="0" />
                         <Label style="-fx-text-fill: #0f172a; -fx-font-weight: 600; -fx-font-size: 14;" text="Hébergement" />
                     </HBox>
 

@@ -85,7 +85,6 @@
                     <!-- Statistiques (active) -->
                     <HBox fx:id="btnStats" alignment="CENTER_LEFT" spacing="12" style="-fx-background-color: linear-gradient(to right, #ff8c42, #ff6b4a); -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;">
                         <SVGPath content="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z" fill="white" scaleX="0.75" scaleY="0.75" />
-                        <Region HBox.hgrow="ALWAYS" />
                         <Label style="-fx-text-fill: #0f172a; -fx-font-weight: 600; -fx-font-size: 14;" text="Statistiques" />
                     </HBox>
 
