@@ -53,6 +53,12 @@
                 <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 12;" text="›" />
                 <Label fx:id="lblBreadcrumbDestination" style="-fx-text-fill: #ff8c42; -fx-font-size: 12; -fx-font-weight: 600;" text="Détails de la destination" />
             </HBox>
+
+            <!-- IMAGE BANNER — shown only when image_name is set -->
+            <HBox fx:id="imageBannerBox" managed="false" visible="false" alignment="CENTER"
+                  style="-fx-background-color: #0f172a;">
+                <ImageView fx:id="imageBannerView" preserveRatio="true" smooth="true" />
+            </HBox>
         </VBox>
     </top>
 
@@ -61,9 +67,11 @@
         <ScrollPane fitToHeight="false" fitToWidth="true" style="-fx-background: #f8fafc; -fx-border-color: transparent; -fx-background-color: transparent;" VBox.vgrow="ALWAYS">
             <content>
                 <VBox maxWidth="Infinity" minWidth="0" prefWidth="0" spacing="30" VBox.vgrow="ALWAYS">
-                    <padding>
-                        <Insets bottom="40" left="48" right="48" top="30" />
-                    </padding>
+
+                    <VBox spacing="30">
+                        <padding>
+                            <Insets bottom="40" left="48" right="48" top="30" />
+                        </padding>
 
                     <!-- HEADER WITH DESTINATION NAME, ICON AND FLAG -->
                     <HBox alignment="CENTER_LEFT" spacing="24">
@@ -290,8 +298,8 @@
 
                     <!-- BOTTOM DECORATION -->
                     <Region maxWidth="Infinity" minHeight="3" prefHeight="3" style="-fx-background-color: linear-gradient(to right, rgba(245,166,35,0.5), rgba(255,107,0,0.5), rgba(99,102,241,0.5));" />
-                        
 
+                    </VBox><!-- end inner padded VBox -->
                 </VBox>
             </content>
         </ScrollPane>

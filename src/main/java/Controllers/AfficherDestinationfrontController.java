@@ -61,6 +61,10 @@ public class AfficherDestinationfrontController implements Initializable {
     @FXML private Label lblNoVideo;
     @FXML private VBox videoContainer;
 
+    // Image banner
+    @FXML private javafx.scene.layout.HBox imageBannerBox;
+    @FXML private javafx.scene.image.ImageView imageBannerView;
+
     // Rating elements
     @FXML private HBox starsContainer;
     @FXML private Label lblRatingPrompt;
@@ -222,7 +226,42 @@ public class AfficherDestinationfrontController implements Initializable {
         populateFields();
         loadFlagImage();
         loadVideo();
+        loadImageBanner();
         loadUserRatingAndAverage();
+    }
+
+    private void loadImageBanner() {
+        if (imageBannerBox == null || imageBannerView == null || destination == null) return;
+        String imageName = destination.getImage_name();
+        if (imageName == null || imageName.isBlank()) {
+            imageBannerBox.setVisible(false);
+            imageBannerBox.setManaged(false);
+            return;
+        }
+        try {
+            javafx.scene.image.Image img;
+            if (imageName.startsWith("http://") || imageName.startsWith("https://")) {
+                img = new javafx.scene.image.Image(imageName, true);
+            } else {
+                java.net.URL res = getClass().getResource("/images/" + imageName);
+                if (res != null) {
+                    img = new javafx.scene.image.Image(res.toExternalForm(), true);
+                } else {
+                    img = new javafx.scene.image.Image(new java.io.File(imageName).toURI().toString(), true);
+                }
+            }
+            imageBannerView.setImage(img);
+            // Show at natural size, capped to 400px tall, ratio preserved
+            imageBannerView.setPreserveRatio(true);
+            imageBannerView.setFitHeight(400);
+            imageBannerView.setFitWidth(0); // 0 = unconstrained, driven by fitHeight + ratio
+            imageBannerBox.setVisible(true);
+            imageBannerBox.setManaged(true);
+        } catch (Exception e) {
+            System.err.println("Could not load banner image: " + e.getMessage());
+            imageBannerBox.setVisible(false);
+            imageBannerBox.setManaged(false);
+        }
     }
 
     private void populateFields() {
