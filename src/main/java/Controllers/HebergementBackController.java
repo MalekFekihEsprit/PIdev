@@ -260,9 +260,9 @@ public class HebergementBackController implements Initializable {
         if (userProfileBox != null) {
             userProfileBox.setOnMouseClicked(event -> navigateToProfile());
             userProfileBox.setOnMouseEntered(event ->
-                    userProfileBox.setStyle("-fx-background-color: #2d3759; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand;"));
+                    userProfileBox.setStyle("-fx-background-color: #edf2f7; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand; -fx-border-color: #cbd5e1; -fx-border-width: 1; -fx-border-radius: 25;"));
             userProfileBox.setOnMouseExited(event ->
-                    userProfileBox.setStyle("-fx-background-color: #1e2749; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand;"));
+                    userProfileBox.setStyle("-fx-background-color: #e2e8f0; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand; -fx-border-color: transparent; -fx-border-width: 1; -fx-border-radius: 25;"));
         }
     }
 
