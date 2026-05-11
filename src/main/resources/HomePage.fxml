@@ -45,10 +45,10 @@
                 </VBox>
 
                 <!-- Back Office Card -->
-                <VBox fx:id="backOfficeCard" alignment="CENTER" spacing="20" style="-fx-background-color: #111633; -fx-background-radius: 30; -fx-padding: 40; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 20, 0, 0, 10); -fx-cursor: hand;">
+                <VBox fx:id="backOfficeCard" alignment="CENTER" spacing="20" style="-fx-background-color: white; -fx-background-radius: 30; -fx-padding: 40; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 12, 0, 0, 6); -fx-cursor: hand;">
                     <Label style="-fx-font-size: 64;" text="⚙️" />
-                    <Label style="-fx-font-family: 'Clash Display'; -fx-font-size: 24; -fx-font-weight: bold; -fx-text-fill: #ffffff;" text="Back Office" />
-                    <Label style="-fx-text-fill: #94a3b8; -fx-font-size: 14; -fx-alignment: center;" text="Administrez les destinations et gérez la base de données" wrapText="true" />
+                    <Label style="-fx-font-family: 'Clash Display'; -fx-font-size: 24; -fx-font-weight: bold; -fx-text-fill: #0f172a;" text="Back Office" />
+                    <Label style="-fx-text-fill: #64748b; -fx-font-size: 14; -fx-alignment: center;" text="Administrez les destinations et gérez la base de données" wrapText="true" />
 
                     <Region maxWidth="Infinity" minHeight="3" prefHeight="3" style="-fx-background-color: linear-gradient(to right, rgba(245,166,35,0.5), rgba(255,107,0,0.5), rgba(99,102,241,0.5));" />
                         

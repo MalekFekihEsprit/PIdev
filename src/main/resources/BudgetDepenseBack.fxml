@@ -24,7 +24,7 @@
 
 <BorderPane maxHeight="Infinity" maxWidth="Infinity"
             style="-fx-background-color: #f8fafc;"
-            stylesheets="Styles/budget-dark.css"
+            stylesheets="Styles/budget.css"
             xmlns="http://javafx.com/javafx/21"
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="Controllers.BudgetBackController">

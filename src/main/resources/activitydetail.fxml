@@ -136,7 +136,7 @@
                     <!-- Colonne gauche : Image et description -->
                     <VBox spacing="15" GridPane.columnIndex="0">
                         <!-- Image -->
-                        <ImageView fx:id="imageView" fitHeight="300" fitWidth="600" preserveRatio="true" style="-fx-background-color:#0a0e27;-fx-background-radius:16;-fx-effect:dropshadow(three-pass-box,rgba(0,0,0,0.1),10,0,0,5);" />
+                        <ImageView fx:id="imageView" fitHeight="300" fitWidth="600" preserveRatio="true" style="-fx-background-color: transparent; -fx-background-radius:16; -fx-effect:dropshadow(three-pass-box,rgba(0,0,0,0.06),10,0,0,5);" />
 
                         <!-- Description -->
                         <VBox style="-fx-background-color:white;-fx-background-radius:16;-fx-padding:20;-fx-effect:dropshadow(three-pass-box,rgba(0,0,0,0.06),8,0,0,2);">

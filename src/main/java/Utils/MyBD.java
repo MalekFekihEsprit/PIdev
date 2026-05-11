@@ -7,9 +7,9 @@ public class MyBD {
     private Connection conn;
     private static MyBD instance;
 
-    private static final String URL  = "jdbc:mysql://localhost:3306/travelmate?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true";
-    private static final String USER = "root";
-    private static final String PASS = "";
+    private static final String URL  = "jdbc:mysql://172.20.10.9:3306/travelmate?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true";
+    private static final String USER = "Travelmate";
+    private static final String PASS = "Travelmate";
 
     private MyBD() {
         connect();

@@ -3,7 +3,6 @@ package Controllers;
 import Entities.Evenement;
 import Services.Evenementcrud;
 import Utils.UserSession;
-import Utils.FileManager;
 import Entities.User;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -298,40 +297,77 @@ public class EVENTfront implements Initializable {
     }
 
     /**
-     * Charge l'image d'un événement via FileManager.resolveImageFile()
-     * qui gère tous les formats de chemins (absolu, relatif, nom seul, legacy).
+     * Charge l'image d'un événement.
+     * ✅ CAS 1 : URL Cloudinary (https://...) → téléchargement via HttpURLConnection
+     * ✅ CAS 2 : Chemin absolu local (ex: C:/projet/uploads/...)
+     * ✅ CAS 3 : Chemin relatif / nom de fichier seul dans uploads/evenements/
      *
-     * ✅ CORRECTION : l'Image est chargée sans largeur fixe (requestedWidth=0)
-     * pour laisser le bind() de fitWidthProperty gérer le redimensionnement.
+     * Le redimensionnement est géré par fitWidthProperty().bind() dans buildCard.
      */
     private ImageView loadEventImage(Evenement e) {
         String storedPath = e.getImagePath();
         if (storedPath == null || storedPath.trim().isEmpty()) return null;
 
-        // Normaliser les séparateurs Windows → Unix
         storedPath = storedPath.trim().replace("\\", "/");
 
-        // Utiliser FileManager pour résoudre le chemin de manière robuste
-        File imageFile = FileManager.resolveImageFile(storedPath);
-
-        if (imageFile != null) {
+        // ✅ CAS 1 : URL distante (Cloudinary, http, https)
+        if (storedPath.startsWith("http://") || storedPath.startsWith("https://")) {
             try {
-                // ✅ CORRECTION : requestedWidth=0 → JavaFX charge à la taille réelle
-                // Le redimensionnement est géré par fitWidthProperty().bind() dans buildCard
-                Image image = new Image(imageFile.toURI().toString(), 0, 150, true, true);
-                if (!image.isError()) {
-                    return new ImageView(image);
+                java.net.URL url = new java.net.URL(storedPath);
+                java.net.HttpURLConnection connection = (java.net.HttpURLConnection) url.openConnection();
+                connection.setRequestProperty("User-Agent",
+                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36");
+                connection.setConnectTimeout(5000);
+                connection.setReadTimeout(5000);
+                connection.connect();
+
+                if (connection.getResponseCode() == 200) {
+                    try (java.io.InputStream is = connection.getInputStream()) {
+                        // requestedWidth=0 → taille réelle, le bind() gère le redimensionnement
+                        Image img = new Image(is, 0, 150, true, true);
+                        if (!img.isError()) {
+                            return new ImageView(img);
+                        }
+                    }
                 } else {
-                    System.err.println("[EVENTfront] Erreur interne image : " + imageFile.getAbsolutePath());
+                    System.err.println("[EVENTfront] HTTP " + connection.getResponseCode()
+                            + " pour : " + storedPath);
                 }
             } catch (Exception ex) {
-                System.err.println("[EVENTfront] Erreur chargement image ["
-                        + imageFile.getAbsolutePath() + "] : " + ex.getMessage());
+                System.err.println("[EVENTfront] Erreur chargement Cloudinary : "
+                        + storedPath + " → " + ex.getMessage());
             }
-        } else {
-            System.err.println("[EVENTfront] Image introuvable pour le chemin stocké : " + storedPath);
+            return null; // URL distante mais échouée → pas de fallback local
         }
 
+        // ✅ CAS 2 : Chemin absolu local
+        File f = new File(storedPath);
+        if (f.exists()) {
+            try {
+                Image img = new Image(f.toURI().toString(), 0, 150, true, true);
+                if (!img.isError()) return new ImageView(img);
+            } catch (Exception ignored) {}
+        }
+
+        // ✅ CAS 3 : Chemin relatif / nom de fichier seul
+        String fileName = new File(storedPath).getName();
+        String[] localDirs = {
+                "uploads/evenements/",
+                "uploads/activites/",
+                "src/main/resources/uploads/evenements/",
+                "uploads/"
+        };
+        for (String dir : localDirs) {
+            File f2 = new File(dir + fileName);
+            if (f2.exists()) {
+                try {
+                    Image img = new Image(f2.toURI().toString(), 0, 150, true, true);
+                    if (!img.isError()) return new ImageView(img);
+                } catch (Exception ignored) {}
+            }
+        }
+
+        System.err.println("[EVENTfront] Image introuvable pour : " + storedPath);
         return null;
     }
 
@@ -414,13 +450,13 @@ public class EVENTfront implements Initializable {
     @FXML
     private void handleTranslate() {
         Utils.TranslationManager.createTranslationButton(() ->
-            Utils.TranslationManager.translateInterface(
-                btnTranslate.getScene().getRoot(),
-                Utils.TranslationManager.getCurrentLanguage())
+                Utils.TranslationManager.translateInterface(
+                        btnTranslate.getScene().getRoot(),
+                        Utils.TranslationManager.getCurrentLanguage())
         );
         Utils.TranslationManager.translateInterface(
-            btnTranslate.getScene().getRoot(),
-            Utils.TranslationManager.getCurrentLanguage());
+                btnTranslate.getScene().getRoot(),
+                Utils.TranslationManager.getCurrentLanguage());
     }
 
     // ==================== NAVIGATION ====================

@@ -86,9 +86,9 @@
 
 /* ===== STYLES POUR LES IMAGES ===== */
 #imageView {
-    -fx-background-color: #0a0e27;
+    -fx-background-color: transparent;
     -fx-background-radius: 16;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.06), 10, 0, 0, 5);
 }
 
 /* ===== STYLES POUR LE TABPANE ===== */

@@ -213,11 +213,17 @@ public class UserCRUD implements InterfaceCRUD<User> {
 
     public boolean emailExists(String email) throws SQLException {
         String req = "SELECT id FROM user WHERE email = ?";
-        PreparedStatement pst = conn.prepareStatement(req);
-        pst.setString(1, email);
-        ResultSet rs = pst.executeQuery();
-        System.out.println("Vérification de l'email : " + email);
-        return rs.next();
+        Connection c = MyBD.getInstance().getConn();
+        if (c == null) {
+            throw new SQLException("Database connection unavailable");
+        }
+        try (PreparedStatement pst = c.prepareStatement(req)) {
+            pst.setString(1, email);
+            try (ResultSet rs = pst.executeQuery()) {
+                System.out.println("Vérification de l'email : " + email);
+                return rs.next();
+            }
+        }
     }
 
     public boolean updatePassword(String email, String newPassword) throws SQLException {

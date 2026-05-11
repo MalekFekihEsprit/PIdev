@@ -1,10 +1,5 @@
-/* ================================================================
-   TRAVELMATE — Admin Dark Theme
-   Chemin : src/main/resources/Styles/budget-dark.css
-   Dans le FXML : stylesheets="@../Styles/budget-dark.css"
-   ================================================================ */
+/* Light budget styles for back office */
 
-/* ──────── PIE CHART : labels & légende en BLANC ──────── */
 .chart-pie-label {
     -fx-fill: #0f172a !important;
     -fx-font-size: 11px;
@@ -30,9 +25,8 @@
     -fx-font-weight: bold;
 }
 
-/* ──────── TABLES ──────── */
 .table-view {
-    -fx-background-color: #f8fafc;
+    -fx-background-color: #ffffff;
     -fx-border-color: #e2e8f0;
     -fx-border-radius: 12;
     -fx-background-radius: 12;
@@ -45,7 +39,6 @@
 .table-view .filler {
     -fx-background-color: #ffffff;
     -fx-border-color: transparent;
-    -fx-size: 40;
 }
 .table-view .column-header .label {
     -fx-text-fill: #0f172a;
@@ -58,7 +51,7 @@
     -fx-border-color: transparent transparent #e2e8f0 transparent;
     -fx-table-cell-border-color: transparent;
 }
-.table-row-cell:odd  { -fx-background-color: rgba(30,39,73,0.35); }
+.table-row-cell:odd  { -fx-background-color: #f8fafc; }
 .table-row-cell:hover { -fx-background-color: rgba(255,140,66,0.08); }
 .table-row-cell:selected { -fx-background-color: rgba(255,140,66,0.20); }
 .table-cell {
@@ -67,38 +60,34 @@
     -fx-padding: 10 8;
 }
 
-/* ──────── SCROLL PANE ──────── */
 .scroll-pane { -fx-background-color: transparent; }
 .scroll-pane > .viewport { -fx-background-color: transparent; }
 .scroll-bar:vertical .thumb,
 .scroll-bar:horizontal .thumb {
-    -fx-background-color: #e2e8f0;
+    -fx-background-color: #cbd5e1;
     -fx-background-radius: 8;
 }
 .scroll-bar { -fx-background-color: transparent; }
 
-/* ──────── COMBO BOX ──────── */
 .combo-box {
     -fx-background-color: #f8fafc;
     -fx-border-color: #e2e8f0;
     -fx-border-radius: 8;
     -fx-background-radius: 8;
 }
-.combo-box .list-cell { -fx-text-fill: #e2e8f0; -fx-background-color: transparent; }
+.combo-box .list-cell { -fx-text-fill: #0f172a; -fx-background-color: transparent; }
 .combo-box-popup .list-view { -fx-background-color: #ffffff; -fx-border-color: #e2e8f0; }
-.combo-box-popup .list-cell { -fx-text-fill: #e2e8f0; -fx-background-color: transparent; }
+.combo-box-popup .list-cell { -fx-text-fill: #0f172a; -fx-background-color: transparent; }
 .combo-box-popup .list-cell:hover { -fx-background-color: rgba(255,140,66,0.15); }
 
-/* ──────── DATE PICKER ──────── */
 .date-picker {
-    -fx-background-color: #f8fafc;
+    -fx-background-color: #ffffff;
     -fx-border-color: #e2e8f0;
     -fx-border-radius: 8;
     -fx-background-radius: 8;
 }
-.date-picker .text-field { -fx-text-fill: #e2e8f0; -fx-background-color: transparent; }
+.date-picker .text-field { -fx-text-fill: #0f172a; -fx-background-color: transparent; }
 
-/* ──────── TOGGLE BUTTON ──────── */
 .toggle-button {
     -fx-background-color: #e2e8f0;
     -fx-text-fill: #0f172a;
@@ -110,4 +99,4 @@
     -fx-text-fill: #0f172a;
     -fx-font-weight: 700;
 }
-.button:hover { -fx-opacity: 0.86; }
+.button:hover { -fx-opacity: 0.96; }

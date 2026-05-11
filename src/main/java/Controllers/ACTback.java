@@ -6,6 +6,7 @@ import Services.ActivitesCRUD;
 import Services.AIServiceActivites;
 import Services.CategoriesCRUD;
 import Utils.FileManager;
+import Utils.CloudinaryUploader;
 import Utils.UserSession;
 import Entities.User;
 import javafx.application.Platform;
@@ -25,6 +26,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.stage.Modality;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 import java.io.File;
@@ -199,15 +201,23 @@ public class ACTback implements Initializable {
                     setText("❌");
                 } else {
                     try {
-                        File file = new File(imagePath);
-                        if (file.exists()) {
-                            Image image = new Image(file.toURI().toString(), 30, 30, true, true);
+                        if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
+                            // URL Cloudinary
+                            Image image = new Image(imagePath, 30, 30, true, true, true);
                             imageView.setImage(image);
                             setGraphic(imageView);
                             setText(null);
                         } else {
-                            setGraphic(null);
-                            setText("❌");
+                            File file = new File(imagePath);
+                            if (file.exists()) {
+                                Image image = new Image(file.toURI().toString(), 30, 30, true, true);
+                                imageView.setImage(image);
+                                setGraphic(imageView);
+                                setText(null);
+                            } else {
+                                setGraphic(null);
+                                setText("❌");
+                            }
                         }
                     } catch (Exception e) {
                         setGraphic(null);
@@ -362,7 +372,7 @@ public class ACTback implements Initializable {
                     if (lbl.getText().equals(icon)) {
                         lbl.setStyle("-fx-font-size: 16;");
                     } else if (!lbl.getText().matches("\\d+")) {
-                        lbl.setStyle("-fx-text-fill: #0f172a; -fx-font-weight: 500; -fx-font-size: 14;");
+                        lbl.setStyle("-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;");
                     }
                 }
             });
@@ -373,9 +383,9 @@ public class ACTback implements Initializable {
         if (userProfileBox != null) {
             userProfileBox.setOnMouseClicked(event -> navigateToProfile());
             userProfileBox.setOnMouseEntered(event ->
-                    userProfileBox.setStyle("-fx-background-color: #edf2f7; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand; -fx-border-color: #cbd5e1; -fx-border-width: 1; -fx-border-radius: 25;"));
+                    userProfileBox.setStyle("-fx-background-color: #2d3759; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand;"));
             userProfileBox.setOnMouseExited(event ->
-                    userProfileBox.setStyle("-fx-background-color: #e2e8f0; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand; -fx-border-color: transparent; -fx-border-width: 1; -fx-border-radius: 25;"));
+                    userProfileBox.setStyle("-fx-background-color: #1e2749; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand;"));
         }
     }
 
@@ -769,13 +779,20 @@ public class ACTback implements Initializable {
 
         if (currentImage != null && !currentImage.isEmpty()) {
             try {
-                File file = new File(currentImage);
-                if (file.exists()) {
-                    Image image = new Image(file.toURI().toString());
+                if (currentImage.startsWith("http://") || currentImage.startsWith("https://")) {
+                    // Image Cloudinary — chargement direct depuis l'URL
+                    Image image = new Image(currentImage, true); // backgroundLoading=true
                     imageView.setImage(image);
-                    imageNameLabel.setText("Image actuelle : " + file.getName());
+                    imageNameLabel.setText("Image actuelle (Cloudinary)");
                 } else {
-                    imageNameLabel.setText("Aucune image");
+                    File file = new File(currentImage);
+                    if (file.exists()) {
+                        Image image = new Image(file.toURI().toString());
+                        imageView.setImage(image);
+                        imageNameLabel.setText("Image actuelle : " + file.getName());
+                    } else {
+                        imageNameLabel.setText("Aucune image");
+                    }
                 }
             } catch (Exception e) {
                 imageNameLabel.setText("Aucune image");
@@ -1271,8 +1288,14 @@ public class ACTback implements Initializable {
                     activite.setCategorieId(selectedCategorie != null ? selectedCategorie.getId() : 0);
 
                     if (selectedImageFile != null) {
-                        String imagePath = FileManager.saveImage(selectedImageFile);
-                        activite.setImagePath(imagePath);
+                        try {
+                            String cloudinaryUrl = CloudinaryUploader.uploadImage(selectedImageFile, "activites");
+                            activite.setImagePath(cloudinaryUrl);
+                        } catch (java.io.IOException uploadEx) {
+                            showError("Erreur upload image",
+                                    "Impossible d'uploader l'image sur Cloudinary : " + uploadEx.getMessage());
+                            return;
+                        }
                     }
 
                     activitesCRUD.ajouter(activite);
@@ -1648,11 +1671,15 @@ public class ACTback implements Initializable {
                     selectedActivite.setCategorieId(selectedCategorie != null ? selectedCategorie.getId() : 0);
 
                     if (selectedImageFile != null) {
-                        if (currentImagePath != null && !currentImagePath.isEmpty()) {
-                            FileManager.deleteImage(currentImagePath);
+                        // L'ancienne image Cloudinary n'a pas besoin d'être supprimée localement
+                        try {
+                            String cloudinaryUrl = CloudinaryUploader.uploadImage(selectedImageFile, "activites");
+                            selectedActivite.setImagePath(cloudinaryUrl);
+                        } catch (java.io.IOException uploadEx) {
+                            showError("Erreur upload image",
+                                    "Impossible d'uploader l'image sur Cloudinary : " + uploadEx.getMessage());
+                            return;
                         }
-                        String newImagePath = FileManager.saveImage(selectedImageFile);
-                        selectedActivite.setImagePath(newImagePath);
                     }
 
                     activitesCRUD.modifier(selectedActivite);

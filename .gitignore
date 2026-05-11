@@ -95,3 +95,4 @@ out/
 *.ear
 
 .env
+src/main/resources/cloudinary.env

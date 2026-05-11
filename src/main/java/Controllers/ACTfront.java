@@ -78,14 +78,14 @@ public class ACTfront implements Initializable {
     @FXML private HBox btnVoyages;
     @FXML private HBox btnBudgets;
     @FXML private HBox btnNotifications;
-    @FXML private HBox btnCategories; // This is the Categories button in navbar
-    @FXML private HBox btnActivites; // This is the active Activities button
+    @FXML private HBox btnCategories;
+    @FXML private HBox btnActivites;
     @FXML private HBox btnEvenements;
     @FXML private HBox userProfileBox;
     @FXML private Label lblUserName;
     @FXML private Label lblUserRole;
-    @FXML private HBox btnHome; // Home button in breadcrumb
-    @FXML private HBox btnRefresh; // Refresh button in breadcrumb
+    @FXML private HBox btnHome;
+    @FXML private HBox btnRefresh;
 
     // Scroll navigation
     @FXML private ScrollPane navScrollPane;
@@ -251,9 +251,7 @@ public class ACTfront implements Initializable {
         }
     }
 
-    // Ajoutez cette méthode pour gérer les notifications
     private void showNotificationsDialog() {
-        // Implémentez la logique des notifications ou appelez une méthode existante
         showInfo("Notifications", "Fonctionnalité à venir");
     }
 
@@ -747,43 +745,96 @@ public class ACTfront implements Initializable {
         }
     }
 
+    // ─── CORRECTION PRINCIPALE : chargement des images locales ET Cloudinary ───
+    // ─── CORRECTION PRINCIPALE : chargement des images locales ET Cloudinary ───
     private ImageView tryLoadImage(Activites activite) {
-        if (activite.getImagePath() != null && !activite.getImagePath().isEmpty()) {
+        if (activite.getImagePath() == null || activite.getImagePath().isEmpty()) {
+            return tryLoadImageByName(activite);
+        }
+
+        String path = activite.getImagePath().trim();
+
+        // ✅ CAS 1 : URL distante (Cloudinary, http, https) — téléchargement manuel
+        if (path.startsWith("http://") || path.startsWith("https://")) {
             try {
-                File f = new File(activite.getImagePath());
-                if (f.exists()) {
-                    return new ImageView(new Image(f.toURI().toString(), 200, 140, false, true));
+                java.net.URL url = new java.net.URL(path);
+                java.net.HttpURLConnection connection = (java.net.HttpURLConnection) url.openConnection();
+                connection.setRequestProperty("User-Agent",
+                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36");
+                connection.setConnectTimeout(5000);
+                connection.setReadTimeout(5000);
+                connection.connect();
+
+                if (connection.getResponseCode() == 200) {
+                    try (java.io.InputStream is = connection.getInputStream()) {
+                        Image img = new Image(is, 200, 140, false, true);
+                        if (!img.isError()) {
+                            return new ImageView(img);
+                        }
+                    }
                 }
+            } catch (Exception e) {
+                System.err.println("⚠️ Erreur chargement Cloudinary : " + path + " → " + e.getMessage());
+            }
+        }
+
+        // ✅ CAS 2 : Chemin absolu local
+        File f = new File(path);
+        if (f.exists()) {
+            try {
+                return new ImageView(new Image(f.toURI().toString(), 200, 140, false, true));
             } catch (Exception ignored) {}
         }
 
-        if (activite.getNom() != null) {
-            String[] exts = {".jpg", ".jpeg", ".png", ".webp"};
-            // APRÈS — conserve les accents en les convertissant (é→e, â→a, etc.)
-            String baseName = java.text.Normalizer
-                    .normalize(activite.getNom().toLowerCase(), java.text.Normalizer.Form.NFD)
-                    .replaceAll("\\p{InCombiningDiacriticalMarks}+", "") // retire les accents
-                    .replaceAll("\\s+", "_")
-                    .replaceAll("[^a-z0-9_]", "");
-            for (String ext : exts) {
-                URL url = getClass().getResource("/images/" + baseName + ext);
-                if (url != null) {
-                    try {
-                        return new ImageView(new Image(url.toExternalForm(), 200, 140, false, true));
-                    } catch (Exception ignored) {}
-                }
+        // ✅ CAS 3 : Chemin relatif dans uploads/activites
+        String fileName = new File(path).getName();
+        String[] localDirs = {
+                "uploads/activites/",
+                "src/main/resources/uploads/activites/",
+                "uploads/"
+        };
+        for (String dir : localDirs) {
+            File f2 = new File(dir + fileName);
+            if (f2.exists()) {
+                try {
+                    return new ImageView(new Image(f2.toURI().toString(), 200, 140, false, true));
+                } catch (Exception ignored) {}
             }
-            for (String ext : exts) {
-                URL url = getClass().getResource("/images/activite_" + activite.getId() + ext);
-                if (url != null) {
-                    try {
-                        return new ImageView(new Image(url.toExternalForm(), 200, 140, false, true));
-                    } catch (Exception ignored) {}
-                }
+        }
+
+        // ✅ CAS 4 : Fallback par nom d'activité
+        return tryLoadImageByName(activite);
+    }
+    // Fallback : chercher l'image par le nom de l'activité dans le classpath /images/
+    private ImageView tryLoadImageByName(Activites activite) {
+        if (activite.getNom() == null) return null;
+
+        String[] exts = {".jpg", ".jpeg", ".png", ".webp"};
+        String baseName = java.text.Normalizer
+                .normalize(activite.getNom().toLowerCase(), java.text.Normalizer.Form.NFD)
+                .replaceAll("\\p{InCombiningDiacriticalMarks}+", "")
+                .replaceAll("\\s+", "_")
+                .replaceAll("[^a-z0-9_]", "");
+
+        for (String ext : exts) {
+            URL url = getClass().getResource("/images/" + baseName + ext);
+            if (url != null) {
+                try {
+                    return new ImageView(new Image(url.toExternalForm(), 200, 140, false, true));
+                } catch (Exception ignored) {}
+            }
+        }
+        for (String ext : exts) {
+            URL url = getClass().getResource("/images/activite_" + activite.getId() + ext);
+            if (url != null) {
+                try {
+                    return new ImageView(new Image(url.toExternalForm(), 200, 140, false, true));
+                } catch (Exception ignored) {}
             }
         }
         return null;
     }
+    // ─────────────────────────────────────────────────────────────────────────────
 
     private void updateStats(ObservableList<Activites> list) {
         lblTotalActivites.setText(String.valueOf(list.size()));
@@ -958,14 +1009,14 @@ public class ACTfront implements Initializable {
         String type = activite.getCategorie().getType();
         if (type == null) return "linear-gradient(to bottom right, #f5a623, #ff6b00)";
         switch (type.toLowerCase()) {
-            case "aventure":    return "linear-gradient(to bottom right, #ef4444, #dc2626)";
-            case "détente":     return "linear-gradient(to bottom right, #34d399, #059669)";
-            case "culturel":    return "linear-gradient(to bottom right, #60a5fa, #2563eb)";
-            case "sportif":     return "linear-gradient(to bottom right, #f97316, #ea580c)";
+            case "aventure":      return "linear-gradient(to bottom right, #ef4444, #dc2626)";
+            case "détente":       return "linear-gradient(to bottom right, #34d399, #059669)";
+            case "culturel":      return "linear-gradient(to bottom right, #60a5fa, #2563eb)";
+            case "sportif":       return "linear-gradient(to bottom right, #f97316, #ea580c)";
             case "gastronomique": return "linear-gradient(to bottom right, #fbbf24, #d97706)";
-            case "famille":     return "linear-gradient(to bottom right, #a78bfa, #7c3aed)";
-            case "nature":      return "linear-gradient(to bottom right, #86efac, #16a34a)";
-            default:            return "linear-gradient(to bottom right, #f5a623, #ff6b00)";
+            case "famille":       return "linear-gradient(to bottom right, #a78bfa, #7c3aed)";
+            case "nature":        return "linear-gradient(to bottom right, #86efac, #16a34a)";
+            default:              return "linear-gradient(to bottom right, #f5a623, #ff6b00)";
         }
     }
 
@@ -974,25 +1025,25 @@ public class ACTfront implements Initializable {
         String type = activite.getCategorie().getType();
         if (type == null) return "🎯";
         switch (type.toLowerCase()) {
-            case "aventure":    return "🏔️";
-            case "détente":     return "🧘";
-            case "culturel":    return "🏛️";
-            case "sportif":     return "⚽";
+            case "aventure":      return "🏔️";
+            case "détente":       return "🧘";
+            case "culturel":      return "🏛️";
+            case "sportif":       return "⚽";
             case "gastronomique": return "🍽️";
-            case "famille":     return "👨‍👩‍👧‍👦";
-            case "nature":      return "🌿";
-            default:            return "🎯";
+            case "famille":       return "👨‍👩‍👧‍👦";
+            case "nature":        return "🌿";
+            default:              return "🎯";
         }
     }
 
     private String getDifficultyBgColor(String difficulte) {
         if (difficulte == null) return "#888888";
         switch (difficulte.toLowerCase()) {
-            case "facile":  return "#34d399";
-            case "moyen":   return "#f5a623";
+            case "facile":    return "#34d399";
+            case "moyen":     return "#f5a623";
             case "difficile": return "#ef4444";
-            case "expert":  return "#7c3aed";
-            default:        return "#888888";
+            case "expert":    return "#7c3aed";
+            default:          return "#888888";
         }
     }
 

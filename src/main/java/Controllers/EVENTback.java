@@ -15,6 +15,7 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import Utils.FileManager;
+import Utils.CloudinaryUploader;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
@@ -392,15 +393,21 @@ public class EVENTback implements Initializable {
                     ev.setLienGroupe(lienField.getText().trim().isEmpty() ? null : lienField.getText().trim());
 
                     if (selectedImageFile != null) {
-                        String imagePath = FileManager.saveImageEvenement(selectedImageFile);
-                        ev.setImagePath(imagePath);
+                        try {
+                            String cloudinaryUrl = CloudinaryUploader.uploadImage(selectedImageFile, "evenements");
+                            ev.setImagePath(cloudinaryUrl);
+                        } catch (java.io.IOException uploadEx) {
+                            showError("Erreur upload image",
+                                    "Impossible d'uploader l'image sur Cloudinary : " + uploadEx.getMessage());
+                            return;
+                        }
                     }
 
                     evenementCRUD.ajouter(ev);
                     showInfo("Succès", "✅ Événement créé avec succès !");
                     loadEvenements();
                     dialog.close();
-                } catch (SQLException | java.io.IOException e) {
+                } catch (SQLException e) {
                     showError("Erreur", "Impossible d'ajouter l'événement : " + e.getMessage());
                 }
             }
@@ -533,15 +540,21 @@ public class EVENTback implements Initializable {
         Label imageNameLabelMod = new Label("Aucune image sélectionnée");
         imageNameLabelMod.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 11; -fx-wrap-text: true;");
 
-        // Charger l'image actuelle si elle existe
+        // Charger l'image actuelle si elle existe (URL Cloudinary ou fichier local)
         if (currentImagePath != null && !currentImagePath.isEmpty()) {
             try {
-                File existingFile = new File(currentImagePath);
-                if (existingFile.exists()) {
-                    imagePreviewMod.setImage(new Image(existingFile.toURI().toString(), 220, 150, true, true));
-                    imageNameLabelMod.setText("Image actuelle : " + existingFile.getName());
-                    imageNameLabelMod.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 11; -fx-wrap-text: true;");
+                if (currentImagePath.startsWith("http://") || currentImagePath.startsWith("https://")) {
+                    // Image Cloudinary — chargement direct depuis l'URL
+                    imagePreviewMod.setImage(new Image(currentImagePath, 220, 150, true, true));
+                    imageNameLabelMod.setText("Image actuelle (Cloudinary)");
+                } else {
+                    File existingFile = new File(currentImagePath);
+                    if (existingFile.exists()) {
+                        imagePreviewMod.setImage(new Image(existingFile.toURI().toString(), 220, 150, true, true));
+                        imageNameLabelMod.setText("Image actuelle : " + existingFile.getName());
+                    }
                 }
+                imageNameLabelMod.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 11; -fx-wrap-text: true;");
             } catch (Exception ignored) {}
         }
 
@@ -652,18 +665,22 @@ public class EVENTback implements Initializable {
                     selected.setLienGroupe(lienField.getText().trim().isEmpty() ? null : lienField.getText().trim());
 
                     if (selectedImageFile != null) {
-                        if (currentImagePath != null && !currentImagePath.isEmpty()) {
-                            FileManager.deleteImage(currentImagePath);
+                        // L'ancienne image Cloudinary n'a pas besoin d'être supprimée localement
+                        try {
+                            String cloudinaryUrl = CloudinaryUploader.uploadImage(selectedImageFile, "evenements");
+                            selected.setImagePath(cloudinaryUrl);
+                        } catch (java.io.IOException uploadEx) {
+                            showError("Erreur upload image",
+                                    "Impossible d'uploader l'image sur Cloudinary : " + uploadEx.getMessage());
+                            return;
                         }
-                        String newImagePath = FileManager.saveImageEvenement(selectedImageFile);
-                        selected.setImagePath(newImagePath);
                     }
 
                     evenementCRUD.modifier(selected);
                     showInfo("Succès", "✅ Événement modifié avec succès !");
                     loadEvenements();
                     dialog.close();
-                } catch (SQLException | java.io.IOException e) {
+                } catch (SQLException e) {
                     showError("Erreur", "Impossible de modifier l'événement : " + e.getMessage());
                 }
             }
@@ -834,7 +851,7 @@ public class EVENTback implements Initializable {
             button.setStyle("-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;");
             button.lookupAll(".label").forEach(node -> {
                 if (node instanceof Label lbl && !lbl.getText().equals(icon) && !lbl.getText().matches("\\d+"))
-                    lbl.setStyle("-fx-text-fill: #0f172a; -fx-font-weight: 500; -fx-font-size: 14;");
+                    lbl.setStyle("-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;");
             });
         });
     }
@@ -843,9 +860,9 @@ public class EVENTback implements Initializable {
         if (userProfileBox != null) {
             userProfileBox.setOnMouseClicked(e -> navigateTo("/fxml/profile.fxml", "Mon Profil"));
             userProfileBox.setOnMouseEntered(e ->
-                    userProfileBox.setStyle("-fx-background-color: #edf2f7; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand; -fx-border-color: #cbd5e1; -fx-border-width: 1; -fx-border-radius: 25;"));
+                    userProfileBox.setStyle("-fx-background-color: #2d3759; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand;"));
             userProfileBox.setOnMouseExited(e ->
-                    userProfileBox.setStyle("-fx-background-color: #e2e8f0; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand; -fx-border-color: transparent; -fx-border-width: 1; -fx-border-radius: 25;"));
+                    userProfileBox.setStyle("-fx-background-color: #1e2749; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand;"));
         }
     }
 
