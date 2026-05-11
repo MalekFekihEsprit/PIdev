@@ -5,6 +5,7 @@ import Entities.DeleteNotification;
 import Entities.User;
 import Services.DestinationCRUD;
 import Services.DeleteNotificationCRUD;
+import Services.FavoriteDestinationCRUD;
 import Utils.UserSession;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -17,6 +18,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
@@ -86,16 +88,19 @@ public class DestinationFrontController implements Initializable {
 
     private DestinationCRUD destinationCRUD;
     private DeleteNotificationCRUD notificationCRUD;
+    private FavoriteDestinationCRUD favoriteCRUD;
     private ObservableList<Destination> destinationList = FXCollections.observableArrayList();
     private List<Destination> allDestinations = new ArrayList<>();
     private User currentUser;
     private List<DeleteNotification> unreadNotifications = new ArrayList<>();
     private Destination selectedDestination;
+    private final java.util.Set<Integer> favoriteDestinationIds = new java.util.HashSet<>();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         destinationCRUD = new DestinationCRUD();
         notificationCRUD = new DeleteNotificationCRUD();
+        favoriteCRUD = new FavoriteDestinationCRUD();
 
         // Get current user
         currentUser = UserSession.getInstance().getCurrentUser();
@@ -103,6 +108,9 @@ public class DestinationFrontController implements Initializable {
             showAlert(Alert.AlertType.ERROR, "Erreur", "Utilisateur non connecté");
             return;
         }
+
+        // Load favourites from DB before rendering cards
+        loadFavoriteIds();
 
         loadDestinationsCards();
         setupButtonActions();
@@ -398,6 +406,15 @@ public class DestinationFrontController implements Initializable {
         }
     }
 
+    private void loadFavoriteIds() {
+        try {
+            favoriteDestinationIds.clear();
+            favoriteDestinationIds.addAll(favoriteCRUD.getFavoriteDestinationIds(currentUser.getId()));
+        } catch (SQLException e) {
+            System.err.println("Could not load favourite destinations: " + e.getMessage());
+        }
+    }
+
     private void loadDestinationsCards() {
         List<Destination> destinations;
         try {
@@ -415,55 +432,185 @@ public class DestinationFrontController implements Initializable {
     }
 
     private VBox createDestinationCard(Destination d) {
-        VBox card = new VBox(8);
-        card.setPadding(new Insets(16));
-        card.setPrefWidth(390);
-        card.setMinWidth(320);
-        card.setMaxWidth(Double.MAX_VALUE);
+        VBox card = new VBox(0);
+        // Do NOT set prefWidth — let the HBox row distribute space equally.
+        // maxWidth caps each card so it never grows beyond a reasonable size.
+        card.setMinWidth(0);
+        card.setMaxWidth(420);
         applyCardStyle(card, false);
         card.setUserData(d);
 
+        // ── TOP HALF: image banner ──────────────────────────────────────────
+        // Use a Region with CSS -fx-background-image so the image is purely
+        // decorative and has ZERO influence on layout width measurement.
+        javafx.scene.layout.Region imageBanner = new javafx.scene.layout.Region();
+        imageBanner.setMinHeight(180);
+        imageBanner.setPrefHeight(180);
+        imageBanner.setMaxHeight(180);
+        imageBanner.setPrefWidth(0);           // never requests its own width
+        imageBanner.setMaxWidth(Double.MAX_VALUE);
+
+        String imageName = d.getImage_name();
+        if (imageName != null && !imageName.isBlank()) {
+            String imageUrl;
+            if (imageName.startsWith("http://") || imageName.startsWith("https://")) {
+                imageUrl = imageName;
+            } else {
+                java.net.URL res = getClass().getResource("/images/" + imageName);
+                imageUrl = (res != null) ? res.toExternalForm() : "file:" + imageName;
+            }
+            imageBanner.setStyle(
+                "-fx-background-image: url('" + imageUrl + "');" +
+                "-fx-background-size: cover;" +
+                "-fx-background-position: center center;" +
+                "-fx-background-repeat: no-repeat;" +
+                "-fx-background-radius: 16 16 0 0;"
+            );
+        } else {
+            imageBanner.setStyle(
+                "-fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #fff7ed, #ffe4c4);" +
+                "-fx-background-radius: 16 16 0 0;"
+            );
+        }
+
+        // Overlay StackPane: holds placeholder emoji (if no image) + heart button
+        StackPane imageOverlay = new StackPane();
+        imageOverlay.setMinHeight(180);
+        imageOverlay.setPrefHeight(180);
+        imageOverlay.setMaxHeight(180);
+        imageOverlay.setPrefWidth(0);
+        imageOverlay.setMaxWidth(Double.MAX_VALUE);
+        imageOverlay.setStyle("-fx-background-color: transparent;");
+
+        if (imageName == null || imageName.isBlank()) {
+            Label placeholder = new Label("🌍");
+            placeholder.setStyle("-fx-font-size: 64; -fx-text-fill: #ff8c42;");
+            imageOverlay.getChildren().add(placeholder);
+        }
+
+        boolean isFav = favoriteDestinationIds.contains(d.getId_destination());
+        Label btnFav = new Label(isFav ? "❤️" : "🤍");
+        btnFav.setStyle("-fx-font-size: 22; -fx-cursor: hand; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 4, 0, 0, 1);");
+        btnFav.setOnMouseClicked(event -> {
+            event.consume();
+            try {
+                if (favoriteDestinationIds.contains(d.getId_destination())) {
+                    favoriteCRUD.removeFavorite(currentUser.getId(), d.getId_destination());
+                    favoriteDestinationIds.remove(d.getId_destination());
+                    btnFav.setText("🤍");
+                } else {
+                    favoriteCRUD.addFavorite(currentUser.getId(), d.getId_destination());
+                    favoriteDestinationIds.add(d.getId_destination());
+                    btnFav.setText("❤️");
+                }
+            } catch (SQLException e) {
+                System.err.println("Could not update favourite: " + e.getMessage());
+            }
+        });
+        StackPane.setAlignment(btnFav, javafx.geometry.Pos.TOP_RIGHT);
+        StackPane.setMargin(btnFav, new Insets(10, 12, 0, 0));
+        imageOverlay.getChildren().add(btnFav);
+
+        // Stack the banner Region + overlay together
+        StackPane bannerStack = new StackPane(imageBanner, imageOverlay);
+        bannerStack.setMinHeight(180);
+        bannerStack.setPrefHeight(180);
+        bannerStack.setMaxHeight(180);
+        bannerStack.setPrefWidth(0);
+        bannerStack.setMaxWidth(Double.MAX_VALUE);
+
+        // ── BOTTOM HALF: card content ───────────────────────────────────────
+        VBox content = new VBox(6);
+        content.setPadding(new Insets(14, 16, 14, 16));
+        content.setMaxWidth(Double.MAX_VALUE);
+
         Label nom = new Label(d.getNom_destination());
-        nom.setStyle("-fx-font-size: 20; -fx-font-weight: bold; -fx-text-fill: #0f172a;");
-        Label pays = new Label("Pays : " + d.getPays_destination());
-        pays.setStyle("-fx-text-fill: #475569; -fx-font-size: 14;");
-        Label region = new Label("Région : " + (d.getRegion_destination() == null || d.getRegion_destination().isEmpty() ? "-" : d.getRegion_destination()));
-        region.setStyle("-fx-text-fill: #64748b; -fx-font-size: 13;");
-        Label description = new Label("Description : " + d.getDescription_destination());
-        description.setStyle("-fx-text-fill: #334155; -fx-font-size: 13;");
-        description.setWrapText(true);
-        Label climat = new Label("Climat : " + d.getClimat_destination());
-        climat.setStyle("-fx-text-fill: #10b981; -fx-font-size: 13;");
-        Label saison = new Label("Saison idéale : " + d.getSaison_destination());
-        saison.setStyle("-fx-text-fill: #ff8c42; -fx-font-size: 13;");
+        nom.setStyle("-fx-font-size: 18; -fx-font-weight: bold; -fx-text-fill: #0f172a;");
+        nom.setWrapText(true);
+
+        Label pays = new Label("📍 " + d.getPays_destination()
+                + (d.getRegion_destination() != null && !d.getRegion_destination().isBlank()
+                   ? "  ·  " + d.getRegion_destination() : ""));
+        pays.setStyle("-fx-text-fill: #64748b; -fx-font-size: 13;");
+        pays.setWrapText(true);
+
+        // Star rating row
+        double score = d.getScore_destination();
+        HBox starsRow = new HBox(3);
+        starsRow.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        int fullStars = (int) Math.floor(score);
+        boolean halfStar = (score - fullStars) >= 0.5;
+        for (int s = 1; s <= 5; s++) {
+            Label star = new Label();
+            if (s <= fullStars) {
+                star.setText("★");
+                star.setStyle("-fx-text-fill: #f59e0b; -fx-font-size: 16;");
+            } else if (s == fullStars + 1 && halfStar) {
+                star.setText("½");
+                star.setStyle("-fx-text-fill: #f59e0b; -fx-font-size: 14;");
+            } else {
+                star.setText("☆");
+                star.setStyle("-fx-text-fill: #cbd5e1; -fx-font-size: 16;");
+            }
+            starsRow.getChildren().add(star);
+        }
+        Label scoreLabel = new Label(String.format("  %.1f", score));
+        scoreLabel.setStyle("-fx-text-fill: #64748b; -fx-font-size: 13;");
+        starsRow.getChildren().add(scoreLabel);
+
+        // Climate + season tags
+        HBox tags = new HBox(8);
+        tags.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        if (d.getClimat_destination() != null && !d.getClimat_destination().isBlank()) {
+            Label tagClimat = new Label("🌡️ " + d.getClimat_destination());
+            tagClimat.setStyle("-fx-background-color: #e0f2fe; -fx-text-fill: #0369a1; -fx-background-radius: 20; -fx-padding: 3 10; -fx-font-size: 11;");
+            tags.getChildren().add(tagClimat);
+        }
+        if (d.getSaison_destination() != null && !d.getSaison_destination().isBlank()) {
+            Label tagSaison = new Label("🗓️ " + d.getSaison_destination());
+            tagSaison.setStyle("-fx-background-color: #fff7ed; -fx-text-fill: #c2410c; -fx-background-radius: 20; -fx-padding: 3 10; -fx-font-size: 11;");
+            tags.getChildren().add(tagSaison);
+        }
+
+        // Description (truncated)
+        String desc = d.getDescription_destination();
+        if (desc != null && !desc.isBlank()) {
+            Label description = new Label(desc.length() > 90 ? desc.substring(0, 90) + "…" : desc);
+            description.setStyle("-fx-text-fill: #475569; -fx-font-size: 12;");
+            description.setWrapText(true);
+            content.getChildren().add(description);
+        }
+
         Label addedBy = new Label("Ajouté par : " + (d.getAdded_by_name() == null ? "-" : d.getAdded_by_name()));
-        addedBy.setStyle("-fx-text-fill: #64748b; -fx-font-size: 12;");
+        addedBy.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 11;");
 
         HBox actions = new HBox(8);
-        actions.setPadding(new Insets(8, 0, 0, 0));
+        actions.setPadding(new Insets(6, 0, 0, 0));
         Button btnView = new Button("👁 Voir");
-        btnView.setStyle("-fx-background-color: #3b82f6; -fx-text-fill: white; -fx-background-radius: 8; -fx-font-size: 13; -fx-cursor: hand;");
+        btnView.setStyle("-fx-background-color: #3b82f6; -fx-text-fill: white; -fx-background-radius: 8; -fx-font-size: 13; -fx-cursor: hand; -fx-padding: 6 14;");
         btnView.setOnAction(e -> handleConsulter(d));
         actions.getChildren().add(btnView);
 
         if (currentUser != null && d.getAdded_by() == currentUser.getId()) {
             Button btnEdit = new Button("✏");
-            btnEdit.setStyle("-fx-background-color: #f59e0b; -fx-text-fill: white; -fx-background-radius: 8; -fx-font-size: 13; -fx-cursor: hand;");
+            btnEdit.setStyle("-fx-background-color: #f59e0b; -fx-text-fill: white; -fx-background-radius: 8; -fx-font-size: 13; -fx-cursor: hand; -fx-padding: 6 14;");
             btnEdit.setOnAction(e -> handleModifier(d));
 
             Button btnDelete = new Button("🗑");
-            btnDelete.setStyle("-fx-background-color: #ef4444; -fx-text-fill: white; -fx-background-radius: 8; -fx-font-size: 13; -fx-cursor: hand;");
+            btnDelete.setStyle("-fx-background-color: #ef4444; -fx-text-fill: white; -fx-background-radius: 8; -fx-font-size: 13; -fx-cursor: hand; -fx-padding: 6 14;");
             btnDelete.setOnAction(e -> handleDeleteSingle(d));
 
             actions.getChildren().addAll(btnEdit, btnDelete);
         }
+
+        content.getChildren().addAll(nom, pays, starsRow, tags, addedBy, actions);
 
         card.setOnMouseClicked(event -> {
             selectedDestination = d;
             highlightSelectedCard(card);
         });
 
-        card.getChildren().addAll(nom, pays, region, description, climat, saison, addedBy, actions);
+        card.getChildren().addAll(bannerStack, content);
         return card;
     }
 
@@ -483,6 +630,9 @@ public class DestinationFrontController implements Initializable {
         lblNoDestinations.setVisible(false);
         for (int i = 0; i < destinations.size(); i += 3) {
             HBox row = new HBox(18);
+            row.setMaxWidth(Double.MAX_VALUE);
+            row.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+            VBox.setVgrow(row, javafx.scene.layout.Priority.NEVER);
 
             for (int j = i; j < Math.min(i + 3, destinations.size()); j++) {
                 VBox card = createDestinationCard(destinations.get(j));
@@ -490,7 +640,7 @@ public class DestinationFrontController implements Initializable {
                 row.getChildren().add(card);
             }
 
-            // Keep visual balance for the last incomplete row.
+            // Fill remaining slots with invisible spacers so columns stay equal width
             int missingSlots = 3 - row.getChildren().size();
             for (int k = 0; k < missingSlots; k++) {
                 Region spacer = new Region();

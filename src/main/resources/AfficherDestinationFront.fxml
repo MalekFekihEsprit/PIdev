@@ -269,6 +269,19 @@
                         <Label fx:id="lblTagScore" style="-fx-background-color: #fef2f2; -fx-text-fill: #ef4444; -fx-background-radius: 20; -fx-padding: 8 16; -fx-font-weight: 600; -fx-font-size: 12;" text="⭐ 4.8" />
                     </HBox>
 
+                    <!-- RATING SECTION -->
+                    <VBox spacing="14" style="-fx-background-color: white; -fx-background-radius: 24; -fx-padding: 28; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.02), 10, 0, 0, 2); -fx-border-color: #f59e0b; -fx-border-width: 0 0 0 4; -fx-border-radius: 24;">
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <Label style="-fx-font-size: 24;" text="⭐" />
+                            <Label style="-fx-font-family: 'Clash Display'; -fx-font-size: 20; -fx-font-weight: 600; -fx-text-fill: #0f172a;" text="Votre évaluation" />
+                            <Region HBox.hgrow="ALWAYS" />
+                            <Label fx:id="lblRatingAvg" style="-fx-text-fill: #64748b; -fx-font-size: 13;" text="" />
+                        </HBox>
+                        <Label fx:id="lblRatingPrompt" style="-fx-text-fill: #64748b; -fx-font-size: 13;" text="Cliquez sur une étoile pour noter cette destination" />
+                        <HBox fx:id="starsContainer" alignment="CENTER_LEFT" spacing="8" />
+                        <Label fx:id="lblRatingConfirm" style="-fx-text-fill: #10b981; -fx-font-size: 13; -fx-font-weight: 600;" text="" managed="false" visible="false" />
+                    </VBox>
+
                     <!-- ACTION BUTTONS -->
                     <HBox alignment="CENTER" spacing="12">
                         <Button fx:id="btnVoirHebergements" style="-fx-background-color: #10b981; -fx-text-fill: white; -fx-font-weight: 600; -fx-font-size: 14; -fx-padding: 12 30; -fx-background-radius: 12; -fx-cursor: hand;" text="🏨 Voir Hébergements" />

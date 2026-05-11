@@ -17,6 +17,7 @@ public class Destination {
     private String video_url;
     private int added_by; // This is the USER ID (foreign key)
     private String added_by_name; // For display purposes (nom + prenom)
+    private String image_name;
 
     // Default constructor
     public Destination() {}
@@ -80,6 +81,9 @@ public class Destination {
 
     public String getAdded_by_name() { return added_by_name; }
     public void setAdded_by_name(String added_by_name) { this.added_by_name = added_by_name; }
+
+    public String getImage_name() { return image_name; }
+    public void setImage_name(String image_name) { this.image_name = image_name; }
 
     @Override
     public String toString() {

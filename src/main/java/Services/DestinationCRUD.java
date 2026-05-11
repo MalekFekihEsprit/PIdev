@@ -115,6 +115,7 @@ public class DestinationCRUD implements InterfaceCRUDDestination<Destination> {
                 destination.setLanguages_destination(rs.getString("languages_destination"));
                 destination.setVideo_url(rs.getString("video_url"));
                 destination.setAdded_by(rs.getInt("added_by"));
+                destination.setImage_name(rs.getString("image_name"));
 
                 // Concatenate nom and prenom into added_by_name for display
                 String nom = rs.getString("nom");
@@ -159,6 +160,7 @@ public class DestinationCRUD implements InterfaceCRUDDestination<Destination> {
                 destination.setLanguages_destination(rs.getString("languages_destination"));
                 destination.setVideo_url(rs.getString("video_url"));
                 destination.setAdded_by(rs.getInt("added_by"));
+                destination.setImage_name(rs.getString("image_name"));
 
                 // Concatenate nom and prenom into added_by_name for display
                 String nom = rs.getString("nom");
