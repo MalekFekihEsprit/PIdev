@@ -39,6 +39,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 public class ACTback implements Initializable {
@@ -108,6 +111,9 @@ public class ACTback implements Initializable {
     private ActivitesCRUD activitesCRUD;
     private ObservableList<Activites> activitesData;
 
+    // ─── Auto-refresh (synchro réseau local) ───────────────────────────
+    private ScheduledExecutorService autoRefreshScheduler;
+
     // Variables pour la gestion d'images
     private File selectedImageFile;
     private String currentImagePath;
@@ -150,6 +156,26 @@ public class ACTback implements Initializable {
                     }
                 }
             });
+        }
+
+        startAutoRefresh();
+    }
+
+    // ─── Auto-refresh toutes les 5 secondes (synchro réseau local) ─────
+    private void startAutoRefresh() {
+        autoRefreshScheduler = Executors.newSingleThreadScheduledExecutor(r -> {
+            Thread t = new Thread(r, "activites-back-auto-refresh");
+            t.setDaemon(true);
+            return t;
+        });
+        autoRefreshScheduler.scheduleAtFixedRate(() -> {
+            javafx.application.Platform.runLater(() -> loadActivites());
+        }, 5, 5, TimeUnit.SECONDS);
+    }
+
+    public void stopAutoRefresh() {
+        if (autoRefreshScheduler != null && !autoRefreshScheduler.isShutdown()) {
+            autoRefreshScheduler.shutdownNow();
         }
     }
 

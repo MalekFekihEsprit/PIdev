@@ -38,6 +38,9 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static Controllers.FaceCaptureDialog.showAlert;
@@ -101,6 +104,9 @@ public class ACTfront implements Initializable {
     // Cache pour les résultats de modération
     private Map<Integer, ModerationService.ModerationResult> moderationCache = new HashMap<>();
 
+    // ─── Auto-refresh (synchro réseau local) ───────────────────────────
+    private ScheduledExecutorService autoRefreshScheduler;
+
     // ─── Couleurs pour le PieChart ──────────────────────────────────────
     private static final String[] PIE_COLORS = {
             "#ff6b00", "#f5a623", "#ef4444", "#34d399", "#60a5fa", "#a78bfa", "#fbbf24", "#f87171"
@@ -143,6 +149,7 @@ public class ACTfront implements Initializable {
         }
 
         loadActivitesWithFilter();
+        startAutoRefresh();
     }
 
     private void setupNavigationButtons() {
@@ -292,6 +299,24 @@ public class ACTfront implements Initializable {
         showInfo("Actualisation", "Données rafraîchies avec succès!");
     }
 
+    // ─── Auto-refresh toutes les 5 secondes (synchro réseau local) ─────
+    private void startAutoRefresh() {
+        autoRefreshScheduler = Executors.newSingleThreadScheduledExecutor(r -> {
+            Thread t = new Thread(r, "activites-auto-refresh");
+            t.setDaemon(true); // s'arrête automatiquement quand l'app se ferme
+            return t;
+        });
+        autoRefreshScheduler.scheduleAtFixedRate(() -> {
+            javafx.application.Platform.runLater(() -> loadActivitesWithFilter());
+        }, 5, 5, TimeUnit.SECONDS);
+    }
+
+    public void stopAutoRefresh() {
+        if (autoRefreshScheduler != null && !autoRefreshScheduler.isShutdown()) {
+            autoRefreshScheduler.shutdownNow();
+        }
+    }
+
     private void setupNavButtonHover(HBox button, String icon, String text) {
         if (button == null) return;
 
@@ -405,36 +430,47 @@ public class ACTfront implements Initializable {
     }
 
     private void loadActivitesWithFilter() {
-        try {
-            List<Activites> liste;
-            if (currentCategorieFiltre != null && !currentCategorieFiltre.isEmpty()) {
-                liste = activitesCRUD.afficherParCategorie(currentCategorieFiltre);
-                System.out.println("📊 " + liste.size() + " activités trouvées pour la catégorie: " + currentCategorieFiltre);
-            } else {
-                liste = activitesCRUD.afficher();
-            }
+        // ✅ BD query hors thread JavaFX pour ne pas bloquer l'UI
+        Thread t = new Thread(() -> {
+            try {
+                List<Activites> liste;
+                if (currentCategorieFiltre != null && !currentCategorieFiltre.isEmpty()) {
+                    liste = activitesCRUD.afficherParCategorie(currentCategorieFiltre);
+                } else {
+                    liste = activitesCRUD.afficher();
+                }
 
-            activitesList.clear();
-            activitesList.addAll(liste);
-            filteredData = new FilteredList<>(activitesList, p -> true);
+                // ✅ Modération uniquement pour les nouvelles activités (pas encore dans le cache)
+                for (Activites activite : liste) {
+                    if (!moderationCache.containsKey(activite.getId())) {
+                        ModerationService.ModerationResult result = ModerationService.analyserActivite(
+                                activite.getNom(),
+                                activite.getDescription(),
+                                activite.getImagePath()
+                        );
+                        moderationCache.put(activite.getId(), result);
+                    }
+                }
 
-            moderationCache.clear();
-            for (Activites activite : activitesList) {
-                ModerationService.ModerationResult result = ModerationService.analyserActivite(
-                        activite.getNom(),
-                        activite.getDescription(),
-                        activite.getImagePath()
+                // ✅ Mise à jour UI sur le thread JavaFX uniquement
+                javafx.application.Platform.runLater(() -> {
+                    activitesList.clear();
+                    activitesList.addAll(liste);
+                    filteredData = new FilteredList<>(activitesList, p -> true);
+                    applyFilters();
+                });
+
+            } catch (SQLException e) {
+                javafx.application.Platform.runLater(() ->
+                        showError("Erreur de chargement", "Impossible de charger les activités: " + e.getMessage())
                 );
-                moderationCache.put(activite.getId(), result);
+                e.printStackTrace();
             }
-
-            applyFilters();
-
-        } catch (SQLException e) {
-            showError("Erreur de chargement", "Impossible de charger les activités: " + e.getMessage());
-            e.printStackTrace();
-        }
+        }, "load-activites-thread");
+        t.setDaemon(true);
+        t.start();
     }
+
 
     private void applyFilters() {
         if (filteredData == null) return;
