@@ -23,7 +23,6 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
-import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 import java.io.File;
@@ -53,7 +52,7 @@ public class AdminUsersController {
     @FXML private Label totalUsersCard, adminsCard, usersCard;
     @FXML private Button filterAllButton, filterAdminsButton, filterUsersButton;
     @FXML private Label lblLastUpdate;
-    @FXML private HBox btnDestinations, btnHebergement, btnUsers, btnStats, btnCategories, btnActivites, btnVoyages, btnBudgets;
+    @FXML private HBox btnDestinations, btnHebergement, btnUsers, btnStats, btnCategories, btnActivites, btnVoyages, btnBudgets, btnEvenements;
     @FXML private HBox userProfileBox;
     @FXML private HBox btnItineraires;
     @FXML private Label lblUserName, lblUserRole;
@@ -224,6 +223,9 @@ public class AdminUsersController {
 
         setupSidebarButtonHover(btnBudgets, "💰", "Budgets");
         if (btnBudgets != null) btnBudgets.setOnMouseClicked(event -> navigateTo("/BudgetDepenseBack.fxml", "Gestion des Budgets"));
+
+        setupSidebarButtonHover(btnEvenements, "⭐", "Événements");
+        if (btnEvenements != null) btnEvenements.setOnMouseClicked(event -> navigateTo("/Evenementsback.fxml", "Gestion des Événements"));
     }
 
     private void navigateTo(String fxmlPath, String title) {
@@ -277,9 +279,9 @@ public class AdminUsersController {
         if (userProfileBox != null) {
             userProfileBox.setOnMouseClicked(event -> navigateToProfile());
             userProfileBox.setOnMouseEntered(event ->
-                    userProfileBox.setStyle("-fx-background-color: #2d3759; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand;"));
+                    userProfileBox.setStyle("-fx-background-color: #dbe2ea; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand;"));
             userProfileBox.setOnMouseExited(event ->
-                    userProfileBox.setStyle("-fx-background-color: #1e2749; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand;"));
+                    userProfileBox.setStyle("-fx-background-color: #e2e8f0; -fx-background-radius: 25; -fx-padding: 6 16 6 6; -fx-cursor: hand;"));
         }
     }
 
@@ -318,7 +320,7 @@ public class AdminUsersController {
 
     private void updateFilterButtonAppearance(String active) {
         String activeStyle = "-fx-background-color: rgba(255,140,66,0.15); -fx-text-fill: #ff8c42; -fx-background-radius: 16; -fx-padding: 4 12; -fx-font-size: 11; -fx-cursor: hand; -fx-border-color: #ff8c42; -fx-border-width: 1; -fx-border-radius: 16;";
-        String inactiveStyle = "-fx-background-color: #1e2749; -fx-text-fill: #94a3b8; -fx-background-radius: 16; -fx-padding: 4 12; -fx-font-size: 11; -fx-cursor: hand; -fx-border-color: transparent; -fx-border-width: 1; -fx-border-radius: 16;";
+        String inactiveStyle = "-fx-background-color: #ffffff; -fx-text-fill: #64748b; -fx-background-radius: 16; -fx-padding: 4 12; -fx-font-size: 11; -fx-cursor: hand; -fx-border-color: #e2e8f0; -fx-border-width: 1; -fx-border-radius: 16;";
 
         filterAllButton.setStyle("all".equals(active) ? activeStyle : inactiveStyle);
         filterAdminsButton.setStyle("admins".equals(active) ? activeStyle : inactiveStyle);

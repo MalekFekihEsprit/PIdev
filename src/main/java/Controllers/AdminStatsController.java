@@ -9,6 +9,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.chart.*;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
@@ -210,11 +211,54 @@ public class AdminStatsController {
         return (int) ChronoUnit.YEARS.between(birthDate, LocalDate.now());
     }
 
-    // ========== Navigation (unchanged from your original) ==========
+    // ========== Navigation ==========
     private void setupNavigationButtons() {
-        // ... keep your existing navigation setup ...
-        // (I'm omitting for brevity, but you already have it)
-        // Just make sure to call the correct methods for each button.
+        setupSidebarButtonHover(btnDestinations, "🌍", "Destinations");
+        if (btnDestinations != null) {
+            btnDestinations.setOnMouseClicked(event -> navigateTo("/DestinationBack.fxml", "Gestion des Destinations"));
+        }
+
+        setupSidebarButtonHover(btnHebergement, "🏨", "Hébergement");
+        if (btnHebergement != null) {
+            btnHebergement.setOnMouseClicked(event -> navigateTo("/HebergementBack.fxml", "Gestion des Hébergements"));
+        }
+
+        setupSidebarButtonHover(btnUsers, "👥", "Utilisateurs");
+        if (btnUsers != null) {
+            btnUsers.setOnMouseClicked(event -> navigateTo("/fxml/admin_users.fxml", "Gestion des Utilisateurs"));
+        }
+
+        setupSidebarButtonHover(btnItineraires, "🗺️", "Itinéraires");
+        if (btnItineraires != null) {
+            btnItineraires.setOnMouseClicked(event -> navigateTo("/ItineraireEtEtape/PageGestionItineraires.fxml", "Itinéraires"));
+        }
+
+        setupSidebarButtonHover(btnCategories, "📑", "Catégories");
+        if (btnCategories != null) {
+            btnCategories.setOnMouseClicked(event -> navigateTo("/categoriesback.fxml", "Gestion des Catégories"));
+        }
+
+        setupSidebarButtonHover(btnActivites, "🏄", "Activités");
+        if (btnActivites != null) {
+            btnActivites.setOnMouseClicked(event -> navigateTo("/activitesback.fxml", "Gestion des Activités"));
+        }
+
+        setupSidebarButtonHover(btnVoyages, "✈️", "Voyages");
+        if (btnVoyages != null) {
+            btnVoyages.setOnMouseClicked(event -> navigateTo("/PageVoyageBack.fxml", "Gestion des Voyages"));
+        }
+
+        setupSidebarButtonHover(btnBudgets, "💰", "Budgets");
+        if (btnBudgets != null) {
+            btnBudgets.setOnMouseClicked(event -> navigateTo("/BudgetDepenseBack.fxml", "Gestion des Budgets"));
+        }
+
+        setupSidebarButtonHover(btnEvenements, "⭐", "Événements");
+        if (btnEvenements != null) {
+            btnEvenements.setOnMouseClicked(event -> navigateTo("/Evenementsback.fxml", "Gestion des Événements"));
+        }
+
+        setupUserProfile();
     }
 
     private void navigateTo(String fxmlPath, String title) {
@@ -227,16 +271,91 @@ public class AdminStatsController {
             stage.setMaximized(true);
             stage.show();
         } catch (IOException e) {
+            showErrorAlert("Erreur", "Impossible d'ouvrir: " + e.getMessage());
             e.printStackTrace();
         }
     }
 
-    // Example for navigation buttons (adapt to your existing ones)
-    private void setupSidebarButtonHover(HBox button, String icon, String text) { /* keep your implementation */ }
-    private void setupUserProfile() { /* keep your implementation */ }
-    private void updateUserInfo() { /* keep your implementation */ }
-    private void updateLastUpdateTime() { /* keep your implementation */ }
-    private void showErrorAlert(String title, String message) { /* keep your implementation */ }
+    private void setupSidebarButtonHover(HBox button, String icon, String text) {
+        if (button == null) {
+            return;
+        }
+
+        button.setOnMouseEntered(event -> {
+            button.setStyle("-fx-background-color: rgba(255,140,66,0.15); -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand; -fx-border-color: #ff8c42; -fx-border-width: 1; -fx-border-radius: 12;");
+            button.lookupAll(".label").forEach(node -> {
+                if (node instanceof Label label) {
+                    if (icon.equals(label.getText())) {
+                        label.setStyle("-fx-font-size: 16;");
+                    } else {
+                        label.setStyle("-fx-text-fill: #ff8c42; -fx-font-weight: 600; -fx-font-size: 14;");
+                    }
+                }
+            });
+        });
+
+        button.setOnMouseExited(event -> {
+            button.setStyle("-fx-background-color: transparent; -fx-background-radius: 12; -fx-padding: 12 16; -fx-cursor: hand;");
+            button.lookupAll(".label").forEach(node -> {
+                if (node instanceof Label label) {
+                    if (icon.equals(label.getText())) {
+                        label.setStyle("-fx-font-size: 16;");
+                    } else {
+                        label.setStyle("-fx-text-fill: #94a3b8; -fx-font-weight: 500; -fx-font-size: 14;");
+                    }
+                }
+            });
+        });
+    }
+
+    private void setupUserProfile() {
+        if (userProfileBox != null) {
+            userProfileBox.setOnMouseClicked(event -> navigateToProfile());
+            userProfileBox.setOnMouseEntered(event ->
+                    userProfileBox.setStyle("-fx-background-color: #dbe2ea; -fx-background-radius: 25; -fx-padding: 6 12 6 6; -fx-cursor: hand;"));
+            userProfileBox.setOnMouseExited(event ->
+                    userProfileBox.setStyle("-fx-background-color: #e2e8f0; -fx-background-radius: 25; -fx-padding: 6 12 6 6; -fx-cursor: hand;"));
+        }
+    }
+
+    private void navigateToProfile() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/profile.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) userProfileBox.getScene().getWindow();
+            stage.setScene(new Scene(root, Screen.getPrimary().getVisualBounds().getWidth(), Screen.getPrimary().getVisualBounds().getHeight()));
+            stage.setTitle("TravelMate - Mon Profil");
+            stage.setMaximized(true);
+            stage.show();
+        } catch (IOException e) {
+            showErrorAlert("Erreur", "Impossible d'ouvrir le profil: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void updateUserInfo() {
+        User currentUser = UserSession.getInstance().getCurrentUser();
+        if (currentUser != null) {
+            lblUserName.setText(currentUser.getPrenom() + " " + currentUser.getNom());
+            lblUserRole.setText(currentUser.getRole());
+        } else {
+            lblUserName.setText("Utilisateur");
+            lblUserRole.setText("Non connecté");
+        }
+    }
+
+    private void updateLastUpdateTime() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm");
+        lblLastUpdate.setText("Dernière mise à jour: " + LocalDateTime.now().format(formatter));
+    }
+
+    private void showErrorAlert(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
 
     // Button actions for week navigation
     @FXML
