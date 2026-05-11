@@ -10,6 +10,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -23,12 +24,9 @@ public class AfficherHebergementFrontController implements Initializable {
     @FXML private Label lblHebergementName;
     @FXML private Label lblHebergementNote;
     @FXML private Label lblHebergementDestination;
-    @FXML private Label lblHebergementId;
     @FXML private Label lblHebergementType;
     @FXML private Label lblPrix;
     @FXML private Label lblAdresse;
-    @FXML private Label lblLatitude;
-    @FXML private Label lblLongitude;
     @FXML private Label lblDestNom;
     @FXML private Label lblDestPays;
     @FXML private Label lblDestClimat;
@@ -64,35 +62,24 @@ public class AfficherHebergementFrontController implements Initializable {
         lblHebergementIcon.setText(icon);
 
         // Basic info
-        lblHebergementName.setText(hebergement.getNom_hebergement());
-        lblHebergementNote.setText(String.format("%.1f", hebergement.getNote_hebergement()));
-        lblHebergementId.setText("ID: " + hebergement.getId_hebergement());
-        lblHebergementType.setText(hebergement.getType_hebergement().toUpperCase());
-        lblBreadcrumbHebergement.setText(hebergement.getNom_hebergement());
+        lblHebergementName.setText(safeText(hebergement.getNom_hebergement()));
+        lblHebergementNote.setText(formatNote(hebergement.getNote_hebergement()));
+        lblHebergementType.setText(safeTypeLabel(hebergement.getType_hebergement()));
+        lblBreadcrumbHebergement.setText(safeText(hebergement.getNom_hebergement()));
 
         // Price
-        lblPrix.setText(String.format("%.2f €", hebergement.getPrix_nuit_hebergement()));
+        lblPrix.setText(formatPrice(hebergement.getPrix_nuit_hebergement()));
 
         // Address
-        lblAdresse.setText(hebergement.getAdresse_hebergement());
-
-        // Coordinates
-        double lat = hebergement.getLatitude_hebergement();
-        double lon = hebergement.getLongitude_hebergement();
-
-        String latStr = String.format("%.4f° %s", Math.abs(lat), lat >= 0 ? "N" : "S");
-        String lonStr = String.format("%.4f° %s", Math.abs(lon), lon >= 0 ? "E" : "W");
-
-        lblLatitude.setText(latStr);
-        lblLongitude.setText(lonStr);
+        lblAdresse.setText(safeText(hebergement.getAdresse_hebergement()));
 
         // Destination info
         Destination dest = hebergement.getDestination();
         if (dest != null) {
-            lblHebergementDestination.setText(dest.getNom_destination() + ", " + dest.getPays_destination());
-            lblDestNom.setText(dest.getNom_destination());
-            lblDestPays.setText(dest.getPays_destination());
-            lblDestClimat.setText(dest.getClimat_destination() != null ? dest.getClimat_destination() : "Non spécifié");
+            lblHebergementDestination.setText(formatDestination(dest));
+            lblDestNom.setText(safeText(dest.getNom_destination()));
+            lblDestPays.setText(safeText(dest.getPays_destination()));
+            lblDestClimat.setText(safeText(dest.getClimat_destination()));
         } else {
             lblHebergementDestination.setText("Non spécifié");
             lblDestNom.setText("Non spécifié");
@@ -101,9 +88,9 @@ public class AfficherHebergementFrontController implements Initializable {
         }
 
         // Tags
-        lblTagType.setText("🏨 " + hebergement.getType_hebergement());
-        lblTagNote.setText(String.format("⭐ %.1f/5", hebergement.getNote_hebergement()));
-        lblTagPrix.setText(String.format("💰 %.2f€/nuit", hebergement.getPrix_nuit_hebergement()));
+        lblTagType.setText("🏨 " + safeText(hebergement.getType_hebergement()));
+        lblTagNote.setText("⭐ " + formatNote(hebergement.getNote_hebergement()) + "/5");
+        lblTagPrix.setText("💰 " + formatPrice(hebergement.getPrix_nuit_hebergement()).replace(" ", "" ) + "/nuit");
     }
 
     private String getIconForType(String type) {
@@ -121,6 +108,39 @@ public class AfficherHebergementFrontController implements Initializable {
         return "🏨";
     }
 
+    private String safeText(String value) {
+        return (value == null || value.isBlank()) ? "Non spécifié" : value;
+    }
+
+    private String safeTypeLabel(String type) {
+        return (type == null || type.isBlank()) ? "NON SPÉCIFIÉ" : type.toUpperCase();
+    }
+
+    private String formatPrice(Double price) {
+        return (price == null || price == 0.0) ? "-" : String.format("%.2f €", price);
+    }
+
+    private String formatNote(Double note) {
+        return (note == null || note == 0.0) ? "-" : String.format("%.1f", note);
+    }
+
+    private String formatDestination(Destination destination) {
+        if (destination == null) return "Non spécifié";
+
+        String nom = safeText(destination.getNom_destination());
+        String pays = safeText(destination.getPays_destination());
+        if ("Non spécifié".equals(nom) && "Non spécifié".equals(pays)) {
+            return "Non spécifié";
+        }
+        if ("Non spécifié".equals(nom)) {
+            return pays;
+        }
+        if ("Non spécifié".equals(pays)) {
+            return nom;
+        }
+        return nom + ", " + pays;
+    }
+
     private void handleVoirDestination() {
         if (hebergement == null || hebergement.getDestination() == null) return;
 
@@ -133,10 +153,13 @@ public class AfficherHebergementFrontController implements Initializable {
 
             Stage stage = new Stage();
             stage.setTitle("Destination - " + hebergement.getDestination().getNom_destination());
-            stage.setScene(new Scene(root));
+            double width = Screen.getPrimary().getVisualBounds().getWidth();
+            double height = Screen.getPrimary().getVisualBounds().getHeight();
+            stage.setScene(new Scene(root, width, height));
             stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
             stage.initOwner(btnClose.getScene().getWindow());
             stage.setResizable(true);
+            stage.setMaximized(true);
             stage.show();
 
         } catch (IOException e) {

@@ -5,7 +5,6 @@ import Entities.Hebergement;
 import Entities.DeleteNotification;
 import Entities.User;
 import Services.HebergementCRUD;
-import Services.DestinationCRUD;
 import Services.DeleteNotificationCRUD;
 import Utils.UserSession;
 import javafx.collections.FXCollections;
@@ -17,13 +16,10 @@ import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-import javafx.stage.Screen;
 import javafx.stage.Stage;
-import javafx.util.Callback;
 
 import java.io.IOException;
 import java.net.URL;
@@ -66,17 +62,10 @@ public class HebergementFrontController implements Initializable {
     @FXML private Label lblNoteMoyenneKPI;
     @FXML private ProgressBar progressNote;
 
-    // Table Section
+    // Cards Section
     @FXML private Label lblHebergementCount;
-    @FXML private TableView<Hebergement> tableHebergements;
-    @FXML private TableColumn<Hebergement, String> colNom;
-    @FXML private TableColumn<Hebergement, String> colType;
-    @FXML private TableColumn<Hebergement, Double> colPrix;
-    @FXML private TableColumn<Hebergement, String> colAdresse;
-    @FXML private TableColumn<Hebergement, Double> colNote;
-    @FXML private TableColumn<Hebergement, String> colDestination;
-    @FXML private TableColumn<Hebergement, String> colAddedBy;
-    @FXML private TableColumn<Hebergement, Void> colActions;
+    @FXML private Label lblNoHebergements;
+    @FXML private VBox containerHebergements;
 
     // Buttons
     @FXML private Button btnAjouter;
@@ -92,7 +81,6 @@ public class HebergementFrontController implements Initializable {
     // ============== CLASS VARIABLES ==============
 
     private HebergementCRUD hebergementCRUD;
-    private DestinationCRUD destinationCRUD;
     private DeleteNotificationCRUD notificationCRUD;
     private ObservableList<Hebergement> hebergementList = FXCollections.observableArrayList();
     private List<Hebergement> allHebergements = new ArrayList<>();
@@ -102,7 +90,6 @@ public class HebergementFrontController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         hebergementCRUD = new HebergementCRUD();
-        destinationCRUD = new DestinationCRUD();
         notificationCRUD = new DeleteNotificationCRUD();
 
         currentUser = UserSession.getInstance().getCurrentUser();
@@ -111,8 +98,6 @@ public class HebergementFrontController implements Initializable {
             return;
         }
 
-        setupTableColumns();
-        setupTableHeight();
         loadHebergements();
         setupButtonActions();
         updateLastUpdateTime();
@@ -123,136 +108,60 @@ public class HebergementFrontController implements Initializable {
         loadUnreadNotifications();
     }
 
-    private void setupTableColumns() {
-        colNom.setCellValueFactory(new PropertyValueFactory<>("nom_hebergement"));
-        colType.setCellValueFactory(new PropertyValueFactory<>("type_hebergement"));
-        colPrix.setCellValueFactory(new PropertyValueFactory<>("prix_nuit_hebergement"));
-        colAdresse.setCellValueFactory(new PropertyValueFactory<>("adresse_hebergement"));
-        colNote.setCellValueFactory(new PropertyValueFactory<>("note_hebergement"));
-        colAddedBy.setCellValueFactory(new PropertyValueFactory<>("added_by_name"));
+    private VBox createHebergementCard(Hebergement hebergement) {
+        VBox card = new VBox(10);
+        card.setPadding(new Insets(16));
+        card.setPrefWidth(360);
+        card.setMinWidth(300);
+        card.setMaxWidth(Double.MAX_VALUE);
+        card.setStyle("-fx-background-color: white; -fx-background-radius: 20; -fx-border-color: #e2e8f0; -fx-border-width: 1; -fx-border-radius: 20; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.04), 14, 0, 0, 3);");
 
-        colDestination.setCellValueFactory(cellData -> {
-            Hebergement h = cellData.getValue();
-            Destination dest = h.getDestination();
-            String destDisplay = (dest != null) ?
-                    dest.getNom_destination() + ", " + dest.getPays_destination() : "-";
-            return new javafx.beans.property.SimpleStringProperty(destDisplay);
-        });
+        Label name = new Label(hebergement.getNom_hebergement());
+        name.setStyle("-fx-font-size: 20; -fx-font-weight: bold; -fx-text-fill: #0f172a;");
 
-        colPrix.setCellFactory(col -> new TableCell<Hebergement, Double>() {
-            @Override
-            protected void updateItem(Double price, boolean empty) {
-                super.updateItem(price, empty);
-                if (empty) {
-                    setText(null);
-                } else if (price == null || price == 0.0) {
-                    setText("-");
-                } else {
-                    setText(String.format("%.2f €", price));
-                }
-            }
-        });
+        Label type = new Label((hebergement.getType_hebergement() == null || hebergement.getType_hebergement().isBlank()) ? "Type inconnu" : hebergement.getType_hebergement());
+        type.setStyle("-fx-background-color: #e6f7e6; -fx-text-fill: #10b981; -fx-background-radius: 16; -fx-padding: 4 10; -fx-font-size: 11; -fx-font-weight: 700;");
 
-        colNote.setCellFactory(col -> new TableCell<Hebergement, Double>() {
-            @Override
-            protected void updateItem(Double note, boolean empty) {
-                super.updateItem(note, empty);
-                if (empty) {
-                    setText(null);
-                } else if (note == null || note == 0.0) {
-                    setText("-");
-                } else {
-                    setText(String.format("%.1f ⭐", note));
-                }
-            }
-        });
+        Label destination = new Label("Destination : " + formatDestination(hebergement.getDestination()));
+        destination.setStyle("-fx-text-fill: #475569; -fx-font-size: 13;");
+        destination.setWrapText(true);
 
-        colAddedBy.setCellFactory(col -> new TableCell<Hebergement, String>() {
-            @Override
-            protected void updateItem(String item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty) {
-                    setText(null);
-                } else if (item == null || item.trim().isEmpty()) {
-                    setText("-");
-                } else {
-                    setText(item);
-                }
-            }
-        });
+        Label adresse = new Label("Adresse : " + safeText(hebergement.getAdresse_hebergement()));
+        adresse.setStyle("-fx-text-fill: #334155; -fx-font-size: 13;");
+        adresse.setWrapText(true);
 
-        setupActionsColumn();
-    }
+        Label price = new Label("Prix / nuit : " + formatPrice(hebergement.getPrix_nuit_hebergement()));
+        price.setStyle("-fx-text-fill: #ef4444; -fx-font-size: 13; -fx-font-weight: 600;");
 
-    private void setupTableHeight() {
-        tableHebergements.setFixedCellSize(35);
-        tableHebergements.setPrefHeight(380);
-        tableHebergements.setMaxHeight(380);
-        tableHebergements.setMinHeight(380);
-    }
+        Label note = new Label("Note : " + formatNote(hebergement.getNote_hebergement()));
+        note.setStyle("-fx-text-fill: #f59e0b; -fx-font-size: 13; -fx-font-weight: 600;");
 
-    private void setupActionsColumn() {
-        colActions.setCellFactory(new Callback<>() {
-            @Override
-            public TableCell<Hebergement, Void> call(final TableColumn<Hebergement, Void> param) {
-                return new TableCell<>() {
-                    private final HBox actionBox = new HBox(8);
-                    private final HBox btnConsulter = new HBox();
-                    private final HBox btnModifier = new HBox();
-                    private final HBox btnSupprimer = new HBox();
+        Label addedBy = new Label("Ajouté par : " + safeText(hebergement.getAdded_by_name()));
+        addedBy.setStyle("-fx-text-fill: #64748b; -fx-font-size: 12;");
+        addedBy.setWrapText(true);
 
-                    {
-                        actionBox.setAlignment(javafx.geometry.Pos.CENTER);
+        HBox actions = new HBox(8);
+        actions.setPadding(new Insets(6, 0, 0, 0));
 
-                        btnConsulter.setAlignment(javafx.geometry.Pos.CENTER);
-                        btnConsulter.setStyle("-fx-background-color: #3b82f6; -fx-background-radius: 8; -fx-min-width: 32; -fx-min-height: 32; -fx-cursor: hand;");
-                        Label consulterIcon = new Label("👁️");
-                        consulterIcon.setStyle("-fx-font-size: 16; -fx-text-fill: white;");
-                        btnConsulter.getChildren().add(consulterIcon);
-                        Tooltip.install(btnConsulter, new Tooltip("Consulter"));
+        Button btnView = new Button("👁 Voir");
+        btnView.setStyle("-fx-background-color: #3b82f6; -fx-text-fill: white; -fx-background-radius: 8; -fx-font-size: 13; -fx-cursor: hand;");
+        btnView.setOnAction(e -> handleConsulter(hebergement));
+        actions.getChildren().add(btnView);
 
-                        btnModifier.setAlignment(javafx.geometry.Pos.CENTER);
-                        btnModifier.setStyle("-fx-background-color: #f59e0b; -fx-background-radius: 8; -fx-min-width: 32; -fx-min-height: 32; -fx-cursor: hand;");
-                        Label modifierIcon = new Label("✏️");
-                        modifierIcon.setStyle("-fx-font-size: 16; -fx-text-fill: white;");
-                        btnModifier.getChildren().add(modifierIcon);
-                        Tooltip.install(btnModifier, new Tooltip("Modifier"));
+        if (hebergement.getAdded_by() != null && currentUser != null && hebergement.getAdded_by().intValue() == currentUser.getId()) {
+            Button btnEdit = new Button("✏ Modifier");
+            btnEdit.setStyle("-fx-background-color: #f59e0b; -fx-text-fill: white; -fx-background-radius: 8; -fx-font-size: 13; -fx-cursor: hand;");
+            btnEdit.setOnAction(e -> handleModifier(hebergement));
 
-                        btnSupprimer.setAlignment(javafx.geometry.Pos.CENTER);
-                        btnSupprimer.setStyle("-fx-background-color: #ef4444; -fx-background-radius: 8; -fx-min-width: 32; -fx-min-height: 32; -fx-cursor: hand;");
-                        Label supprimerIcon = new Label("🗑️");
-                        supprimerIcon.setStyle("-fx-font-size: 16; -fx-text-fill: white;");
-                        btnSupprimer.getChildren().add(supprimerIcon);
-                        Tooltip.install(btnSupprimer, new Tooltip("Supprimer"));
+            Button btnDelete = new Button("🗑 Supprimer");
+            btnDelete.setStyle("-fx-background-color: #ef4444; -fx-text-fill: white; -fx-background-radius: 8; -fx-font-size: 13; -fx-cursor: hand;");
+            btnDelete.setOnAction(e -> handleDeleteSingle(hebergement));
 
-                        actionBox.setPadding(new Insets(4, 0, 4, 0));
-                    }
+            actions.getChildren().addAll(btnEdit, btnDelete);
+        }
 
-                    @Override
-                    protected void updateItem(Void item, boolean empty) {
-                        super.updateItem(item, empty);
-                        if (empty) {
-                            setGraphic(null);
-                        } else {
-                            Hebergement hebergement = getTableView().getItems().get(getIndex());
-
-                            actionBox.getChildren().clear();
-
-                            btnConsulter.setOnMouseClicked(event -> handleConsulter(hebergement));
-                            actionBox.getChildren().add(btnConsulter);
-
-                            if (hebergement.getAdded_by() != null && hebergement.getAdded_by() == currentUser.getId()) {
-                                btnModifier.setOnMouseClicked(event -> handleModifier(hebergement));
-                                btnSupprimer.setOnMouseClicked(event -> handleDeleteSingle(hebergement));
-                                actionBox.getChildren().addAll(btnModifier, btnSupprimer);
-                            }
-
-                            setGraphic(actionBox);
-                        }
-                    }
-                };
-            }
-        });
+        card.getChildren().addAll(name, type, destination, adresse, price, note, addedBy, actions);
+        return card;
     }
 
     private void setupNotifications() {
@@ -563,8 +472,8 @@ public class HebergementFrontController implements Initializable {
     }
 
     private Stage getStage() {
-        if (tableHebergements != null && tableHebergements.getScene() != null)
-            return (Stage) tableHebergements.getScene().getWindow();
+        if (containerHebergements != null && containerHebergements.getScene() != null)
+            return (Stage) containerHebergements.getScene().getWindow();
         if (btnDestinations != null && btnDestinations.getScene() != null)
             return (Stage) btnDestinations.getScene().getWindow();
         if (btnActivites != null && btnActivites.getScene() != null)
@@ -610,7 +519,7 @@ public class HebergementFrontController implements Initializable {
         try {
             allHebergements = hebergementCRUD.afficher();
             hebergementList.setAll(allHebergements);
-            tableHebergements.setItems(hebergementList);
+            renderHebergementCards(hebergementList, true);
 
             updateStats();
 
@@ -689,7 +598,7 @@ public class HebergementFrontController implements Initializable {
                     showAlert(Alert.AlertType.INFORMATION, "Résultat", "Aucun hébergement trouvé");
                 } else {
                     hebergementList.setAll(searchResults);
-                    tableHebergements.setItems(hebergementList);
+                    renderHebergementCards(hebergementList, false);
                     lblHebergementCount.setText(searchResults.size() + " résultat(s)");
                 }
             }
@@ -719,7 +628,7 @@ public class HebergementFrontController implements Initializable {
         result.ifPresent(type -> {
             if ("Tous".equals(type)) {
                 hebergementList.setAll(allHebergements);
-                tableHebergements.setItems(hebergementList);
+                renderHebergementCards(hebergementList, false);
                 lblHebergementCount.setText(allHebergements.size() + " hébergement(s)");
             } else {
                 List<Hebergement> filteredResults = allHebergements.stream()
@@ -730,7 +639,7 @@ public class HebergementFrontController implements Initializable {
                     showAlert(Alert.AlertType.INFORMATION, "Résultat", "Aucun hébergement trouvé pour ce type");
                 } else {
                     hebergementList.setAll(filteredResults);
-                    tableHebergements.setItems(hebergementList);
+                    renderHebergementCards(hebergementList, false);
                     lblHebergementCount.setText(filteredResults.size() + " résultat(s)");
                 }
             }
@@ -794,7 +703,7 @@ public class HebergementFrontController implements Initializable {
                 hebergementCRUD.supprimer(hebergement);
                 allHebergements.remove(hebergement);
                 hebergementList.setAll(allHebergements);
-                tableHebergements.setItems(hebergementList);
+                renderHebergementCards(hebergementList, true);
                 updateStats();
                 showAlert(Alert.AlertType.INFORMATION, "Succès", "Hébergement supprimé avec succès!");
             } catch (SQLException e) {
@@ -815,7 +724,7 @@ public class HebergementFrontController implements Initializable {
             stage.setTitle("Détails - " + hebergement.getNom_hebergement());
             stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
-            stage.initOwner(tableHebergements.getScene().getWindow());
+            stage.initOwner(getStage());
             stage.setResizable(false);
             stage.showAndWait();
 
@@ -830,7 +739,10 @@ public class HebergementFrontController implements Initializable {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/HomePage.fxml"));
             Parent root = loader.load();
 
-            Stage stage = (Stage) tableHebergements.getScene().getWindow();
+            Stage stage = getStage();
+            if (stage == null) {
+                return;
+            }
             stage.setScene(new Scene(root, javafx.stage.Screen.getPrimary().getVisualBounds().getWidth(), javafx.stage.Screen.getPrimary().getVisualBounds().getHeight()));
             stage.setTitle("TravelMate - Accueil");
             stage.setMaximized(true);
@@ -844,14 +756,6 @@ public class HebergementFrontController implements Initializable {
 
     private void showAlert(Alert.AlertType type, String title, String message) {
         Alert alert = new Alert(type);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
-    }
-
-    private void showInfoAlert(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);
         alert.setHeaderText(null);
         alert.setContentText(message);
@@ -882,7 +786,7 @@ public class HebergementFrontController implements Initializable {
                 .collect(Collectors.toList());
 
         hebergementList.setAll(filtered);
-        tableHebergements.setItems(hebergementList);
+        renderHebergementCards(hebergementList, false);
         lblHebergementCount.setText(filtered.size() + " hébergement" + (filtered.size() > 1 ? "s" : "") +
                 " à " + destination.getNom_destination());
         lblStatut.setText("● " + filtered.size() + " hébergement" + (filtered.size() > 1 ? "s" : "") +
@@ -891,8 +795,85 @@ public class HebergementFrontController implements Initializable {
 
     public void clearFilter() {
         hebergementList.setAll(allHebergements);
-        tableHebergements.setItems(hebergementList);
+        renderHebergementCards(hebergementList, false);
         lblHebergementCount.setText(allHebergements.size() + " hébergement" + (allHebergements.size() > 1 ? "s" : ""));
         updateStats();
+    }
+
+    private void renderHebergementCards(List<Hebergement> hebergements, boolean updateCountText) {
+        if (containerHebergements == null) {
+            return;
+        }
+
+        containerHebergements.getChildren().clear();
+
+        if (hebergements == null || hebergements.isEmpty()) {
+            if (lblNoHebergements != null) {
+                lblNoHebergements.setVisible(true);
+            }
+            if (updateCountText && lblHebergementCount != null) {
+                lblHebergementCount.setText("0 hébergement");
+            }
+            return;
+        }
+
+        if (lblNoHebergements != null) {
+            lblNoHebergements.setVisible(false);
+        }
+
+        for (int i = 0; i < hebergements.size(); i += 3) {
+            HBox row = new HBox(18);
+
+            for (int j = i; j < Math.min(i + 3, hebergements.size()); j++) {
+                VBox card = createHebergementCard(hebergements.get(j));
+                HBox.setHgrow(card, javafx.scene.layout.Priority.ALWAYS);
+                row.getChildren().add(card);
+            }
+
+            int missingSlots = 3 - row.getChildren().size();
+            for (int k = 0; k < missingSlots; k++) {
+                Region spacer = new Region();
+                spacer.setMinWidth(0);
+                HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
+                row.getChildren().add(spacer);
+            }
+
+            containerHebergements.getChildren().add(row);
+        }
+
+        if (updateCountText && lblHebergementCount != null) {
+            int total = hebergements.size();
+            lblHebergementCount.setText(total + " hébergement" + (total > 1 ? "s" : ""));
+        }
+    }
+
+    private String safeText(String value) {
+        return (value == null || value.isBlank()) ? "-" : value;
+    }
+
+    private String formatPrice(Double price) {
+        return (price == null || price == 0.0) ? "-" : String.format("%.2f €", price);
+    }
+
+    private String formatNote(Double note) {
+        return (note == null || note == 0.0) ? "-" : String.format("%.1f ⭐", note);
+    }
+
+    private String formatDestination(Destination destination) {
+        if (destination == null) {
+            return "-";
+        }
+        String nom = safeText(destination.getNom_destination());
+        String pays = safeText(destination.getPays_destination());
+        if ("-".equals(nom) && "-".equals(pays)) {
+            return "-";
+        }
+        if ("-".equals(nom)) {
+            return pays;
+        }
+        if ("-".equals(pays)) {
+            return nom;
+        }
+        return nom + ", " + pays;
     }
 }
